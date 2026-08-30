@@ -1,0 +1,17 @@
+# Godot 4 generated files
+.godot/
+*.translation
+
+# Godot export output
+export_presets.cfg
+*.pck
+*.exe
+*.zip
+
+# Imported asset cache (legacy)
+.import/
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store
