@@ -76,39 +76,68 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 2. World Scale & Character (WS)
+## 2. World Scale & Character (WS) — ✅ Reviewed 2026-08-30
 
-- [ ] **WS-01.** What is the base game resolution and camera zoom (e.g., 640×360 viewport scaled up)?
-- [ ] **WS-02.** How wide is the character sprite in pixels (hitbox vs visual)?
-- [ ] **WS-03.** What are the movement speeds — walk, sprint, surface swim, underwater swim?
-- [ ] **WS-04.** How high can the player jump, in blocks?
-- [ ] **WS-05.** Can the player crouch/crawl through gaps smaller than their standing height?
-- [ ] **WS-06.** How does underwater movement control — free 8-directional swim, or gravity-biased?
-- [ ] **WS-07.** How does surface swimming differ from being underwater (treading, faster lateral movement)?
-- [ ] **WS-08.** What is the baseline oxygen duration in seconds at game start?
-- [ ] **WS-09.** Does the player float upward automatically (buoyancy), and can gear change that?
-- [ ] **WS-10.** Does carried weight/gear affect swim and dive speed?
-- [ ] **WS-11.** How tall is a standard building floor in blocks (e.g., 6 blocks = 12 ft)?
-- [ ] **WS-12.** What is the player's interaction/mining reach in blocks?
-- [ ] **WS-13.** How many inventory slots does the player have, and does it expand?
-- [ ] **WS-14.** Is there a weight/encumbrance system on top of slot limits?
-- [ ] **WS-15.** Is there fall damage, and does water entry from height cause damage?
-- [ ] **WS-16.** What traversal aids exist — ladders, ropes, stairs, grappling hooks?
-- [ ] **WS-17.** How does lighting work — darkness underwater/indoors, placeable and carried lights?
-- [ ] **WS-18.** How should the camera behave — lookahead when swimming, zoom changes underwater?
-- [ ] **WS-19.** Character controller: `CharacterBody2D` with custom water states, or fully custom physics?
-- [ ] **WS-20.** Are there foreground blocks and background walls as separate tile layers (Terraria-style)?
-- [ ] **WS-21.** Can the player place and remove background walls?
-- [ ] **WS-22.** Do blocks have HP/hardness tiers requiring better tools to break?
+- [x] **WS-01.** What is the base game resolution and camera zoom (e.g., 640×360 viewport scaled up)?
+  - **A:** **640×360** internal resolution (40×22.5 blocks visible), integer-scaled (×2 → 720p, ×3 → 1080p, ×6 → 4K).
+- [x] **WS-02.** How wide is the character sprite in pixels (hitbox vs visual)?
+  - **A:** Hitbox **12px wide (0.75 blocks) × ~22px tall**; visual sprite may reach 16px wide with gear. The player fits through 1-block-wide holes.
+- [x] **WS-03.** What are the movement speeds — walk, sprint, surface swim, underwater swim?
+  - **A:** Walk **~5 blocks/s**, sprint **~7**, surface swim **~5** (matches walk), underwater **~4**. All speeds live in one tuning config resource.
+- [x] **WS-04.** How high can the player jump, in blocks?
+  - **A:** **3 blocks.** Two-jump rule: the next floor up must be reachable in two jumps via an intermediate foothold (furniture/rubble) — a world-gen guarantee.
+- [x] **WS-05.** Can the player crouch/crawl through gaps smaller than their standing height?
+  - **A:** Yes — **crawl through 2-block gaps** (vents, collapsed passages); standing traversal needs 3 blocks.
+- [x] **WS-06.** How does underwater movement control — free 8-directional swim, or gravity-biased?
+  - **A:** (From WS-09) **Free 8-directional swim** with neutral buoyancy.
+- [x] **WS-07.** How does surface swimming differ from being underwater (treading, faster lateral movement)?
+  - **A:** **Auto-tread** at the surface (no input needed to float), lateral movement at walk speed, **jump = ~2-block water-jump** to exit onto ledges, press down to dive. Oxygen drains only while fully submerged.
+- [x] **WS-08.** What is the baseline oxygen duration in seconds at game start?
+  - **A:** **~30 seconds** unupgraded — enough to descend 2–3 floors, grab one thing, and barely get back. Drowning damage rate: GD-20.
+- [x] **WS-09.** Does the player float upward automatically (buoyancy), and can gear change that?
+  - **A:** **Neutral buoyancy from the start** — no automatic drift; swim freely in all directions.
+- [x] **WS-10.** Does carried weight/gear affect swim and dive speed?
+  - **A:** Yes — **total carried load slows swimming** progressively (see WS-14). Hauling loot up is part of the challenge.
+- [x] **WS-11.** How tall is a standard building floor in blocks (e.g., 6 blocks = 12 ft)?
+  - **A:** **6 blocks floor-to-floor** (≈5 blocks open room + 1 block slab). Every floor = 12 ft of dive depth.
+- [x] **WS-12.** What is the player's interaction/mining reach in blocks?
+  - **A:** **4 blocks (8 ft)**; extendable later via tech tree/gear.
+- [x] **WS-13.** How many inventory slots does the player have, and does it expand?
+  - **A:** **~40 slots with stacking** as the organizational limit.
+- [x] **WS-14.** Is there a weight/encumbrance system on top of slot limits?
+  - **A:** Yes, as a **soft cap**: no hard weight limit — carried weight progressively slows swimming, and the player decides whether the loot is worth swimming slowly.
+- [x] **WS-15.** Is there fall damage, and does water entry from height cause damage?
+  - **A:** Fall damage on land (safe to ~8 blocks, scaling beyond); **water always breaks the fall from any height**. Flooding the floor below is a legitimate safety strategy.
+- [x] **WS-16.** What traversal aids exist — ladders, ropes, stairs, grappling hooks?
+  - **A:** **Ropes and ladders** in MVP (stairs emerge from block placement/platforms). **No grappling hook for now.** Plus **engineered water currents**: piped/directed flow exerts force on the player, so currents can push the player into otherwise unreachable areas.
+- [x] **WS-17.** How does lighting work — darkness underwater/indoors, placeable and carried lights?
+  - **A:** **Hybrid** — tile-based light propagation for gameplay visibility (absorbed faster through water) + Godot 2D lights for mood accents. Also: **building power systems** — some dry sections support powered lights; the player must locate and flip the breaker, and **flooding a powered area trips its breaker off**. (New topic → City section / technical doc.)
+- [x] **WS-18.** How should the camera behave — lookahead when swimming, zoom changes underwater?
+  - **A:** **Fixed zoom** (pixel-perfect), smooth follow with directional lookahead — more lead at higher speed. No contextual zoom.
+- [x] **WS-19.** Character controller: `CharacterBody2D` with custom water states, or fully custom physics?
+  - **A:** **`CharacterBody2D` + explicit state machine** (grounded, jump/fall, surface-swim, underwater, climbing, crawl). Server-authoritative movement for LAN.
+- [x] **WS-20.** Are there foreground blocks and background walls as separate tile layers (Terraria-style)?
+  - **A:** Yes, two layers — but **background walls are cosmetic only**; collision and water sealing are decided purely by solid foreground blocks.
+- [x] **WS-21.** Can the player place and remove background walls?
+  - **A:** Yes, as decoration only (no simulation effect).
+- [x] **WS-22.** Do blocks have HP/hardness tiers requiring better tools to break?
+  - **A:** Yes — **HP + hardness tiers** (glass/drywall < wood < concrete/steel). Hardness is both a progression gate and a water-strategy tool, since walls hold back water.
 - [x] **WS-23.** How is water simulated — cellular per-tile flow, region/volume-based, or hybrid?
   - **A:** (From CC-13) Cellular per-tile flow — water is a block-like tile that flows downward and settles. Details: `technical/WaterPhysics.md`.
-- [ ] **WS-24.** Does placing/removing blocks displace or release water in real time?
-- [ ] **WS-25.** How are sprites structured — is hair a separate layer over the 21px body?
-- [ ] **WS-26.** Is equipped gear (armor, dive suit) visible on the character sprite?
-- [ ] **WS-27.** What animation set is needed at minimum (idle, walk, swim, dive, attack, hurt, death)?
-- [ ] **WS-28.** What Godot rendering settings ensure crisp pixel art (snapping, filtering, scaling mode)?
-- [ ] **WS-29.** Should there be screen-space water effects (distortion, color grading by depth)?
-- [ ] **WS-30.** What unit conventions should the technical docs standardize (blocks vs pixels vs feet)?
+- [x] **WS-24.** Does placing/removing blocks displace or release water in real time?
+  - **A:** Removing a block wakes adjacent water. Placing into water: **displace if possible, destroy if enclosed** — filling a sealed pocket with blocks is a legitimate early-game drain tactic.
+- [x] **WS-25.** How are sprites structured — is hair a separate layer over the 21px body?
+  - **A:** **Layered paper-doll**: body + tintable hair/shirt/pants layers (runtime tints on grayscale) + equipment overlays. Matches the CC-17 cosmetics.
+- [x] **WS-26.** Is equipped gear (armor, dive suit) visible on the character sprite?
+  - **A:** Yes, but a **limited visible set at first** — held tool and major dive-suit tiers; full armor visuals later.
+- [x] **WS-27.** What animation set is needed at minimum (idle, walk, swim, dive, attack, hurt, death)?
+  - **A:** **Lean ~7-state set**: idle, walk (reused on ladders), jump/fall, swim (both water states), crouch/crawl, use/attack (one shared swing), hurt/death.
+- [x] **WS-28.** What Godot rendering settings ensure crisp pixel art (snapping, filtering, scaling mode)?
+  - **A:** Viewport stretch at 640×360, **integer scaling with letterbox**, nearest-neighbor filtering, 2D transform/vertex snapping on, camera computed in native pixels, and **lights render into the low-res viewport** (chunky Terraria-style glow).
+- [x] **WS-29.** Should there be screen-space water effects (distortion, color grading by depth)?
+  - **A:** Start simple: **depth-driven color grade only** (warm→cold ramp per CC-22), at native resolution. No distortion for now.
+- [x] **WS-30.** What unit conventions should the technical docs standardize (blocks vs pixels vs feet)?
+  - **A:** **Blocks are canonical** in all design docs and tuning values (blocks, blocks/s); pixels only in art specs (1 block = 16px); feet as flavor only (1 block = 2 ft). Code holds a single `BLOCK_SIZE = 16` constant.
 
 ---
 

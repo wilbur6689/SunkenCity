@@ -5,11 +5,15 @@ Source decisions: CC-13, CC-26, WS-23, GL-16 in [../OpenQuestions.md](../OpenQue
 
 ## Overview
 
+**Water management is a core pillar of SunkenCity** (per the design canon): moving water around is
+a central player strategy that opens otherwise-inaccessible areas. The game's "dig" is *moving
+water*.
+
 Water is a **tile-based substance that lives in the block grid**: it occupies cells like any other
 block, but instead of being static it **flows downward and settles**. All water gameplay — floods
-through breaches, draining rooms, pumping, and the citywide endgame drain — emerges from the same
-cellular rules. There is no separate "ocean" system; the sea between buildings is just a very
-large body of settled water tiles.
+through breaches, draining rooms, pumping, currents, and the citywide endgame drain — emerges from
+the same cellular rules. There is no separate "ocean" system; the sea between buildings is just a
+very large body of settled water tiles.
 
 Design intent (from the overview):
 
@@ -29,8 +33,10 @@ Design intent (from the overview):
   2. **Spread:** if blocked below, water equalizes sideways with lower-filled neighbors.
   3. **Settle:** cells at equilibrium go dormant (no per-tick cost) until a neighbor changes —
      a placed/removed block, a new water cell, a pump.
-- **Block interaction:** solid blocks stop flow. Removing a block wakes adjacent water; placing a
-  block into water displaces it (pushed to neighbors, or destroyed if fully enclosed — TBD).
+- **Block interaction:** solid blocks stop flow. Only **foreground solid blocks** matter —
+  background walls are cosmetic (WS-20) and never seal water. Removing a block wakes adjacent
+  water. Placing a block into water: **displace if possible, destroy if enclosed** (WS-24) —
+  filling a sealed pocket with blocks is a legitimate early-game drain tactic.
 - **Air pockets:** a sealed room is simply a region water cannot path into; no separate air
   simulation is needed for the MVP. (Oxygen is a player meter, not a room property — revisit if
   air-pocket gameplay needs more.)
@@ -55,6 +61,23 @@ Design intent (from the overview):
 - Power requirements, pipe routing, and pump tiers: to be designed with the crafting system
   (GL section).
 
+## Currents (Flow as Traversal)
+
+- Flowing water **exerts force on entities** — the player, floating items, dropped backpacks.
+- Players can engineer currents (pipes, channels, deliberate breaches, pump outlets) that **push
+  the player into otherwise unreachable areas** — traversal by plumbing (WS-16).
+- Implementation sketch: awake cells with net flow apply a directional force to overlapping
+  bodies, proportional to flow rate; settled water applies none.
+- Tuning question for prototyping: can a strong current overcome full swim speed (a trap!), or is
+  it always escapable?
+
+## Interaction with Building Power
+
+- Some dry building sections have functional wiring: the player locates and flips a **breaker**
+  to power that area's lights (WS-17; more powered devices TBD).
+- **Flooding a powered area trips its breaker off.** Draining and re-flipping restores it —
+  another water-management decision layer (and a foundation for live-wire hazards, GD-17).
+
 ## Endgame: The City Drain
 
 - The city has derelict **mega-pump infrastructure**: a central ground-level station plus **relay
@@ -77,7 +100,8 @@ Design intent (from the overview):
 ## Open Items
 
 - Fill-level granularity (binary vs. 8-level vs. continuous) — prototype first.
-- Displacement rule when placing a block into a full cell.
 - Whether large-body region optimization is needed for target world sizes.
 - Pump mechanics detail (pipes vs. paired blocks, power, tiers).
-- Visuals: surface waves, flow animation, depth-based color/light (ties to CC-22 art direction).
+- Current strength tuning: escapable vs. trap-capable flows.
+- Visuals: surface waves, flow animation, depth-based color grade (WS-29: grade only, no
+  distortion for now).

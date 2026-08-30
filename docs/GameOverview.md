@@ -88,6 +88,22 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
 - **UX:** Fog-of-war exploration map (per character), shown as a top-right corner minimap for now.
   Character creation cosmetics: shirt, pants, and hair color. Tutorial deferred to early access.
 - **Playtime target:** 60–100 hours for a full first run.
+- **Water is a core pillar:** moving water around — pumping, piping, flooding, draining,
+  fill-to-drain block placement — is a central strategy that opens otherwise-inaccessible areas.
+  Engineered **water currents push the player**, doubling as a traversal system. SunkenCity's
+  "dig" is *moving water*.
+- **Rendering & movement canon:** 640×360 internal resolution, integer-scaled, full pixel-perfect
+  stack. Walk 5 / sprint 7 / surface swim 5 / underwater 4 blocks/s; 3-block jump (two-jump rule
+  between floors); crawl through 2-block gaps; 12px hitbox fits 1-block holes; 6-block building
+  floors; 4-block reach; 30s baseline oxygen; neutral buoyancy; water always breaks falls.
+- **Inventory:** ~40 slots for organization; carried weight is a **soft cap** that progressively
+  slows swimming — the player chooses when loot isn't worth the crawl home.
+- **Blocks:** foreground blocks are solid, editable, and carry HP + hardness tiers (tool-gated);
+  background walls are cosmetic only. Water sealing is decided purely by solid blocks.
+- **Building power:** some dry sections have working wiring — locate and flip the breaker to power
+  lights (and more, TBD); flooding a powered area trips its breaker off.
+- **Controller architecture:** `CharacterBody2D` + explicit state machine, server-authoritative
+  for LAN. Blocks are the canonical unit in all docs and tuning (`BLOCK_SIZE = 16`).
 
 ---
 
@@ -175,7 +191,8 @@ Progression is staged around **how deep the player can go** and **what they can 
 ## Document Map
 
 Deeper design and implementation details live in the `technical/` folder. Open design questions
-are tracked in [OpenQuestions.md](OpenQuestions.md) *(Core Concept & Setting: ✅ reviewed)*.
+are tracked in [OpenQuestions.md](OpenQuestions.md) *(reviewed: Core Concept & Setting ✅, World
+Scale & Character ✅)*.
 
 - [technical/WaterPhysics.md](technical/WaterPhysics.md) — water simulation, pumps, draining ✅
 - World generation (building layouts, flooding, breach placement)
@@ -183,6 +200,7 @@ are tracked in [OpenQuestions.md](OpenQuestions.md) *(Core Concept & Setting: �
 - Loot tables and the prefix/suffix modifier system
 - Enemy design, red moon events, and depth-based difficulty scaling
 - Base building mechanics
+- Building power/electrical systems (breakers, powered lights, water interaction)
 - Character controller (swimming, diving, platforming) and LAN networking model
 - Skills, player level, and the ability tech tree
 - Tile/sprite specifications (16×16 blocks, 24px character)
