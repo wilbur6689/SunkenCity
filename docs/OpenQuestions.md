@@ -1,4 +1,4 @@
-# TowerDive — Open Design Questions
+# SunkenCity — Open Design Questions
 
 Companion to [GameOverview.md](GameOverview.md). Each major section of the overview has 30 open
 questions to be answered via `/guided-review` sessions, one section at a time.
@@ -11,38 +11,68 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 1. Core Concept & Setting (CC)
+## 1. Core Concept & Setting (CC) — ✅ Reviewed 2026-08-30
 
-- [ ] **CC-01.** Is "TowerDive" the final title, or a working title?
-- [ ] **CC-02.** What is the tone — grim survival horror, pulpy adventure, or something lighter?
-- [ ] **CC-03.** What caused the flood — natural disaster, zombie-outbreak fallout, or a deliberate act?
-- [ ] **CC-04.** Is there a narrative/lore layer explaining the apocalypse, or is the story purely environmental?
-- [ ] **CC-05.** Are there other living survivors or NPCs in the city (traders, quest-givers, rivals)?
-- [ ] **CC-06.** Single-player only, or is co-op/multiplayer planned (even long-term)?
-- [ ] **CC-07.** What happens on death — permadeath, item drop, respawn penalty?
-- [ ] **CC-08.** Where does the player respawn — a bed/base spawn point like Terraria?
-- [ ] **CC-09.** Is the world persistent across sessions with a single save per world?
-- [ ] **CC-10.** Is the world finite or effectively infinite horizontally?
-- [ ] **CC-11.** Is there a day/night cycle, and does it change gameplay?
-- [ ] **CC-12.** Is there weather (storms, fog, rain), and does it affect the water or visibility?
-- [ ] **CC-13.** Is the water level static, or can it change (tides, storms, player draining)?
-- [ ] **CC-14.** Is there a recurring time-pressure event like 7DtD's horde night?
-- [ ] **CC-15.** Are hunger and thirst survival mechanics included?
-- [ ] **CC-16.** Are temperature/wetness/cold mechanics included (especially at depth)?
-- [ ] **CC-17.** Is there character customization (appearance, starting loadout)?
-- [ ] **CC-18.** Is player progression gear-only, or are there also levels/skills/attributes?
-- [ ] **CC-19.** What is the target total playtime for a full run (reach ground + drain city)?
-- [ ] **CC-20.** Will there be difficulty settings, and what do they change?
-- [ ] **CC-21.** What platforms are targeted first (PC/Steam?), and is controller support required at launch?
-- [ ] **CC-22.** What is the art direction beyond pixel scale — palette, color mood, lighting style?
-- [ ] **CC-23.** What is the audio direction — ambient dread, chiptune, realistic underwater muffling?
-- [ ] **CC-24.** How is the player onboarded — tutorial island/rooftop, contextual hints, or none?
-- [ ] **CC-25.** Is there a map or minimap, and does it fill in as the player explores?
-- [ ] **CC-26.** Mechanically, how does "draining the city" work at the endgame?
-- [ ] **CC-27.** What happens after the city is drained — credits, sandbox continues, new threats?
-- [ ] **CC-28.** One city per world, or multiple cities/worlds per save?
-- [ ] **CC-29.** Are alternate modes planned (creative/build mode, hardcore)?
-- [ ] **CC-30.** What is the scope target — small commercial release, hobby project, demo-first?
+- [x] **CC-01.** Is "TowerDive" the final title, or a working title?
+  - **A:** **SunkenCity** is the working title (repo renamed to match). Final title decision flagged for before any public release.
+- [x] **CC-02.** What is the tone — grim survival horror, pulpy adventure, or something lighter?
+  - **A:** Tense survival with moments of dread in the deep (darkness, oxygen anxiety, muffled sound); surface/base life stays almost cozy. Core focus: **crafting survival**.
+- [x] **CC-03.** What caused the flood — natural disaster, zombie-outbreak fallout, or a deliberate act?
+  - **A:** The city was **deliberately flooded** in a failed attempt to contain the zombie virus.
+- [~] **CC-04.** Is there a narrative/lore layer explaining the apocalypse, or is the story purely environmental?
+  - **A:** Deferred — story development resumes after the MVP and basic game loop are complete.
+- [x] **CC-05.** Are there other living survivors or NPCs in the city (traders, quest-givers, rivals)?
+  - **A:** No living NPCs in the MVP. Design slot reserved for traders/survivor enclave post-MVP.
+- [x] **CC-06.** Single-player only, or is co-op/multiplayer planned (even long-term)?
+  - **A:** **LAN multiplayer** (not couch co-op), built in from the beginning — core systems use Godot's multiplayer authority model from day one; one player hosts.
+- [x] **CC-07.** What happens on death — permadeath, item drop, respawn penalty?
+  - **A:** Backpack drop — inventory (not equipped gear) drops at the death point. The backpack **slowly floats upward unless it hits a ceiling** (dying in a flooded room pins the pack to that room's ceiling); unobstructed packs eventually bob at the surface.
+- [x] **CC-08.** Where does the player respawn — a bed/base spawn point like Terraria?
+  - **A:** Respawn at base/spawn point. How spawn points are set/moved: see GL-23.
+- [x] **CC-09.** Is the world persistent across sessions with a single save per world?
+  - **A:** Terraria model: **world saves and character saves are separate**. Any player can keep a world file locally and launch it single-player or host it for LAN; characters choose which world to join.
+- [x] **CC-10.** Is the world finite or effectively infinite horizontally?
+  - **A:** **Finite bounded city** — a fixed number of tower columns per seed, edged by open ocean. Skyline profile: see CC-28.
+- [x] **CC-11.** Is there a day/night cycle, and does it change gameplay?
+  - **A:** Yes — day/night with real gameplay meaning on the surface (darkness, riskier swimming, activity changes). See also CC-14 (red moon).
+- [x] **CC-12.** Is there weather (storms, fog, rain), and does it affect the water or visibility?
+  - **A:** Light weather — rain/fog ambience plus occasional **mechanical storms** (rough surface water, reduced visibility). Post-MVP.
+- [x] **CC-13.** Is the water level static, or can it change (tides, storms, player draining)?
+  - **A:** Water is **tile-based and behaves like any other block except it flows downward** and settles (cellular simulation). Pumps will move water from one area to another. The global waterline can fall through gameplay (endgame drain). Details: `technical/WaterPhysics.md`.
+- [x] **CC-14.** Is there a recurring time-pressure event like 7DtD's horde night?
+  - **A:** **Red moon zombie waves every random 5–10 days.** Red moon mechanics to be designed later (Game Dangers section / dedicated pass).
+- [x] **CC-15.** Are hunger and thirst survival mechanics included?
+  - **A:** No hunger/thirst meters. Food exists for **healing and buffs only**.
+- [x] **CC-16.** Are temperature/wetness/cold mechanics included (especially at depth)?
+  - **A:** Cold as a **depth mechanic**, not a meter — below depth thresholds players take a slowing debuff (then damage) without the right suit tier. Pairs with pressure (GL-12).
+- [x] **CC-17.** Is there character customization (appearance, starting loadout)?
+  - **A:** Very light cosmetics at creation: **shirt color, pants color, hair color**. No stat choices.
+- [x] **CC-18.** Is player progression gear-only, or are there also levels/skills/attributes?
+  - **A:** Gear-first with **learn-by-doing skills**. Skills level individually by use; **player level = total skill levels ÷ 5** (level 5 in 3 skills → player level 3). Each player level grants **1 point in a separate ability tech tree** that unlocks new player abilities (not skill boosts). Tech tree contents: future design topic.
+- [x] **CC-19.** What is the target total playtime for a full run (reach ground + drain city)?
+  - **A:** **60–100 hours** for a full first run.
+- [x] **CC-20.** Will there be difficulty settings, and what do they change?
+  - **A:** None in MVP — one tuned baseline. Later: **world-creation toggles** (enemy strength, backpack-drop rules, red moon frequency), not global presets.
+- [x] **CC-21.** What platforms are targeted first (PC/Steam?), and is controller support required at launch?
+  - **A:** PC/Steam first; keyboard+mouse for MVP; **controller support added when pushing to Steam**. Use Godot input actions from day one to keep that retrofit cheap.
+- [x] **CC-22.** What is the art direction beyond pixel scale — palette, color mood, lighting style?
+  - **A:** Moody-but-readable pixel art. Desaturated blues/greens deepening to near-black with depth; warm oranges reserved for safety (interiors, bases, surface dusk). **Warm = safe, cold = deep = dangerous.**
+- [x] **CC-23.** What is the audio direction — ambient dread, chiptune, realistic underwater muffling?
+  - **A:** **Diegetic-first with depth-adaptive layers** — sparse ambient music, muffled/low-passed underwater soundscape, vertical layering for tension; stingers for red moons and storms.
+- [~] **CC-24.** How is the player onboarded — tutorial island/rooftop, contextual hints, or none?
+  - **A:** Deferred until the Steam early-access release.
+- [x] **CC-25.** Is there a map or minimap, and does it fill in as the player explores?
+  - **A:** **Fog-of-war world map revealed by exploration**, tracked per character. Lives as a top-right corner minimap for now.
+- [x] **CC-26.** Mechanically, how does "draining the city" work at the endgame?
+  - **A:** Restore the city's **mega-pump infrastructure** — a central ground-level station plus relay stations at depth intervals; each restored relay drains a horizontal band of the city, lowering the waterline in stages, "like a massive bathtub drain."
+- [x] **CC-27.** What happens after the city is drained — credits, sandbox continues, new threats?
+  - **A:** **Ending + freeplay** — credits roll and the world is flagged complete; play continues in the drained world but no new content appears.
+- [x] **CC-28.** One city per world, or multiple cities/worlds per save?
+  - **A:** **One city per world**; a fresh city = a new world/seed. Skyline is a bell curve: largest towers in the center, buildings shorter and gaps wider toward the edges, most outer buildings entirely below the waterline, large open-water areas at the map edges.
+- [x] **CC-29.** Are alternate modes planned (creative/build mode, hardcore)?
+  - **A:** **Survival only, ever.** No creative or hardcore modes.
+- [x] **CC-30.** What is the scope target — small commercial release, hobby project, demo-first?
+  - **A:** Staged roadmap: **1)** MVP local single-player → **2)** LAN multiplayer (architecture present from day one per CC-06) → **3)** demo-first commercial release on Steam → **4)** full commercial release.
 
 ---
 
@@ -70,7 +100,8 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [ ] **WS-20.** Are there foreground blocks and background walls as separate tile layers (Terraria-style)?
 - [ ] **WS-21.** Can the player place and remove background walls?
 - [ ] **WS-22.** Do blocks have HP/hardness tiers requiring better tools to break?
-- [ ] **WS-23.** How is water simulated — cellular per-tile flow, region/volume-based, or hybrid?
+- [x] **WS-23.** How is water simulated — cellular per-tile flow, region/volume-based, or hybrid?
+  - **A:** (From CC-13) Cellular per-tile flow — water is a block-like tile that flows downward and settles. Details: `technical/WaterPhysics.md`.
 - [ ] **WS-24.** Does placing/removing blocks displace or release water in real time?
 - [ ] **WS-25.** How are sprites structured — is hair a separate layer over the 21px body?
 - [ ] **WS-26.** Is equipped gear (armor, dive suit) visible on the character sprite?
@@ -98,7 +129,8 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [ ] **GL-13.** How does the player manage light underwater (glowsticks, dive lamps, base lighting)?
 - [ ] **GL-14.** What does a functional base require (bed, storage, crafting, cooking, defenses)?
 - [ ] **GL-15.** Do zombies or other threats ever attack the player's base?
-- [ ] **GL-16.** Can players drain individual rooms/floors mid-game (pumps, patching breaches)?
+- [x] **GL-16.** Can players drain individual rooms/floors mid-game (pumps, patching breaches)?
+  - **A:** (From CC-13) Yes — craftable pumps move water from one area to another; patching breaches plus pumping drains rooms/floors.
 - [ ] **GL-17.** Can players create air pockets or airlocks as forward dive bases?
 - [ ] **GL-18.** Is there fast travel or shortcuts between buildings (ziplines, rope bridges, teleports)?
 - [ ] **GL-19.** Are there vehicles (rafts, boats, submersibles), and at what stage?
@@ -210,6 +242,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [ ] **CT-20.** Are there hand-designed landmark buildings with unique content (one per world)?
 - [ ] **CT-21.** Are worlds seed-based and shareable/regenerable?
 - [ ] **CT-22.** What bounds the map horizontally — invisible wall, endless ocean, city wall?
+  - *Partial (CC-28):* map edges are large open-water areas past the last submerged buildings; the hard-stop mechanism is still open.
 - [ ] **CT-23.** What decorates the water surface (debris, buoys, derelict boats, birds)?
 - [ ] **CT-24.** Do depth zones get distinct visual theming (light, color, block wear)?
 - [ ] **CT-25.** When the city is drained, does the world state permanently change (water gone, new areas)?
