@@ -51,9 +51,11 @@ smooth "solid wood" variant drops the seams and keeps only the dash grain (5–6
 ## Atlas layout (current placeholder → real art)
 
 `assets/tiles/placeholder_blocks.png`: rows = materials (stone, wood, metal, plastic, water,
-ladder, rope), **columns = 5 variants of the same material**. The placeholder currently uses the
-columns as brightness steps; the real art keeps the same layout with columns as pattern variants,
-so `test_tower.gd`'s position-hash variant pick and the TileSet resource carry over unchanged.
+ladder, rope), **columns = 5 pattern variants of the same material**, picked per cell by a
+position hash in `test_tower.gd`. The placeholder is generated procedurally from the recipes
+above by `tools/gen_placeholder_art.py` (deterministic; also emits the 24px character sheet
+`assets/sprites/player_placeholder.png`: frame 0 standing, frame 1 prone for crawl/swim). Real
+art keeps the same layout so the TileSet resource and variant pick carry over unchanged.
 
 Edge outlines: plan for a Godot **terrain set** (autotile) so exposed faces get the 1px dark
 edge automatically; the base 16×16 textures stay outline-free and seamless (patterns wrap at 16px).

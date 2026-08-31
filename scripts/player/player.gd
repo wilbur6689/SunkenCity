@@ -69,6 +69,8 @@ func _physics_process(delta: float) -> void:
 		State.UNDERWATER:
 			_state_underwater(delta)
 	move_and_slide()
+	if input_dir.x != 0.0:
+		sprite.flip_h = input_dir.x < 0.0 # sheet faces right
 	_update_oxygen(delta)
 	_update_camera(delta)
 
@@ -118,8 +120,9 @@ func _set_compact(value: bool) -> void:
 	var size := Constants.COMPACT_HITBOX if value else Constants.STAND_HITBOX
 	collision_shape.shape = _compact_shape if value else _stand_shape
 	collision_shape.position.y = FEET_Y - size.y * 0.5
-	sprite.scale.y = size.y / Constants.STAND_HITBOX.y
-	sprite.position.y = collision_shape.position.y - 1.0
+	# Sheet frames are 24x24 with feet on the bottom row: frame 0 standing,
+	# frame 1 prone (bottom 12px = the compact hitbox). No repositioning needed.
+	sprite.frame = 1 if value else 0
 
 func _can_stand() -> bool:
 	var size := Constants.STAND_HITBOX
