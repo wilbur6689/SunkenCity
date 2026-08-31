@@ -120,6 +120,28 @@ func _ready() -> void:
 	var sofa := World.place_object("res_sofa", World.cell_at(World.spawn_position) + Vector2i(6, 0), true)
 	check(sofa != null and sofa.sprite.texture != null, "a pack item places with its sheet sprite")
 
+	print("== H. edge walls, stations, debris, two-jump (CT-22/08/23, WS-04)")
+	player.global_position = Vector2(-40 * B, (CityGen.WATERLINE - 6) * B)
+	player.velocity = Vector2.ZERO
+	await ticks(2)
+	check(player.global_position.x >= 0.0, "invisible west edge wall clamps the player (x=%.0f)" % player.global_position.x)
+	player.respawn()
+	check(gen.has("central"), "central pump station shell stands on the ground (CT-08)")
+	check(gen.relays.size() == 3, "%d relay pylons at the band boundaries (CC-26)" % gen.relays.size())
+	if gen.relays.size() == 3:
+		var relay_ok := true
+		for i in 3:
+			var shell: Rect2i = gen.relays[i]
+			var interior := Vector2i(shell.position.x + 5, shell.end.y - 1)
+			if World.has_block_cell(interior) or not World.has_back_wall_cell(interior):
+				relay_ok = false
+		check(relay_ok, "relay machine rooms are hollow with back walls")
+	check(int(gen.debris) >= 5, "%d floating debris rafts on the surface (CT-23)" % int(gen.debris))
+	var blockages := 0
+	for tw in gen.tower_list:
+		blockages += CityGen.floor_blockages(World.grid, tw).size()
+	check(blockages == 0, "two-jump rule holds on every assembled floor (WS-04)")
+
 	print("\nM3 smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:
 		print("  FAIL: " + f)

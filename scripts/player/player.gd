@@ -67,6 +67,19 @@ func _ready() -> void:
 	if World.is_ready():
 		respawn()
 
+## Invisible edge walls (CT-22): the finite city ends past the open-water
+## margins — nothing rendered, just a hard clamp at the grid's x extents.
+func _clamp_to_world_bounds() -> void:
+	if not World.is_ready():
+		return
+	var b: Rect2i = World.grid.bounds
+	var half_w := 6.0 # half the standing hitbox
+	var min_x := b.position.x * Constants.BLOCK_SIZE + half_w
+	var max_x := b.end.x * Constants.BLOCK_SIZE - half_w
+	if global_position.x < min_x or global_position.x > max_x:
+		global_position.x = clampf(global_position.x, min_x, max_x)
+		velocity.x = 0.0
+
 func _physics_process(delta: float) -> void:
 	if is_multiplayer_authority():
 		_read_input()
@@ -87,6 +100,7 @@ func _physics_process(delta: float) -> void:
 		State.UNDERWATER:
 			_state_underwater(delta)
 	move_and_slide()
+	_clamp_to_world_bounds()
 	_update_sprite(delta)
 	_update_oxygen(delta)
 	_update_environment(delta)

@@ -32,6 +32,7 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 	var result := {
 		"grid": grid, "objects": objects, "doors": doors, "sealed": sealed,
 		"waterline_row": WATERLINE, "towers": 0, "spawn_feet": Vector2.ZERO, "seed": seed_value,
+		"tower_list": [], "relays": [], "debris": 0,
 	}
 	# Bare concrete ground (CT-07): The Crush's floor; solid below.
 	for y in range(GROUND, WORLD_H):
@@ -48,13 +49,38 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 		var w := rng.randi_range(24, 38)
 		var tower := _build_tower(grid, rng, rooms, x, w, floors, objects, doors, sealed)
 		result.towers += 1
+		result.tower_list.append(tower)
 		if floors > tallest.floors:
 			tallest = tower
 		x += w + int(lerpf(34.0, 8.0, center_f)) + rng.randi_range(0, 14)
 	# Authored start (CT-20): the tallest tower's top floor is the hospital
 	# medical room — clear it and furnish deliberately, with a real bed.
 	_author_medical_room(grid, tallest, objects, result)
+	# Mega-pump infrastructure shells (CT-08/26, CC-26): the central station
+	# on the concrete ground plus relay pylons at the band boundaries.
+	_author_stations(grid, rng, objects, result, world_w)
+	# Light floating debris on the open surface for mood (CT-23).
+	_scatter_surface_debris(grid, rng, objects, result, world_w)
 	return result
+
+## Two-jump rule check (WS-04): every column of a floor cavity must stay
+## passable — jump height is 3 blocks and a crawl fits a 1-block gap, so the
+## only true blockage is an authored obstacle >= 4 tall from the standing row
+## (too high to mount, no room to crawl over). Returns the offending columns.
+static func floor_blockages(grid: WorldGrid, tower: Dictionary) -> Array:
+	var out: Array = []
+	var top: int = tower.top
+	for f in tower.floors:
+		var sr: int = top + f * FLOOR_H + FLOOR_H - 1
+		for vx in range(int(tower.stair_wall) + 1, int(tower.shaft_wall)):
+			var blocked := true
+			for vy in range(sr - 3, sr + 1):
+				if grid.structure_at(Vector2i(vx, vy)) == WorldGrid.M.AIR:
+					blocked = false
+					break
+			if blocked:
+				out.append(Vector2i(vx, sr))
+	return out
 
 static func _load_rooms() -> Dictionary:
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string("res://data/rooms.json"))
@@ -142,6 +168,12 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 				for wy in range(ceiling + 1, sr - 2):
 					grid.set_structure(Vector2i(cx, wy), WorldGrid.M.STONE)
 				cx += 1
+	# Two-jump repair (WS-04): carve a walking doorway through any authored
+	# obstacle a 3-block jump plus a crawl can't clear — a gen-time guarantee.
+	var tower := {"x0": x0, "x1": x1, "top": top, "floors": floors, "stair_wall": stair_wall, "shaft_wall": shaft_wall}
+	for bc: Vector2i in floor_blockages(grid, tower):
+		for vy in range(bc.y - 2, bc.y + 1):
+			grid.set_structure(Vector2i(bc.x, vy), WorldGrid.M.AIR)
 	# Wear pass (CT-11): breaches scale with depth; occasional slab collapse.
 	for f in floors:
 		var sr := top + f * FLOOR_H + FLOOR_H - 1
@@ -158,7 +190,7 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 			var hole_x := rng.randi_range(x0 + 6, x1 - 10)
 			for hx in range(hole_x, hole_x + rng.randi_range(4, 7)):
 				grid.set_structure(Vector2i(hx, cy), WorldGrid.M.AIR)
-	return {"x0": x0, "x1": x1, "top": top, "floors": floors, "stair_wall": stair_wall, "shaft_wall": shaft_wall}
+	return tower
 
 static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Array, result: Dictionary) -> void:
 	var top: int = tower.top
@@ -182,6 +214,120 @@ static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Ar
 	objects.append({"id": "chair", "cell": Vector2i(zone_x + 13, sr)})
 	result.spawn_feet = Vector2((zone_x + 3 + 0.5) * Constants.BLOCK_SIZE, (sr + 1) * Constants.BLOCK_SIZE)
 	result["hospital"] = tower
+
+## Mega-pump shells (CT-08, CC-26): non-functional for now — the endgame
+## drain wires them up in a later milestone. The central station is a metal
+## hall on the concrete ground at city centre; relays are freestanding metal
+## pylons rising from the ground with a machine room at each band boundary.
+static func _author_stations(grid: WorldGrid, rng: RandomNumberGenerator,
+		objects: Array, result: Dictionary, world_w: int) -> void:
+	# Central station: a hall on the ground row, in the inter-tower gap
+	# nearest the city centre that can hold it (gaps narrow toward centre).
+	var best_x := -1
+	var best_score := -1.0e18
+	var towers: Array = result.tower_list
+	for i in range(towers.size() - 1):
+		var gap_x0: int = int(towers[i].x1) + 1
+		var gap_w: int = int(towers[i + 1].x0) - gap_x0
+		if gap_w < 20:
+			continue
+		var mid := gap_x0 + gap_w / 2
+		var score := -absf(mid - world_w / 2.0)
+		if score > best_score:
+			best_score = score
+			best_x = mid
+	if best_x >= 0:
+		var hall := Rect2i(best_x - 9, GROUND - 7, 18, 7)
+		_station_room(grid, hall, objects, true)
+		result["central"] = hall
+	# Relay pylons at the shallows/cold, cold/dark, dark/crush boundaries.
+	var relay_rows: Array = [
+		WATERLINE + Constants.BAND_SHALLOWS_DEPTH,
+		WATERLINE + Constants.BAND_COLD_DEPTH,
+		WATERLINE + Constants.BAND_DARK_DEPTH,
+	]
+	var fracs: Array = [0.25, 0.58, 0.8]
+	for i in relay_rows.size():
+		var row: int = relay_rows[i]
+		var px0 := _find_open_span(grid, int(world_w * float(fracs[i])), row, 14, row - 6, row + 1)
+		if px0 < 0:
+			continue
+		var shell := Rect2i(px0, row - 5, 14, 6)
+		_station_room(grid, shell, objects, false)
+		# Support legs drop until they meet something solid (a roof or the
+		# ground) — never through a tower's interior (keeps WS-04 intact).
+		for lx: int in [px0 + 1, px0 + 12]:
+			for y in range(row + 2, GROUND + 1):
+				if grid.structure_at(Vector2i(lx, y)) != WorldGrid.M.AIR:
+					break
+				grid.set_structure(Vector2i(lx, y), WorldGrid.M.METAL)
+		result.relays.append(shell)
+
+## A sealed metal machine room: walls, roof, back walls, ladder entry through
+## the roof hatch, and the pump/breaker kit. rect covers the outer shell.
+static func _station_room(grid: WorldGrid, rect: Rect2i, objects: Array, central: bool) -> void:
+	var sr := rect.end.y - 1 # standing row (bottom shell row is the floor)
+	for y in range(rect.position.y, rect.end.y + 1):
+		for x in range(rect.position.x, rect.end.x):
+			var edge: bool = y == rect.position.y or y > sr or x == rect.position.x or x == rect.end.x - 1
+			grid.set_structure(Vector2i(x, y), WorldGrid.M.METAL if edge else WorldGrid.M.AIR)
+			if not edge:
+				grid.set_back(Vector2i(x, y), WorldGrid.M.METAL)
+	# Side doorway (2-tall) so divers can get in; water floods it like any room.
+	grid.set_structure(Vector2i(rect.position.x, sr), WorldGrid.M.AIR)
+	grid.set_structure(Vector2i(rect.position.x, sr - 1), WorldGrid.M.AIR)
+	var x0 := rect.position.x + 2
+	objects.append({"id": "breaker", "cell": Vector2i(x0, sr - 2)})
+	objects.append({"id": "pump", "cell": Vector2i(x0 + 2, sr)})
+	objects.append({"id": "ceiling_lamp", "cell": Vector2i(x0 + 4, rect.position.y + 1)})
+	if central:
+		objects.append({"id": "pump", "cell": Vector2i(x0 + 6, sr)})
+		objects.append({"id": "pump", "cell": Vector2i(x0 + 9, sr)})
+		objects.append({"id": "ceiling_lamp", "cell": Vector2i(x0 + 11, rect.position.y + 1)})
+		objects.append({"id": "chest", "cell": Vector2i(x0 + 12, sr)})
+
+## Leftmost x of a `w`-wide span centred near want_x whose rows y0..y1 are
+## clear of structure; scans outward, -1 if the city is too dense there.
+static func _find_open_span(grid: WorldGrid, want_x: int, _row: int, w: int, y0: int, y1: int) -> int:
+	for off in range(0, 400, 4):
+		for sgn: int in [1, -1]:
+			var x0 := want_x + off * sgn - w / 2
+			if x0 < 4 or x0 + w > grid.bounds.end.x - 4:
+				continue
+			var clear := true
+			for x in range(x0, x0 + w):
+				for y in range(y0, y1 + 1):
+					if grid.structure_at(Vector2i(x, y)) != WorldGrid.M.AIR:
+						clear = false
+						break
+				if not clear:
+					break
+			if clear:
+				return x0
+	return -1
+
+## Floating wood rafts scattered on open water between towers (CT-23).
+static func _scatter_surface_debris(grid: WorldGrid, rng: RandomNumberGenerator,
+		objects: Array, result: Dictionary, world_w: int) -> void:
+	var x := 30
+	while x < world_w - 30:
+		x += rng.randi_range(40, 110)
+		var w := rng.randi_range(2, 5)
+		var clear := true
+		for sx in range(x - 1, x + w + 1):
+			for sy in range(WATERLINE - 4, WATERLINE + 3):
+				if grid.structure_at(Vector2i(sx, sy)) != WorldGrid.M.AIR:
+					clear = false
+					break
+			if not clear:
+				break
+		if not clear:
+			continue
+		for sx in range(x, x + w):
+			grid.set_structure(Vector2i(sx, WATERLINE), WorldGrid.M.WOOD)
+		if w >= 4 and rng.randf() < 0.35:
+			objects.append({"id": "ret_box", "cell": Vector2i(x + 1, WATERLINE - 1)})
+		result.debris += 1
 
 ## Connectivity flooding (CT-12/13): everything reachable from the ocean at
 ## or below the waterline floods to full; sealed pockets keep their air.

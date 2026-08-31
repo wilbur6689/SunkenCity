@@ -147,13 +147,13 @@ refilling tanks all working in the reclaimed room.
 - [x] Starter library: 12 rooms × 3 types (residential, office, hospital)
 - [x] **Zone item packs** (user request, 2026-08-31): 5 worker-agent art packs — residential/apartment, commercial/office, commercial/retail, industrial/utility, hospital/ward — 70 items (furniture, storage, clutter, `wall_mounted` wall art) authored as `tools/rooms_pack/<module>.py`, validated by `render_check.py`, packed by `tools/build_room_packs.py` into sprite sheets (`assets/sprites/sets/*.png`) and merged into `data/objects.json` with `sheet`+`rect` (loaded as AtlasTextures). Wall art hangs on back walls (no floor), placeable at height in the Room Editor (`dy`), honoured by CityGen; 5 new pack-furnished room templates incl. the first industrial rooms
 - [x] Floor assembler: rooms stitched with doorway partitions; west stairwell (ladder + landings) and east elevator shaft guaranteed per tower (CT-06)
-- [ ] Two-jump rule validator on assembled floors (WS-04) — *floors are currently flat so the rule holds by construction; validator still to write*
+- [x] Two-jump rule validator on assembled floors (WS-04): `CityGen.floor_blockages` flags any authored obstacle ≥4 tall from the standing row (jump = 3 blocks, crawl fits a 1-block gap); gen repairs by carving a 3-tall doorway — checked per tower in m3 smoke
 - [x] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve (4–56 floors; the tallest crowns break the surface)
-- [x] City layout: 40 towers over 2400×400 cells, centre-out height/gap curve, open ocean at the edges (CT-01) — *invisible edge walls still to add (CT-22)*
+- [x] City layout: 40 towers over 2400×400 cells, centre-out height/gap curve, open ocean at the edges (CT-01); invisible edge walls clamp the player at the grid's x extents (CT-22)
 - [x] Wear pass: exterior breaches scaling with depth + occasional slab collapses (CT-11)
 - [x] Flood pass: connectivity flooding from the ocean at/below the waterline after doors exist (CT-12/13); ~85% of sealed floors keep their air, wear breaches the rest
-- [x] Authored inserts: starting medical room atop the tallest tower (bed spawn, med kit furniture) + bare concrete ground (CT-20/07) — *relay/central station shells still to add (CT-08)*
-- [ ] Surface debris pass (light, CT-23)
+- [x] Authored inserts: starting medical room atop the tallest tower (bed spawn, med kit furniture) + bare concrete ground (CT-20/07); mega-pump shells (CT-08/CC-26, non-functional until endgame): central station hall in the widest centre gap on the ground + 3 relay pylons at the band boundaries (metal machine rooms with pump/breaker/lamp kits, legs dropping to the first solid cell)
+- [x] Surface debris pass (light, CT-23): floating wood rafts scattered on open water (~25-30 per city, occasional cardboard box aboard)
 - [x] Deterministic seeds (CT-21): same seed = identical grid + object hashes (m3 smoke); `--seed=N` on the command line; ~1.5 s per full generation
 
 ### World runtime
