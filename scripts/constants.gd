@@ -35,12 +35,11 @@ const MAX_FALL_SPEED: float = 30.0 * BLOCK_SIZE
 const SURFACE_FLOAT_HEIGHT_PX: float = 4.0 # compact hitbox top sits this far above the waterline
 const SURFACE_TREAD_STIFFNESS: float = 12.0 # 1/s — auto-tread pull toward the float line
 
-# --- Hitboxes (rescaled 2026-08-31: sprite drawn at 1.5x = ~45px ≈ 2.8 blocks,
-# matching the 2.5-3-block canon; standing no longer fits 2-block gaps, so
-# crawling is required there per the original WS-05) ---
-const PLAYER_SPRITE_SCALE: float = 1.5
-const STAND_HITBOX: Vector2 = Vector2(14, 40)
-const COMPACT_HITBOX: Vector2 = Vector2(14, 14) # crawling and swimming; fits 1-block holes
+# --- Hitboxes (WS-02: compact form fits 1-block holes; the 1.5x rescale was
+# tried and reverted 2026-08-31 — the ~30px sprite at 1x is the kept look) ---
+const PLAYER_SPRITE_SCALE: float = 1.0
+const STAND_HITBOX: Vector2 = Vector2(12, 22)
+const COMPACT_HITBOX: Vector2 = Vector2(12, 12) # crawling and swimming
 
 # --- Oxygen & drowning (WS-08, GD-20) ---
 const BASE_OXYGEN_SECONDS: float = 30.0
