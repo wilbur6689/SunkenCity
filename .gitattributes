@@ -1,0 +1,9 @@
+# Normalize line endings: Godot writes LF; keep the repo LF everywhere.
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.ogg binary
+*.wav binary
+*.ttf binary
