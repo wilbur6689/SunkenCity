@@ -62,8 +62,9 @@ edge automatically; the base 16×16 textures stay outline-free and seamless (pat
 
 ## Character (WS-02/25, canon 24px)
 
-`docs/Examples/Character/MainCharacter.png` is a **style reference, not a pixel spec**: it is
-drawn at roughly 2.5–3× our canon scale (canon = **24px tall with hair, 21 without, 12×22 hitbox**).
+`docs/Examples/Character/MainCharacter.png` is a **style reference, not a pixel spec**: its
+figures measure ~327px tall, ~13.6× our canon scale (canon = **24px tall with hair, 21 without,
+12×22 hitbox**), so nothing in it downsamples directly — it was re-authored by hand at 24px.
 Carry over from it: the silhouette reads (goggles on the head, scarf, backpack, rolled trousers,
 bare feet — a diver-scavenger), a 4-direction sheet (front/back/two sides — our game needs only
 side + flipped, so front/back are for menus/character creation), and a muted brown/blue/khaki
