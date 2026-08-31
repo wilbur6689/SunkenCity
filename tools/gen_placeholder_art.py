@@ -497,6 +497,7 @@ OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
     "metal_door": (1, 3),
     "vault_door": (1, 3),
     "safe": (1, 1),
+    "broken_ladder": (1, 1),
 }
 
 
@@ -593,6 +594,14 @@ def _draw_object(d, oid, W, H):
         for y in range(5, H - 4, 10):
             d.line([4, y, W - 5, y], fill=metal[1][1])
         d.rectangle([W - 8, H // 2 - 2, W - 5, H // 2 + 2], fill=ORANGE, outline=OUT)
+    elif oid == "broken_ladder":
+        for x in (3, 11):
+            d.line([x, 0, x, H - 1], fill=wood[1][1])
+        d.line([4, 3, 7, 3], fill=wood[1][2])
+        d.line([9, 8, 11, 8], fill=wood[1][2])
+        d.line([4, 12, 6, 13], fill=wood[1][0])
+        d.point((8, 5), fill=wood[1][0])
+        d.point((5, 9), fill=wood[1][0])
     elif oid == "safe":
         _box(d, 1, 1, W - 2, H - 2, metal)
         d.ellipse([5, 5, 10, 10], outline=(210, 215, 225))

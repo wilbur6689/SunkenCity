@@ -38,7 +38,7 @@ func _ready() -> void:
 	check(r1.grid.content_hash() == r2.grid.content_hash(), "same seed = same grid (%d ms per 800-wide gen)" % gen_ms)
 	check(hash(str(r1.objects)) == hash(str(r2.objects)) and hash(str(r1.doors)) == hash(str(r2.doors)), "same seed = same objects and doors")
 	check(r1.grid.content_hash() != r3.grid.content_hash(), "different seed = different city")
-	check(r1.towers >= 8, "800-wide slice holds %d towers" % r1.towers)
+	check(r1.towers >= 6, "800-wide slice holds %d towers (double-wide)" % r1.towers)
 
 	print("== B. the full city")
 	city = load("res://scenes/city/city.tscn").instantiate()
@@ -47,7 +47,7 @@ func _ready() -> void:
 	player.set_multiplayer_authority(2)
 	await get_tree().physics_frame
 	var gen: Dictionary = city.gen
-	check(gen.towers >= 25, "city holds %d towers" % gen.towers)
+	check(gen.towers >= 20, "city holds %d double-wide towers" % gen.towers)
 	check(World.spawn_position.y < CityGen.WATERLINE * B, "hospital spawn is above the waterline (GL-02)")
 	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands in the medical room")
 	check(World.band_at(World.cell_at(player.global_position)) == "dry", "spawn floor is in The Dry")
@@ -141,6 +141,19 @@ func _ready() -> void:
 	for tw in gen.tower_list:
 		blockages += CityGen.floor_blockages(World.grid, tw).size()
 	check(blockages == 0, "two-jump rule holds on every assembled floor (WS-04)")
+	# Twin-wing towers: ladders on both sides, shaft down the middle, and
+	# submerged ladder runs broken into repairable gaps (user request).
+	var tw0: Dictionary = gen.tower_list[gen.tower_list.size() / 2]
+	check(World.is_climbable_cell(Vector2i(int(tw0.x0) + 3, int(tw0.top) + 2)) \
+			and World.is_climbable_cell(Vector2i(int(tw0.x1) - 3, int(tw0.top) + 2)),
+			"ladders run on both sides of a tower")
+	check(not World.has_block_cell(Vector2i(int(tw0.mid), int(tw0.top) + CityGen.FLOOR_H)),
+			"the central elevator shaft is open through the slabs")
+	var broken := 0
+	for rec: Dictionary in World.object_records:
+		if rec.id == "broken_ladder":
+			broken += 1
+	check(broken >= 20, "%d broken ladder pieces await scrapping and repair" % broken)
 
 	print("== J. audio director")
 	check(AudioServer.get_bus_index("Music") >= 0 and AudioServer.get_bus_index("Ambient") >= 0 \

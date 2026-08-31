@@ -21,7 +21,10 @@ reloads in-game; **Esc** saves + returns to the title, and quits from there; dev
 `scenes/city/city.tscn` — a seeded 2400×400 drowned city (`CityGen`, ~1.5 s, deterministic;
 `--seed=N`, `--shot=path[:zoom]` — shots need a window, not --headless) with mega-pump station
 shells, surface debris rafts, invisible edge walls (player x-clamp), a WS-04 two-jump repair
-pass, and a top-right minimap fed by per-character `MapReveal` (proximity r=14);
+pass, and a top-right minimap fed by per-character `MapReveal` (proximity r=14). Towers are
+**double-wide twin-wing blocks** (2026-08-31): ladder stairwells on BOTH sides, an elevator
+shaft down the centre, rooms in each wing; submerged ladder runs decay into gaps with
+`broken_ladder` scrap pieces — scrap for wood, craft + place ladders to climb back up;
 objects stream via `World.object_records` (only the `OBJECT_WINDOW` around the player is
 instantiated; queries read records, so far doors still seal water); **F3** toggles the debug
 overlay (build, depth, per-system costs) beside the always-on FPS counter; the hotbar sits

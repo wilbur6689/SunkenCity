@@ -7,8 +7,10 @@ extends RefCounted
 ## is decided by solidity (WS-20).
 ##
 ## Layout: bell-curve skyline (CT-01) — tallest towers centre, short sparse
-## ones at the edges; every tower gets a west stairwell with a ladder and an
-## east elevator shaft (CT-06); floors fill with room templates from
+## ones at the edges; every tower is a double-wide twin-wing block: ladder
+## stairwells on BOTH sides, an elevator shaft down the centre (CT-06), and
+## submerged ladder runs broken into scrappable gaps (craft ladders to climb
+## back up); floors fill with room templates from
 ## data/rooms.json, mixed-use per floor (CT-02); a wear pass adds breaches
 ## scaling with depth (CT-11); some submerged floors are sealed dry behind
 ## doors; the tallest tower's top floor is the authored starting medical
@@ -40,13 +42,17 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 			grid.set_structure(Vector2i(x, y), WorldGrid.M.STONE)
 	# Towers along a bell curve.
 	var tallest := {"floors": 0}
-	var x := 60
+	var forced_crown := false # with wide towers there are few centre samples,
+	var x := 60               # so one full-height crown is guaranteed
 	while x < world_w - 100:
 		var center_f := 1.0 - absf(x - world_w / 2.0) / (world_w / 2.0)
 		# Tallest towers must BREAK the surface (waterline 64, ground 360):
 		# 56 floors tops out around row 24 — six dry floors on the crown.
 		var floors := clampi(int(roundf(lerpf(4.0, 56.0, pow(center_f, 1.7)) * rng.randf_range(0.78, 1.12))), 4, 56)
-		var w := rng.randi_range(24, 38)
+		if center_f > 0.85 and not forced_crown:
+			floors = 56
+			forced_crown = true
+		var w := rng.randi_range(48, 76) # doubled (user request): two wings + central shaft
 		var tower := _build_tower(grid, rng, rooms, x, w, floors, objects, doors, sealed)
 		result.towers += 1
 		result.tower_list.append(tower)
@@ -72,14 +78,15 @@ static func floor_blockages(grid: WorldGrid, tower: Dictionary) -> Array:
 	var top: int = tower.top
 	for f in tower.floors:
 		var sr: int = top + f * FLOOR_H + FLOOR_H - 1
-		for vx in range(int(tower.stair_wall) + 1, int(tower.shaft_wall)):
-			var blocked := true
-			for vy in range(sr - 3, sr + 1):
-				if grid.structure_at(Vector2i(vx, vy)) == WorldGrid.M.AIR:
-					blocked = false
-					break
-			if blocked:
-				out.append(Vector2i(vx, sr))
+		for zone in tower.zones:
+			for vx in range(int(zone[0]), int(zone[1]) + 1):
+				var blocked := true
+				for vy in range(sr - 3, sr + 1):
+					if grid.structure_at(Vector2i(vx, vy)) == WorldGrid.M.AIR:
+						blocked = false
+						break
+				if blocked:
+					out.append(Vector2i(vx, sr))
 	return out
 
 static func _load_rooms() -> Dictionary:
@@ -94,11 +101,18 @@ static func _load_rooms() -> Dictionary:
 
 static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dictionary,
 		x0: int, w: int, floors: int, objects: Array, doors: Array, sealed: Array) -> Dictionary:
+	# Twin-wing layout (user request, 2026-08-31): double-wide towers with a
+	# ladder stairwell on EACH side and an elevator shaft down the centre.
+	#   walls | west stair (ladder) | wall | west wing | wall | shaft |
+	#   wall | east wing | wall | east stair (ladder) | walls
 	var x1 := x0 + w - 1
 	var top := GROUND - floors * FLOOR_H
-	var stair_x0 := x0 + 2
-	var stair_wall := x0 + 5
-	var shaft_wall := x1 - 4
+	var mid := x0 + w / 2
+	var lad_w := x0 + 3          # ladder columns
+	var lad_e := x1 - 3
+	var wall_w := x0 + 5         # stair walls
+	var wall_e := x1 - 5
+	var zones := [[x0 + 6, mid - 3], [mid + 3, x1 - 6]]
 	# Outer walls + interior back walls
 	for y in range(top, GROUND):
 		grid.set_structure(Vector2i(x0, y), WorldGrid.M.STONE)
@@ -108,68 +122,86 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 	for y in range(top + 1, GROUND):
 		for bx in range(x0 + 2, x1 - 1):
 			grid.set_back(Vector2i(bx, y), WorldGrid.M.STONE)
-	# Slabs with stairwell + shaft gaps
+	# Slabs with gaps at both stairwells and the central shaft
 	for f in floors:
 		var y := top + f * FLOOR_H
 		for sx in range(x0 + 2, x1 - 1):
-			var in_stair := sx >= stair_x0 and sx <= stair_x0 + 2 and f > 0
-			var in_shaft := sx >= x1 - 3 and sx <= x1 - 2
+			var in_stair: bool = f > 0 and ((sx >= x0 + 2 and sx <= x0 + 4) or (sx >= x1 - 4 and sx <= x1 - 2))
+			var in_shaft: bool = sx >= mid - 1 and sx <= mid + 1
 			if not (in_stair or in_shaft):
 				grid.set_structure(Vector2i(sx, y), WorldGrid.M.METAL)
-	# Stairwell ladder
+	# Ladders on both sides
 	for y in range(top + 1, GROUND):
-		grid.set_climb(Vector2i(stair_x0 + 1, y), WorldGrid.C.LADDER)
-	# Per-floor walls, doorways, rooms (zones from the template library)
+		grid.set_climb(Vector2i(lad_w, y), WorldGrid.C.LADDER)
+		grid.set_climb(Vector2i(lad_e, y), WorldGrid.C.LADDER)
+	# Per-floor walls, doorways, rooms in both wings
 	var mix := rooms.keys()
 	mix.sort() # deterministic order (CT-21)
 	var tower_bias: String = mix[rng.randi_range(0, mix.size() - 1)]
 	for f in floors:
 		var ceiling := top + f * FLOOR_H
 		var sr := ceiling + FLOOR_H - 1 # standing row
-		# stairwell wall (lintel rows; doorway sr-2..sr stays open)
+		# stair walls + shaft walls (lintel rows; doorway sr-2..sr stays open)
 		for wy in range(ceiling + 1, sr - 2):
-			grid.set_structure(Vector2i(stair_wall, wy), WorldGrid.M.STONE)
-		for wy in range(ceiling + 1, sr - 2):
-			grid.set_structure(Vector2i(shaft_wall, wy), WorldGrid.M.STONE)
-		var zone_x := stair_wall + 1
-		var zone_end := shaft_wall - 1
-		var seal_this := sr > WATERLINE and rng.randf() < SEAL_CHANCE
-		if seal_this:
-			# Deeper sealed rooms hide behind tougher doors (GL-09): wood in
-			# The Shallows, chained metal in The Cold, vaults below that.
-			var dd := sr - WATERLINE
-			var did := "wood_door"
-			if dd > Constants.BAND_COLD_DEPTH:
-				did = "vault_door"
-			elif dd > Constants.BAND_SHALLOWS_DEPTH:
-				did = "metal_door"
-			doors.append({"cell": Vector2i(stair_wall, sr), "id": did})
-			for wy in range(sr - 2, sr + 1): # shaft side walled solid
-				grid.set_structure(Vector2i(shaft_wall, wy), WorldGrid.M.STONE)
-			sealed.append(Rect2i(zone_x, ceiling + 1, zone_end - zone_x + 1, FLOOR_H - 1))
-		# rooms (mixed use per floor, CT-02), filtered by authored depth range
-		var rtype: String = tower_bias if rng.randf() < 0.5 else mix[rng.randi_range(0, mix.size() - 1)]
-		var pool: Array = rooms.get(rtype, [])
-		var depth := sr - WATERLINE
-		var candidates := pool.filter(func(r): return depth >= int(r.get("depth_min", -9999)) and depth <= int(r.get("depth_max", 9999)))
-		if candidates.is_empty():
-			candidates = pool
-		var cx := zone_x
-		while zone_end - cx >= 8 and not candidates.is_empty():
-			var t: Dictionary = candidates[rng.randi_range(0, candidates.size() - 1)]
-			var tw := int(t.width)
-			if cx + tw > zone_end:
-				tw = zone_end - cx
-			_stamp_room(grid, rng, t, tw, cx, sr, zone_end, objects, rtype)
-			cx += tw
-			# interior partition with a doorway (rooms stitch by sockets)
-			if zone_end - cx >= 8:
-				for wy in range(ceiling + 1, sr - 2):
-					grid.set_structure(Vector2i(cx, wy), WorldGrid.M.STONE)
-				cx += 1
+			grid.set_structure(Vector2i(wall_w, wy), WorldGrid.M.STONE)
+			grid.set_structure(Vector2i(wall_e, wy), WorldGrid.M.STONE)
+			grid.set_structure(Vector2i(mid - 2, wy), WorldGrid.M.STONE)
+			grid.set_structure(Vector2i(mid + 2, wy), WorldGrid.M.STONE)
+		for wing in 2:
+			var zone_x: int = zones[wing][0]
+			var zone_end: int = zones[wing][1]
+			var seal_this := sr > WATERLINE and rng.randf() < SEAL_CHANCE
+			if seal_this:
+				# Deeper sealed rooms hide behind tougher doors (GL-09): wood
+				# in The Shallows, chained metal in The Cold, vaults below.
+				var dd := sr - WATERLINE
+				var did := "wood_door"
+				if dd > Constants.BAND_COLD_DEPTH:
+					did = "vault_door"
+				elif dd > Constants.BAND_SHALLOWS_DEPTH:
+					did = "metal_door"
+				var door_x: int = wall_w if wing == 0 else wall_e
+				var shaft_x: int = mid - 2 if wing == 0 else mid + 2
+				doors.append({"cell": Vector2i(door_x, sr), "id": did})
+				for wy in range(sr - 2, sr + 1): # shaft side walled solid
+					grid.set_structure(Vector2i(shaft_x, wy), WorldGrid.M.STONE)
+				sealed.append(Rect2i(zone_x, ceiling + 1, zone_end - zone_x + 1, FLOOR_H - 1))
+			# rooms (mixed use per floor, CT-02), filtered by depth range
+			var rtype: String = tower_bias if rng.randf() < 0.5 else mix[rng.randi_range(0, mix.size() - 1)]
+			var pool: Array = rooms.get(rtype, [])
+			var depth := sr - WATERLINE
+			var candidates := pool.filter(func(r): return depth >= int(r.get("depth_min", -9999)) and depth <= int(r.get("depth_max", 9999)))
+			if candidates.is_empty():
+				candidates = pool
+			var cx := zone_x
+			while zone_end - cx >= 8 and not candidates.is_empty():
+				var t: Dictionary = candidates[rng.randi_range(0, candidates.size() - 1)]
+				var tw := int(t.width)
+				if cx + tw > zone_end:
+					tw = zone_end - cx
+				_stamp_room(grid, rng, t, tw, cx, sr, zone_end, objects, rtype)
+				cx += tw
+				# interior partition with a doorway (rooms stitch by sockets)
+				if zone_end - cx >= 8:
+					for wy in range(ceiling + 1, sr - 2):
+						grid.set_structure(Vector2i(cx, wy), WorldGrid.M.STONE)
+					cx += 1
+	# Broken ladders (user request): submerged runs have decayed into gaps.
+	# The pieces scrap for wood; craft ladders and place them to climb back
+	# up. (Dry crown ladders stay intact — the tutorial floors.)
+	for lx: int in [lad_w, lad_e]:
+		var ly := maxi(top + 1, WATERLINE + 2)
+		while ly < GROUND - 6:
+			ly += rng.randi_range(8, 22) # intact run between gaps
+			var gap := rng.randi_range(2, 4)
+			for gy in range(ly, mini(ly + gap, GROUND - 2)):
+				grid.set_climb(Vector2i(lx, gy), WorldGrid.C.NONE)
+				if rng.randf() < 0.6:
+					objects.append({"id": "broken_ladder", "cell": Vector2i(lx, gy)})
+			ly += gap
 	# Two-jump repair (WS-04): carve a walking doorway through any authored
 	# obstacle a 3-block jump plus a crawl can't clear — a gen-time guarantee.
-	var tower := {"x0": x0, "x1": x1, "top": top, "floors": floors, "stair_wall": stair_wall, "shaft_wall": shaft_wall}
+	var tower := {"x0": x0, "x1": x1, "top": top, "floors": floors, "mid": mid, "zones": zones}
 	for bc: Vector2i in floor_blockages(grid, tower):
 		for vy in range(bc.y - 2, bc.y + 1):
 			grid.set_structure(Vector2i(bc.x, vy), WorldGrid.M.AIR)
@@ -278,8 +310,8 @@ static func _zone_clutter(zone: String) -> Array:
 static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Array, result: Dictionary) -> void:
 	var top: int = tower.top
 	var sr: int = top + FLOOR_H - 1
-	var zone_x: int = tower.stair_wall + 1
-	var zone_end: int = tower.shaft_wall - 1
+	var zone_x: int = tower.zones[0][0]
+	var zone_end: int = tower.zones[0][1]
 	# Clear whatever the generator put on this floor (objects — wall art
 	# included, which anchors above the standing row — and partitions).
 	for i in range(objects.size() - 1, -1, -1):
