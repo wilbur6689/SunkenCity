@@ -431,9 +431,10 @@ func _state_climbing(delta: float) -> void:
 			state = State.GROUNDED
 		else:
 			if input_dir.y < 0.0:
-				# Topping out: a half-jump hop so the player can step off the
-				# rope/ladder instead of dropping straight back into the hole.
-				velocity.y = Constants.jump_velocity * 0.5
+				# Topping out: a partial-jump hop so the player can step off the
+				# rope/ladder instead of dropping straight back into the hole
+				# (0.8 clears the taller body's centre-to-feet gap).
+				velocity.y = Constants.jump_velocity * 0.8
 			_enter_airborne()
 		return
 	if _consume_jump():
@@ -541,12 +542,13 @@ func _update_sprite(delta: float) -> void:
 		_anim_time = 0.0
 	sprite.frame_coords = Vector2i(frame_col, 0 if facing > 0 else 1)
 	if compact:
-		# Crawling / swimming: lay the body along the 12px hitbox, head toward facing.
+		# Crawling / swimming: lay the body along the compact hitbox, head toward facing.
 		sprite.rotation = facing * PI * 0.5
-		sprite.position = Vector2(0, 6)
+		sprite.position = Vector2(0, 5)
 	else:
 		sprite.rotation = 0.0
-		sprite.position = Vector2(0, -4) # feet on the frame's bottom row at local y = 12
+		# Feet on the scaled frame's bottom row at local y = FEET_Y.
+		sprite.position = Vector2(0, FEET_Y - 16.0 * Constants.PLAYER_SPRITE_SCALE)
 
 var zoom_index: int = Constants.CAMERA_ZOOM_DEFAULT_INDEX
 

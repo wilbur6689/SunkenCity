@@ -101,7 +101,9 @@ func _run() -> void:
 	check(grounded(), "still GROUNDED after run (%s)" % st())
 
 	print("== C. jump height")
-	await place(17, 5)
+	# On the roof: interior rooms are 5 blocks, so a 2.8-block-tall player
+	# legitimately taps the ceiling on a full 3-block jump indoors.
+	await place(20, -1)
 	await until(grounded, 30)
 	var start_y := player.global_position.y
 	var min_y := start_y

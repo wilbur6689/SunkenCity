@@ -5,17 +5,18 @@
 [ext_resource type="Script" path="res://scripts/player/interaction.gd" id="3_interaction"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hitbox"]
-size = Vector2(12, 22)
+size = Vector2(14, 40)
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 script = ExtResource("1_player")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 1)
+position = Vector2(0, -8)
 shape = SubResource("RectangleShape2D_hitbox")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -4)
+position = Vector2(0, -12)
+scale = Vector2(1.5, 1.5)
 texture = ExtResource("2_sprite")
 hframes = 7
 vframes = 2

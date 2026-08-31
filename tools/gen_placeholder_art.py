@@ -442,14 +442,14 @@ def _draw_object(d, oid, W, H):
         d.point((W // 2 - 2, H // 2), fill=metal[2]); d.point((W // 2 + 2, H // 2), fill=metal[2])
         d.line([2, H // 2 + 6, W - 3, H // 2 + 6], fill=wood[1][1])
     elif oid == "desk":
-        _box(d, 0, 6, W - 1, 10, wood)
-        d.rectangle([1, 11, 3, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 4, 11, W - 2, H - 1], fill=wood[1][1], outline=OUT)
-        _box(d, W - 16, 11, W - 5, H - 3, wood); d.point((W - 10, H - 8), fill=metal[2])
-        d.rectangle([3, 2, 9, 6], fill=(200, 200, 200), outline=OUT)                    # papers
+        _box(d, 0, 10, W - 1, 14, wood)
+        d.rectangle([1, 15, 3, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 4, 15, W - 2, H - 1], fill=wood[1][1], outline=OUT)
+        _box(d, W - 16, 15, W - 5, H - 3, wood); d.point((W - 10, H - 8), fill=metal[2])
+        d.rectangle([3, 6, 9, 10], fill=(200, 200, 200), outline=OUT)                   # papers
     elif oid == "chair":
-        _box(d, 2, 1, W - 3, 12, wood); d.rectangle([4, 3, W - 5, 10], fill=wood[1][1])
-        _box(d, 1, 13, W - 2, 17, wood)
-        d.rectangle([2, 18, 3, H - 1], fill=OUT); d.rectangle([W - 4, 18, W - 3, H - 1], fill=OUT)
+        _box(d, 2, 7, W - 3, 15, wood); d.rectangle([4, 9, W - 5, 13], fill=wood[1][1])
+        _box(d, 1, 16, W - 2, 20, wood)
+        d.rectangle([2, 21, 3, H - 1], fill=OUT); d.rectangle([W - 4, 21, W - 3, H - 1], fill=OUT)
     elif oid == "locker":
         _box(d, 1, 0, W - 2, H - 1, metal)
         for y in range(6, 14, 2):
@@ -460,10 +460,10 @@ def _draw_object(d, oid, W, H):
         d.line([2, 14, W - 3, 14], fill=OUT)
         d.rectangle([W - 6, 5, W - 5, 11], fill=(120, 120, 125)); d.rectangle([W - 6, 18, W - 5, 30], fill=(120, 120, 125))
     elif oid == "med_cart":
-        _box(d, 1, 3, W - 2, H - 5, white)
-        d.rectangle([W // 2 - 1, 8, W // 2, 15], fill=RED); d.rectangle([W // 2 - 4, 11, W // 2 + 3, 12], fill=RED)
+        _box(d, 1, 8, W - 2, H - 5, white)
+        d.rectangle([W // 2 - 1, 12, W // 2, 19], fill=RED); d.rectangle([W // 2 - 4, 15, W // 2 + 3, 16], fill=RED)
         d.ellipse([2, H - 5, 6, H - 1], fill=OUT); d.ellipse([W - 7, H - 5, W - 3, H - 1], fill=OUT)
-        d.rectangle([3, 0, W - 4, 3], fill=(160, 160, 165), outline=OUT)
+        d.rectangle([3, 5, W - 4, 8], fill=(160, 160, 165), outline=OUT)
     elif oid == "pump":
         _box(d, 2, 10, W - 3, H - 1, metal)                                       # body
         d.ellipse([4, 13, 11, 20], outline=metal[1][3]); d.point((7, 16), fill=metal[2])  # impeller

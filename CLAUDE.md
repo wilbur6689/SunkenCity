@@ -75,8 +75,10 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
 These are settled and should be treated as canon in all docs and future code:
 
 - Block size: **16×16 pixels**, representing **2 feet** in-game
-- Character height: **24 pixels** with hair, **21 pixels** without *(the current sprite is ~30px —
-  flagged in `docs/technical/TileArt.md`; amend canon or art before M3)*
+- Character: 32px sprite art drawn at **1.5× scale ≈ 45px ≈ 2.8 blocks** (matches the 2.5–3-block
+  canon; the old 24px pixel spec is superseded — see `docs/technical/TileArt.md`). Hitbox 14×40
+  standing, 14×14 compact. Full 3-block jumps tap the ceiling of minimum 5-block rooms — prefer
+  7-block floor-to-floor interiors in M3 templates
 - Character is roughly **2.5–3 blocks tall**
 
 ## Document Structure & Workflow
