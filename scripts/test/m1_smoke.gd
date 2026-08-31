@@ -247,7 +247,7 @@ func _run() -> void:
 	inv.add("schematic_iron_knife", 1)
 	check(hold_item("schematic_iron_knife"), "schematic in hand")
 	player.use_item(0)
-	check(player.knows_recipe("iron_knife") and Data.recipes_for_station("forge", player.knows_recipe).size() == 1, "schematic teaches the forge recipe (GL-06)")
+	check(player.knows_recipe("iron_knife") and Data.recipes_for_station("forge", player.knows_recipe).any(func(r): return r.id == "iron_knife"), "schematic teaches the forge recipe (GL-06)")
 
 	print("== M. chest + quick stack (LT-23)")
 	inv.add("chest", 1) # test grant: the chest UI path, not part of the gate

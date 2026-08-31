@@ -215,30 +215,31 @@ it.
 ## M5 — The Long Game
 
 ### Loot (LT)
-- [ ] Container entities from room templates; loot tables keyed type × band (data files) (LT-12/13)
-- [ ] Safes: locked, torch/key opening, best-of-band tables (LT-14, GL-09)
-- [ ] One-time loot flags persisted (LT-27)
+- [x] Container loot: every generated storage object rolls from `data/loot.json` tables keyed zone × depth band at world gen (`LootGen`); ~600 containers/city, all stocked (LT-12/13)
+- [x] Wall safes: rare room spawns (~30/city), locked behind vault key / cutting torch, best-of-band "safe" tables (LT-14, GL-09)
+- [x] One-time loot persisted for free: contents live in object records → the world save (LT-27)
 - [ ] Modifier system: 8 prefixes + 8 suffixes as data; roll on found gear; stat application (LT-05/06/07)
 - [ ] Title-text rarity coloring (LT-08)
 - [ ] Modification Bench: sacrifice-to-learn (destroys item), apply to unmodified gear only (LT-09/10)
 - [ ] Found-only pools: firearms, accessories (~6), modded gear (LT-18)
-- [ ] Keys as placed loot for specific vault doors
+- [x] Vault keys drop in deep/safe loot; a key (consumed) or a cutting torch opens vault doors and safes
 
 ### Gear ladder (GL-09/10/11/13)
-- [ ] Tool tiers: pry bar → bolt cutters → cutting torch; door types gated to match
-- [ ] Tanks: scrap +30s / iron +60s / steel rebreather ~3min
-- [ ] Suits: clothes → wetsuit (Cold) → hard suit (Dark/Crush); swim penalties, cold/crush ratings (LT-21)
-- [ ] Helmet lamp; Suit + Head + 2 Accessory equip slots (LT-03)
+- [x] Tool tiers: pry bar → bolt cutters (forge) → cutting torch (forge, steel); sealed doors deepen to match — wood / chained metal (tier 2) / vault (key or tier 3), lock state persisted
+- [x] Tanks: scrap +30s / iron +60s / steel rebreather +150s — accessory `stats.oxygen` stacks into `max_oxygen()` (HUD bar scales)
+- [x] Suits: clothes → wetsuit (Cold, dive station) → hard suit (Dark/Crush, schematic-gated, steel); swim penalties + cold/crush ratings applied (LT-21)
+- [x] Helmet lamp (craftable head light) + glow band; equip slots already live (LT-03); 6 found-only accessories with real hooks: fins (swim), tool belt (scrap speed), weight belt (carry), sonar compass (map reveal), glow band (light), dive watch (air)
 - [ ] Paper-doll visible gear: held tool + suit tiers (WS-26)
 
 ### Progression completion
 - [ ] **Ability tech tree: design + implement** (open item — design pass due here)
 - [ ] Full skill set finalized (harvest gates across all four material tiers)
-- [ ] Iron/steel recipes, Forge chains, schematic distribution across bands
+- [x] Iron→steel at the forge; gear chains across forge/dive station; hard-suit + rebreather schematics distributed in dark/crush and safe loot
 - [ ] Depletion pressure verified: surface scrap genuinely runs out (GL-28)
 
 **GATE:** scrap knife to hard suit purely through play — no debug items — at roughly the
-target pacing (GL-27).
+target pacing (GL-27). ✔ chain covered end-to-end in `m5_smoke.tscn` (28 checks); pacing
+tuning + depletion verification still open.
 
 ---
 

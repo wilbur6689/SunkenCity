@@ -135,7 +135,15 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 		var zone_end := shaft_wall - 1
 		var seal_this := sr > WATERLINE and rng.randf() < SEAL_CHANCE
 		if seal_this:
-			doors.append(Vector2i(stair_wall, sr))
+			# Deeper sealed rooms hide behind tougher doors (GL-09): wood in
+			# The Shallows, chained metal in The Cold, vaults below that.
+			var dd := sr - WATERLINE
+			var did := "wood_door"
+			if dd > Constants.BAND_COLD_DEPTH:
+				did = "vault_door"
+			elif dd > Constants.BAND_SHALLOWS_DEPTH:
+				did = "metal_door"
+			doors.append({"cell": Vector2i(stair_wall, sr), "id": did})
 			for wy in range(sr - 2, sr + 1): # shaft side walled solid
 				grid.set_structure(Vector2i(shaft_wall, wy), WorldGrid.M.STONE)
 			sealed.append(Rect2i(zone_x, ceiling + 1, zone_end - zone_x + 1, FLOOR_H - 1))
@@ -228,6 +236,12 @@ static func _stamp_room(grid: WorldGrid, rng: RandomNumberGenerator, t: Dictiona
 		var bc := Vector2i(cx + bx, sr - int(b.dy))
 		if bc.x < zone_end:
 			grid.set_structure(bc, int(b.mat))
+	# A rare wall safe (LT-14) tucked into the room's free space.
+	if rng.randf() < 0.04:
+		var sx := rng.randi_range(0, tw - 1)
+		if not _interval_taken(taken, sx, sx + 1) and cx + sx + 1 <= zone_end:
+			taken.append([sx, sx + 1])
+			objects.append({"id": "safe", "cell": Vector2i(cx + sx, sr)})
 	# A little lived-in mess: 0-2 clutter pieces from this zone's set.
 	var clutter := _zone_clutter(zone)
 	if not clutter.is_empty():

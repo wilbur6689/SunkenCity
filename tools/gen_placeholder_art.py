@@ -360,6 +360,14 @@ ICONS = {
     # row 2: consumables / schematic
     (0, 2): ("bandage", None), (1, 2): ("can", None), (2, 2): ("glowstick", None), (3, 2): ("paper", None),
     (4, 2): ("shirt", None),
+    # row 3: M5 gear ladder — tier tools, suits, helmet lamp, first tank
+    (0, 3): ("cutters", None), (1, 3): ("torch", None), (2, 3): ("suit", "blue"),
+    (3, 3): ("suit", "steel"), (4, 3): ("helmet", None), (5, 3): ("tank", "scrap"),
+    # row 4: tanks + accessories
+    (0, 4): ("tank", "iron"), (1, 4): ("rebreather", None), (2, 4): ("fins", None),
+    (3, 4): ("belt", "tool"), (4, 4): ("belt", "weight"), (5, 4): ("compass", None),
+    # row 5: accessories, vault key, steel
+    (0, 5): ("band", None), (1, 5): ("watch", None), (2, 5): ("key", None), (3, 5): ("ingot2", None),
 }
 
 
@@ -407,10 +415,66 @@ def _draw_icon(d, kind, arg, ox, oy, rng):
         d.rectangle([ox + 4, oy + 2, ox + 12, oy + 13], fill=(225, 220, 200), outline=OUT)
         for y in (5, 7, 9, 11):
             d.line([ox + 6, oy + y, ox + 10, oy + y], fill=BLUE)
+    elif kind == "cutters":
+        d.line([ox + 4, oy + 13, ox + 8, oy + 7], fill=RED, width=2)
+        d.line([ox + 7, oy + 13, ox + 10, oy + 8], fill=RED, width=2)
+        d.line([ox + 8, oy + 7, ox + 11, oy + 3], fill=(170, 180, 190), width=2)
+        d.line([ox + 10, oy + 8, ox + 12, oy + 5], fill=(170, 180, 190), width=2)
+    elif kind == "torch":
+        d.rectangle([ox + 4, oy + 6, ox + 10, oy + 10], fill=(120, 130, 140), outline=OUT)
+        d.line([ox + 10, oy + 8, ox + 13, oy + 8], fill=(90, 96, 104))
+        d.polygon([(ox + 13, oy + 6), (ox + 15, oy + 8), (ox + 13, oy + 10)], fill=(120, 180, 255))
+        d.rectangle([ox + 5, oy + 10, ox + 6, oy + 13], fill=ORANGE)
+    elif kind == "suit":
+        col = (70, 110, 160) if arg == "blue" else (140, 145, 155)
+        d.polygon([(ox + 3, oy + 5), (ox + 6, oy + 2), (ox + 9, oy + 2), (ox + 12, oy + 5), (ox + 11, oy + 8),
+                   (ox + 10, oy + 7), (ox + 10, oy + 13), (ox + 5, oy + 13), (ox + 5, oy + 7), (ox + 4, oy + 8)],
+                  fill=col, outline=OUT)
+        d.rectangle([ox + 6, oy + 3, ox + 9, oy + 5], fill=(200, 220, 235))
+    elif kind == "helmet":
+        d.ellipse([ox + 3, oy + 4, ox + 12, oy + 13], fill=(150, 150, 158), outline=OUT)
+        d.rectangle([ox + 6, oy + 2, ox + 9, oy + 5], fill=(255, 240, 170), outline=OUT)
+    elif kind == "tank":
+        col = (150, 150, 158) if arg == "scrap" else (110, 120, 135)
+        d.rounded_rectangle([ox + 5, oy + 3, ox + 10, oy + 13], radius=2, fill=col, outline=OUT)
+        d.rectangle([ox + 7, oy + 1, ox + 8, oy + 3], fill=(90, 96, 104))
+        d.line([ox + 6, oy + 4, ox + 6, oy + 12], fill=(210, 215, 225))
+    elif kind == "rebreather":
+        d.rounded_rectangle([ox + 3, oy + 5, ox + 12, oy + 12], radius=2, fill=(90, 110, 125), outline=OUT)
+        d.ellipse([ox + 5, oy + 7, ox + 7, oy + 9], fill=(160, 200, 220))
+        d.ellipse([ox + 9, oy + 7, ox + 11, oy + 9], fill=(160, 200, 220))
+    elif kind == "fins":
+        d.polygon([(ox + 3, oy + 12), (ox + 8, oy + 4), (ox + 10, oy + 5), (ox + 7, oy + 13)], fill=(60, 140, 150), outline=OUT)
+        d.polygon([(ox + 8, oy + 13), (ox + 12, oy + 6), (ox + 13, oy + 8), (ox + 11, oy + 14)], fill=(60, 140, 150), outline=OUT)
+    elif kind == "belt":
+        d.rectangle([ox + 2, oy + 7, ox + 13, oy + 10], fill=(110, 76, 48), outline=OUT)
+        if arg == "tool":
+            d.rectangle([ox + 4, oy + 10, ox + 6, oy + 13], fill=(120, 130, 140), outline=OUT)
+            d.rectangle([ox + 9, oy + 10, ox + 11, oy + 13], fill=ORANGE, outline=OUT)
+        else:
+            d.rectangle([ox + 6, oy + 6, ox + 9, oy + 11], fill=(150, 150, 158), outline=OUT)
+    elif kind == "compass":
+        d.ellipse([ox + 3, oy + 3, ox + 12, oy + 12], fill=(200, 195, 170), outline=OUT)
+        d.line([ox + 8, oy + 5, ox + 8, oy + 8], fill=RED)
+        d.line([ox + 8, oy + 8, ox + 8, oy + 10], fill=BLUE)
+    elif kind == "band":
+        d.ellipse([ox + 4, oy + 4, ox + 11, oy + 11], outline=GREEN, width=2)
+    elif kind == "watch":
+        d.rectangle([ox + 6, oy + 2, ox + 9, oy + 14], fill=(60, 64, 74), outline=OUT)
+        d.ellipse([ox + 4, oy + 5, ox + 11, oy + 11], fill=(220, 230, 235), outline=OUT)
+        d.line([ox + 8, oy + 8, ox + 8, oy + 6], fill=RED)
+    elif kind == "key":
+        d.ellipse([ox + 3, oy + 4, ox + 8, oy + 9], outline=(200, 170, 60), width=2)
+        d.line([ox + 8, oy + 7, ox + 13, oy + 7], fill=(200, 170, 60), width=2)
+        d.line([ox + 11, oy + 7, ox + 11, oy + 10], fill=(200, 170, 60))
+        d.line([ox + 13, oy + 7, ox + 13, oy + 9], fill=(200, 170, 60))
+    elif kind == "ingot2":
+        d.polygon([(ox + 3, oy + 11), (ox + 5, oy + 6), (ox + 12, oy + 6), (ox + 14, oy + 11)], fill=(120, 140, 165), outline=OUT)
+        d.line([ox + 6, oy + 7, ox + 11, oy + 7], fill=(180, 200, 220))
 
 
 def build_icons():
-    img = Image.new("RGBA", (6 * T, 3 * T), (0, 0, 0, 0))
+    img = Image.new("RGBA", (6 * T, 6 * T), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     for (c, r), (kind, arg) in ICONS.items():
         _draw_icon(d, kind, arg, c * T, r * T, random.Random(c * 7 + r * 13))
@@ -425,6 +489,9 @@ OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
     "dive_station": (2, 3), "mod_bench": (3, 2), "chest": (2, 1), "bed": (3, 2), "standing_lamp": (1, 2),
     "breaker": (1, 1), "ceiling_lamp": (1, 1),
     "wood_door": (1, 3),
+    "metal_door": (1, 3),
+    "vault_door": (1, 3),
+    "safe": (1, 1),
 }
 
 
@@ -516,6 +583,25 @@ def _draw_object(d, oid, W, H):
         for y in range(4, H - 4, 8):
             d.rectangle([4, y, W - 5, y + 5], fill=wood[1][3], outline=wood[1][1])
         d.point((W - 6, H // 2), fill=metal[2])
+    elif oid == "metal_door":
+        _box(d, 2, 0, W - 3, H - 1, metal)
+        for y in range(5, H - 4, 10):
+            d.line([4, y, W - 5, y], fill=metal[1][1])
+        d.rectangle([W - 8, H // 2 - 2, W - 5, H // 2 + 2], fill=ORANGE, outline=OUT)
+    elif oid == "safe":
+        _box(d, 1, 1, W - 2, H - 2, metal)
+        d.ellipse([5, 5, 10, 10], outline=(210, 215, 225))
+        d.line([7, 7, 9, 9], fill=(210, 215, 225))
+        d.rectangle([3, 3, 4, 4], fill=(60, 64, 74))
+    elif oid == "vault_door":
+        _box(d, 1, 0, W - 2, H - 1, metal)
+        cx, cy = W // 2, H // 2
+        d.ellipse([cx - 4, cy - 4, cx + 4, cy + 4], outline=(210, 215, 225))
+        d.line([cx - 4, cy, cx + 4, cy], fill=(210, 215, 225))
+        d.line([cx, cy - 4, cx, cy + 4], fill=(210, 215, 225))
+        for xx in (3, W - 4):
+            for yy in range(3, H - 3, 6):
+                d.point((xx, yy), fill=(60, 64, 74))
 
 
 def build_objects():

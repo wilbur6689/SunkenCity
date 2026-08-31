@@ -253,7 +253,7 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		_stop_scrapping()
 		scrapping = obj
 		scrap_progress = 0.0
-	var speed: float = float(tool.get("speed", Constants.HAND_SCRAP_SPEED)) * Constants.SCRAP_SPEED_MULT
+	var speed: float = float(tool.get("speed", Constants.HAND_SCRAP_SPEED)) * player.scrap_speed_mult()
 	scrap_progress += delta * speed / float(obj.def.get("scrap_time", 2.0))
 	obj.scrap_progress = scrap_progress
 	if scrap_progress >= 1.0:

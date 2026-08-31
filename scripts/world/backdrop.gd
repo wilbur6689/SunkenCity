@@ -13,6 +13,9 @@ const PLATE_W := 704
 const PLATE_H := 384
 const BUILDING_W := 384
 const BUILDING_H := 688
+## Building seam covers draw smaller than their source art (user request:
+## they towered over the play space); bottoms stay planted on the plates.
+const BUILDING_SCALE := 0.7
 
 ## Sky above the waterline, matched to the mean top-row color of the city
 ## plates so the plate tops blend into it seamlessly.
@@ -39,6 +42,8 @@ func setup(waterline_y: float, origin_x: float) -> void:
 		var b := Sprite2D.new()
 		b.texture = load("res://assets/backgrounds/%s.png" % BUILDINGS[i])
 		b.centered = false
+		b.scale = Vector2(BUILDING_SCALE, BUILDING_SCALE)
 		var seam_x := origin_x + (i + 1) * PLATE_W
-		b.position = Vector2(seam_x - BUILDING_W * 0.5, waterline_y + PLATE_H - BUILDING_H)
+		b.position = Vector2(seam_x - BUILDING_W * BUILDING_SCALE * 0.5,
+			waterline_y + PLATE_H - BUILDING_H * BUILDING_SCALE)
 		add_child(b)

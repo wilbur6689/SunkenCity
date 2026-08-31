@@ -46,7 +46,8 @@ static func save_world(world_name: String, seed_value: int) -> void:
 		if rec.node != null and is_instance_valid(rec.node):
 			World.sync_record(rec, rec.node) # bank live node state first
 		var st := {"id": rec.id, "cell": rec.cell, "placed": rec.placed,
-			"open": rec.open, "powered": rec.powered, "outlet": rec.outlet}
+			"open": rec.open, "powered": rec.powered, "unlocked": rec.get("unlocked", false),
+			"outlet": rec.outlet}
 		if rec.storage != null:
 			st["storage"] = rec.storage.slots.duplicate(true)
 		objs.append(st)

@@ -255,6 +255,416 @@
    "use": {
     "learn_recipe": "iron_knife"
    }
+  },
+  {
+   "id": "steel",
+   "name": "Steel",
+   "category": "material",
+   "weight": 1.5,
+   "stack": 99,
+   "icon": [
+    3,
+    5
+   ],
+   "desc": "Forged from iron - the hard-suit and rebreather metal."
+  },
+  {
+   "id": "bolt_cutters",
+   "name": "Bolt Cutters",
+   "category": "tool",
+   "weight": 4.0,
+   "stack": 1,
+   "icon": [
+    0,
+    3
+   ],
+   "tool": {
+    "type": "pry",
+    "tier": 2,
+    "speed": 1.2,
+    "damage": 5
+   },
+   "desc": "Tier-2 pry tool - shears the chained metal doors.",
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 2
+    },
+    {
+     "item": "scrap_metal",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "cutting_torch",
+   "name": "Cutting Torch",
+   "category": "tool",
+   "weight": 5.0,
+   "stack": 1,
+   "icon": [
+    1,
+    3
+   ],
+   "tool": {
+    "type": "pry",
+    "tier": 3,
+    "speed": 1.4,
+    "damage": 3
+   },
+   "desc": "Tier-3 - burns through vault doors and anything chained.",
+   "scrap": [
+    {
+     "item": "steel",
+     "count": 2
+    },
+    {
+     "item": "scrap_metal",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "wetsuit",
+   "name": "Wetsuit",
+   "category": "gear",
+   "slot": "suit",
+   "weight": 2.0,
+   "stack": 1,
+   "icon": [
+    2,
+    3
+   ],
+   "stats": {
+    "defense": 1,
+    "cold": 1,
+    "crush": 0,
+    "swim_penalty": 0.0
+   },
+   "desc": "Keeps The Cold out; The Dark still bites.",
+   "scrap": [
+    {
+     "item": "cloth",
+     "count": 3
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "hard_suit",
+   "name": "Hard Suit",
+   "category": "gear",
+   "slot": "suit",
+   "weight": 8.0,
+   "stack": 1,
+   "icon": [
+    3,
+    3
+   ],
+   "stats": {
+    "defense": 3,
+    "cold": 2,
+    "crush": 1,
+    "swim_penalty": 0.25
+   },
+   "desc": "Armored dive shell - survives The Dark and The Crush, swims like a brick.",
+   "scrap": [
+    {
+     "item": "steel",
+     "count": 3
+    },
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "helmet_lamp",
+   "name": "Helmet Lamp",
+   "category": "gear",
+   "slot": "head",
+   "weight": 1.0,
+   "stack": 1,
+   "icon": [
+    4,
+    3
+   ],
+   "stats": {
+    "light": 9
+   },
+   "desc": "Hands-free light wherever you look.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "tank_scrap",
+   "name": "Scrap Air Tank",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 3.0,
+   "stack": 1,
+   "icon": [
+    5,
+    3
+   ],
+   "stats": {
+    "oxygen": 30
+   },
+   "desc": "+30s of air. Crude, welded, works.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "id": "tank_iron",
+   "name": "Iron Air Tank",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 4.0,
+   "stack": 1,
+   "icon": [
+    0,
+    4
+   ],
+   "stats": {
+    "oxygen": 60
+   },
+   "desc": "+60s of air in a proper pressure vessel.",
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "id": "rebreather",
+   "name": "Steel Rebreather",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 3.0,
+   "stack": 1,
+   "icon": [
+    1,
+    4
+   ],
+   "stats": {
+    "oxygen": 150
+   },
+   "desc": "Recycles your breath - minutes underwater.",
+   "scrap": [
+    {
+     "item": "steel",
+     "count": 2
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "fins",
+   "name": "Diver Fins",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 1.0,
+   "stack": 1,
+   "icon": [
+    2,
+    4
+   ],
+   "stats": {
+    "swim": 0.2
+   },
+   "found_only": true,
+   "desc": "Found gear: +20% swim speed.",
+   "scrap": [
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "tool_belt",
+   "name": "Tool Belt",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 1.5,
+   "stack": 1,
+   "icon": [
+    3,
+    4
+   ],
+   "stats": {
+    "scrap_speed": 0.25
+   },
+   "found_only": true,
+   "desc": "Found gear: scrap 25% faster.",
+   "scrap": [
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "weight_belt",
+   "name": "Weight Belt",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 2.0,
+   "stack": 1,
+   "icon": [
+    4,
+    4
+   ],
+   "stats": {
+    "carry": 40
+   },
+   "found_only": true,
+   "desc": "Found gear: carry 40 more weight before it slows your swim.",
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 1
+    },
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "compass",
+   "name": "Sonar Compass",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 1.0,
+   "stack": 1,
+   "icon": [
+    5,
+    4
+   ],
+   "stats": {
+    "reveal": 8
+   },
+   "found_only": true,
+   "desc": "Found gear: maps a much wider area as you move.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 1
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "glow_band",
+   "name": "Glow Band",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 0.5,
+   "stack": 1,
+   "icon": [
+    0,
+    5
+   ],
+   "stats": {
+    "light": 6
+   },
+   "found_only": true,
+   "desc": "Found gear: a soft chemical glow around you.",
+   "scrap": [
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "dive_watch",
+   "name": "Dive Watch",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 0.5,
+   "stack": 1,
+   "icon": [
+    1,
+    5
+   ],
+   "stats": {
+    "oxygen": 10
+   },
+   "found_only": true,
+   "desc": "Found gear: pace your breath - +10s of air.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "vault_key",
+   "name": "Vault Key",
+   "category": "key",
+   "weight": 0.2,
+   "stack": 5,
+   "icon": [
+    2,
+    5
+   ],
+   "desc": "Opens one of the vault doors below."
+  },
+  {
+   "id": "schematic_rebreather",
+   "name": "Rebreather Schematic",
+   "category": "schematic",
+   "weight": 0.2,
+   "stack": 1,
+   "icon": [
+    3,
+    2
+   ],
+   "use": {
+    "learn_recipe": "rebreather"
+   },
+   "desc": "Teaches the steel rebreather at the Dive Station."
+  },
+  {
+   "id": "schematic_hard_suit",
+   "name": "Hard Suit Schematic",
+   "category": "schematic",
+   "weight": 0.2,
+   "stack": 1,
+   "icon": [
+    3,
+    2
+   ],
+   "use": {
+    "learn_recipe": "hard_suit"
+   },
+   "desc": "Teaches the hard suit at the Dive Station."
   }
  ]
 }

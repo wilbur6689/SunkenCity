@@ -695,7 +695,7 @@ func _rmb_take_half(inv: Inventory, index: int) -> void:
 func _begin_slot_scrap(index: int, id: String) -> void:
 	var src: Dictionary = Data.objects.get(id, Data.item(id))
 	scrap_hold = {"index": index, "id": id, "time": 0.0,
-		"duration": float(src.get("scrap_time", 1.5)) / Constants.SCRAP_SPEED_MULT}
+		"duration": float(src.get("scrap_time", 1.5)) / player.scrap_speed_mult()}
 	if scrap_hold_bar == null:
 		scrap_hold_bar = ProgressBar.new()
 		scrap_hold_bar.show_percentage = false

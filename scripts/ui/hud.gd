@@ -296,9 +296,9 @@ func _process(delta: float) -> void:
 		player.message.connect(show_message)
 	health_bar.max_value = Constants.MAX_HEALTH
 	health_bar.value = player.health
-	oxygen_bar.max_value = Constants.BASE_OXYGEN_SECONDS
+	oxygen_bar.max_value = player.max_oxygen()
 	oxygen_bar.value = player.oxygen
-	oxygen_bar.visible = player.submerged or player.oxygen < Constants.BASE_OXYGEN_SECONDS
+	oxygen_bar.visible = player.submerged or player.oxygen < player.max_oxygen()
 	oxygen_bar.modulate = Color(1.0, 0.35, 0.35) if player.drowning else Color.WHITE
 
 	for i in _slots.size():

@@ -50,7 +50,8 @@ func _boot_generated() -> void:
 	for o in gen.objects:
 		World.add_object_record(o.id, o.cell, false)
 	for dc in gen.doors:
-		World.add_object_record("wood_door", dc, false)
+		World.add_object_record(dc.id, dc.cell, false)
+	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value)
 	CityGen.flood(World) # after doors exist: sealing is solidity (WS-20)
 	print("City seed %d: %d towers, generated in %d ms" % [seed_value, gen.towers, Time.get_ticks_msec() - t0])
 	_setup_visuals()
@@ -74,6 +75,7 @@ func _boot_loaded(data: Dictionary) -> void:
 		var rec := World.add_object_record(st.id, st.cell, bool(st.placed))
 		rec.open = bool(st.get("open", false))
 		rec.powered = bool(st.get("powered", false))
+		rec.unlocked = bool(st.get("unlocked", false))
 		rec.outlet = st.get("outlet", WorldObject.NO_OUTLET)
 		if rec.storage != null and st.has("storage"):
 			var slots: Array = (st.storage as Array).duplicate(true)

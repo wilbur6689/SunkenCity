@@ -90,7 +90,8 @@ func _physics_process(delta: float) -> void:
 		var p := get_tree().get_first_node_in_group("player") as Node2D
 		if p != null:
 			var center := cell_at(p.global_position)
-			map_reveal.reveal_disc(center, Constants.MAP_REVEAL_RADIUS)
+			var radius: int = p.reveal_radius() if p.has_method("reveal_radius") else Constants.MAP_REVEAL_RADIUS
+			map_reveal.reveal_disc(center, radius)
 			_update_object_window(center)
 			var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
 			var window := Rect2i(center - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
@@ -321,6 +322,8 @@ func _gather_light_sources() -> Array:
 		var held: Dictionary = Data.item(p.held_item())
 		if held.get("use", {}).has("drop_light"):
 			level = Constants.GLOWSTICK_LIGHT
+		if p.has_method("equip_stat"): # helmet lamp / glow band (M5 gear)
+			level = maxi(level, int(p.equip_stat("light")))
 		out.append({"cell": cell_at(p.global_position), "level": level})
 	return out
 
@@ -493,7 +496,7 @@ func add_object_record(id: String, cell: Vector2i, placed_by_player: bool) -> Di
 	if def.kind == "chest" and slots == 0:
 		slots = Constants.CHEST_SLOTS
 	var rec := {"id": id, "def": def, "cell": cell, "placed": placed_by_player,
-		"open": false, "powered": false, "outlet": WorldObject.NO_OUTLET,
+		"open": false, "powered": false, "unlocked": false, "outlet": WorldObject.NO_OUTLET,
 		"storage": Inventory.new(slots) if slots > 0 else null, "node": null}
 	object_records.append(rec)
 	if _record_solid(rec):
@@ -522,7 +525,8 @@ func _instantiate_record(rec: Dictionary) -> WorldObject:
 	obj.storage = rec.storage # the record's inventory is the canonical one
 	obj.global_position = cell_center(rec.cell) - Vector2.ONE * Constants.BLOCK_SIZE * 0.5
 	objects_root.add_child(obj)
-	obj.restore_state({"open": rec.open, "powered": rec.powered, "outlet": rec.outlet})
+	obj.restore_state({"open": rec.open, "powered": rec.powered, "outlet": rec.outlet,
+		"unlocked": rec.unlocked})
 	rec.node = obj
 	if rec.def.kind == "pump":
 		pumps.append(obj)
@@ -541,6 +545,7 @@ func _despawn_record(rec: Dictionary) -> void:
 func sync_record(rec: Dictionary, obj: WorldObject) -> void:
 	rec.open = obj.open
 	rec.powered = obj.powered_on
+	rec.unlocked = obj.unlocked
 	rec.outlet = obj.outlet_cell
 
 ## Force an immediate window fill (scene boot: objects must exist before

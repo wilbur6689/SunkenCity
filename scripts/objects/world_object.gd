@@ -11,6 +11,7 @@ var cell: Vector2i = Vector2i.ZERO # bottom-left
 var size: Vector2i = Vector2i.ONE
 var storage: Inventory = null     # chests
 var open: bool = false            # doors
+var unlocked: bool = false        # locked doors (M5 tool/key gates, GL-09)
 
 const NO_OUTLET := Vector2i(-99999, -99999)
 var outlet_cell: Vector2i = NO_OUTLET # pumps (GL-16): where pumped water goes
@@ -79,6 +80,7 @@ func _ready() -> void:
 ## Re-apply saved state after place_object (must run once _ready has built
 ## the door body / storage). Power re-resolves via World.update_power later.
 func restore_state(st: Dictionary) -> void:
+	unlocked = st.get("unlocked", false)
 	if def.kind == "door" and st.get("open", false):
 		open = true
 		_shape.disabled = true
@@ -117,10 +119,26 @@ func center() -> Vector2:
 func interact(player) -> String:
 	match def.kind:
 		"door":
+			# Locked doors (GL-09 ladder): a matching key unlocks for good,
+			# or a pry tool at the door's tier cuts it open.
+			if not open and not unlocked and int(def.get("lock_tier", 0)) > 0:
+				var kid: String = def.get("key", "")
+				var tool: Dictionary = player.held_tool()
+				if kid != "" and player.inventory.has(kid):
+					player.inventory.remove(kid, 1)
+					unlocked = true
+					Audio.play_sfx("door_latch", center())
+				elif tool.get("type", "") == "pry" and int(tool.get("tier", 0)) >= int(def.lock_tier):
+					unlocked = true
+					Audio.play_sfx("door_latch", center())
+				else:
+					return "Locked — needs " + ("a vault key or a cutting torch" if kid != ""
+						else "bolt cutters or better")
 			open = not open
 			_shape.disabled = open
 			sprite.modulate.a = 0.45 if open else 1.0
 			World.notify_object_changed(self) # doors seal water; toggling wakes it
+			Audio.play_sfx("door_open" if open else "door_creak_1", center())
 			return "Door " + ("opened" if open else "closed")
 		"pump":
 			player.interaction.begin_pump_targeting(self)
@@ -135,6 +153,22 @@ func interact(player) -> String:
 			World.set_spawn(bottom_center())
 			return "Spawn point set"
 		"chest":
+			player.open_container(self)
+			return ""
+		"safe":
+			# Best-of-band loot behind the city's hardest lock (LT-14).
+			if not unlocked:
+				var skid: String = def.get("key", "")
+				var stool: Dictionary = player.held_tool()
+				if skid != "" and player.inventory.has(skid):
+					player.inventory.remove(skid, 1)
+					unlocked = true
+					Audio.play_sfx("door_latch", center())
+				elif stool.get("type", "") == "pry" and int(stool.get("tier", 0)) >= int(def.get("lock_tier", 3)):
+					unlocked = true
+					Audio.play_sfx("door_latch", center())
+				else:
+					return "Locked safe — a vault key or a cutting torch"
 			player.open_container(self)
 			return ""
 		"station":

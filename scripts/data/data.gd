@@ -14,7 +14,8 @@ var items: Dictionary = {}    # id -> item def
 var blocks: Dictionary = {}   # id -> block def
 var objects: Dictionary = {}  # id -> object def
 var recipes: Dictionary = {}  # id -> recipe def
-var recipe_list: Array = []   # ordered as authored
+var recipe_list: Array = []
+var loot: Dictionary = {}   # ordered as authored
 
 var _icon_cache: Dictionary = {}
 
@@ -47,6 +48,7 @@ func _load_all() -> void:
 	for r in _load_json("res://data/recipes.json").get("recipes", []):
 		recipes[r.id] = r
 		recipe_list.append(r)
+	loot = _load_json("res://data/loot.json")
 	_validate()
 
 func _load_json(path: String) -> Dictionary:

@@ -180,9 +180,30 @@ func held_tool() -> Dictionary:
 	return Data.tool_of(held_item())
 
 ## Weight → swim slowdown (WS-10/14) plus the cold slow (CC-16).
+## Sum of one stat across all equipped gear (M5 gear ladder, GL-09/13).
+func equip_stat(stat: String) -> float:
+	var total := 0.0
+	for slot_name in equipment:
+		var st = equipment[slot_name]
+		if st != null:
+			total += float(Data.item(st.id).get("stats", {}).get(stat, 0.0))
+	return total
+
+func max_oxygen() -> float:
+	return Constants.BASE_OXYGEN_SECONDS + equip_stat("oxygen")
+
+func reveal_radius() -> int:
+	return Constants.MAP_REVEAL_RADIUS + int(equip_stat("reveal"))
+
+func scrap_speed_mult() -> float:
+	return Constants.SCRAP_SPEED_MULT * (1.0 + equip_stat("scrap_speed"))
+
 func swim_factor() -> float:
 	var w := inventory.total_weight()
-	var f := maxf(Constants.WEIGHT_SWIM_MIN_FACTOR, 1.0 - 0.5 * w / Constants.WEIGHT_SWIM_REFERENCE)
+	var ref := Constants.WEIGHT_SWIM_REFERENCE + equip_stat("carry")
+	var f := maxf(Constants.WEIGHT_SWIM_MIN_FACTOR, 1.0 - 0.5 * w / ref)
+	var suit: Dictionary = Data.item(equipped("suit")).get("stats", {})
+	f *= 1.0 - float(suit.get("swim_penalty", 0.0)) + equip_stat("swim")
 	return f * env_slow
 
 var env_slow: float = 1.0
@@ -572,12 +593,12 @@ func _exit_water_to_air() -> void:
 func _update_oxygen(delta: float) -> void:
 	# Drains whenever the head is under — including pinned to a flooded ceiling.
 	if submerged:
-		oxygen = maxf(oxygen - delta, 0.0)
+		oxygen = minf(maxf(oxygen - delta, 0.0), max_oxygen())
 		drowning = oxygen <= 0.0
 		if drowning:
 			apply_damage(Constants.drowning_damage_per_second * delta)
 	else:
-		oxygen = Constants.BASE_OXYGEN_SECONDS # instant refill in air (WS-08)
+		oxygen = max_oxygen() # instant refill in air (WS-08); tanks extend it (GL-13)
 		drowning = false
 
 func apply_damage(amount: float) -> void:
@@ -591,7 +612,7 @@ func _die() -> void:
 
 func respawn() -> void:
 	health = Constants.MAX_HEALTH
-	oxygen = Constants.BASE_OXYGEN_SECONDS
+	oxygen = max_oxygen()
 	drowning = false
 	velocity = Vector2.ZERO
 	_set_compact(false)
