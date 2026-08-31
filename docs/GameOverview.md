@@ -98,8 +98,28 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
   floors; 4-block reach; 30s baseline oxygen; neutral buoyancy; water always breaks falls.
 - **Inventory:** ~40 slots for organization; carried weight is a **soft cap** that progressively
   slows swimming — the player chooses when loot isn't worth the crawl home.
-- **Blocks:** foreground blocks are solid, editable, and carry HP + hardness tiers (tool-gated);
-  background walls are cosmetic only. Water sealing is decided purely by solid blocks.
+- **Blocks & breakability:** **building structure (walls/floors/ceilings) is unbreakable** —
+  buildings keep their shape forever, and access is always through openings, doors, and breaches.
+  Breakable: furniture/contents, glass, interior partitions, and player-placed blocks — those
+  carry HP + hardness tiers (tool-gated). Background walls are cosmetic only; water sealing is
+  decided purely by solid blocks.
+- **Crafting loop:** hand-craft basics anywhere; four base stations (Workbench, Forge, Med
+  Station, Dive Station). Material tiers **Wood → Scrap → Iron → Steel**. Advanced recipes come
+  from found **schematics** (plus planned modifier schematics for prefix/suffix attributes).
+  Scrapping works anywhere at reduced yield — full yield back at base stations.
+- **Dive progression:** tanks extend time (scrap +30s → iron +60s → steel rebreather ~3 min);
+  suits unlock depth (wetsuit beats cold gate 1 → hard suit beats cold gate 2 and crush depth).
+  Cold is the soft depth gate; crush depth is the hard wall. Doors gate by tool: pry bar → bolt
+  cutters → cutting torch, plus rare keys.
+- **Bases & red moons:** a base is wherever your bed/storage/stations are (no claim system).
+  Red moon waves converge on players and damage only player-placed structures. **Any drained
+  space is breathable and buildable** — forward dive camps emerge from the water sim.
+- **Travel:** boats (raft → motorboat) for surface + cargo; late one-person submersible
+  (exterior only — never enters buildings). No teleportation through the first Steam push.
+- **Descent pressure:** skill-gated harvesting plus near-surface material depletion pulls players
+  down; no quests, no formal failure states — every setback is recoverable.
+- **Stage pacing:** ~10h surface, ~15h first dives, ~20–25h each for breaching and deep-gear
+  stages, ~15–25h endgame.
 - **Building power:** some dry sections have working wiring — locate and flip the breaker to power
   lights (and more, TBD); flooding a powered area trips its breaker off.
 - **Controller architecture:** `CharacterBody2D` + explicit state machine, server-authoritative
@@ -192,7 +212,7 @@ Progression is staged around **how deep the player can go** and **what they can 
 
 Deeper design and implementation details live in the `technical/` folder. Open design questions
 are tracked in [OpenQuestions.md](OpenQuestions.md) *(reviewed: Core Concept & Setting ✅, World
-Scale & Character ✅)*.
+Scale & Character ✅, Main Game Loop ✅)*.
 
 - [technical/WaterPhysics.md](technical/WaterPhysics.md) — water simulation, pumps, draining ✅
 - World generation (building layouts, flooding, breach placement)

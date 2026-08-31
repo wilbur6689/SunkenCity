@@ -121,7 +121,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **WS-21.** Can the player place and remove background walls?
   - **A:** Yes, as decoration only (no simulation effect).
 - [x] **WS-22.** Do blocks have HP/hardness tiers requiring better tools to break?
-  - **A:** Yes — **HP + hardness tiers** (glass/drywall < wood < concrete/steel). Hardness is both a progression gate and a water-strategy tool, since walls hold back water.
+  - **A:** Yes — **HP + hardness tiers** (glass/drywall < wood < concrete/steel). **Amended by GL-01:** hardness tiers apply only to the breakable set (contents, glass, interior partitions, player-placed blocks); building structure itself is unbreakable.
 - [x] **WS-23.** How is water simulated — cellular per-tile flow, region/volume-based, or hybrid?
   - **A:** (From CC-13) Cellular per-tile flow — water is a block-like tile that flows downward and settles. Details: `technical/WaterPhysics.md`.
 - [x] **WS-24.** Does placing/removing blocks displace or release water in real time?
@@ -141,39 +141,68 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 3. Main Game Loop (GL)
+## 3. Main Game Loop (GL) — ✅ Reviewed 2026-08-30
 
-- [ ] **GL-01.** What exactly gates each stage transition — gear thresholds only, or also milestones/quests?
-- [ ] **GL-02.** What is the exact starting scenario — waking on a rooftop, adrift on debris, a wrecked boat?
-- [ ] **GL-03.** What are the first craftable tools, and from what starter materials?
-- [ ] **GL-04.** Is crafting done by hand anywhere, at stations, or both (tiered)?
-- [ ] **GL-05.** What crafting stations exist (workbench, forge, chem station, dive station)?
-- [ ] **GL-06.** Are recipes known from the start, unlocked by finding items, or learned from schematics?
-- [ ] **GL-07.** How does scrapping work — anywhere from inventory, or requiring a tool/station?
-- [ ] **GL-08.** What are the tool/material tiers (e.g., scrap → iron → steel → titanium)?
-- [ ] **GL-09.** How are locked doors opened — lockpicks, keys, breaching tools, cutting torches?
-- [ ] **GL-10.** What is the oxygen upgrade path (lungs training, air tanks, rebreathers)?
-- [ ] **GL-11.** What are the dive gear tiers (mask/fins → wetsuit → hard suit), and what does each unlock?
-- [ ] **GL-12.** Is there a pressure mechanic that blocks depth until the right suit, separate from oxygen?
-- [ ] **GL-13.** How does the player manage light underwater (glowsticks, dive lamps, base lighting)?
-- [ ] **GL-14.** What does a functional base require (bed, storage, crafting, cooking, defenses)?
-- [ ] **GL-15.** Do zombies or other threats ever attack the player's base?
+- [x] **GL-01.** What exactly gates each stage transition — gear thresholds only, or also milestones/quests?
+  - **A:** **Pure capability gating** — stages are emergent, enforced by physical/gear barriers (oxygen, tools, cold, pressure); no quest flags. Shallow-but-gear-locked pockets are a deliberate design tool. **Amendment: building structure (walls/floors/ceilings) is unbreakable** — access is always through openings; breakable = contents/furniture, glass, interior partitions, and player-placed blocks (supersedes part of WS-22).
+- [x] **GL-02.** What is the exact starting scenario — waking on a rooftop, adrift on debris, a wrecked boat?
+  - **A:** Wake **inside a dry medical room** — loot the room, learn the basics, exit toward water.
+- [x] **GL-03.** What are the first craftable tools, and from what starter materials?
+  - **A:** From scrapping the room's furniture: **pry bar** (open), **scrap knife** (harvest), **hammer** (build).
+- [x] **GL-04.** Is crafting done by hand anywhere, at stations, or both (tiered)?
+  - **A:** Both — simple recipes hand-craft anywhere; advanced recipes need stations.
+- [x] **GL-05.** What crafting stations exist (workbench, forge, chem station, dive station)?
+  - **A:** Four: **Workbench** (tools/weapons/building), **Forge** (metal/armor), **Med Station** (medicine), **Dive Station** (suits/tanks/pumps/pipes).
+- [x] **GL-06.** Are recipes known from the start, unlocked by finding items, or learned from schematics?
+  - **A:** Basics + tier-1 known; advanced recipes from **schematics found as loot**. Also planned: **modifier schematics** that teach prefix/suffix attributes for crafting (→ LT-05/06/10).
+- [x] **GL-07.** How does scrapping work — anywhere from inventory, or requiring a tool/station?
+  - **A:** Scrap anything anywhere, but at **reduced yield**; the same item scrapped at a base station returns full materials. Keeps the haul-it-home decision alive.
+- [x] **GL-08.** What are the tool/material tiers (e.g., scrap → iron → steel → titanium)?
+  - **A:** Four tiers: **Wood → Scrap → Iron → Steel**.
+- [x] **GL-09.** How are locked doors opened — lockpicks, keys, breaching tools, cutting torches?
+  - **A:** Tiered breaching tools — **pry bar** (jammed doors) → **bolt cutters** (iron; padlocks/chains) → **cutting torch** (steel; security doors) — plus **rare found keys** for specific high-value rooms (LT-14). No lockpicking minigame.
+- [x] **GL-10.** What is the oxygen upgrade path (lungs training, air tanks, rebreathers)?
+  - **A:** **Scrap air tank +30s → iron tank +60s → steel rebreather ~3 min**; dive skill adds passive lung capacity on top.
+- [x] **GL-11.** What are the dive gear tiers (mask/fins → wetsuit → hard suit), and what does each unlock?
+  - **A:** **Wetsuit** (iron tier — beats cold gate 1) → **hard dive suit** (steel — beats cold gate 2 and crush depth). Time (tanks) and depth (suits) are separate purchases.
+- [x] **GL-12.** Is there a pressure mechanic that blocks depth until the right suit, separate from oxygen?
+  - **A:** Yes — **cold is the soft gate** (slow, then damage; can be pushed briefly), **crush depth is the hard wall** (rapid lethal damage without the hard suit).
+- [x] **GL-13.** How does the player manage light underwater (glowsticks, dive lamps, base lighting)?
+  - **A:** **Glowsticks** (cheap sinking breadcrumbs) → **helmet lamp** (iron tier, directional) → **placeable lights** and building breakers (WS-17). Disposable → personal → infrastructural.
+- [x] **GL-14.** What does a functional base require (bed, storage, crafting, cooking, defenses)?
+  - **A:** Emergent — a base is wherever your bed, storage, stations, and lights are. No claim/territory system.
+- [x] **GL-15.** Do zombies or other threats ever attack the player's base?
+  - **A:** **Red moon waves converge on players' locations** and can damage player-placed blocks/doors (never city structure). Off-nights the base is safe. Water moats and drowned approaches are premium defenses.
 - [x] **GL-16.** Can players drain individual rooms/floors mid-game (pumps, patching breaches)?
   - **A:** (From CC-13) Yes — craftable pumps move water from one area to another; patching breaches plus pumping drains rooms/floors.
-- [ ] **GL-17.** Can players create air pockets or airlocks as forward dive bases?
-- [ ] **GL-18.** Is there fast travel or shortcuts between buildings (ziplines, rope bridges, teleports)?
-- [ ] **GL-19.** Are there vehicles (rafts, boats, submersibles), and at what stage?
-- [ ] **GL-20.** What is the food loop — fishing, looted canned goods, farming, cooking?
-- [ ] **GL-21.** How does healing work — regen, bandages/medkits, food-based?
-- [ ] **GL-22.** What does the player lose on death (nothing, inventory, backpack drop to recover)?
-- [ ] **GL-23.** How are respawn points set and moved?
-- [ ] **GL-24.** Is there an XP/skill system layered on gear progression, or gear-only (per CC-18)?
-- [ ] **GL-25.** Are there explicit quests/objectives, or purely emergent goals?
-- [ ] **GL-26.** What physically triggers the endgame drain (machine, pump network, story device)?
-- [ ] **GL-27.** Roughly how long should each of the five stages last for a typical player?
-- [ ] **GL-28.** Besides loot, what pulls the player downward (signals, story breadcrumbs, visible landmarks)?
-- [ ] **GL-29.** Are there failure states other than death (base destroyed, flooded base)?
-- [ ] **GL-30.** Is there replay support — new game plus, world regeneration, harder seeds?
+- [x] **GL-17.** Can players create air pockets or airlocks as forward dive bases?
+  - **A:** Yes — **any drained space is breathable and buildable** (oxygen refills when not submerged), so forward dive camps emerge naturally from the water sim. Deep progress is made of drained rooms.
+- [x] **GL-18.** Is there fast travel or shortcuts between buildings (ziplines, rope bridges, teleports)?
+  - **A:** MVP and first push: **no teleportation** — boats, engineered currents, and drained shortcuts *are* the fast travel. A teleport network is a future addition.
+- [x] **GL-19.** Are there vehicles (rafts, boats, submersibles), and at what stage?
+  - **A:** **Raft → motorboat** for surface travel and cargo hauling; **late steel-tier one-person submersible** for exterior deep travel. The sub cannot enter buildings — it extends logistics, never replaces the suit/oxygen game.
+- [x] **GL-20.** What is the food loop — fishing, looted canned goods, farming, cooking?
+  - **A:** MVP is **loot-only food**: fish is eaten as-is, other food types found while looting; all food heals. No cooking system (cooking/buff meals shelved post-MVP).
+- [x] **GL-21.** How does healing work — regen, bandages/medkits, food-based?
+  - **A:** **Slow passive regen out of combat** + food/bandages/medkits for fast healing (Med Station crafts the good stuff).
+- [x] **GL-22.** What does the player lose on death (nothing, inventory, backpack drop to recover)?
+  - **A:** (From CC-07) Backpack inventory drops (floats up unless it hits a ceiling); equipped gear is kept; nothing else is lost.
+- [x] **GL-23.** How are respawn points set and moved?
+  - **A:** **Bed sets spawn** (per character; LAN players each have their own); default spawn is the starting medical room; placing a new bed moves it. No sleep-to-skip-night in MVP.
+- [x] **GL-24.** Is there an XP/skill system layered on gear progression, or gear-only (per CC-18)?
+  - **A:** (From CC-18) Yes — learn-by-doing skills, derived player level, and the ability tech tree.
+- [x] **GL-25.** Are there explicit quests/objectives, or purely emergent goals?
+  - **A:** (From GL-01/CC-05) No quests — purely emergent goals; capability gates and curiosity do the directing.
+- [x] **GL-26.** What physically triggers the endgame drain (machine, pump network, story device)?
+  - **A:** (From CC-26) Restoring the mega-pump relay network, station by station.
+- [x] **GL-27.** Roughly how long should each of the five stages last for a typical player?
+  - **A:** Slow start, fat middle: S1 ~10h, S2 ~15h, S3 ~20–25h, S4 ~20–25h, S5 ~15–25h (within the 60–100h target).
+- [x] **GL-28.** Besides loot, what pulls the player downward (signals, story breadcrumbs, visible landmarks)?
+  - **A:** For now: **skill-gated harvesting + depletion** — certain material types need harvest skill levels, and near-surface materials run out, pushing players deeper. Depth-banded materials to be balanced once the MVP exists. (Implies finite near-surface loot → LT-27.)
+- [x] **GL-29.** Are there failure states other than death (base destroyed, flooded base)?
+  - **A:** None formal — setbacks (flooded base, pinned backpack, wrecked walls) are emergent and always recoverable. Nothing perma-bricks a world.
+- [x] **GL-30.** Is there replay support — new game plus, world regeneration, harder seeds?
+  - **A:** (From CC-27/28) No NG+ — replay is generating a new city from a new seed; finished worlds continue in freeplay.
 
 ---
 
@@ -241,6 +270,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [ ] **LT-25.** Are there material quality tiers within a category (scrap metal vs steel vs titanium)?
 - [ ] **LT-26.** Can gear be salvaged back into raw materials, and at what return rate?
 - [ ] **LT-27.** Does looted-out loot respawn, or is each container one-time?
+  - *Partial (GL-28):* near-surface material depletion is a deliberate descent driver, implying containers/scrap do not respawn — confirm in the LT review.
 - [ ] **LT-28.** What is the depth-based loot quality curve (how fast does loot improve going down)?
 - [ ] **LT-29.** Do blueprints/schematics drop as loot to unlock recipes (per GL-06)?
 - [ ] **LT-30.** What equipment does the player start with, if anything?
@@ -266,8 +296,10 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [ ] **CT-15.** Are glass windows distinct breakable blocks (the "openings" of stage one)?
 - [ ] **CT-16.** Are furniture and props placed as scrappable objects, tiles, or both?
 - [ ] **CT-17.** Is there structural integrity (unsupported blocks collapse, 7DtD-style)?
-- [ ] **CT-18.** Can the player destroy any block, or are structural frames protected?
-- [ ] **CT-19.** Is there an unbreakable boundary layer (bedrock equivalent at city floor/edges)?
+- [x] **CT-18.** Can the player destroy any block, or are structural frames protected?
+  - **A:** (From GL-01) **Structural walls/floors/ceilings are unbreakable** — buildings keep their shape forever. Breakable: contents/furniture, glass, interior partitions, player-placed blocks.
+- [x] **CT-19.** Is there an unbreakable boundary layer (bedrock equivalent at city floor/edges)?
+  - **A:** (From GL-01) Building structure is itself the unbreakable frame; the city floor (street level/ground) is likewise unbreakable terrain. Horizontal edge mechanism: see CT-22 (still open).
 - [ ] **CT-20.** Are there hand-designed landmark buildings with unique content (one per world)?
 - [ ] **CT-21.** Are worlds seed-based and shareable/regenerable?
 - [ ] **CT-22.** What bounds the map horizontally — invisible wall, endless ocean, city wall?

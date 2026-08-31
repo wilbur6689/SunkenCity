@@ -17,6 +17,9 @@ very large body of settled water tiles.
 
 Design intent (from the overview):
 
+- Building structure is unbreakable (GL-01), so water routing always follows real openings —
+  windows, doors, vents, generated breaches — never player tunnels.
+- Any drained space is breathable and buildable (GL-17): forward dive camps emerge from the sim.
 - Breach a wall below the waterline → the affected floors flood.
 - Patch the breach and pump the water out → the room/floor becomes dry, usable space.
 - The endgame mega-pump relay network drains the whole city in horizontal bands, "like a massive
