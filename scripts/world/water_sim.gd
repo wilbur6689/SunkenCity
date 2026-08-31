@@ -119,10 +119,14 @@ func notify_changed(cell: Vector2i) -> void:
 
 # --- Tick ---
 
+var _settled_recently: Dictionary = {} # index -> true; flatten seeds
+
 func tick() -> void:
 	flow.clear()
 	if awake.is_empty():
 		processed_last_tick = 0
+		if not _settled_recently.is_empty():
+			_flatten_settled()
 		return
 	var order := awake.keys()
 	order.sort_custom(func(a, b): return a > b) # bottom-up (higher index = lower row)
@@ -134,7 +138,71 @@ func tick() -> void:
 		var moved := _step_cell(i)
 		if not moved:
 			awake.erase(i) # settle; a neighbour change re-wakes it
+			if levels[i] > 0:
+				_settled_recently[i] = true
 	processed_last_tick = processed
+
+## When a body finishes moving, redistribute it to true equilibrium: the
+## flow rules freeze slope-1 staircases (diff >= 2 only), so a settled body
+## is levelled exactly — full rows bottom-up, the topmost partial row spread
+## evenly. Conservation-exact and idempotent, so it cannot re-trigger itself.
+func _flatten_settled() -> void:
+	var seeds := _settled_recently.keys()
+	_settled_recently.clear()
+	var visited := {}
+	for si in seeds:
+		if visited.has(si) or levels[si] == 0:
+			continue
+		_flatten_body(_cell(si), visited)
+
+func _flatten_body(seed: Vector2i, visited: Dictionary) -> void:
+	var queue: Array[Vector2i] = [seed]
+	var body: Array[Vector2i] = []
+	var total := 0
+	var searched := 0
+	while not queue.is_empty():
+		searched += 1
+		if searched > 1200:
+			return # body too large to flatten in one pass (ocean-scale: already flat)
+		var c: Vector2i = queue.pop_front()
+		if not in_bounds(c):
+			continue
+		var ci := _idx(c)
+		if visited.has(ci) or levels[ci] == 0:
+			continue
+		visited[ci] = true
+		body.append(c)
+		total += levels[ci]
+		for d: Vector2i in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
+			queue.push_back(c + d)
+	if body.size() < 2:
+		return
+	# Group by row, fill bottom-up; the last (partial) row levels out evenly.
+	var rows: Dictionary = {}
+	for c in body:
+		if not rows.has(c.y):
+			rows[c.y] = []
+		rows[c.y].append(c)
+	var ys := rows.keys()
+	ys.sort_custom(func(a, b): return a > b) # deepest first
+	var changed: Array[Vector2i] = []
+	for y in ys:
+		var row: Array = rows[y]
+		row.sort_custom(func(a, b): return a.x < b.x)
+		var n := row.size()
+		var take := mini(total, n * MAX_LEVEL)
+		total -= take
+		@warning_ignore("integer_division")
+		var base := take / n
+		var extra := take % n
+		for k in n:
+			var want := base + (1 if k < extra else 0)
+			var ci := _idx(row[k])
+			if int(levels[ci]) != want:
+				levels[ci] = want
+				changed.append(row[k])
+	for c in changed:
+		wake_around(c)
 
 func _step_cell(i: int) -> bool:
 	var l := int(levels[i])
