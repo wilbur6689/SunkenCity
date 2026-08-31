@@ -264,4 +264,4 @@ environmental storytelling (CT-27).
 - Building power/electrical systems (breakers, powered lights, water interaction)
 - Character controller (swimming, diving, platforming) and LAN networking model
 - Skills, player level, and the ability tech tree
-- Tile/sprite specifications (16×16 blocks, 24px character)
+- [technical/TileArt.md](technical/TileArt.md) — tile/sprite specifications (16×16 blocks, 24px character, Terraria-style textured blocks) ✅
