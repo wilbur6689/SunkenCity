@@ -58,12 +58,13 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 
 static func _load_rooms() -> Dictionary:
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string("res://data/rooms.json"))
-	var by_type := {}
+	var by_zone := {}
 	for r in parsed.rooms:
-		if not by_type.has(r.type):
-			by_type[r.type] = []
-		by_type[r.type].append(r)
-	return by_type
+		var key: String = r.get("zone", r.get("type", "residential"))
+		if not by_zone.has(key):
+			by_zone[key] = []
+		by_zone[key].append(r)
+	return by_zone
 
 static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dictionary,
 		x0: int, w: int, floors: int, objects: Array, doors: Array, sealed: Array) -> Dictionary:
@@ -92,9 +93,10 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 	# Stairwell ladder
 	for y in range(top + 1, GROUND):
 		grid.set_climb(Vector2i(stair_x0 + 1, y), WorldGrid.C.LADDER)
-	# Per-floor walls, doorways, rooms
-	var mix := ["residential", "office", "hospital"]
-	var tower_bias: String = mix[rng.randi_range(0, 2)]
+	# Per-floor walls, doorways, rooms (zones from the template library)
+	var mix := rooms.keys()
+	mix.sort() # deterministic order (CT-21)
+	var tower_bias: String = mix[rng.randi_range(0, mix.size() - 1)]
 	for f in floors:
 		var ceiling := top + f * FLOOR_H
 		var sr := ceiling + FLOOR_H - 1 # standing row
@@ -111,12 +113,16 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 			for wy in range(sr - 2, sr + 1): # shaft side walled solid
 				grid.set_structure(Vector2i(shaft_wall, wy), WorldGrid.M.STONE)
 			sealed.append(Rect2i(zone_x, ceiling + 1, zone_end - zone_x + 1, FLOOR_H - 1))
-		# rooms (mixed use per floor, CT-02)
-		var rtype: String = tower_bias if rng.randf() < 0.5 else mix[rng.randi_range(0, 2)]
+		# rooms (mixed use per floor, CT-02), filtered by authored depth range
+		var rtype: String = tower_bias if rng.randf() < 0.5 else mix[rng.randi_range(0, mix.size() - 1)]
 		var pool: Array = rooms.get(rtype, [])
+		var depth := sr - WATERLINE
+		var candidates := pool.filter(func(r): return depth >= int(r.get("depth_min", -9999)) and depth <= int(r.get("depth_max", 9999)))
+		if candidates.is_empty():
+			candidates = pool
 		var cx := zone_x
-		while zone_end - cx >= 8 and not pool.is_empty():
-			var t: Dictionary = pool[rng.randi_range(0, pool.size() - 1)]
+		while zone_end - cx >= 8 and not candidates.is_empty():
+			var t: Dictionary = candidates[rng.randi_range(0, candidates.size() - 1)]
 			var tw := int(t.width)
 			if cx + tw > zone_end:
 				tw = zone_end - cx
@@ -124,6 +130,8 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 				if cx + int(o.x) + 3 <= zone_end:
 					objects.append({"id": o.id, "cell": Vector2i(cx + int(o.x), sr)})
 			for b in t.get("blocks", []):
+				if int(b.dy) >= FLOOR_H - 1:
+					continue # rooms authored taller than the floor cavity crop
 				var bc := Vector2i(cx + int(b.x), sr - int(b.dy))
 				if bc.x < zone_end:
 					grid.set_structure(bc, int(b.mat))

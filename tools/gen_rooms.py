@@ -46,7 +46,9 @@ def make_room(rng, rtype, width, idx):
         sx = rng.randint(1, max(1, width - 5))
         for k in range(rng.randint(2, 3)):
             blocks.append({"mat": 2, "x": sx + k, "dy": 2})  # wood shelf above the floor
-    return {"id": "%s_%c" % (rtype, ord('a') + idx), "type": rtype, "width": width,
+    zone = {"residential": "residential", "office": "commercial", "hospital": "hospital"}[rtype]
+    return {"id": "%s_%c" % (rtype, ord('a') + idx), "type": rtype, "zone": zone, "width": width,
+            "height": 5, "depth_min": -9999, "depth_max": 9999,
             "objects": objects, "blocks": blocks}
 
 
