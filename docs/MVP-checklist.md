@@ -143,6 +143,7 @@ refilling tanks all working in the reclaimed room.
 ### Generation pipeline (CT-04/05)
 - [x] Room template format (`data/rooms.json`): width, type tag, furniture/container spawn offsets, block details; doorway sockets are cut by the assembler
 - [x] Authoring tools: **Room Editor** (`scenes/tools/room_editor.tscn`, user request) — settings panel (id, zone, room type, spawn depth range, resizable size), block picker painting with the game atlas, zone-filtered furniture palette with place/grab/move, ghost previews, Save/Load/New against `data/rooms.json`; plus `tools/gen_rooms.py` for bulk proc-gen. Rooms carry `zone` + depth ranges and the generator honours both
+- [x] **Furniture Editor** (`scenes/tools/furniture_editor.tscn`, user request): settings (id, name, kind, zone applicability, size in blocks, weight, tool tier, skill gate, scrap time, XP, editable yields table) + a pixel canvas painting the sprite with the TileArt material ramps (pencil/eraser/fill/box-prefill); Save exports the `data/objects.json` entry AND the sprite PNG; the Room Editor's furniture palette reads zone tags from the data
 - [x] Starter library: 12 rooms × 3 types (residential, office, hospital)
 - [x] Floor assembler: rooms stitched with doorway partitions; west stairwell (ladder + landings) and east elevator shaft guaranteed per tower (CT-06)
 - [ ] Two-jump rule validator on assembled floors (WS-04) — *floors are currently flat so the rule holds by construction; validator still to write*

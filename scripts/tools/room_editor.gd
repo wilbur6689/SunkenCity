@@ -191,10 +191,19 @@ func _say(text: String) -> void:
 func _refresh_furniture() -> void:
 	for c in furniture_box.get_children():
 		c.queue_free()
-	for oid in ZONE_FURNITURE.get(_zone(), []):
-		var def: Dictionary = Data.objects.get(oid, {})
-		if def.is_empty():
+	# Furniture declares its own zones (authored in the Furniture Editor);
+	# ZONE_FURNITURE is the fallback for pieces without zone tags.
+	var ids := []
+	for oid in Data.objects:
+		var d: Dictionary = Data.objects[oid]
+		if d.get("fixed", false) or d.get("no_item", false) or d.kind == "station" or d.kind == "breaker":
 			continue
+		var zones: Array = d.get("zones", [])
+		if (zones.has(_zone())) or (zones.is_empty() and ZONE_FURNITURE.get(_zone(), []).has(oid)):
+			ids.append(oid)
+	ids.sort()
+	for oid in ids:
+		var def: Dictionary = Data.objects[oid]
 		furniture_box.add_child(_button("%s (%dx%d)" % [def.name, def.size[0], def.size[1]],
 			func(): _set_tool("object:" + oid)))
 
