@@ -248,6 +248,8 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 ## Document Map
 
+MVP scope and completion criteria: [MVP-overview.md](MVP-overview.md).
+
 Deeper design and implementation details live in the `technical/` folder. Open design questions
 are tracked in [OpenQuestions.md](OpenQuestions.md) — **all six sections reviewed ✅**
 (2026-08-31). Remaining deferred topics: story delivery (CC-04), onboarding/tutorial (CC-24),
