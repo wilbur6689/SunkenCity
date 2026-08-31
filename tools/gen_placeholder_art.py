@@ -520,9 +520,43 @@ def build_light():
     print("wrote", out)
 
 
+# --- Real character sheet from the reference export ------------------------------------------
+# Source: docs/Examples/Character/Main_Character_with_red-Idle-spritesheet (48x48 cells, 8 cols;
+# row 0 = 8 idle directions [S, SE, E, NE, N, NW, W, SW], rows 2/3 = 6-frame walk east/west).
+# Output: assets/sprites/player.png, 32x32 frames, 7 columns x 2 rows:
+#   row 0 = east  [idle, walk1..6]      row 1 = west [idle, walk1..6]
+REF_SHEET = ROOT / "docs" / "Examples" / "Character" / "Main_Character_with_red-Idle-spritesheet" / "Main_Character_with_red-Idle.png"
+FRAME = 32
+CELL = 48
+
+
+def _cell(sheet, col, row):
+    x, y = col * CELL, row * CELL
+    pad = (CELL - FRAME) // 2
+    return sheet.crop((x + pad, y + pad, x + pad + FRAME, y + pad + FRAME))
+
+
+def build_player_sheet():
+    if not REF_SHEET.exists():
+        print("skip player sheet: reference not found", REF_SHEET)
+        return
+    src = Image.open(REF_SHEET).convert("RGBA")
+    out = Image.new("RGBA", (7 * FRAME, 2 * FRAME), (0, 0, 0, 0))
+    # The export labels idle col 2 "east" and col 6 "west", but those poses face the opposite
+    # way from the walk rows, so pair idle 6 with walk-east and idle 2 with walk-west.
+    for r, (idle_col, walk_row) in enumerate(((6, 2), (2, 3))):  # east, west
+        out.paste(_cell(src, idle_col, 0), (0, r * FRAME))
+        for i in range(6):
+            out.paste(_cell(src, i, walk_row), ((i + 1) * FRAME, r * FRAME))
+    path = ROOT / "assets" / "sprites" / "player.png"
+    out.save(path)
+    print("wrote", path, out.size)
+
+
 if __name__ == "__main__":
     build_atlas()
     build_character()
     build_icons()
     build_objects()
     build_light()
+    build_player_sheet()

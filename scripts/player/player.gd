@@ -87,8 +87,7 @@ func _physics_process(delta: float) -> void:
 		State.UNDERWATER:
 			_state_underwater(delta)
 	move_and_slide()
-	if input_dir.x != 0.0:
-		sprite.flip_h = input_dir.x < 0.0 # sheet faces right
+	_update_sprite(delta)
 	_update_oxygen(delta)
 	_update_camera(delta)
 	interaction.tick(delta)
@@ -116,10 +115,11 @@ func _read_input() -> void:
 	for i in Constants.HOTBAR_SLOTS:
 		if Input.is_action_just_pressed("hotbar_%d" % (i + 1)):
 			hotbar_select = i
-	if Input.is_action_just_pressed("hotbar_next"):
-		hotbar_select = (selected_slot + 1) % Constants.HOTBAR_SLOTS
-	if Input.is_action_just_pressed("hotbar_prev"):
-		hotbar_select = (selected_slot - 1 + Constants.HOTBAR_SLOTS) % Constants.HOTBAR_SLOTS
+	# View-only (not part of the replicated snapshot): wheel zoom.
+	if Input.is_action_just_pressed("zoom_in"):
+		zoom_step(1)
+	if Input.is_action_just_pressed("zoom_out"):
+		zoom_step(-1)
 
 ## True while a UI panel wants the mouse (set by the inventory UI).
 var ui_blocks_mouse: bool = false
@@ -173,7 +173,7 @@ func use_item(slot: int) -> void:
 		known_recipes[use.learn_recipe] = true
 		message.emit("Learned recipe: " + Data.item_name(Data.recipes[use.learn_recipe].output.item))
 	if use.has("drop_light"):
-		World.spawn_item(s.id, 1, global_position, Vector2(sprite.scale.x * (-1.0 if sprite.flip_h else 1.0) * 3.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
+		World.spawn_item(s.id, 1, global_position, Vector2(facing * 3.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
 	inventory.remove_from_slot(slot, 1)
 
 func drop_held(n: int) -> void:
@@ -181,8 +181,7 @@ func drop_held(n: int) -> void:
 	if id == "":
 		return
 	var taken := inventory.remove_from_slot(selected_slot, n)
-	var dir := -1.0 if sprite.flip_h else 1.0
-	World.spawn_item(id, taken, global_position, Vector2(dir * 4.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
+	World.spawn_item(id, taken, global_position, Vector2(facing * 4.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
 
 func knows_recipe(id: String) -> bool:
 	return known_recipes.has(id)
@@ -251,9 +250,6 @@ func _set_compact(value: bool) -> void:
 	var size := Constants.COMPACT_HITBOX if value else Constants.STAND_HITBOX
 	collision_shape.shape = _compact_shape if value else _stand_shape
 	collision_shape.position.y = FEET_Y - size.y * 0.5
-	# Sheet frames are 24x24 with feet on the bottom row: frame 0 standing,
-	# frame 1 prone (bottom 12px = the compact hitbox). No repositioning needed.
-	sprite.frame = 1 if value else 0
 
 func _can_stand() -> bool:
 	var size := Constants.STAND_HITBOX
@@ -472,13 +468,44 @@ func respawn() -> void:
 
 # --- Camera (WS-18) ---
 
-func _update_camera(delta: float) -> void:
-	var lead := Vector2(
-		velocity.x / Constants.SPRINT_SPEED * Constants.CAMERA_LOOKAHEAD_BLOCKS.x,
-		velocity.y / Constants.MAX_FALL_SPEED * Constants.CAMERA_LOOKAHEAD_BLOCKS.y
-	) * Constants.BLOCK_SIZE
-	var t := 1.0 - exp(-Constants.CAMERA_LOOKAHEAD_SMOOTHING * delta)
-	camera.offset = camera.offset.lerp(lead, t)
+# --- Sprite (assets/sprites/player.png: 32x32, row 0 east / row 1 west, col 0 idle, cols 1-6 walk) ---
+
+const WALK_FRAMES: int = 6
+const WALK_FRAME_TIME: float = 0.1 # seconds per frame at walk speed; scales with actual speed
+
+var facing: int = 1 # +1 east, -1 west
+var _anim_time: float = 0.0
+
+func _update_sprite(delta: float) -> void:
+	if input_dir.x != 0.0:
+		facing = 1 if input_dir.x > 0.0 else -1
+	var speed := absf(velocity.x) if not compact else velocity.length()
+	var moving := speed > 0.5 * Constants.BLOCK_SIZE
+	var frame_col := 0
+	if moving:
+		_anim_time += delta * clampf(speed / Constants.WALK_SPEED, 0.5, 2.0)
+		frame_col = 1 + int(_anim_time / WALK_FRAME_TIME) % WALK_FRAMES
+	else:
+		_anim_time = 0.0
+	sprite.frame_coords = Vector2i(frame_col, 0 if facing > 0 else 1)
+	if compact:
+		# Crawling / swimming: lay the body along the 12px hitbox, head toward facing.
+		sprite.rotation = facing * PI * 0.5
+		sprite.position = Vector2(0, 6)
+	else:
+		sprite.rotation = 0.0
+		sprite.position = Vector2(0, -4) # feet on the frame's bottom row at local y = 12
+
+var zoom_index: int = Constants.CAMERA_ZOOM_DEFAULT_INDEX
+
+## Camera stays centred on the player (smooth follow only, no lookahead).
+func _update_camera(_delta: float) -> void:
+	camera.offset = Vector2.ZERO
+
+func zoom_step(direction: int) -> void:
+	zoom_index = clampi(zoom_index + direction, 0, Constants.CAMERA_ZOOM_LEVELS.size() - 1)
+	var z: float = Constants.CAMERA_ZOOM_LEVELS[zoom_index]
+	camera.zoom = Vector2(z, z)
 
 func state_name() -> String:
 	return State.keys()[state]

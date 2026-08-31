@@ -59,7 +59,8 @@ is `docs/MVP-checklist.md` — check items off there as they land.
 These are settled and should be treated as canon in all docs and future code:
 
 - Block size: **16×16 pixels**, representing **2 feet** in-game
-- Character height: **24 pixels** with hair, **21 pixels** without
+- Character height: **24 pixels** with hair, **21 pixels** without *(the current sprite is ~30px —
+  flagged in `docs/technical/TileArt.md`; amend canon or art before M3)*
 - Character is roughly **2.5–3 blocks tall**
 
 ## Document Structure & Workflow

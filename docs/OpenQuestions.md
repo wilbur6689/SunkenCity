@@ -115,6 +115,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
   - **A:** **Hybrid** — tile-based light propagation for gameplay visibility (absorbed faster through water) + Godot 2D lights for mood accents. Also: **building power systems** — some dry sections support powered lights; the player must locate and flip the breaker, and **flooding a powered area trips its breaker off**. (New topic → City section / technical doc.)
 - [x] **WS-18.** How should the camera behave — lookahead when swimming, zoom changes underwater?
   - **A:** **Fixed zoom** (pixel-perfect), smooth follow with directional lookahead — more lead at higher speed. No contextual zoom.
+  - *Amended 2026-08-31 (play-test):* lookahead dropped — the camera stays centred on the player; **manual mouse-wheel zoom** (0.5×–3× steps) added. UI text renders at window resolution (`canvas_items` stretch) instead of being upscaled with the pixel art.
 - [x] **WS-19.** Character controller: `CharacterBody2D` with custom water states, or fully custom physics?
   - **A:** **`CharacterBody2D` + explicit state machine** (grounded, jump/fall, surface-swim, underwater, climbing, crawl). Server-authoritative movement for LAN.
 - [x] **WS-20.** Are there foreground blocks and background walls as separate tile layers (Terraria-style)?

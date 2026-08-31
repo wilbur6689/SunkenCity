@@ -76,9 +76,9 @@ const SKILL_LEVELS_PER_PLAYER_LEVEL: int = 5
 const XP_SWIM_PER_SECOND: float = 0.5
 const XP_BUILD_PER_BLOCK: float = 1.0
 
-# --- Camera (WS-18: fixed zoom, smooth follow, speed-scaled lookahead) ---
-const CAMERA_LOOKAHEAD_BLOCKS: Vector2 = Vector2(4.0, 2.0) # lead at full sprint / terminal fall
-const CAMERA_LOOKAHEAD_SMOOTHING: float = 3.0 # 1/s
+# --- Camera (WS-18 amended 2026-08-31: centred on the player, smooth follow, wheel zoom) ---
+const CAMERA_ZOOM_LEVELS: Array[float] = [0.5, 0.75, 1.0, 1.5, 2.0, 3.0] # multiplies the window's integer scale
+const CAMERA_ZOOM_DEFAULT_INDEX: int = 2
 
 # --- Derived (computed once at load) ---
 var jump_velocity: float

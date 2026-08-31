@@ -42,7 +42,7 @@ func press(actions: Array) -> void:
 		Input.action_press(a)
 
 func release_all() -> void:
-	for a in ["move_left", "move_right", "move_up", "move_down", "jump", "sprint", "crouch"]:
+	for a in ["move_left", "move_right", "move_up", "move_down", "jump", "sprint", "crouch", "zoom_in", "zoom_out"]:
 		Input.action_release(a)
 
 func hold(actions: Array, n: int) -> void:
@@ -239,10 +239,18 @@ func _run() -> void:
 	await until(grounded, 60)
 	check(player.health == Constants.MAX_HEALTH, "≤8 block fall is free")
 
-	print("== O. camera lookahead")
+	print("== O. camera: centred on the player, wheel zoom")
 	await place(5, 5)
 	await until(grounded, 30)
 	press(["move_right", "sprint"]); await ticks(60)
-	check(player.camera.offset.x > 2.0 * B, "camera leads the sprint (%.2f blocks)" % (player.camera.offset.x / B))
-	release_all(); await ticks(150)
-	check(absf(player.camera.offset.x) < 0.5, "lookahead relaxes at rest")
+	check(player.camera.offset == Vector2.ZERO, "no lookahead offset while sprinting")
+	release_all()
+	var z0 := player.camera.zoom.x
+	press(["zoom_in"]); await ticks(2); release_all(); await ticks(2)
+	check(player.camera.zoom.x > z0, "wheel up zooms in (%.2f -> %.2f)" % [z0, player.camera.zoom.x])
+	press(["zoom_out"]); await ticks(2); release_all(); await ticks(2)
+	press(["zoom_out"]); await ticks(2); release_all(); await ticks(2)
+	check(player.camera.zoom.x < z0, "wheel down zooms out (%.2f)" % player.camera.zoom.x)
+	for i in 10:
+		press(["zoom_out"]); await ticks(2); release_all(); await ticks(2)
+	check(player.camera.zoom.x == Constants.CAMERA_ZOOM_LEVELS[0], "zoom clamps at the smallest level")

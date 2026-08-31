@@ -28,7 +28,7 @@ window/size/viewport_width=640
 window/size/viewport_height=360
 window/size/window_width_override=1280
 window/size/window_height_override=720
-window/stretch/mode="viewport"
+window/stretch/mode="canvas_items"
 window/stretch/scale_mode="integer"
 
 [input]
@@ -352,7 +352,7 @@ use_secondary={
 "script": null
 )]
 }
-hotbar_next={
+zoom_in={
 "deadzone": 0.5,
 "events": [Object(InputEventMouseButton,
 "resource_local_to_scene": false,
@@ -374,7 +374,7 @@ hotbar_next={
 "script": null
 )]
 }
-hotbar_prev={
+zoom_out={
 "deadzone": 0.5,
 "events": [Object(InputEventMouseButton,
 "resource_local_to_scene": false,

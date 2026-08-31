@@ -60,11 +60,23 @@ art keeps the same layout so the TileSet resource and variant pick carry over un
 Edge outlines: plan for a Godot **terrain set** (autotile) so exposed faces get the 1px dark
 edge automatically; the base 16×16 textures stay outline-free and seamless (patterns wrap at 16px).
 
-## Character (WS-02/25, canon 24px)
+## Character (WS-02/25)
 
-`docs/Examples/Character/MainCharacter.png` is a **style reference, not a pixel spec**: its
-figures measure ~327px tall, ~13.6× our canon scale (canon = **24px tall with hair, 21 without,
-12×22 hitbox**), so nothing in it downsamples directly — it was re-authored by hand at 24px.
+**Current sprite (2026-08-31):** `docs/Examples/Character/Main_Character_with_red-Idle-spritesheet/`
+— a 48×48-cell export (8 idle directions + 6-frame walk cycles for south/east/west, 200 ms/frame).
+`tools/gen_placeholder_art.py` crops the 32×32 centre of each cell into `assets/sprites/player.png`
+(row 0 east, row 1 west; col 0 idle, cols 1–6 walk). East and west are **separately drawn, not
+mirrored**, so the player script picks the row by facing instead of `flip_h`. The export's idle
+"east"/"west" cells face the opposite way from their walk rows; the tool swaps them. Crawl and
+swim reuse the same frames rotated 90° along the compact hitbox until dedicated poses exist.
+
+**Scale note:** this character is **~30px tall (≈1.9 blocks)**, taller than the 24px canon
+(WS-02: 24px with hair, 21 without). The 12×22 standing hitbox is unchanged — the head overhangs
+it by ~8px, which reads fine — but the canon height should be amended to 30px (and the WS-05
+gap sizes reconsidered) if this art is kept.
+
+`docs/Examples/Character/MainCharacter.png` is the earlier **style reference**: ~327px figures,
+~13.6× canon, used only for palette and silhouette.
 Carry over from it: the silhouette reads (goggles on the head, scarf, backpack, rolled trousers,
 bare feet — a diver-scavenger), a 4-direction sheet (front/back/two sides — our game needs only
 side + flipped, so front/back are for menus/character creation), and a muted brown/blue/khaki

@@ -94,8 +94,8 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
   fill-to-drain block placement — is a central strategy that opens otherwise-inaccessible areas.
   Engineered **water currents push the player**, doubling as a traversal system. SunkenCity's
   "dig" is *moving water*.
-- **Rendering & movement canon:** 640×360 internal resolution, integer-scaled, full pixel-perfect
-  stack. Walk 5 / sprint 7 / surface swim 5 / underwater 4 blocks/s; 3-block jump (two-jump rule
+- **Rendering & movement canon:** 640×360 design resolution, integer-scaled pixel art with UI
+  text at native resolution; camera centred on the player with wheel zoom. Walk 5 / sprint 7 / surface swim 5 / underwater 4 blocks/s; 3-block jump (two-jump rule
   between floors); crawl through 2-block gaps; 12px hitbox fits 1-block holes; 6-block building
   floors; 4-block reach; 30s baseline oxygen; neutral buoyancy; water always breaks falls.
 - **Inventory:** ~40 slots for organization; carried weight is a **soft cap** that progressively
