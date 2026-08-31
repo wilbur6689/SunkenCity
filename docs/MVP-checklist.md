@@ -101,25 +101,25 @@ small base with a working bed spawn — no debug commands.
 ## M2 — Living Water
 
 ### Cellular sim (WaterPhysics.md)
-- [ ] Water cell grid overlaid on the tile world; fill levels (prototype granularity: binary vs 8-level — decide here)
-- [ ] Flow rules: down → spread → settle; dormancy for settled cells
-- [ ] Wake-on-change: block placed/removed, water added/removed
-- [ ] Displace-or-destroy on block placement into water (WS-24)
-- [ ] Awake-cell budget per tick + instant-settle for distant regions
-- [ ] Water rendering: surface line, fill levels, modest animation at native res
+- [x] Water cell grid (`scripts/world/water_sim.gd`): **decided — 8 fill levels per cell**, integer-conserved; bounded grid, PackedByteArray storage
+- [x] Flow rules: down → spread (diff ≥ 2, half-difference) → settle; awake-set dormancy (a settled ocean costs zero)
+- [x] Wake-on-change: block place/remove, door toggle, water add/remove all wake the neighbourhood
+- [x] Displace-or-destroy on block placement into water (WS-24): bounded BFS raises the connected body's surface; enclosed pockets destroy
+- [x] Awake-cell budget per tick (3000); *instant-settle for distant regions deferred to M3 chunking*
+- [x] Water rendering (`water_renderer.gd`): per-cell fill heights, animated surface line, depth colour-grade bands
 
 ### Player & water
-- [ ] Swim states driven by real water cells (submerged detection per cell)
-- [ ] Depth color grade shader keyed to depth below waterline (WS-29)
-- [ ] Currents: net-flow cells push bodies (player, items) proportional to rate (WS-16); tuning pass: escapable vs trap
-- [ ] Backpack/dropped-item buoyancy: floats up, pins to ceilings (CC-07 physics, used by M4)
+- [x] Swim states driven by real water cells — partial-cell submersion, fill-aware surface/tread
+- [x] Depth colour grade keyed to depth below the waterline (WS-29) — banded overlay in the water renderer
+- [x] Currents: per-tick net flow pushes player and items proportional to rate (WS-16); tuned escapable (`CURRENT_PUSH`) — trap-strength tuning still open
+- [x] Dropped-item buoyancy: floats up, bobs at the surface, pins to ceilings (CC-07 physics, ready for M4 backpacks); `sinks: true` items (glowsticks) sink
 
 ### Pumps & draining (GL-16/17)
-- [ ] Pump block: intake/outlet, fixed cells/sec rate; pipe or paired-block routing (decide here)
-- [ ] Patch-and-pump loop: sealed room drains and stays dry
-- [ ] Breathable = any air cell: O2 refills, tanks refill (LT-17)
-- [ ] Stations/bed function in drained rooms (forward camps, GL-17)
-- [ ] Fill-to-drain tactic works (seal a small pocket with blocks)
+- [x] Pump: **decided — targeted outlet** (E on pump → click a cell within 24 blocks; a hose, not pipes). Fixed rate; suction/insertion go through the connected body/airspace (BFS) so rooms drain fully — the diff≥2 rule alone freezes slope-1 wedges
+- [x] Patch-and-pump loop: sealed room drains bone dry and stays dry (m2 gate test)
+- [x] Breathable = any air cell: O2 refills instantly (tank refills arrive with tanks in M5)
+- [x] Stations/bed function in drained rooms (forward camps, GL-17); shallow films (level ≤ 2) don't block placement
+- [x] Fill-to-drain tactic works: displacement destroys water that finds no room (enclosed pockets)
 
 ### Lighting (WS-17)
 - [ ] Tile light propagation: sun from surface, faster falloff through water
@@ -129,6 +129,10 @@ small base with a working bed spawn — no debug commands.
 
 **GATE:** breach-flood a dry room, then patch it, pump it dry, and move in — bed, station, and
 refilling tanks all working in the reclaimed room.
+- [x] Automated: `scenes/test/m2_smoke.tscn` (28 checks) — equilibrium/conservation, pour-and-settle,
+  wake + displacement, buoyancy/pinning/sinking, seal → pump dry → move in (breathe, bed, station),
+  currents, breach reflooding
+- [ ] Manual play-through (pump targeting UX, water feel, current strength)
 
 ---
 

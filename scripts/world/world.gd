@@ -14,11 +14,12 @@ const WORLD_OBJECT_SCENE := preload("res://scenes/objects/world_object.tscn")
 
 var blocks: TileMapLayer
 var back_walls: TileMapLayer
-var water: TileMapLayer
 var climbables: TileMapLayer
 var items_root: Node
 var objects_root: Node
 var spawn_position: Vector2 # feet position (bottom-center) of the spawn
+var water_sim: WaterSim
+var pumps: Array = [] # WorldObjects of kind "pump"
 
 ## Player-placed blocks (WS-22): cell -> {id, hp, layer}. Anything in a tile
 ## layer that is NOT here is building structure and unbreakable (GL-01).
@@ -26,11 +27,10 @@ var placed_blocks: Dictionary = {}
 ## Every cell covered by an object -> WorldObject.
 var object_cells: Dictionary = {}
 
-func register(p_blocks: TileMapLayer, p_water: TileMapLayer, p_climbables: TileMapLayer,
+func register(p_blocks: TileMapLayer, p_water_bounds: Rect2i, p_climbables: TileMapLayer,
 		p_spawn: Vector2, p_back_walls: TileMapLayer = null, p_items_root: Node = null,
 		p_objects_root: Node = null) -> void:
 	blocks = p_blocks
-	water = p_water
 	climbables = p_climbables
 	back_walls = p_back_walls
 	items_root = p_items_root
@@ -38,6 +38,28 @@ func register(p_blocks: TileMapLayer, p_water: TileMapLayer, p_climbables: TileM
 	spawn_position = p_spawn
 	placed_blocks.clear()
 	object_cells.clear()
+	pumps.clear()
+	water_sim = WaterSim.new(p_water_bounds, is_solid_cell)
+	water_sim.budget_per_tick = Constants.WATER_BUDGET_PER_TICK
+
+func _physics_process(_delta: float) -> void:
+	if water_sim == null:
+		return
+	_tick_pumps()
+	water_sim.tick()
+
+## Pumps (GL-16): move water from the pump's intake cell to its outlet at a
+## fixed rate; the sim's own flow refills the intake from the connected body.
+func _tick_pumps() -> void:
+	for pump in pumps:
+		if not is_instance_valid(pump) or pump.outlet_cell == WorldObject.NO_OUTLET:
+			continue
+		var intake: Vector2i = pump.cell
+		var taken := water_sim.remove_water_spread(intake, Constants.PUMP_UNITS_PER_TICK)
+		if taken > 0:
+			var leftover := water_sim.add_water_spread(pump.outlet_cell, taken)
+			if leftover > 0: # receiving side completely full: stall (put it back)
+				water_sim.add_water_spread(intake, leftover)
 
 func is_ready() -> bool:
 	return blocks != null
@@ -77,10 +99,14 @@ func has_back_wall_cell(cell: Vector2i) -> bool:
 	return back_walls != null and back_walls.get_cell_source_id(cell) != -1
 
 func is_water_cell(cell: Vector2i) -> bool:
-	return water != null and water.get_cell_source_id(cell) != -1
+	return water_sim != null and water_sim.level_at(cell) > 0
 
+## Partial-cell aware: a point is in water only below the cell's fill surface.
 func is_water(global_pos: Vector2) -> bool:
-	return is_water_cell(cell_at(global_pos))
+	var cell := cell_at(global_pos)
+	if not is_water_cell(cell):
+		return false
+	return global_pos.y >= water_sim.surface_y_in_cell(cell)
 
 func is_climbable_cell(cell: Vector2i) -> bool:
 	return climbables != null and climbables.get_cell_source_id(cell) != -1
@@ -114,10 +140,16 @@ func _surface_cell(global_pos: Vector2) -> Vector2i:
 		limit -= 1
 	return cell
 
-## Global y of the water surface above global_pos (top edge of the
+## Global y of the water surface above global_pos (fill surface of the
 ## highest contiguous water cell in that column).
 func water_surface_y(global_pos: Vector2) -> float:
-	return cell_top_y(_surface_cell(global_pos))
+	return water_sim.surface_y_in_cell(_surface_cell(global_pos))
+
+## Current push (px/s) on a body at global_pos (WS-16).
+func current_at(global_pos: Vector2) -> Vector2:
+	if water_sim == null:
+		return Vector2.ZERO
+	return water_sim.flow_at(cell_at(global_pos)) * Constants.CURRENT_PUSH
 
 ## True if the water column above global_pos meets air (not a ceiling), so
 ## a swimmer there can surface and breathe.
@@ -171,7 +203,8 @@ func can_place_block(id: String, cell: Vector2i, by: CharacterBody2D = null) -> 
 			return not has_block_cell(cell) and not is_climbable_cell(cell) and not object_cells.has(cell) \
 				and (_has_neighbor_support(cell) or is_climbable_cell(cell + Vector2i.UP) or is_climbable_cell(cell + Vector2i.DOWN))
 		_:
-			return not has_block_cell(cell) and not object_cells.has(cell) and not is_water_cell(cell) \
+			# Placing into water is allowed — it displaces or destroys (WS-24).
+			return not has_block_cell(cell) and not object_cells.has(cell) \
 				and not _cell_overlaps_body(cell, by) and _has_neighbor_support(cell)
 
 func place_block(id: String, cell: Vector2i) -> bool:
@@ -181,9 +214,13 @@ func place_block(id: String, cell: Vector2i) -> bool:
 	var layer := _layer_for(def.layer)
 	if layer == null:
 		return false
+	if def.layer == "blocks" and water_sim != null:
+		water_sim.displace(cell) # WS-24: displace if possible, destroy if enclosed
 	var variant := posmod(hash(cell), 5)
 	layer.set_cell(cell, 0, Vector2i(variant, def.atlas_row))
 	placed_blocks[_key(cell, def.layer)] = {"id": id, "hp": float(def.hp), "layer": def.layer}
+	if water_sim != null:
+		water_sim.notify_changed(cell)
 	return true
 
 func _key(cell: Vector2i, layer_name: String) -> Variant:
@@ -197,6 +234,8 @@ func remove_block(cell: Vector2i, layer_name: String = "blocks") -> String:
 	var entry: Dictionary = placed_blocks[key]
 	_layer_for(layer_name).erase_cell(cell)
 	placed_blocks.erase(key)
+	if layer_name == "blocks" and water_sim != null:
+		water_sim.notify_changed(cell) # removing a block wakes adjacent water
 	return entry.id
 
 ## Background walls are cosmetic (WS-20/21): any wall can be knocked out with
@@ -242,10 +281,14 @@ func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) ->
 		return false
 	var w: int = def.size[0]
 	var h: int = def.size[1]
+	var allow_water: bool = def.get("place_in_water", false) # pumps work submerged
 	for dy in h:
 		for dx in w:
 			var c := Vector2i(cell.x + dx, cell.y - dy)
-			if has_block_cell(c) or object_cells.has(c) or is_water_cell(c):
+			# A shallow film (level <= 2, the residue a pump cannot lift) does
+			# not block furniture; deeper water does.
+			var deep_water := water_sim != null and water_sim.level_at(c) > 2
+			if has_block_cell(c) or object_cells.has(c) or (deep_water and not allow_water):
 				return false
 			if def.kind == "door" and _cell_overlaps_body(c, by):
 				return false
@@ -262,13 +305,26 @@ func place_object(id: String, cell: Vector2i, placed_by_player: bool) -> WorldOb
 	objects_root.add_child(obj)
 	for c in obj.covered_cells():
 		object_cells[c] = obj
+		if water_sim != null and obj.is_solid():
+			water_sim.notify_changed(c)
+	if obj.def.kind == "pump":
+		pumps.append(obj)
 	return obj
 
 func remove_object(obj: WorldObject) -> void:
 	for c in obj.covered_cells():
 		if object_cells.get(c) == obj:
 			object_cells.erase(c)
+		if water_sim != null:
+			water_sim.notify_changed(c)
+	pumps.erase(obj)
 	obj.queue_free()
+
+## Called when an object's solidity changes in place (door opened/closed).
+func notify_object_changed(obj: WorldObject) -> void:
+	if water_sim != null:
+		for c in obj.covered_cells():
+			water_sim.notify_changed(c)
 
 ## Station ids within `reach` px of `pos` (GL-04: station-filtered crafting).
 func stations_near(pos: Vector2, reach: float) -> Array:

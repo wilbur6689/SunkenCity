@@ -13,9 +13,13 @@ The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records set
 decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
 base) comes first; do not add other major aspects before it works.
 
-Development has completed **M0** and **M1** of the milestone plan in `docs/MVP-overview.md` (both
-gates pass headless; manual feel passes pending); next is **M2 — Living Water**. The task tracker
-is `docs/MVP-checklist.md` — check items off there as they land.
+Development has completed **M0**, **M1**, and the water half of **M2** in `docs/MVP-overview.md`
+(gates pass headless via `m0/m1/m2_smoke.tscn`; manual feel passes pending). **Still open in M2:
+the Lighting block** (tile light propagation, breakers/building power, WS-17). The water sim
+lives in `scripts/world/water_sim.gd` (8-level cells, awake-set dormancy — see
+`docs/technical/WaterPhysics.md` "M2 Implementation Decisions"); `World` owns and ticks it, the
+`WaterRenderer` draws it, pumps use a targeted outlet. The task tracker is
+`docs/MVP-checklist.md` — check items off there as they land.
 
 ## Running the Project
 
@@ -55,10 +59,10 @@ is `docs/MVP-checklist.md` — check items off there as they land.
 - Backgrounds: user art in `docs/Examples/Backgrounds` (City plates + Building seam covers) is
   downscaled by the art tool into `assets/backgrounds/` and assembled by
   `scripts/world/backdrop.gd` (Parallax2D) hanging from the waterline.
-- Interaction model (`scripts/player/interaction.gd`): the held hotbar item decides what LMB does
-  (place block/object, hammer hits, knife/hand hold-to-scrap); RMB = back walls, hammer wall
-  removal, or use a consumable; E = interact (doors, chest, bed spawn, station crafting, pick up
-  furniture whole). `World.placed_blocks` separates breakable player blocks from unbreakable
+- Interaction model (`scripts/player/interaction.gd`): LMB interacts with the held item — place
+  block/object, hammer hits, use a consumable/schematic, aim a pump outlet; RMB = hold-to-scrap
+  furniture (knife or bare hands), place back walls, hammer wall removal; E = interact (doors,
+  chest, bed spawn, station crafting, pump outlet mode, pick up furniture whole). `World.placed_blocks` separates breakable player blocks from unbreakable
   structure (GL-01).
 - Main scene is currently `scenes/test/test_tower.tscn` (M0 test environment).
 

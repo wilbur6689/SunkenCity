@@ -53,6 +53,15 @@ func goto(cx: int) -> void:
 func aim(cell: Vector2i) -> void:
 	player.aim_position = World.cell_center(cell)
 
+## Hold scrap (RMB) on a cell until pred or timeout.
+func hold_scrap(cell: Vector2i, pred: Callable, n: int) -> bool:
+	aim(cell)
+	player.wants_use_secondary = true
+	var ok := await until(pred, n)
+	player.wants_use_secondary = false
+	await ticks(2)
+	return ok
+
 ## Hold primary use on a cell until pred or timeout.
 func hold_use(cell: Vector2i, pred: Callable, n: int) -> bool:
 	aim(cell)
@@ -116,25 +125,25 @@ func _run() -> void:
 	print("== B. hand-scrap a chair (hold-to-scrap)")
 	await goto(14)
 	var chair := obj_at(Vector2i(12, row))
-	check(await hold_use(Vector2i(12, row), func(): return player.interaction.scrap_progress > 0.2, 60), "progress builds while holding use")
+	check(await hold_scrap(Vector2i(12, row), func(): return player.interaction.scrap_progress > 0.2, 60), "progress builds while holding scrap (RMB)")
 	var t0 := Time.get_ticks_msec()
-	check(await hold_use(Vector2i(12, row), func(): return obj_at(Vector2i(12, row)) == null, 300), "chair scrapped and removed")
+	check(await hold_scrap(Vector2i(12, row), func(): return obj_at(Vector2i(12, row)) == null, 300), "chair scrapped and removed")
 	check(inv_count("wood") >= 3, "field yield ~half (wood %d)" % inv_count("wood"))
 	check(player.skills.xp["scrapping"] >= 3.0, "scrapping XP awarded")
 
 	print("== C. gates: tool tier and skill")
 	await goto(25)
-	await hold_use(Vector2i(27, row), func(): return false, 10)
+	await hold_scrap(Vector2i(27, row), func(): return false, 10)
 	check(obj_at(Vector2i(27, row)) != null and player.interaction.message.begins_with("Needs a tool"), "fridge refuses bare hands (%s)" % player.interaction.message)
 
 	print("== D. scrap the room by hand")
 	await goto(19)
-	check(await hold_use(Vector2i(18, row), func(): return obj_at(Vector2i(18, row)) == null, 400), "desk scrapped")
+	check(await hold_scrap(Vector2i(18, row), func(): return obj_at(Vector2i(18, row)) == null, 400), "desk scrapped")
 	await goto(8)
-	check(await hold_use(Vector2i(9, row), func(): return obj_at(Vector2i(9, row)) == null, 400), "cabinet scrapped")
-	check(await hold_use(Vector2i(6, row), func(): return obj_at(Vector2i(6, row)) == null, 400), "med cart scrapped")
+	check(await hold_scrap(Vector2i(9, row), func(): return obj_at(Vector2i(9, row)) == null, 400), "cabinet scrapped")
+	check(await hold_scrap(Vector2i(6, row), func(): return obj_at(Vector2i(6, row)) == null, 400), "med cart scrapped")
 	await goto(5)
-	check(await hold_use(Vector2i(3, row), func(): return obj_at(Vector2i(3, row)) == null, 400), "bed frame scrapped")
+	check(await hold_scrap(Vector2i(3, row), func(): return obj_at(Vector2i(3, row)) == null, 400), "bed frame scrapped")
 	check(player.skills.level("scrapping") >= 1, "Scrapping reached level 1 (xp %.0f)" % player.skills.xp["scrapping"])
 
 	print("== E. craft the scrap knife, use it on the metal furniture")
@@ -142,8 +151,8 @@ func _run() -> void:
 	check(craft("scrap_knife") and inv_count("scrap_knife") == 1, "scrap knife crafted")
 	check(hold_item("scrap_knife"), "knife in hand")
 	await goto(25)
-	check(await hold_use(Vector2i(24, row), func(): return obj_at(Vector2i(24, row)) == null, 300), "locker scrapped with knife")
-	check(await hold_use(Vector2i(27, row), func(): return obj_at(Vector2i(27, row)) == null, 400), "fridge scrapped (tool + skill gate passed)")
+	check(await hold_scrap(Vector2i(24, row), func(): return obj_at(Vector2i(24, row)) == null, 300), "locker scrapped with knife")
+	check(await hold_scrap(Vector2i(27, row), func(): return obj_at(Vector2i(27, row)) == null, 400), "fridge scrapped (tool + skill gate passed)")
 	check(inv_count("scrap_metal") >= 10 and inv_count("plastic") >= 2, "metal %d plastic %d" % [inv_count("scrap_metal"), inv_count("plastic")])
 
 	print("== F. three starter tools (GL-03)")

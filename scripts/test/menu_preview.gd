@@ -37,6 +37,8 @@ func _ready() -> void:
 			ui.open_panel("workbench")
 		_:
 			ui.open_panel()
+			if screen != "inventory":
+				ui.show_screen(screen)
 	if shot != "":
 		await get_tree().create_timer(1.0).timeout
 		get_viewport().get_texture().get_image().save_png(shot)

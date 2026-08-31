@@ -421,7 +421,7 @@ def build_icons():
 
 OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
     "bed_frame": (3, 2), "cabinet": (2, 3), "desk": (3, 2), "chair": (1, 2), "locker": (1, 3),
-    "fridge": (2, 3), "med_cart": (2, 2), "workbench": (3, 2), "forge": (2, 2), "med_station": (2, 2),
+    "fridge": (2, 3), "med_cart": (2, 2), "pump": (1, 2), "workbench": (3, 2), "forge": (2, 2), "med_station": (2, 2),
     "dive_station": (2, 3), "mod_bench": (3, 2), "chest": (2, 1), "bed": (3, 2), "standing_lamp": (1, 2),
     "wood_door": (1, 3),
 }
@@ -463,6 +463,12 @@ def _draw_object(d, oid, W, H):
         d.rectangle([W // 2 - 1, 8, W // 2, 15], fill=RED); d.rectangle([W // 2 - 4, 11, W // 2 + 3, 12], fill=RED)
         d.ellipse([2, H - 5, 6, H - 1], fill=OUT); d.ellipse([W - 7, H - 5, W - 3, H - 1], fill=OUT)
         d.rectangle([3, 0, W - 4, 3], fill=(160, 160, 165), outline=OUT)
+    elif oid == "pump":
+        _box(d, 2, 10, W - 3, H - 1, metal)                                       # body
+        d.ellipse([4, 13, 11, 20], outline=metal[1][3]); d.point((7, 16), fill=metal[2])  # impeller
+        d.rectangle([6, 2, 9, 10], fill=(70, 110, 150), outline=OUT)              # hose stub
+        d.rectangle([5, 0, 10, 3], fill=metal[1][1], outline=OUT)                 # nozzle
+        d.point((3, 27), fill=ORANGE); d.point((12, 27), fill=GREEN)              # status leds
     elif oid == "workbench":
         _box(d, 0, 8, W - 1, 12, wood)
         d.rectangle([2, 13, 5, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 6, 13, W - 3, H - 1], fill=wood[1][1], outline=OUT)

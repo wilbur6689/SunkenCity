@@ -25,7 +25,7 @@
      "use": {"heal": 25}},
     {"id": "food_can",  "name": "Canned Food", "category": "consumable", "weight": 0.5, "stack": 10, "icon": [1, 2],
      "use": {"heal": 40}},
-    {"id": "glowstick", "name": "Glowstick", "category": "consumable", "weight": 0.1, "stack": 50, "icon": [2, 2],
+    {"id": "glowstick", "name": "Glowstick", "category": "consumable", "weight": 0.1, "stack": 50, "icon": [2, 2], "sinks": true,
      "use": {"drop_light": {"radius_blocks": 4, "color": [0.5, 1.0, 0.6]}}},
 
     {"id": "clothes", "name": "Plain Clothes", "category": "gear", "slot": "suit", "weight": 1.0, "icon": [4, 2],

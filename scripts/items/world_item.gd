@@ -36,9 +36,25 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	pickup_delay = maxf(pickup_delay - delta, 0.0)
 	var in_water := World.is_water(global_position)
-	var g := Constants.gravity * (0.15 if in_water else 1.0)
-	velocity.y = minf(velocity.y + g * delta, (2.0 if in_water else 20.0) * Constants.BLOCK_SIZE)
+	var sinks: bool = Data.item(id).get("sinks", false)
+	if in_water and not sinks:
+		# Buoyant (CC-07): rise until the surface — or pin against a ceiling.
+		if World.is_solid(global_position + Vector2(0, -6.0)):
+			velocity = Vector2.ZERO # pinned to the ceiling
+			var cell := World.cell_at(global_position + Vector2(0, -6.0))
+			global_position.y = (cell.y + 1) * Constants.BLOCK_SIZE + 5.0
+		else:
+			velocity.y = move_toward(velocity.y, -Constants.ITEM_BUOYANCY_RISE, 6.0 * Constants.BLOCK_SIZE * delta)
+			var surface := World.water_surface_y(global_position)
+			if global_position.y + velocity.y * delta < surface + 3.0:
+				global_position.y = surface + 3.0 # bob at the surface
+				velocity.y = 0.0
+	else:
+		var g := Constants.gravity * (0.15 if in_water else 1.0)
+		velocity.y = minf(velocity.y + g * delta, (2.0 if in_water else 20.0) * Constants.BLOCK_SIZE)
 	velocity.x = move_toward(velocity.x, 0.0, (8.0 if in_water else 3.0) * Constants.BLOCK_SIZE * delta)
+	if in_water:
+		velocity += World.current_at(global_position) * delta * 4.0 # currents carry items (WS-16)
 	var next := global_position + velocity * delta
 	# rest on the top of the first solid cell below
 	if velocity.y > 0.0 and World.is_solid(next + Vector2(0, 4)):

@@ -11,6 +11,9 @@ var cell: Vector2i = Vector2i.ZERO # bottom-left
 var size: Vector2i = Vector2i.ONE
 var storage: Inventory = null     # chests
 var open: bool = false            # doors
+
+const NO_OUTLET := Vector2i(-99999, -99999)
+var outlet_cell: Vector2i = NO_OUTLET # pumps (GL-16): where pumped water goes
 var scrap_progress: float = 0.0   # 0..1 while being scrapped in place
 var placed_by_player: bool = false
 
@@ -83,7 +86,11 @@ func interact(player) -> String:
 			open = not open
 			_shape.disabled = open
 			sprite.modulate.a = 0.45 if open else 1.0
+			World.notify_object_changed(self) # doors seal water; toggling wakes it
 			return "Door " + ("opened" if open else "closed")
+		"pump":
+			player.interaction.begin_pump_targeting(self)
+			return ""
 		"bed":
 			World.set_spawn(bottom_center())
 			return "Spawn point set"

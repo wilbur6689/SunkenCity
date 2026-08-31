@@ -460,6 +460,7 @@ func _state_surface_swim(delta: float) -> void:
 		state = State.UNDERWATER
 		return
 	_accelerate_x(input_dir.x * Constants.SURFACE_SWIM_SPEED * swim_factor(), Constants.SWIM_ACCEL, delta)
+	velocity += World.current_at(_center_point()) * delta * 60.0 * delta # currents push (WS-16)
 	# Auto-tread (WS-07): spring toward the float line.
 	var surface := World.water_surface_y(_center_point())
 	var target_y := surface - Constants.SURFACE_FLOAT_HEIGHT_PX - hitbox_top()
@@ -474,6 +475,7 @@ func _state_underwater(delta: float) -> void:
 		return
 	# Free 8-way, neutral buoyancy (WS-06/09): no gravity, drag to rest.
 	var target := input_dir * Constants.UNDERWATER_SWIM_SPEED * swim_factor()
+	target += World.current_at(_center_point()) # currents push, swimmable against (WS-16)
 	var rate := Constants.SWIM_ACCEL if input_dir != Vector2.ZERO else Constants.SWIM_DRAG
 	velocity = velocity.move_toward(target, rate * delta)
 

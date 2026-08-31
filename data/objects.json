@@ -379,6 +379,29 @@
           "max": 3
         }
       ]
+    },
+    {
+      "id": "pump",
+      "name": "Pump",
+      "kind": "pump",
+      "size": [
+        1,
+        2
+      ],
+      "weight": 15,
+      "place_in_water": true,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 4,
+          "max": 4
+        },
+        {
+          "item": "plastic",
+          "min": 2,
+          "max": 2
+        }
+      ]
     }
   ]
 }

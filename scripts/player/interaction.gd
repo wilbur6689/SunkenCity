@@ -16,6 +16,7 @@ var target_cell: Vector2i = Vector2i.ZERO
 var target_in_reach: bool = false
 var scrapping: WorldObject = null
 var scrap_progress: float = 0.0
+var pending_pump: WorldObject = null # E on a pump -> next use click sets its outlet
 var hit_cooldown: float = 0.0
 var message: String = ""
 var message_timer: float = 0.0
@@ -56,11 +57,11 @@ func tick(delta: float) -> void:
 	if player.wants_interact:
 		_interact()
 	if player.wants_use:
-		_primary(delta)
+		_primary()
+	if player.wants_use_secondary:
+		_secondary(delta)
 	else:
 		_stop_scrapping()
-	if player.wants_use_secondary:
-		_secondary()
 	_used_last_tick = player.wants_use
 	_used_secondary_last_tick = player.wants_use_secondary
 
@@ -79,53 +80,75 @@ func _interact() -> void:
 		if msg != "":
 			say(msg)
 
-func _primary(delta: float) -> void:
+## Pump outlet targeting (GL-16): E on a pump, then click a cell to aim its hose.
+func begin_pump_targeting(pump: WorldObject) -> void:
+	pending_pump = pump
+	say("Click a cell to set the pump outlet")
+
+func _set_pump_outlet() -> void:
+	if not is_instance_valid(pending_pump):
+		pending_pump = null
+		return
+	var max_px := Constants.PUMP_RANGE_BLOCKS * Constants.BLOCK_SIZE
+	if pending_pump.center().distance_to(World.cell_center(target_cell)) > max_px:
+		say("Outlet out of range (max %d blocks)" % int(Constants.PUMP_RANGE_BLOCKS))
+	elif World.is_solid_cell(target_cell):
+		say("The outlet must be an open cell")
+	else:
+		pending_pump.outlet_cell = target_cell
+		say("Pump outlet set")
+	pending_pump = null
+
+## LMB: interact with the held item — place, hammer, consume (scrap is RMB).
+func _primary() -> void:
+	if pending_pump != null:
+		if not _used_last_tick:
+			_set_pump_outlet()
+		return
 	var held := player.held_item()
 	var it := Data.item(held)
 	match it.get("category", ""):
 		"placeable_block":
-			_stop_scrapping()
 			if target_in_reach and World.can_place_block(it.places_block, target_cell, player):
 				if World.place_block(it.places_block, target_cell):
 					player.inventory.remove_from_slot(player.selected_slot, 1)
 					player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
 		"placeable_object":
-			_stop_scrapping()
 			if target_in_reach and World.can_place_object(it.places_object, target_cell, player) and not _used_last_tick:
 				World.place_object(it.places_object, target_cell, true)
 				player.inventory.remove_from_slot(player.selected_slot, 1)
 				player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK * 2.0)
+		"consumable", "schematic":
+			if not _used_last_tick:
+				player.use_item(player.selected_slot)
 		_:
-			# Tools act as themselves; anything else (materials, consumables,
-			# empty hand) scraps bare-handed. Consumables are used with secondary.
-			var tool := Data.tool_of(held)
-			var ttype: String = tool.get("type", "hand")
-			if ttype == "hammer":
-				_stop_scrapping()
-				_hammer(tool)
-			else:
-				_scrap(delta, tool)
+			if Data.is_tool(held, "hammer"):
+				_hammer(Data.tool_of(held))
 
-func _secondary() -> void:
+## RMB: hold-to-scrap furniture (any non-tool or knife); walls with a wall
+## item or the hammer.
+func _secondary(delta: float) -> void:
 	var held := player.held_item()
 	var it := Data.item(held)
 	var cat: String = it.get("category", "")
-	if cat == "consumable" or cat == "schematic":
-		if not _used_secondary_last_tick:
-			player.use_item(player.selected_slot)
-		return
 	if not target_in_reach:
+		_stop_scrapping()
 		return
 	if cat == "placeable_block" and Data.blocks[it.places_block].layer == "back":
+		_stop_scrapping()
 		if World.can_place_block(it.places_block, target_cell, player) and World.place_block(it.places_block, target_cell):
 			player.inventory.remove_from_slot(player.selected_slot, 1)
-	elif Data.is_tool(held, "hammer") and (hit_cooldown <= 0.0 or not _used_secondary_last_tick):
-		var removed := World.remove_block(target_cell, "back")
-		if removed != "":
-			player.inventory.add(removed, 1)
-		elif not World.erase_back_wall(target_cell):
-			return
-		hit_cooldown = Constants.BLOCK_HIT_INTERVAL
+	elif Data.is_tool(held, "hammer"):
+		_stop_scrapping()
+		if hit_cooldown <= 0.0 or not _used_secondary_last_tick:
+			var removed := World.remove_block(target_cell, "back")
+			if removed != "":
+				player.inventory.add(removed, 1)
+			elif not World.erase_back_wall(target_cell):
+				return
+			hit_cooldown = Constants.BLOCK_HIT_INTERVAL
+	else:
+		_scrap(delta, Data.tool_of(held))
 
 func _hammer(tool: Dictionary) -> void:
 	# The cooldown paces repeated hits while holding; a fresh press always lands.

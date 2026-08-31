@@ -31,7 +31,7 @@ const START_KIT := [["bandage", 2], ["food_can", 1]]
 
 @onready var blocks: TileMapLayer = $Blocks
 @onready var back_walls: TileMapLayer = $BackWalls
-@onready var water: TileMapLayer = $Water
+@onready var water_renderer: WaterRenderer = $WaterRenderer
 @onready var climbables: TileMapLayer = $Climbables
 @onready var items_root: Node2D = $Items
 @onready var objects_root: Node2D = $Objects
@@ -44,7 +44,12 @@ func _ready() -> void:
 	var spawn_cell := Vector2i(16, FLOOR_H - 1) # not 15: the rope hole is below it
 	spawn_point.global_position = blocks.map_to_local(spawn_cell)
 	var feet := spawn_point.global_position + Vector2(0, Constants.BLOCK_SIZE * 0.5)
-	World.register(blocks, water, climbables, feet, back_walls, items_root, objects_root)
+	var water_bounds := Rect2i(0, 0, WIDTH, FLOOR_COUNT * FLOOR_H + 1)
+	World.register(blocks, water_bounds, climbables, feet, back_walls, items_root, objects_root)
+	# Static seed at equilibrium: everything open at or below the waterline is full.
+	var waterline := DRY_FLOORS * FLOOR_H
+	World.water_sim.fill_rect(Rect2i(1, waterline, WIDTH - 2, FLOOR_COUNT * FLOOR_H - waterline), WaterSim.MAX_LEVEL)
+	water_renderer.setup(waterline * Constants.BLOCK_SIZE)
 	_furnish()
 	# Shallows backdrop hangs from the waterline; start it well left of the tower.
 	$Backdrop.setup(DRY_FLOORS * FLOOR_H * Constants.BLOCK_SIZE, -900.0)
@@ -58,10 +63,6 @@ func _set_block(x: int, y: int, mat: Mat) -> void:
 
 func _set_back(x: int, y: int, mat: Mat) -> void:
 	back_walls.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x + 7, y + 3), mat))
-
-func _set_water(x: int, y: int, _mat: Mat) -> void:
-	if blocks.get_cell_source_id(Vector2i(x, y)) == -1:
-		water.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x, y), Mat.WATER))
 
 func _set_climbable(x: int, y: int, mat: Mat) -> void:
 	climbables.set_cell(Vector2i(x, y), 0, Vector2i(0, mat))
@@ -127,10 +128,6 @@ func _build_tower() -> void:
 
 	# Rope (WS-16): hangs from the floor-1 hole down to floor 2's standing row.
 	_fill(ROPE_X, FLOOR_H, ROPE_X, 2 * FLOOR_H - 1, Mat.ROPE, _set_climbable)
-
-	# Static water placeholder (real sim is M2): every open cell at or below
-	# the waterline row is flooded.
-	_fill(1, waterline, WIDTH - 2, bottom - 1, Mat.WATER, _set_water)
 
 func _furnish() -> void:
 	var standing_row := FLOOR_H - 1

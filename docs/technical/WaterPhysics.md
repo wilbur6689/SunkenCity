@@ -100,9 +100,29 @@ Design intent (from the overview):
 - Determinism is *not* required across machines if only the host simulates — prefer that over
   lockstep.
 
+## M2 Implementation Decisions (2026-08-31)
+
+- **8 fill levels per cell** (`WaterSim`, bounded grid, integer-conserved units).
+- Flow: down, then sideways equalization when the difference is ≥ 2 (half-difference moves);
+  settled cells leave the awake set entirely.
+- **Pumps use a targeted outlet** (E on the pump, click a cell within 24 blocks) instead of
+  pipes — pipes can replace the targeting without touching the sim.
+- Pump suction and output both work through bounded BFS on the connected body/airspace
+  ("pressure-lite"): suction takes from the body's surface (and reaches puddles across the
+  drained floor — deliberate, gameplay-first per GL-16); output merges into the nearest free
+  space, so a rising receiving pool never stalls the outlet.
+- Doors count as solid for sealing (airlocks work); background walls never seal (WS-20).
+- Placement into water: bounded-BFS displacement (WS-24); shallow films (level ≤ 2) don't
+  block furniture placement.
+- **Known limitation:** the diff ≥ 2 spread rule freezes slope-1 gradients, so a sustained
+  point source builds a static pyramid (and a point drain a static wedge). The pump paths
+  sidestep this via BFS; free-falling pours still show it. Candidate fix: a "fresh-water
+  ripple" pass that lets just-received units walk downhill with diff ≥ 1.
+
 ## Open Items
 
-- Fill-level granularity (binary vs. 8-level vs. continuous) — prototype first.
+- Pyramid/wedge relaxation for free pours (see limitation above).
+- Instant-settle for distant regions — with M3 chunking.
 - Whether large-body region optimization is needed for target world sizes.
 - Pump mechanics detail (pipes vs. paired blocks, power, tiers).
 - Current strength tuning: escapable vs. trap-capable flows.

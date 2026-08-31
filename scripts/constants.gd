@@ -70,6 +70,13 @@ const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
 const HAND_BLOCK_DAMAGE: float = 0.0 # bare hands cannot break placed blocks
 const BLOCK_HIT_INTERVAL: float = 0.25 # seconds between tool hits while holding use
 
+# --- Water sim (M2, WaterPhysics.md) ---
+const WATER_BUDGET_PER_TICK: int = 3000 # awake cells processed per physics tick
+const PUMP_UNITS_PER_TICK: int = 2      # 8 units = one cell; 2/tick @60 = 15 cells/sec
+const PUMP_RANGE_BLOCKS: float = 24.0   # how far a pump's outlet can be set
+const CURRENT_PUSH: float = 14.0        # px/s of push per unit of flow (WS-16; tuned escapable)
+const ITEM_BUOYANCY_RISE: float = 3.0 * BLOCK_SIZE # floating items rise at this speed (CC-07)
+
 # --- Skills (CC-18) ---
 const SKILL_XP_PER_LEVEL: float = 20.0
 const SKILL_LEVELS_PER_PLAYER_LEVEL: int = 5

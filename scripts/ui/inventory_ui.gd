@@ -103,10 +103,10 @@ func _ready() -> void:
 	tabs.position = Vector2(185, 26)
 	tabs.add_theme_constant_override("separation", 3)
 	content.add_child(tabs)
-	for name in ["inventory", "crafting", "chest"]:
+	for name in ["inventory", "crafting", "skills", "chest"]:
 		var b := Button.new()
 		b.text = name.capitalize()
-		b.custom_minimum_size = Vector2(52, 16)
+		b.custom_minimum_size = Vector2(48, 16)
 		UITheme.style_button(b)
 		b.pressed.connect(show_screen.bind(name))
 		tabs.add_child(b)
@@ -115,6 +115,7 @@ func _ready() -> void:
 
 	_build_inventory_screen()
 	_build_crafting_screen()
+	_build_skills_screen()
 	_build_chest_screen()
 
 	# Shared bag grid (wood frame) at the bottom
@@ -253,6 +254,71 @@ func _build_crafting_screen() -> void:
 	UITheme.style_button(craft_button)
 	craft_button.pressed.connect(_craft_selected)
 	s.add_child(craft_button)
+
+var player_stats_box: VBoxContainer
+var skills_box: VBoxContainer
+
+## Skills & player stats screen (CC-18): player level, banked tech-tree
+## points, vitals, and each skill's level with XP progress to the next.
+func _build_skills_screen() -> void:
+	var s := Control.new()
+	s.set_anchors_preset(Control.PRESET_FULL_RECT)
+	s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	s.visible = false
+	content.add_child(s)
+	screens["skills"] = s
+
+	var pp := _panel(Vector2(185, 46), Vector2(128, 148), UITheme.steel_panel())
+	s.add_child(pp)
+	player_stats_box = VBoxContainer.new()
+	player_stats_box.add_theme_constant_override("separation", 2)
+	pp.add_child(player_stats_box)
+
+	var sp := _panel(Vector2(319, 46), Vector2(136, 148), UITheme.steel_panel())
+	s.add_child(sp)
+	skills_box = VBoxContainer.new()
+	skills_box.add_theme_constant_override("separation", 3)
+	sp.add_child(skills_box)
+
+func _refresh_skills() -> void:
+	for c in player_stats_box.get_children():
+		c.queue_free()
+	for c in skills_box.get_children():
+		c.queue_free()
+	var sk := player.skills
+	player_stats_box.add_child(UITheme.label("PLAYER", 9, Color(0.56, 0.75, 0.81)))
+	player_stats_box.add_child(UITheme.label("Level %d" % sk.player_level(), 9))
+	player_stats_box.add_child(UITheme.label("Ability points: %d" % sk.available_points(), 8, Color(0.95, 0.85, 0.5) if sk.available_points() > 0 else Color(0.7, 0.78, 0.85)))
+	player_stats_box.add_child(UITheme.label("(tech tree arrives in M5)", 8, Color(0.55, 0.6, 0.68)))
+	player_stats_box.add_child(UITheme.label(" ", 8))
+	player_stats_box.add_child(UITheme.label("Health  %d / %d" % [roundi(player.health), roundi(Constants.MAX_HEALTH)], 8))
+	player_stats_box.add_child(UITheme.label("Oxygen  %.0fs" % Constants.BASE_OXYGEN_SECONDS, 8))
+	player_stats_box.add_child(UITheme.label("Weight  %.1f" % player.inventory.total_weight(), 8))
+	player_stats_box.add_child(UITheme.label("Swim    x%.2f" % player.swim_factor(), 8))
+	var suit := player.equipped("suit")
+	player_stats_box.add_child(UITheme.label("Suit    %s" % (Data.item_name(suit) if suit != "" else "none"), 8))
+
+	skills_box.add_child(UITheme.label("SKILLS — level by use", 9, Color(0.56, 0.75, 0.81)))
+	for skill_name in sk.xp.keys():
+		var lvl := sk.level(skill_name)
+		var into: float = sk.xp[skill_name] - lvl * Constants.SKILL_XP_PER_LEVEL
+		var row := VBoxContainer.new()
+		row.add_theme_constant_override("separation", 1)
+		row.add_child(UITheme.label("%s  —  %d" % [skill_name.capitalize(), lvl], 8))
+		var bar := ProgressBar.new()
+		bar.custom_minimum_size = Vector2(120, 5)
+		bar.max_value = Constants.SKILL_XP_PER_LEVEL
+		bar.value = into
+		bar.show_percentage = false
+		var bg := StyleBoxFlat.new()
+		bg.bg_color = Color(0.06, 0.13, 0.19)
+		var fill := StyleBoxFlat.new()
+		fill.bg_color = Color(0.56, 0.75, 0.81)
+		bar.add_theme_stylebox_override("background", bg)
+		bar.add_theme_stylebox_override("fill", fill)
+		row.add_child(bar)
+		row.add_child(UITheme.label("%.0f / %.0f xp to next" % [into, Constants.SKILL_XP_PER_LEVEL], 8, Color(0.55, 0.6, 0.68)))
+		skills_box.add_child(row)
 
 func _build_chest_screen() -> void:
 	var s := Control.new()
@@ -402,6 +468,8 @@ func _refresh_all() -> void:
 	cursor_count.text = str(cursor_stack.count) if (cursor_stack != null and cursor_stack.count > 1) else ""
 	if screen == "crafting":
 		_refresh_crafting(true)
+	elif screen == "skills":
+		_refresh_skills()
 
 func _refresh_grid(ui_slots: Array, inv: Inventory, is_bag: bool) -> void:
 	for i in ui_slots.size():
