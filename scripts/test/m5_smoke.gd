@@ -26,6 +26,24 @@ func until(pred: Callable, n: int) -> bool:
 		await get_tree().physics_frame
 	return pred.call()
 
+## Iron cost of crafting one `item`, expanding intermediate recipes (steel).
+func _iron_cost(item: String, depth: int = 0) -> int:
+	if item == "iron":
+		return 1
+	if depth > 4 or not Data.recipes.has(item):
+		return 0
+	var total := 0
+	for inp in Data.recipes[item].inputs:
+		total += _iron_cost(String(inp.item), depth + 1) * int(inp.count)
+	return total
+
+## Iron the full gear chain consumes (GL-27 ladder top: tools, tank, suits).
+func _chain_iron_need() -> int:
+	var total := 0
+	for id in ["bolt_cutters", "cutting_torch", "tank_iron", "hard_suit", "rebreather"]:
+		total += _iron_cost(id)
+	return total
+
 func _ready() -> void:
 	var city: Node2D = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
@@ -141,6 +159,134 @@ func _ready() -> void:
 	check(player.craft(Data.recipes["tank_iron"]), "iron tank built")
 	check(player.craft(Data.recipes["hard_suit"]), "hard suit built after learning it")
 	check(player.inventory.count("hard_suit") == 1, "the ladder tops out: knife to hard suit through play")
+
+	print("== G. modifiers (LT-05..08)")
+	var knife := {"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 3}, "suffix": {"id": "of_the_shore", "power": 1}}}
+	check(ItemMods.display_name(knife) == "Sharp Iron Knife of the Shore", "prefix+suffix title: '%s'" % ItemMods.display_name(knife))
+	check(ItemMods.rarity(knife) == "rare", "one of each mod = rare (blue)")
+	knife.mods.suffix.power = 3
+	check(ItemMods.rarity(knife) == "epic", "both at top power = epic (purple)")
+	check(ItemMods.rarity({"id": "iron_knife", "count": 1}) == "common", "clean gear is common (gray)")
+	player.inventory.slots.fill(null)
+	player.inventory.set_slot(0, knife)
+	player.selected_slot = 0
+	player.bare_hands = false
+	var base_dmg := float(Data.tool_of("iron_knife").damage)
+	check(player.held_tool().damage == base_dmg + 3.0, "Sharp III adds +3 damage to the held tool")
+	check(ItemMods.unit_weight(knife) < Data.weight("iron_knife"), "'of the Shore' lightens the item")
+	var suit := {"id": "wetsuit", "count": 1, "mods": {"suffix": {"id": "of_the_deep", "power": 2}}}
+	player.set_equipment("suit", suit)
+	check(player.max_oxygen() == Constants.BASE_OXYGEN_SECONDS + 30.0, "'of the Deep II' grants +30s air from the suit")
+	var warm := {"id": "wetsuit", "count": 1, "mods": {"suffix": {"id": "of_warmth", "power": 1}}}
+	player.set_equipment("suit", warm)
+	check(player.suit_stat("cold") == 2.0, "'of Warmth' lifts a wetsuit to Dark-rating cold 2")
+	player.set_equipment("suit", {"id": "clothes", "count": 1})
+	var modded_in_city := 0
+	for rec: Dictionary in World.object_records:
+		if rec.storage == null:
+			continue
+		for s in rec.storage.slots:
+			if s != null and s.has("mods"):
+				modded_in_city += 1
+	check(modded_in_city >= 1, "found gear rolls mods at loot gen (%d modded items in city)" % modded_in_city)
+
+	print("== H. Modification Bench backend (LT-09/10)")
+	player.known_mods.clear()
+	var donor := {"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 2}}}
+	check(not player.learnable_mods(donor).is_empty(), "a modded donor offers something to learn")
+	var learned := player.learn_mods(donor)
+	check(player.known_mods.get("sharp", 0) == 2, "Sharp learned at power 2 (%s)" % str(learned))
+	check(player.learnable_mods({"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 1}}}).is_empty(), "a weaker duplicate teaches nothing")
+	var clean := {"id": "iron_knife", "count": 1}
+	check(player.apply_mods(clean, "sharp", ""), "learned mod applies to clean crafted gear")
+	check(clean.mods.prefix.power == 2, "applied at the learned power")
+	check(not player.apply_mods(clean, "sharp", ""), "once modded the item is locked (LT-09)")
+	check(not player.apply_mods({"id": "wetsuit", "count": 1}, "sharp", ""), "a weapon prefix refuses a suit")
+	var junk := {"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "rusty", "power": 1}}}
+	check(player.learnable_mods(junk).is_empty(), "Rusty junk cannot be learned")
+
+	print("== I. ability tech tree (CC-18)")
+	var sk := player.skills
+	sk.xp = {"scrapping": 0.0, "swimming": 0.0, "building": 0.0}
+	sk.spent_points = 0
+	sk.abilities.clear()
+	check(not sk.can_unlock("field_strip"), "no points, no unlock")
+	sk.xp["scrapping"] = 5.0 * Constants.SKILL_XP_PER_LEVEL * Constants.SKILL_LEVELS_PER_PLAYER_LEVEL
+	check(sk.available_points() == 5, "25 skill levels bank 5 ability points")
+	check(not sk.can_unlock("tool_harness"), "tier 2 locked behind its tier-1 requirement")
+	check(sk.unlock("field_strip"), "tier 1 unlocks with a point")
+	check(sk.unlock("tool_harness"), "tier 2 opens once its requirement is owned")
+	check(sk.available_points() == 3, "each unlock spends one point")
+	check(sk.effect("field_yield", Constants.FIELD_SCRAP_YIELD) == 0.75, "Field Strip raises the field yield")
+	check(player.can_equip("accessory3", "fins"), "Tool Harness opens the third accessory mount")
+	check(not player.can_equip("accessory4", "fins"), "the fourth mount stays locked")
+	var reach_before := player.reach_blocks()
+	sk.unlock("long_reach")
+	check(player.reach_blocks() == reach_before + 1.0, "Long Reach adds a block of reach")
+	sk.unlock("strong_kick")
+	check(player.equip_stat("swim") >= 0.1, "Strong Kick feeds the swim stat")
+
+	print("== J. found-only pools (LT-18)")
+	for gun in ["pistol", "smg", "rifle"]:
+		check(Data.item(gun).get("found_only", false), "%s is found-only" % gun)
+	for r: Dictionary in Data.recipe_list:
+		check(not Data.item(r.output.item).get("found_only", false), "recipe %s does not craft found-only gear" % r.id)
+	var gun_in_tables := false
+	for zone in Data.loot.tables:
+		for band in Data.loot.tables[zone]:
+			for e in Data.loot.tables[zone][band]:
+				if e.item in ["pistol", "smg", "rifle"]:
+					gun_in_tables = true
+	check(gun_in_tables, "firearms drop from the deep loot tables")
+
+	print("== K. harvest gates across material tiers (GL-28)")
+	for o: Dictionary in Data.objects.values():
+		var mats := {}
+		for y in o.get("yields", []):
+			mats[y.item] = true
+		if mats.has("steel"):
+			check(int(o.get("skill", 0)) >= 3, "%s (steel) needs Scrapping 3+" % o.id)
+		elif mats.has("iron"):
+			check(int(o.get("skill", 0)) >= 2, "%s (iron) needs Scrapping 2+" % o.id)
+	sk.xp["scrapping"] = 0.0
+	player.inventory.slots.fill(null)
+	player.inventory.add("safe", 1)
+	check(not player.scrap_item("safe", 1, true), "an iron-tier object refuses Scrapping 0")
+	sk.xp["scrapping"] = 2.0 * Constants.SKILL_XP_PER_LEVEL
+	check(player.scrap_item("safe", 1, true), "...and yields at Scrapping 2")
+
+	print("== L. depletion pressure (GL-28/LT-27): the surface cannot finish the chain")
+	for zone in Data.loot.tables:
+		for band in ["dry", "shallows"]:
+			for e in Data.loot.tables[zone].get(band, []):
+				check(not e.item in ["iron", "steel"], "%s/%s table holds no iron or steel" % [zone, band])
+	var chain_iron := _chain_iron_need()
+	var surface_iron := 0
+	var cold_row: int = World.waterline_row + Constants.BAND_SHALLOWS_DEPTH # The Cold starts here
+	for rec: Dictionary in World.object_records:
+		if rec.cell.y >= cold_row:
+			continue
+		if rec.storage != null:
+			for s in rec.storage.slots:
+				if s != null and s.id == "iron":
+					surface_iron += s.count
+		for y in rec.def.get("yields", []):
+			if y.item == "iron":
+				surface_iron += int(y.max)
+	var _dbg := {}
+	for rec: Dictionary in World.object_records:
+		if rec.cell.y >= cold_row:
+			continue
+		for y in rec.def.get("yields", []):
+			if y.item == "iron":
+				_dbg[rec.id] = _dbg.get(rec.id, 0) + int(y.max)
+		if rec.storage != null:
+			for s in rec.storage.slots:
+				if s != null and s.id == "iron":
+					_dbg["storage:" + rec.id] = _dbg.get("storage:" + rec.id, 0) + s.count
+	print("  breakdown: ", _dbg)
+	print("  surface iron obtainable: %d · chain needs: %d" % [surface_iron, chain_iron])
+	check(surface_iron < chain_iron, "iron above The Cold (%d) cannot cover the gear chain (%d) — you must dive" % [surface_iron, chain_iron])
 
 	print("\nM5 smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:

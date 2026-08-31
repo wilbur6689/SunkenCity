@@ -103,7 +103,10 @@ static func save_character(char_name: String, player, world_key: String) -> void
 		data = {"version": VERSION, "name": char_name, "maps": {}, "positions": {}}
 	data["inventory"] = player.inventory.slots.duplicate(true)
 	data["equipment"] = player.equipment.duplicate(true)
-	data["skills"] = {"xp": player.skills.xp.duplicate(), "spent": player.skills.spent_points}
+	data["skills"] = {"xp": player.skills.xp.duplicate(), "spent": player.skills.spent_points,
+		"abilities": player.skills.abilities.duplicate()}
+	data["known_recipes"] = player.known_recipes.duplicate()
+	data["known_mods"] = player.known_mods.duplicate()
 	data["health"] = player.health
 	data["oxygen"] = player.oxygen
 	data["selected_slot"] = player.selected_slot
@@ -135,6 +138,9 @@ static func apply_character(data: Dictionary, player, world_key: String) -> void
 		player.set_equipment(slot_name, data.equipment.get(slot_name))
 	player.skills.xp = (data.skills.xp as Dictionary).duplicate()
 	player.skills.spent_points = int(data.skills.spent)
+	player.skills.abilities = (data.skills.get("abilities", {}) as Dictionary).duplicate()
+	player.known_recipes = (data.get("known_recipes", {}) as Dictionary).duplicate()
+	player.known_mods = (data.get("known_mods", {}) as Dictionary).duplicate()
 	player.health = float(data.health)
 	player.oxygen = float(data.oxygen)
 	player.selected_slot = int(data.selected_slot)

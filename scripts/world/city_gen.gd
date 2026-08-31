@@ -170,7 +170,14 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 			var rtype: String = tower_bias if rng.randf() < 0.5 else mix[rng.randi_range(0, mix.size() - 1)]
 			var pool: Array = rooms.get(rtype, [])
 			var depth := sr - WATERLINE
-			var candidates := pool.filter(func(r): return depth >= int(r.get("depth_min", -9999)) and depth <= int(r.get("depth_max", 9999)))
+			var in_depth := func(r): return depth >= int(r.get("depth_min", -9999)) and depth <= int(r.get("depth_max", 9999))
+			var candidates: Array = pool.filter(in_depth)
+			if candidates.is_empty():
+				# No depth-valid room in this zone: depth ranges win over zone
+				# (a depth-gated room must never leak to other bands — GL-28
+				# leans on iron-bearing rooms staying below The Cold).
+				for zp in rooms.values():
+					candidates.append_array((zp as Array).filter(in_depth))
 			if candidates.is_empty():
 				candidates = pool
 			var cx := zone_x

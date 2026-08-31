@@ -40,6 +40,19 @@ func _ready() -> void:
 		"crafting":
 			World.place_object("workbench", Vector2i(10, 5), true)
 			ui.open_panel("workbench")
+		"skills":
+			# Banked points + one owned ability so the tree shows all states.
+			player.skills.xp["scrapping"] = 10.0 * Constants.SKILL_XP_PER_LEVEL
+			player.skills.xp["building"] = 5.0 * Constants.SKILL_XP_PER_LEVEL
+			player.skills.unlock("field_strip")
+			ui.open_panel()
+			ui.show_screen("skills")
+		"modify":
+			World.place_object("mod_bench", Vector2i(10, 5), true)
+			player.known_mods = {"sharp": 2, "of_the_deep": 3}
+			player.inventory.add_stack({"id": "iron_knife", "count": 1,
+				"mods": {"prefix": {"id": "swift", "power": 3}, "suffix": {"id": "of_the_shore", "power": 3}}})
+			ui.open_panel("mod_bench")
 		_:
 			ui.open_panel()
 			if screen != "inventory":

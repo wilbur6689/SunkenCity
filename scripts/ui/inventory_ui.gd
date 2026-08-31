@@ -1,10 +1,13 @@
 extends CanvasLayer
-## Character menu (styled after docs/Examples/UI Menus): three screens over
+## Character menu (styled after docs/Examples/UI Menus): four screens over
 ## the underwater menu backdrop, sharing the wood-framed 10x4 bag grid.
 ##   Inventory — character preview, equipment (Head, Suit, 2 Accessories,
-##               2 reserved), stats
+##               2 tech-tree-locked accessory mounts), stats; a chest opens
+##               its storage grid beside it (+ quick stack)
 ##   Crafting  — recipe list (stations in reach), recipe detail, CRAFT
-##   Chest     — container grid + quick stack (opens from a chest)
+##   Skills    — player level/points, skill XP bars, the ability tech tree
+##   Modify    — Modification Bench (LT-09/10): learn from sacrificed gear,
+##               apply learned mods to clean gear
 ## Drag model: LMB pick/put/swap/merge, RMB split half / place one,
 ## Shift+LMB move between bag and chest.
 
@@ -13,9 +16,9 @@ const GAP := 2
 const ICON := 16
 const DESIGN_W := 640.0
 
-const EQUIP_SLOTS := ["head", "suit", "accessory1", "accessory2", "reserved1", "reserved2"]
-const EQUIP_GLYPH := {"head": 0, "suit": 1, "accessory1": 2, "accessory2": 2, "reserved1": 3, "reserved2": 3}
-const EQUIP_LABEL := {"head": "Head", "suit": "Suit", "accessory1": "Accessory", "accessory2": "Accessory", "reserved1": "Reserved", "reserved2": "Reserved"}
+const EQUIP_SLOTS := ["head", "suit", "accessory1", "accessory2", "accessory3", "accessory4"]
+const EQUIP_GLYPH := {"head": 0, "suit": 1, "accessory1": 2, "accessory2": 2, "accessory3": 3, "accessory4": 3}
+const EQUIP_LABEL := {"head": "Head", "suit": "Suit", "accessory1": "Accessory", "accessory2": "Accessory", "accessory3": "Accessory (locked)", "accessory4": "Accessory (locked)"}
 
 var player: Player
 var open: bool = false
@@ -46,6 +49,8 @@ var chest_grid: GridContainer
 var cursor_icon: TextureRect
 var cursor_count: Label
 var _last_stations: Array = []
+var hover_label: Label
+var _hover: Dictionary = {} # {which, index} for the slot under the mouse
 
 ## Popup window rect in design pixels; the screens keep absolute layout
 ## coordinates and live in a `content` control offset by -window origin.
@@ -117,7 +122,7 @@ func _ready() -> void:
 	tabs.position = Vector2(185, 26)
 	tabs.add_theme_constant_override("separation", 3)
 	content.add_child(tabs)
-	for name in ["inventory", "crafting", "skills"]:
+	for name in ["inventory", "crafting", "skills", "modify"]:
 		var b := Button.new()
 		b.text = name.capitalize()
 		b.custom_minimum_size = Vector2(48, 16)
@@ -129,6 +134,16 @@ func _ready() -> void:
 	_build_inventory_screen()
 	_build_crafting_screen()
 	_build_skills_screen()
+	_build_modify_screen()
+
+	# Hovered-item name plate (LT-08 rarity title text): gray / green / blue /
+	# purple by modifier state, shown for whichever slot the mouse is over.
+	hover_label = UITheme.label("", 8)
+	hover_label.position = Vector2(185, 33)
+	hover_label.size = Vector2(DESIGN_W - 370, 12)
+	hover_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hover_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(hover_label)
 
 	# Shared bag grid (wood frame) at the bottom
 	var frame := PanelContainer.new()
@@ -215,11 +230,11 @@ func _build_inventory_screen() -> void:
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		b.add_child(icon)
-		if slot_name.begins_with("reserved"):
-			b.disabled = true
-			b.tooltip_text = "Reserved (tech tree, M5)"
-		else:
-			b.gui_input.connect(_on_slot_input.bind("equip:" + slot_name, 0))
+		# accessory3/4 start locked; the Tool Harness / Rigger's Kit
+		# abilities open them (checked live in _refresh_all).
+		b.gui_input.connect(_on_slot_input.bind("equip:" + slot_name, 0))
+		b.mouse_entered.connect(_set_hover.bind("equip:" + slot_name, 0))
+		b.mouse_exited.connect(_set_hover.bind("", -1))
 		eq.add_child(b)
 		_equip_buttons[slot_name] = {"button": b, "icon": icon, "glyph": g}
 
@@ -297,10 +312,12 @@ func _build_crafting_screen() -> void:
 	s.add_child(craft_button)
 
 var player_stats_box: VBoxContainer
-var skills_box: VBoxContainer
+var tree_box: VBoxContainer
+var selected_ability: String = ""
 
-## Skills & player stats screen (CC-18): player level, banked tech-tree
-## points, vitals, and each skill's level with XP progress to the next.
+## Skills & player stats screen (CC-18): player level, banked points, each
+## skill's XP progress, and the ability tech tree (data/abilities.json) —
+## three branches, points buy capabilities, never skill levels.
 func _build_skills_screen() -> void:
 	var s := Control.new()
 	s.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -309,45 +326,41 @@ func _build_skills_screen() -> void:
 	content.add_child(s)
 	screens["skills"] = s
 
-	var pp := _panel(Vector2(185, 46), Vector2(128, 148), UITheme.steel_panel())
+	var pp := _panel(Vector2(185, 46), Vector2(130, 148), UITheme.steel_panel())
 	s.add_child(pp)
 	player_stats_box = VBoxContainer.new()
-	player_stats_box.add_theme_constant_override("separation", 2)
+	player_stats_box.add_theme_constant_override("separation", 1)
 	pp.add_child(player_stats_box)
 
-	var sp := _panel(Vector2(319, 46), Vector2(136, 148), UITheme.steel_panel())
-	s.add_child(sp)
-	skills_box = VBoxContainer.new()
-	skills_box.add_theme_constant_override("separation", 3)
-	sp.add_child(skills_box)
+	var tp := _panel(Vector2(321, 46), Vector2(134, 148), UITheme.steel_panel())
+	s.add_child(tp)
+	tree_box = VBoxContainer.new()
+	tree_box.add_theme_constant_override("separation", 2)
+	tp.add_child(tree_box)
 
 func _refresh_skills() -> void:
 	for c in player_stats_box.get_children():
 		c.queue_free()
-	for c in skills_box.get_children():
+	for c in tree_box.get_children():
 		c.queue_free()
 	var sk := player.skills
 	player_stats_box.add_child(UITheme.label("PLAYER", 9, Color(0.56, 0.75, 0.81)))
 	player_stats_box.add_child(UITheme.label("Level %d" % sk.player_level(), 9))
 	player_stats_box.add_child(UITheme.label("Ability points: %d" % sk.available_points(), 8, Color(0.95, 0.85, 0.5) if sk.available_points() > 0 else Color(0.7, 0.78, 0.85)))
-	player_stats_box.add_child(UITheme.label("(tech tree arrives in M5)", 8, Color(0.55, 0.6, 0.68)))
-	player_stats_box.add_child(UITheme.label(" ", 8))
-	player_stats_box.add_child(UITheme.label("Health  %d / %d" % [roundi(player.health), roundi(Constants.MAX_HEALTH)], 8))
-	player_stats_box.add_child(UITheme.label("Oxygen  %.0fs" % Constants.BASE_OXYGEN_SECONDS, 8))
-	player_stats_box.add_child(UITheme.label("Weight  %.1f" % player.inventory.total_weight(), 8))
-	player_stats_box.add_child(UITheme.label("Swim    x%.2f" % player.swim_factor(), 8))
+	player_stats_box.add_child(UITheme.label("Weight %.1f · Swim x%.2f" % [player.inventory.total_weight(), player.swim_factor()], 8))
 	var suit := player.equipped("suit")
-	player_stats_box.add_child(UITheme.label("Suit    %s" % (Data.item_name(suit) if suit != "" else "none"), 8))
-
-	skills_box.add_child(UITheme.label("SKILLS — level by use", 9, Color(0.56, 0.75, 0.81)))
+	player_stats_box.add_child(UITheme.label("Suit  %s" % (Data.item_name(suit) if suit != "" else "none"), 8))
+	player_stats_box.add_child(UITheme.label("SKILLS — level by use", 9, Color(0.56, 0.75, 0.81)))
 	for skill_name in sk.xp.keys():
 		var lvl := sk.level(skill_name)
 		var into: float = sk.xp[skill_name] - lvl * Constants.SKILL_XP_PER_LEVEL
 		var row := VBoxContainer.new()
 		row.add_theme_constant_override("separation", 1)
-		row.add_child(UITheme.label("%s  —  %d" % [skill_name.capitalize(), lvl], 8))
+		var nl := UITheme.label("%s  —  %d" % [skill_name.capitalize(), lvl], 8)
+		nl.tooltip_text = "%.0f / %.0f xp to next" % [into, Constants.SKILL_XP_PER_LEVEL]
+		row.add_child(nl)
 		var bar := ProgressBar.new()
-		bar.custom_minimum_size = Vector2(120, 5)
+		bar.custom_minimum_size = Vector2(110, 4)
 		bar.max_value = Constants.SKILL_XP_PER_LEVEL
 		bar.value = into
 		bar.show_percentage = false
@@ -358,8 +371,233 @@ func _refresh_skills() -> void:
 		bar.add_theme_stylebox_override("background", bg)
 		bar.add_theme_stylebox_override("fill", fill)
 		row.add_child(bar)
-		row.add_child(UITheme.label("%.0f / %.0f xp to next" % [into, Constants.SKILL_XP_PER_LEVEL], 8, Color(0.55, 0.6, 0.68)))
-		skills_box.add_child(row)
+		player_stats_box.add_child(row)
+	_refresh_tree()
+
+## Ability tech tree (CC-18): three branch columns, tier 1 at the top;
+## owned = green, affordable = white, locked = dim. Click to select, the
+## UNLOCK button below spends a banked point.
+func _refresh_tree() -> void:
+	var sk := player.skills
+	tree_box.add_child(UITheme.label("TECH TREE", 9, Color(0.56, 0.75, 0.81)))
+	var branches := {}
+	for a in Data.ability_list:
+		if not branches.has(a.branch):
+			branches[a.branch] = []
+		branches[a.branch].append(a)
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 2)
+	tree_box.add_child(header)
+	var grid := GridContainer.new()
+	grid.columns = branches.size()
+	grid.add_theme_constant_override("h_separation", 18)
+	grid.add_theme_constant_override("v_separation", 2)
+	tree_box.add_child(grid)
+	var max_tier := 0
+	for b in branches:
+		var col := UITheme.label(String(b).capitalize(), 8, Color(0.7, 0.78, 0.85))
+		col.custom_minimum_size = Vector2(40, 0)
+		header.add_child(col)
+		for a in branches[b]:
+			max_tier = maxi(max_tier, int(a.tier))
+	for tier in range(1, max_tier + 1):
+		for b in branches:
+			for a in branches[b]:
+				if int(a.tier) == tier:
+					grid.add_child(_ability_button(a))
+	var a_sel: Dictionary = Data.abilities.get(selected_ability, {})
+	if not a_sel.is_empty():
+		var nm := UITheme.label(String(a_sel.name), 8, Color(0.95, 0.85, 0.5))
+		tree_box.add_child(nm)
+		var dl := UITheme.label(String(a_sel.get("desc", "")), 8, Color(0.82, 0.84, 0.78))
+		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		dl.custom_minimum_size = Vector2(120, 0)
+		tree_box.add_child(dl)
+		var ub := Button.new()
+		ub.custom_minimum_size = Vector2(60, 14)
+		UITheme.style_button(ub)
+		if sk.has_ability(selected_ability):
+			ub.text = "OWNED"
+			ub.disabled = true
+		else:
+			ub.text = "UNLOCK (1 pt)"
+			ub.disabled = not sk.can_unlock(selected_ability)
+			ub.pressed.connect(_unlock_selected)
+		tree_box.add_child(ub)
+	else:
+		tree_box.add_child(UITheme.label("Each player level banks one\npoint. Points buy abilities,\nnot skill levels.", 8, Color(0.55, 0.6, 0.68)))
+
+func _ability_button(a: Dictionary) -> Button:
+	var sk := player.skills
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(22, 16)
+	b.text = "I".repeat(int(a.tier))
+	b.tooltip_text = String(a.name)
+	UITheme.style_row(b, selected_ability == String(a.id))
+	if sk.has_ability(a.id):
+		b.modulate = Color(0.6, 1.0, 0.6)
+	elif sk.can_unlock(a.id):
+		b.modulate = Color.WHITE
+	else:
+		b.modulate = Color(0.5, 0.53, 0.58)
+	b.pressed.connect(func():
+		selected_ability = String(a.id)
+		_refresh_all())
+	return b
+
+func _unlock_selected() -> void:
+	if player.skills.unlock(selected_ability):
+		player.message.emit("Learned " + String(Data.abilities[selected_ability].name))
+		_refresh_all()
+
+var bench_stack = null # item resting on the Modification Bench
+var bench_button: Button
+var bench_icon: TextureRect
+var learned_box: VBoxContainer
+var bench_info: VBoxContainer
+var bench_action: Button
+var sel_prefix: String = ""
+var sel_suffix: String = ""
+var _bench_near: bool = false
+
+## Modification Bench screen (LT-09/10): put a MODDED item on the bench to
+## LEARN its modifiers (destroys it); put clean crafted gear on to APPLY
+## learned mods — up to one prefix + one suffix, then the piece is locked.
+func _build_modify_screen() -> void:
+	var s := Control.new()
+	s.set_anchors_preset(Control.PRESET_FULL_RECT)
+	s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	s.visible = false
+	content.add_child(s)
+	screens["modify"] = s
+
+	var lp := _panel(Vector2(185, 46), Vector2(130, 148), UITheme.steel_panel())
+	s.add_child(lp)
+	var lv := VBoxContainer.new()
+	lp.add_child(lv)
+	lv.add_child(UITheme.label("LEARNED MODS", 8, Color(0.56, 0.75, 0.81)))
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	lv.add_child(scroll)
+	learned_box = VBoxContainer.new()
+	learned_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	learned_box.add_theme_constant_override("separation", 0)
+	scroll.add_child(learned_box)
+
+	var rp := _panel(Vector2(321, 46), Vector2(134, 148), UITheme.steel_panel())
+	s.add_child(rp)
+	var rv := VBoxContainer.new()
+	rv.add_theme_constant_override("separation", 3)
+	rp.add_child(rv)
+	rv.add_child(UITheme.label("MOD BENCH", 8, Color(0.56, 0.75, 0.81)))
+	bench_button = Button.new()
+	bench_button.custom_minimum_size = Vector2(SLOT, SLOT)
+	bench_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	UITheme.style_steel_slot(bench_button)
+	bench_icon = TextureRect.new()
+	bench_icon.position = Vector2(4, 4)
+	bench_icon.size = Vector2(ICON, ICON)
+	bench_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bench_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	bench_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bench_button.add_child(bench_icon)
+	bench_button.gui_input.connect(_bench_slot_input)
+	bench_button.mouse_entered.connect(_set_hover.bind("bench", 0))
+	bench_button.mouse_exited.connect(_set_hover.bind("", -1))
+	rv.add_child(bench_button)
+	bench_info = VBoxContainer.new()
+	bench_info.add_theme_constant_override("separation", 2)
+	bench_info.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	rv.add_child(bench_info)
+	bench_action = Button.new()
+	bench_action.custom_minimum_size = Vector2(0, 14)
+	UITheme.style_button(bench_action)
+	bench_action.pressed.connect(_bench_act)
+	rv.add_child(bench_action)
+
+func _bench_slot_input(event: InputEvent) -> void:
+	if not (event is InputEventMouseButton) or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	var was = bench_stack
+	bench_stack = cursor_stack
+	cursor_stack = was
+	_refresh_all()
+
+func _refresh_modify() -> void:
+	_bench_near = _stations().has("mod_bench")
+	for c in learned_box.get_children():
+		c.queue_free()
+	for c in bench_info.get_children():
+		c.queue_free()
+	# Learned mods, selectable for applying (prefix and suffix pick separately)
+	for part in ["prefixes", "suffixes"]:
+		for m in Data.modifiers.get(part, []):
+			if not player.known_mods.has(m.id):
+				continue
+			var power: int = int(player.known_mods[m.id])
+			var b := Button.new()
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.text = " " + ItemMods.describe_mod(m.id, power)
+			b.custom_minimum_size = Vector2(0, 14)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.add_theme_font_size_override("font_size", 8)
+			var selected: bool = (sel_prefix == m.id or sel_suffix == m.id)
+			UITheme.style_row(b, selected)
+			b.pressed.connect(_toggle_learned.bind(String(m.id), part == "prefixes"))
+			learned_box.add_child(b)
+	if learned_box.get_child_count() == 0:
+		learned_box.add_child(UITheme.label("Nothing learned yet.\nSacrifice modded gear on\nthe bench to learn its mods.", 8, Color(0.55, 0.6, 0.68)))
+	# Bench state → info + the one action button
+	bench_icon.texture = Data.icon(bench_stack.id) if bench_stack != null else null
+	bench_action.visible = false
+	if not _bench_near:
+		bench_info.add_child(UITheme.label("No Modification Bench\nin reach.", 8, Color(0.95, 0.6, 0.55)))
+		return
+	if bench_stack == null:
+		bench_info.add_child(UITheme.label("Place an item on the\nbench (click with it on\nthe cursor).", 8, Color(0.7, 0.78, 0.85)))
+		return
+	var nm := UITheme.label(ItemMods.display_name(bench_stack), 8, ItemMods.rarity_color(bench_stack))
+	nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	bench_info.add_child(nm)
+	if bench_stack.has("mods"):
+		for line in ItemMods.describe(bench_stack):
+			bench_info.add_child(UITheme.label(String(line), 8, Color(0.82, 0.84, 0.78)))
+		bench_info.add_child(UITheme.label("Learning destroys the item.", 8, Color(0.95, 0.6, 0.55)))
+		bench_action.visible = true
+		bench_action.text = "LEARN"
+		bench_action.disabled = player.learnable_mods(bench_stack).is_empty()
+	elif ItemMods.mod_class(bench_stack.id) != "":
+		bench_info.add_child(UITheme.label("Unmodified — pick learned\nmods to apply. Once modded\nit is locked for good.", 8, Color(0.7, 0.78, 0.85)))
+		bench_action.visible = true
+		bench_action.text = "APPLY"
+		bench_action.disabled = sel_prefix == "" and sel_suffix == ""
+	else:
+		bench_info.add_child(UITheme.label("This cannot take modifiers.", 8, Color(0.7, 0.78, 0.85)))
+
+func _toggle_learned(mod_id: String, is_prefix: bool) -> void:
+	if is_prefix:
+		sel_prefix = "" if sel_prefix == mod_id else mod_id
+	else:
+		sel_suffix = "" if sel_suffix == mod_id else mod_id
+	_refresh_all()
+
+func _bench_act() -> void:
+	if bench_stack == null or not _bench_near:
+		return
+	if bench_stack.has("mods"):
+		if player.learnable_mods(bench_stack).is_empty():
+			return
+		var learned: Array = player.learn_mods(bench_stack)
+		bench_stack = null # sacrificed (LT-09)
+		Audio.play_sfx("dismantle_rattle", player.global_position, 1, -4.0)
+		player.message.emit("Learned: " + ", ".join(learned) if not learned.is_empty() else "Nothing new to learn")
+	else:
+		if player.apply_mods(bench_stack, sel_prefix, sel_suffix):
+			player.message.emit("Modified: " + ItemMods.display_name(bench_stack))
+			sel_prefix = ""
+			sel_suffix = ""
+	_refresh_all()
 
 func _make_slots(target: GridContainer, inv: Inventory, which: String) -> Array:
 	for c in target.get_children():
@@ -383,9 +621,36 @@ func _make_slots(target: GridContainer, inv: Inventory, which: String) -> Array:
 		count.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		b.add_child(count)
 		b.gui_input.connect(_on_slot_input.bind(which, i))
+		b.mouse_entered.connect(_set_hover.bind(which, i))
+		b.mouse_exited.connect(_set_hover.bind("", -1))
 		target.add_child(b)
 		out.append({"button": b, "icon": icon, "count": count})
 	return out
+
+func _set_hover(which: String, index: int) -> void:
+	_hover = {} if which == "" else {"which": which, "index": index}
+
+func _hover_stack():
+	if _hover.is_empty() or player == null:
+		return null
+	var w: String = _hover.which
+	if w == "inv":
+		return player.inventory.slots[_hover.index]
+	if w == "chest" and container != null and is_instance_valid(container):
+		return container.storage.slots[_hover.index]
+	if w == "bench":
+		return bench_stack
+	if w.begins_with("equip:"):
+		return player.equipment.get(w.substr(6))
+	return null
+
+func _update_hover_label() -> void:
+	var st = _hover_stack()
+	if st == null:
+		hover_label.text = ""
+		return
+	hover_label.text = ItemMods.display_name(st)
+	hover_label.add_theme_color_override("font_color", ItemMods.rarity_color(st))
 
 # --- Open / close / screens ---
 
@@ -403,7 +668,11 @@ func open_panel(station: String = "") -> void:
 	player.ui_blocks_mouse = true
 	if _bag_slots.is_empty():
 		_bag_slots = _make_slots(grid, player.inventory, "inv")
-	show_screen("crafting" if station != "" else "inventory")
+	# Clicking the Modification Bench itself lands on its screen (LT-09/10).
+	if station == "mod_bench":
+		show_screen("modify")
+	else:
+		show_screen("crafting" if station != "" else "inventory")
 
 func close() -> void:
 	open = false
@@ -415,11 +684,18 @@ func close() -> void:
 		stats_panel.visible = true
 	if player != null:
 		player.ui_blocks_mouse = false
-		if cursor_stack != null: # never lose a held stack on close
-			var leftover: int = player.inventory.add(cursor_stack.id, cursor_stack.count)
-			if leftover > 0:
-				World.spawn_item(cursor_stack.id, leftover, player.global_position)
-			cursor_stack = null
+		for held in [cursor_stack, bench_stack]: # never lose a stack on close
+			if held == null:
+				continue
+			if held.has("mods"): # keep the instance's mods intact
+				if not player.inventory.add_stack(held):
+					World.spawn_item(held.id, held.count, player.global_position)
+			else:
+				var leftover: int = player.inventory.add(held.id, held.count)
+				if leftover > 0:
+					World.spawn_item(held.id, leftover, player.global_position)
+		cursor_stack = null
+		bench_stack = null
 
 func open_container(obj: WorldObject) -> void:
 	container = obj
@@ -469,8 +745,11 @@ func _process(_delta: float) -> void:
 	cursor_icon.position = m + Vector2(4, 4)
 	cursor_count.position = m + Vector2(12, 8)
 	_tick_slot_scrap(get_process_delta_time())
+	_update_hover_label()
 	if screen == "crafting":
 		_refresh_crafting()
+	elif screen == "modify" and _stations().has("mod_bench") != _bench_near:
+		_refresh_modify() # bench walked into / out of reach
 
 # --- Refresh ---
 
@@ -482,10 +761,17 @@ func _refresh_all() -> void:
 		_refresh_grid(_chest_slots, container.storage, false)
 	for slot_name in _equip_buttons.keys():
 		var st = player.equipment.get(slot_name)
-		_equip_buttons[slot_name].icon.texture = Data.icon(st.id) if st != null else null
-		_equip_buttons[slot_name].glyph.visible = st == null
+		var eb: Dictionary = _equip_buttons[slot_name]
+		eb.icon.texture = Data.icon(st.id) if st != null else null
+		eb.glyph.visible = st == null
+		var locked: bool = not player.slot_unlocked(slot_name)
+		eb.button.modulate = Color(0.55, 0.57, 0.62) if locked else Color.WHITE
 		if st != null:
-			_equip_buttons[slot_name].button.tooltip_text = Data.item_name(st.id)
+			eb.button.tooltip_text = _mod_tooltip(st)
+		elif locked:
+			eb.button.tooltip_text = "Reserved — an ability on the tech tree unlocks it"
+		else:
+			eb.button.tooltip_text = EQUIP_LABEL[slot_name]
 	var s := player.skills
 	stats_label.text = "Level %d\nPoints %d\n\nScrapping %d\nSwimming %d\nBuilding %d\n\nWeight %.1f\nSwim x%.2f" % [
 		s.player_level(), s.available_points(), s.level("scrapping"), s.level("swimming"), s.level("building"),
@@ -496,15 +782,23 @@ func _refresh_all() -> void:
 		_refresh_crafting(true)
 	elif screen == "skills":
 		_refresh_skills()
+	elif screen == "modify":
+		_refresh_modify()
 
 func _refresh_grid(ui_slots: Array, inv: Inventory, is_bag: bool) -> void:
 	for i in ui_slots.size():
 		var st = inv.slots[i]
 		ui_slots[i].icon.texture = Data.icon(st.id) if st != null else null
 		ui_slots[i].count.text = str(st.count) if (st != null and st.count > 1) else ""
-		ui_slots[i].button.tooltip_text = Data.item_name(st.id) if st != null else ""
+		ui_slots[i].button.tooltip_text = _mod_tooltip(st) if st != null else ""
 		if is_bag:
 			UITheme.style_slot(ui_slots[i].button, i == player.selected_slot)
+
+## Tooltip: the (rarity-titled) name plus one line per modifier (LT-08).
+func _mod_tooltip(st) -> String:
+	var lines := [ItemMods.display_name(st)]
+	lines.append_array(ItemMods.describe(st))
+	return "\n".join(lines)
 
 func _stations() -> Array:
 	return World.stations_near(player.global_position, Constants.REACH_BLOCKS * Constants.BLOCK_SIZE * 1.5)
@@ -665,10 +959,14 @@ func _on_slot_input(event: InputEvent, which: String, index: int) -> void:
 					return
 				_rmb_take_half(inv, index)
 		elif slot == null:
-			inv.set_slot(index, {"id": cursor_stack.id, "count": 1})
-			cursor_stack.count -= 1
-			if cursor_stack.count <= 0:
+			if cursor_stack.has("mods"): # a modded instance places whole
+				inv.set_slot(index, cursor_stack)
 				cursor_stack = null
+			else:
+				inv.set_slot(index, {"id": cursor_stack.id, "count": 1})
+				cursor_stack.count -= 1
+				if cursor_stack.count <= 0:
+					cursor_stack = null
 		elif slot.id == cursor_stack.id and slot.count < Data.stack_size(slot.id):
 			slot.count += 1
 			cursor_stack.count -= 1
@@ -685,6 +983,11 @@ var scrap_hold_bar: ProgressBar = null
 func _rmb_take_half(inv: Inventory, index: int) -> void:
 	var slot = inv.slots[index]
 	if slot == null:
+		return
+	if slot.has("mods") or slot.count == 1: # modded instances move whole
+		cursor_stack = slot
+		inv.set_slot(index, null)
+		_refresh_all()
 		return
 	var half: int = int(ceil(slot.count / 2.0))
 	cursor_stack = {"id": slot.id, "count": half}
@@ -759,10 +1062,14 @@ func _equip_click(event: InputEventMouseButton, slot_name: String) -> void:
 			cursor_stack = current
 			player.set_equipment(slot_name, null)
 		return
+	if not player.slot_unlocked(slot_name):
+		player.message.emit("That mount is locked — an ability on the tech tree opens it")
+		return
 	if not player.can_equip(slot_name, cursor_stack.id):
 		player.message.emit("%s cannot go in the %s slot" % [Data.item_name(cursor_stack.id), EQUIP_LABEL[slot_name]])
 		return
-	var one = {"id": cursor_stack.id, "count": 1}
+	var one = cursor_stack.duplicate(true) # keep per-instance mods (LT-05..07)
+	one.count = 1
 	cursor_stack.count -= 1
 	var rest = cursor_stack if cursor_stack.count > 0 else null
 	player.set_equipment(slot_name, one)

@@ -48,7 +48,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **CC-17.** Is there character customization (appearance, starting loadout)?
   - **A:** Very light cosmetics at creation: **shirt color, pants color, hair color**. No stat choices.
 - [x] **CC-18.** Is player progression gear-only, or are there also levels/skills/attributes?
-  - **A:** Gear-first with **learn-by-doing skills**. Skills level individually by use; **player level = total skill levels ÷ 5** (level 5 in 3 skills → player level 3). Each player level grants **1 point in a separate ability tech tree** that unlocks new player abilities (not skill boosts). Tech tree contents: future design topic.
+  - **A:** Gear-first with **learn-by-doing skills**. Skills level individually by use; **player level = total skill levels ÷ 5** (level 5 in 3 skills → player level 3). Each player level grants **1 point in a separate ability tech tree** that unlocks new player abilities (not skill boosts). *Tree designed & implemented (M5, 2026-08-31, `data/abilities.json`):* 3 branches × 3 tiers, linear prerequisites per branch, 1 point each — **Salvage** (Field Strip: 75% field yield → Tool Harness: 3rd accessory slot → Master Scrapper: 25% double-yield chance), **Diving** (Strong Kick: +10% swim → Free Diver: −20% O2 drain → Cold Blood: +1 effective cold rating), **Building** (Long Reach: +1 block reach → Rigger's Kit: 4th accessory slot → Demolitionist: +50% hammer damage). The MVP skill set is finalized at Scrapping / Swimming / Building.
 - [x] **CC-19.** What is the target total playtime for a full run (reach ground + drain city)?
   - **A:** **60–100 hours** for a full first run.
 - [x] **CC-20.** Will there be difficulty settings, and what do they change?
@@ -295,7 +295,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **LT-08.** Are there rarity tiers, and how do they interact with modifiers (colors, roll counts)?
   - **A:** **Rarity is derived from modifier state** — no separate roll. Color applies to the gear's title text: no mods → gray, one mod → green, both → blue, both at top strength → purple.
 - [x] **LT-09.** Can modifiers be rerolled/reforged, and at what cost?
-  - **A:** No rerolling. **Learning a modifier destroys the gear** carrying it (at the Modification Bench); learned modifiers can be applied **only to unmodified gear** — once modded, locked.
+  - **A:** No rerolling. **Learning a modifier destroys the gear** carrying it (at the Modification Bench); learned modifiers can be applied **only to unmodified gear** — once modded, locked. *(M5 implementation note: one apply operation may attach up to one learned prefix + one learned suffix together, per LT-07; the piece locks after that single operation, so blue/purple crafted gear is reachable.)*
 - [x] **LT-10.** Do modifiers roll only on found loot, or on crafted items too?
   - **A:** Found gear rolls randomly; crafted gear comes out clean and takes learned modifiers at the **Modification Bench** (craft at Workbench/Forge, mod later). Found modded gear = *use it or learn it*.
 - [x] **LT-11.** How is the balance set between crafted gear and found gear (which is better when)?

@@ -218,10 +218,10 @@ it.
 - [x] Container loot: every generated storage object rolls from `data/loot.json` tables keyed zone × depth band at world gen (`LootGen`); ~600 containers/city, all stocked (LT-12/13)
 - [x] Wall safes: rare room spawns (~30/city), locked behind vault key / cutting torch, best-of-band "safe" tables (LT-14, GL-09)
 - [x] One-time loot persisted for free: contents live in object records → the world save (LT-27)
-- [ ] Modifier system: 8 prefixes + 8 suffixes as data; roll on found gear; stat application (LT-05/06/07)
-- [ ] Title-text rarity coloring (LT-08)
-- [ ] Modification Bench: sacrifice-to-learn (destroys item), apply to unmodified gear only (LT-09/10)
-- [ ] Found-only pools: firearms, accessories (~6), modded gear (LT-18)
+- [x] Modifier system: 8 prefixes + 8 suffixes in `data/modifiers.json`, power 1–3; rolled on found gear at loot gen (`ItemMods.roll`); stats apply through equip/held-tool paths; modded stacks are per-instance (never merge, survive drag/equip/save) (LT-05/06/07)
+- [x] Title-text rarity coloring (LT-08): derived gray/green/blue/purple — hover name plate in the menu + mod lines in slot tooltips
+- [x] Modification Bench: **Modify** tab (opens from the bench) — sacrifice-to-learn destroys the donor (best power kept, Rusty junk unlearnable), apply to unmodified gear only; one apply may attach a learned prefix + suffix together, then the piece is locked (LT-09/10)
+- [x] Found-only pools: firearms (pistol / SMG / rifle as data items in deep + safe tables; firing behaviour lands with M4 combat), 6 accessories, modded rolls on found gear; no recipe outputs a found-only item (LT-18)
 - [x] Vault keys drop in deep/safe loot; a key (consumed) or a cutting torch opens vault doors and safes
 
 ### Gear ladder (GL-09/10/11/13)
@@ -229,17 +229,18 @@ it.
 - [x] Tanks: scrap +30s / iron +60s / steel rebreather +150s — accessory `stats.oxygen` stacks into `max_oxygen()` (HUD bar scales)
 - [x] Suits: clothes → wetsuit (Cold, dive station) → hard suit (Dark/Crush, schematic-gated, steel); swim penalties + cold/crush ratings applied (LT-21)
 - [x] Helmet lamp (craftable head light) + glow band; equip slots already live (LT-03); 6 found-only accessories with real hooks: fins (swim), tool belt (scrap speed), weight belt (carry), sonar compass (map reveal), glow band (light), dive watch (air)
-- [ ] Paper-doll visible gear: held tool + suit tiers (WS-26)
+- [x] Paper-doll visible gear (WS-26, first pass per WS-25 tint layers): held tool rides in the hand, suit tiers tint the sprite (`tint` in items.json: wetsuit blue, hard suit orange), worn helmet lamp shows a lit pip
 
 ### Progression completion
-- [ ] **Ability tech tree: design + implement** (open item — design pass due here)
-- [ ] Full skill set finalized (harvest gates across all four material tiers)
+- [x] **Ability tech tree designed + implemented** (CC-18, `data/abilities.json`): 3 branches × 3 tiers, 1 point each, linear prereqs — Salvage (Field Strip / Tool Harness / Master Scrapper), Diving (Strong Kick / Free Diver / Cold Blood), Building (Long Reach / Rigger's Kit / Demolitionist); the two reserved accessory slots are the Harness/Kit unlocks; tree UI on the Skills tab; abilities persist in the character save
+- [x] Full skill set finalized (Scrapping / Swimming / Building): harvest gates by material tier — wood/cloth/plastic/stone free, metal furniture 0–1 as authored, iron yields need Scrapping 2, steel needs Scrapping 3; iron-bearing rooms carry `depth_min` and the assembler no longer leaks depth-gated rooms to other bands
 - [x] Iron→steel at the forge; gear chains across forge/dive station; hard-suit + rebreather schematics distributed in dark/crush and safe loot
-- [ ] Depletion pressure verified: surface scrap genuinely runs out (GL-28)
+- [x] Depletion pressure verified (GL-28): dry/shallows loot tables hold no iron/steel, iron-rich rooms sit below The Cold, and the m5 smoke asserts iron obtainable above The Cold (~14) cannot cover the gear chain (25) — you must dive; everything stays one-time (LT-27)
 
 **GATE:** scrap knife to hard suit purely through play — no debug items — at roughly the
-target pacing (GL-27). ✔ chain covered end-to-end in `m5_smoke.tscn` (28 checks); pacing
-tuning + depletion verification still open.
+target pacing (GL-27). ✔ chain + mods + bench + tree + gates + depletion covered in
+`m5_smoke.tscn` (151 checks); persistence of mods/learned mods/abilities/known recipes in
+`save_smoke.tscn`. Manual pacing feel check (GL-27) still open — do it during M4/M6 play.
 
 ---
 

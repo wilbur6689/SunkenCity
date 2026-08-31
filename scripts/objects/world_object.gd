@@ -184,13 +184,20 @@ func interact(player) -> String:
 			# a short click just hints.
 			return "Hold LMB to pick up · RMB to scrap"
 
-## Rolls this object's yields. full = station yield; otherwise field yield.
-func roll_yields(full: bool, rng: RandomNumberGenerator) -> Array:
+## Rolls this object's yields. full = station yield; otherwise field yield
+## (the Field Strip ability raises the field fraction; Master Scrapper and
+## "of the Scavenger" gear can double a roll).
+func roll_yields(full: bool, rng: RandomNumberGenerator, player = null) -> Array:
 	var out := []
+	var field_frac := Constants.FIELD_SCRAP_YIELD
+	if player != null:
+		field_frac = player.skills.effect("field_yield", field_frac)
 	for y in def.get("yields", []):
 		var n: int = rng.randi_range(int(y.min), int(y.max))
+		if player != null:
+			n = player.roll_yield(n)
 		if not full:
-			n = int(ceil(n * Constants.FIELD_SCRAP_YIELD))
+			n = int(ceil(n * field_frac))
 		if n > 0:
 			out.append({"item": y.item, "count": n})
 	return out

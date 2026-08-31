@@ -369,6 +369,8 @@ ICONS = {
     # row 5: accessories, vault key, steel
     (0, 5): ("band", None), (1, 5): ("watch", None), (2, 5): ("key", None), (3, 5): ("ingot2", None),
     (4, 5): ("heavy", None),
+    # row 6: firearms (found-only pool, LT-18)
+    (0, 6): ("gun", "pistol"), (1, 6): ("gun", "smg"), (2, 6): ("gun", "rifle"),
 }
 
 
@@ -476,10 +478,23 @@ def _draw_icon(d, kind, arg, ox, oy, rng):
     elif kind == "ingot2":
         d.polygon([(ox + 3, oy + 11), (ox + 5, oy + 6), (ox + 12, oy + 6), (ox + 14, oy + 11)], fill=(120, 140, 165), outline=OUT)
         d.line([ox + 6, oy + 7, ox + 11, oy + 7], fill=(180, 200, 220))
+    elif kind == "gun":
+        steel, grip = (90, 96, 106), (70, 52, 36)
+        if arg == "pistol":
+            d.rectangle([ox + 3, oy + 6, ox + 12, oy + 8], fill=steel, outline=OUT)
+            d.rectangle([ox + 9, oy + 8, ox + 11, oy + 13], fill=grip, outline=OUT)
+        elif arg == "smg":
+            d.rectangle([ox + 2, oy + 6, ox + 13, oy + 8], fill=steel, outline=OUT)
+            d.rectangle([ox + 9, oy + 8, ox + 11, oy + 12], fill=grip, outline=OUT)
+            d.rectangle([ox + 5, oy + 8, ox + 7, oy + 13], fill=steel, outline=OUT)
+        else:  # rifle
+            d.line([ox + 1, oy + 9, ox + 14, oy + 5], fill=steel, width=2)
+            d.rectangle([ox + 1, oy + 8, ox + 5, oy + 12], fill=grip, outline=OUT)
+            d.line([ox + 8, oy + 8, ox + 9, oy + 11], fill=grip, width=2)
 
 
 def build_icons():
-    img = Image.new("RGBA", (6 * T, 6 * T), (0, 0, 0, 0))
+    img = Image.new("RGBA", (6 * T, 7 * T), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     for (c, r), (kind, arg) in ICONS.items():
         _draw_icon(d, kind, arg, c * T, r * T, random.Random(c * 7 + r * 13))

@@ -40,11 +40,11 @@ func has_all(inputs: Array) -> bool:
 ## Adds up to `n` of `id`; returns how many did NOT fit.
 func add(id: String, n: int = 1) -> int:
 	var stack := Data.stack_size(id)
-	# top up existing stacks first
+	# top up existing stacks first (never into a modded instance — mods are per-item)
 	for s in slots:
 		if n <= 0:
 			break
-		if s != null and s.id == id and s.count < stack:
+		if s != null and s.id == id and not s.has("mods") and s.count < stack:
 			var take: int = mini(stack - s.count, n)
 			s.count += take
 			n -= take
@@ -58,6 +58,16 @@ func add(id: String, n: int = 1) -> int:
 			n -= take
 	changed.emit()
 	return n
+
+## Places a whole stack dict (which may carry per-instance mods, LT-05..08)
+## into the first empty slot. Returns false when full.
+func add_stack(stack: Dictionary) -> bool:
+	for i in slots.size():
+		if slots[i] == null:
+			slots[i] = stack
+			changed.emit()
+			return true
+	return false
 
 func can_add(id: String, n: int = 1) -> bool:
 	var stack := Data.stack_size(id)
@@ -111,7 +121,7 @@ func total_weight() -> float:
 	var w := 0.0
 	for s in slots:
 		if s != null:
-			w += Data.weight(s.id) * s.count
+			w += ItemMods.unit_weight(s) * s.count
 	return w
 
 ## Moves as much of every stack whose id already exists in `target` into it (LT-23 quick-stack).
@@ -119,7 +129,7 @@ func quick_stack_into(target: Inventory) -> int:
 	var moved := 0
 	for i in slots.size():
 		var s = slots[i]
-		if s == null or target.count(s.id) == 0:
+		if s == null or s.has("mods") or target.count(s.id) == 0:
 			continue
 		var leftover := target.add(s.id, s.count)
 		moved += s.count - leftover

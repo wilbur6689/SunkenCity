@@ -1,5 +1,5 @@
 {
- "_comment": "Multi-tile world objects. Each entry also registers an item with the same id (category placeable_object) so furniture can be picked up (E) and re-placed. kind: scrap (found furniture) | station | chest | bed | light | door. size = [w, h] blocks, anchored bottom-left. Scrap yields are the FULL (station) yield; in-place scrapping applies FIELD_SCRAP_YIELD. tool_tier = minimum tool tier to scrap in place (0 = hands). skill = required Scrapping level. sprite = assets/sprites/objects/<id>.png. Yields are generous on purpose: depletion comes from objects running out (LT-27), not from stingy rolls.",
+ "_comment": "Multi-tile world objects. Each entry also registers an item with the same id (category placeable_object) so furniture can be picked up (E) and re-placed. kind: scrap (found furniture) | station | chest | bed | light | door. size = [w, h] blocks, anchored bottom-left. Scrap yields are the FULL (station) yield; in-place scrapping applies FIELD_SCRAP_YIELD. tool_tier = minimum tool tier to scrap in place (0 = hands). skill = required Scrapping level. sprite = assets/sprites/objects/<id>.png. Yields are generous on purpose: depletion comes from objects running out (LT-27), not from stingy rolls. Harvest gates (GL-28, finalized M5): skill follows the best material tier in the yields - wood/cloth/plastic/stone 0, metal furniture 0-1 as authored, anything yielding iron needs Scrapping 2, steel needs Scrapping 3.",
  "objects": [
   {
    "id": "bed_frame",
@@ -633,11 +633,6 @@
      "item": "plastic",
      "min": 3,
      "max": 5
-    },
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2
     }
    ],
    "zones": [
@@ -671,11 +666,6 @@
      "item": "scrap_metal",
      "min": 4,
      "max": 7
-    },
-    {
-     "item": "iron",
-     "min": 0,
-     "max": 1
     }
    ],
    "zones": [
@@ -1084,11 +1074,6 @@
      "item": "plastic",
      "min": 2,
      "max": 4
-    },
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2
     }
    ],
    "zones": [
@@ -1127,11 +1112,6 @@
      "item": "scrap_metal",
      "min": 2,
      "max": 3
-    },
-    {
-     "item": "iron",
-     "min": 0,
-     "max": 1
     }
    ],
    "zones": [
@@ -1707,11 +1687,6 @@
      "item": "scrap_metal",
      "min": 2,
      "max": 3
-    },
-    {
-     "item": "iron",
-     "min": 0,
-     "max": 1
     }
    ],
    "zones": [
@@ -1750,11 +1725,6 @@
      "item": "plastic",
      "min": 2,
      "max": 3
-    },
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2
     }
    ],
    "zones": [
@@ -2064,7 +2034,7 @@
    ],
    "weight": 26,
    "tool_tier": 1,
-   "skill": 1,
+   "skill": 2,
    "scrap_time": 4.0,
    "xp": 8,
    "yields": [
@@ -2107,7 +2077,7 @@
    ],
    "weight": 28,
    "tool_tier": 1,
-   "skill": 0,
+   "skill": 2,
    "scrap_time": 3.5,
    "xp": 7,
    "yields": [
@@ -2145,7 +2115,7 @@
    ],
    "weight": 14,
    "tool_tier": 1,
-   "skill": 0,
+   "skill": 2,
    "scrap_time": 2.5,
    "xp": 5,
    "yields": [
@@ -2183,7 +2153,7 @@
    ],
    "weight": 16,
    "tool_tier": 0,
-   "skill": 0,
+   "skill": 2,
    "scrap_time": 3.0,
    "xp": 6,
    "yields": [
@@ -2264,7 +2234,7 @@
    ],
    "weight": 18,
    "tool_tier": 1,
-   "skill": 0,
+   "skill": 2,
    "scrap_time": 3.0,
    "xp": 6,
    "yields": [
@@ -2307,7 +2277,7 @@
    ],
    "weight": 14,
    "tool_tier": 1,
-   "skill": 0,
+   "skill": 2,
    "scrap_time": 2.5,
    "xp": 6,
    "yields": [
@@ -2346,7 +2316,7 @@
    ],
    "weight": 16,
    "tool_tier": 0,
-   "skill": 0,
+   "skill": 2,
    "scrap_time": 3.0,
    "xp": 6,
    "yields": [
@@ -2423,7 +2393,7 @@
    ],
    "weight": 4,
    "tool_tier": 1,
-   "skill": 0,
+   "skill": 2,
    "scrap_time": 1.5,
    "xp": 3,
    "yields": [
@@ -3158,7 +3128,8 @@
    ],
    "desc": "Sealed vault - a key or a cutting torch.",
    "lock_tier": 3,
-   "key": "vault_key"
+   "key": "vault_key",
+   "skill": 3
   },
   {
    "id": "safe",
@@ -3170,7 +3141,7 @@
    ],
    "weight": 40.0,
    "tool_tier": 2,
-   "skill": 1,
+   "skill": 2,
    "scrap_time": 4.0,
    "xp": 8,
    "lock_tier": 3,

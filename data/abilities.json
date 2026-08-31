@@ -1,0 +1,34 @@
+{
+ "_comment": "Ability tech tree (CC-18): each player level (total skill levels / 5) banks one point; abilities cost 1 point each and unlock CAPABILITIES, not skill levels. Three branches x three tiers; requires names the ability that must be owned first (linear per branch). Effects: stats stack like equip stats; field_yield replaces Constants.FIELD_SCRAP_YIELD; unlock_slot opens a reserved accessory slot; o2_drain multiplies oxygen drain; cold_bonus adds to the suit's effective cold rating; reach adds blocks; hammer_mult scales hammer hits on player-placed blocks; double_yield is a chance to double any scrap roll.",
+ "abilities": [
+  {"id": "field_strip", "name": "Field Strip", "branch": "salvage", "tier": 1,
+   "desc": "Careful teardown in the field: scrapping furniture in place yields 75% instead of 50%.",
+   "effect": {"field_yield": 0.75}},
+  {"id": "tool_harness", "name": "Tool Harness", "branch": "salvage", "tier": 2, "requires": "field_strip",
+   "desc": "Rig a third accessory onto your webbing (unlocks the first reserved slot).",
+   "effect": {"unlock_slot": "accessory3"}},
+  {"id": "master_scrapper", "name": "Master Scrapper", "branch": "salvage", "tier": 3, "requires": "tool_harness",
+   "desc": "Nothing wasted: every scrap yield has a 25% chance to double.",
+   "effect": {"double_yield": 0.25}},
+
+  {"id": "strong_kick", "name": "Strong Kick", "branch": "diving", "tier": 1,
+   "desc": "A practiced flutter kick: +10% swim speed, always.",
+   "effect": {"stats": {"swim": 0.1}}},
+  {"id": "free_diver", "name": "Free Diver", "branch": "diving", "tier": 2, "requires": "strong_kick",
+   "desc": "Slow heartbeat, still mind: oxygen drains 20% slower.",
+   "effect": {"o2_drain": 0.8}},
+  {"id": "cold_blood", "name": "Cold Blood", "branch": "diving", "tier": 3, "requires": "free_diver",
+   "desc": "The chill stops biting: your suit counts as one cold rating higher.",
+   "effect": {"cold_bonus": 1}},
+
+  {"id": "long_reach", "name": "Long Reach", "branch": "building", "tier": 1,
+   "desc": "Work at arm's length: +1 block of placement and interaction reach.",
+   "effect": {"reach": 1}},
+  {"id": "riggers_kit", "name": "Rigger's Kit", "branch": "building", "tier": 2, "requires": "long_reach",
+   "desc": "A fourth accessory mount (unlocks the second reserved slot).",
+   "effect": {"unlock_slot": "accessory4"}},
+  {"id": "demolitionist", "name": "Demolitionist", "branch": "building", "tier": 3, "requires": "riggers_kit",
+   "desc": "You know where to hit: hammer blows land 50% harder on your own blocks.",
+   "effect": {"hammer_mult": 1.5}}
+ ]
+}

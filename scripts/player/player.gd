@@ -191,18 +191,34 @@ func held_item() -> String:
 	var s = inventory.slots[selected_slot]
 	return s.id if s != null else ""
 
+## The held stack dict (or null) — modifiers live on the instance (LT-05..07).
+func held_stack():
+	return null if bare_hands else inventory.slots[selected_slot]
+
 func held_tool() -> Dictionary:
-	return Data.tool_of(held_item())
+	return ItemMods.tool_of(held_stack())
 
 ## Weight → swim slowdown (WS-10/14) plus the cold slow (CC-16).
-## Sum of one stat across all equipped gear (M5 gear ladder, GL-09/13).
+## Sum of one stat across all equipped gear (M5 gear ladder, GL-09/13),
+## the gear's modifiers (LT-05..07), and owned tech-tree abilities (CC-18).
 func equip_stat(stat: String) -> float:
-	var total := 0.0
+	var total := skills.ability_stat(stat)
 	for slot_name in equipment:
 		var st = equipment[slot_name]
 		if st != null:
-			total += float(Data.item(st.id).get("stats", {}).get(stat, 0.0))
+			total += float(Data.item(st.id).get("stats", {}).get(stat, 0.0)) + ItemMods.stat(st, stat)
 	return total
+
+## The equipped suit's stat with its modifiers folded in; cold also counts
+## the Cold Blood ability (band gates read these, GL-12).
+func suit_stat(stat: String) -> float:
+	var st = equipment.get("suit")
+	var v := 0.0
+	if st != null:
+		v = float(Data.item(st.id).get("stats", {}).get(stat, 0.0)) + ItemMods.stat(st, stat)
+	if stat == "cold":
+		v += skills.effect("cold_bonus", 0.0)
+	return v
 
 func max_oxygen() -> float:
 	return Constants.BASE_OXYGEN_SECONDS + equip_stat("oxygen")
@@ -211,7 +227,18 @@ func reveal_radius() -> int:
 	return Constants.MAP_REVEAL_RADIUS + int(equip_stat("reveal"))
 
 func scrap_speed_mult() -> float:
-	return Constants.SCRAP_SPEED_MULT * (1.0 + equip_stat("scrap_speed"))
+	return Constants.SCRAP_SPEED_MULT * (1.0 + equip_stat("scrap_speed") + ItemMods.stat(held_stack(), "scrap_speed"))
+
+## Reach in blocks (WS-12); the Long Reach ability extends it.
+func reach_blocks() -> float:
+	return Constants.REACH_BLOCKS + skills.effect("reach", 0.0)
+
+## Chance that a scrap roll doubles (Master Scrapper + "of the Scavenger").
+func double_yield_chance() -> float:
+	return skills.effect("double_yield", 0.0) + equip_stat("yield_chance") + ItemMods.stat(held_stack(), "yield_chance")
+
+func roll_yield(count: int) -> int:
+	return count * 2 if randf() < double_yield_chance() else count
 
 ## The weight-only part of the swim slowdown (the HUD's overweight icon
 ## watches this; the weight belt raises the reference).
@@ -221,8 +248,7 @@ func weight_swim_factor() -> float:
 
 func swim_factor() -> float:
 	var f := weight_swim_factor()
-	var suit: Dictionary = Data.item(equipped("suit")).get("stats", {})
-	f *= 1.0 - float(suit.get("swim_penalty", 0.0)) + equip_stat("swim")
+	f *= 1.0 - suit_stat("swim_penalty") + equip_stat("swim")
 	return f * env_slow
 
 var env_slow: float = 1.0
@@ -235,17 +261,16 @@ func _update_environment(delta: float) -> void:
 	band = World.band_at(World.cell_at(_center_point()))
 	if not in_water:
 		return
-	var suit: Dictionary = Data.item(equipped("suit")).get("stats", {})
 	match band:
 		"cold":
-			if int(suit.get("cold", 0)) < 1:
+			if suit_stat("cold") < 1:
 				env_slow = Constants.COLD_SLOW_FACTOR
 		"dark":
-			if int(suit.get("cold", 0)) < 2:
+			if suit_stat("cold") < 2:
 				env_slow = Constants.COLD_SLOW_FACTOR
 				apply_damage(Constants.COLD_DPS * delta)
 		"crush":
-			if int(suit.get("crush", 0)) < 1:
+			if suit_stat("crush") < 1:
 				env_slow = Constants.COLD_SLOW_FACTOR
 				apply_damage(Constants.CRUSH_DPS * delta)
 
@@ -275,12 +300,19 @@ func drop_held(n: int) -> void:
 	var taken := inventory.remove_from_slot(selected_slot, n)
 	World.spawn_item(id, taken, global_position, Vector2(facing * 4.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
 
-# --- Equipment (LT-03: Suit + Head + two Accessories; two slots reserved) ---
-var equipment: Dictionary = {"head": null, "suit": null, "accessory1": null, "accessory2": null}
+# --- Equipment (LT-03: Suit + Head + two Accessories; accessory3/4 are the
+# reserved mounts, opened by the Tool Harness / Rigger's Kit abilities) ---
+var equipment: Dictionary = {"head": null, "suit": null,
+	"accessory1": null, "accessory2": null, "accessory3": null, "accessory4": null}
+
+func slot_unlocked(slot_name: String) -> bool:
+	if slot_name == "accessory3" or slot_name == "accessory4":
+		return skills.has_effect("unlock_slot", slot_name)
+	return true
 
 func can_equip(slot_name: String, id: String) -> bool:
 	var want: String = Data.item(id).get("slot", "")
-	if want == "":
+	if want == "" or not slot_unlocked(slot_name):
 		return false
 	if slot_name.begins_with("accessory"):
 		return want == "accessory"
@@ -296,6 +328,54 @@ func equipped(slot_name: String) -> String:
 
 func knows_recipe(id: String) -> bool:
 	return known_recipes.has(id)
+
+# --- Modification Bench (LT-09/10) ---
+var known_mods: Dictionary = {} # mod id -> best power learned (sacrifice-to-learn)
+
+## Mods on this stack that would teach something new (learnable, and a
+## higher power than already known) — what the bench's LEARN offers.
+func learnable_mods(stack: Dictionary) -> Array:
+	var out := []
+	var mods := ItemMods.mods_of(stack)
+	for part in ["prefix", "suffix"]:
+		if mods.has(part):
+			var m: Dictionary = mods[part]
+			if bool(ItemMods.def_of(m.id).get("learnable", true)) and int(m.power) > int(known_mods.get(m.id, 0)):
+				out.append(String(m.id))
+	return out
+
+## Sacrifice-to-learn: consumes the modded item, keeps the best power seen
+## per modifier. Returns the human-readable list of what was learned.
+func learn_mods(stack: Dictionary) -> Array:
+	var learned := []
+	var mods := ItemMods.mods_of(stack)
+	for part in ["prefix", "suffix"]:
+		if not mods.has(part):
+			continue
+		var m: Dictionary = mods[part]
+		if not bool(ItemMods.def_of(m.id).get("learnable", true)):
+			continue
+		if int(m.power) > int(known_mods.get(m.id, 0)):
+			known_mods[m.id] = int(m.power)
+			learned.append(ItemMods.describe_mod(m.id, int(m.power)))
+	return learned
+
+## Applies learned mods to an UNMODIFIED piece (then it is locked, LT-09).
+## Up to one learned prefix + one learned suffix in a single operation (LT-07).
+func apply_mods(stack: Dictionary, prefix_id: String, suffix_id: String) -> bool:
+	var cls := ItemMods.mod_class(stack.id)
+	if stack.has("mods") or cls == "":
+		return false
+	var mods := {}
+	if prefix_id != "" and known_mods.has(prefix_id) and (ItemMods.def_of(prefix_id).get("applies", []) as Array).has(cls):
+		mods["prefix"] = {"id": prefix_id, "power": int(known_mods[prefix_id])}
+	if suffix_id != "" and known_mods.has(suffix_id) and (ItemMods.def_of(suffix_id).get("applies", []) as Array).has(cls):
+		mods["suffix"] = {"id": suffix_id, "power": int(known_mods[suffix_id])}
+	if mods.is_empty():
+		return false
+	stack["mods"] = mods
+	inventory.changed.emit()
+	return true
 
 func can_craft(recipe: Dictionary) -> bool:
 	return inventory.has_all(recipe.inputs) and inventory.can_add(recipe.output.item, int(recipe.output.count))
@@ -325,9 +405,9 @@ func scrap_item(id: String, n: int = 1, allow_field: bool = false) -> bool:
 		return false
 	inventory.remove(id, n)
 	for y in yields:
-		var count := int(y.count) * n
+		var count := roll_yield(int(y.count) * n)
 		if not full:
-			count = int(ceil(count * Constants.FIELD_SCRAP_YIELD))
+			count = int(ceil(count * skills.effect("field_yield", Constants.FIELD_SCRAP_YIELD)))
 		var leftover: int = inventory.add(y.item, count)
 		if leftover > 0:
 			World.spawn_item(y.item, leftover, global_position)
@@ -612,7 +692,8 @@ func _exit_water_to_air() -> void:
 func _update_oxygen(delta: float) -> void:
 	# Drains whenever the head is under — including pinned to a flooded ceiling.
 	if submerged:
-		oxygen = minf(maxf(oxygen - delta, 0.0), max_oxygen())
+		# Free Diver (tech tree) slows the drain.
+		oxygen = minf(maxf(oxygen - delta * skills.effect("o2_drain", 1.0), 0.0), max_oxygen())
 		drowning = oxygen <= 0.0
 		if drowning:
 			apply_damage(Constants.drowning_damage_per_second * delta)
@@ -694,10 +775,24 @@ func play_swing() -> void:
 	_swing_time = Constants.TOOL_SWING_TIME
 
 func _update_swing(delta: float) -> void:
+	# Paper-doll held tool (WS-26): the tool rides in the hand whenever one
+	# is held, not only during the swing arc.
 	if _tool_sprite == null:
-		return
+		if held_tool().is_empty() and Data.item(held_item()).get("weapon") == null:
+			return
+		_tool_sprite = Sprite2D.new()
+		_tool_sprite.z_index = 1
+		add_child(_tool_sprite)
 	if _swing_time <= 0.0:
-		_tool_sprite.visible = false
+		var it := Data.item(held_item())
+		if it.has("tool") or it.has("weapon"):
+			_tool_sprite.texture = Data.icon(held_item())
+			_tool_sprite.visible = true
+			_tool_sprite.flip_h = facing < 0
+			_tool_sprite.rotation = 0.35 * facing
+			_tool_sprite.position = Vector2(facing * 6.0, 3.0)
+		else:
+			_tool_sprite.visible = false
 		return
 	_swing_time = maxf(_swing_time - delta, 0.0)
 	var t := 1.0 - _swing_time / Constants.TOOL_SWING_TIME
@@ -708,9 +803,30 @@ func _update_swing(delta: float) -> void:
 	_tool_sprite.flip_h = dir < 0
 	_tool_sprite.position = Vector2(dir * 7.0, 0.0) + Vector2(sin(ang) * dir, -cos(ang)) * 5.0
 
+var _lamp_dot: Sprite2D = null
+
+## Visible gear (WS-26, first pass per WS-25 tint layers): the sprite is
+## tinted by the worn suit tier ("tint" in items.json) and a lit pip marks a
+## worn head lamp; the held tool renders in hand (see _update_swing).
+func _update_gear_visuals() -> void:
+	var tint: Array = Data.item(equipped("suit")).get("tint", [])
+	sprite.modulate = Color(tint[0], tint[1], tint[2]) if tint.size() == 3 else Color.WHITE
+	var head_light := equipment.get("head") != null and float(Data.item(equipped("head")).get("stats", {}).get("light", 0)) > 0.0
+	if head_light and _lamp_dot == null:
+		var img := Image.create(2, 2, false, Image.FORMAT_RGBA8)
+		img.fill(Color(1.0, 0.95, 0.6))
+		_lamp_dot = Sprite2D.new()
+		_lamp_dot.texture = ImageTexture.create_from_image(img)
+		_lamp_dot.z_index = 1
+		add_child(_lamp_dot)
+	if _lamp_dot != null:
+		_lamp_dot.visible = head_light
+		_lamp_dot.position = Vector2(facing * 3.0, hitbox_top() + 3.0)
+
 func _update_sprite(delta: float) -> void:
 	if input_dir.x != 0.0:
 		facing = 1 if input_dir.x > 0.0 else -1
+	_update_gear_visuals()
 	var speed := absf(velocity.x) if not compact else velocity.length()
 	var moving := speed > 0.5 * Constants.BLOCK_SIZE
 	var frame_col := 0

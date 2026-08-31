@@ -13,7 +13,14 @@ The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records set
 decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
 base) comes first; do not add other major aspects before it works.
 
-Development has completed **M0–M3** (next: M4 — Danger). The main scene is now
+Development has completed **M0–M3 and M5** (next: M4 — Danger; only M5's manual pacing
+feel-check remains open). M5 highlights: gear modifiers (`data/modifiers.json`, per-instance
+`mods` on stack dicts, rolled on found loot, rarity-colored titles), the **Modification
+Bench** Modify tab (sacrifice-to-learn / apply-to-clean), the **ability tech tree**
+(`data/abilities.json`, 3 branches × 3 tiers on the Skills tab; unlocks the two reserved
+accessory slots), found-only firearms data items, paper-doll gear (suit tints + held tool),
+harvest gates by material tier (iron → Scrapping 2, steel → 3), and verified depletion
+pressure (surface iron can't cover the gear chain). The main scene is now
 `scenes/ui/title.tscn` — the world picker ↔ character picker (CC-09; separate world/character
 saves under `user://saves/`, written by `scripts/data/save_game.gd`; **F5** saves, **F9**
 reloads in-game; **Esc** saves + returns to the title, and quits from there; dev runs passing
@@ -79,7 +86,7 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   `docs/Examples/UI Menus`, textures generated into `assets/ui/`) with Inventory / Crafting /
   Chest tabs sharing the wood-framed bag grid; `UITheme` (`scripts/ui/ui_theme.gd`) is the
   stylebox factory. Preview any screen without input:
-  `godot --path . res://scenes/test/menu_preview.tscn -- --screen=inventory|crafting|chest|world`.
+  `godot --path . res://scenes/test/menu_preview.tscn -- --screen=inventory|crafting|chest|skills|modify|world`.
 - Backgrounds: user art in `docs/Examples/Backgrounds` (City plates + Building seam covers) is
   downscaled by the art tool into `assets/backgrounds/` and assembled by
   `scripts/world/backdrop.gd` (Parallax2D) hanging from the waterline.

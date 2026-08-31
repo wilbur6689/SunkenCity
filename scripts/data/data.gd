@@ -16,6 +16,10 @@ var objects: Dictionary = {}  # id -> object def
 var recipes: Dictionary = {}  # id -> recipe def
 var recipe_list: Array = []
 var loot: Dictionary = {}   # ordered as authored
+var modifiers: Dictionary = {}      # {"prefixes": [...], "suffixes": [...]} (LT-05/06)
+var modifier_defs: Dictionary = {}  # mod id -> def
+var abilities: Dictionary = {}      # ability id -> def (CC-18 tech tree)
+var ability_list: Array = []
 
 var _icon_cache: Dictionary = {}
 
@@ -49,6 +53,13 @@ func _load_all() -> void:
 		recipes[r.id] = r
 		recipe_list.append(r)
 	loot = _load_json("res://data/loot.json")
+	modifiers = _load_json("res://data/modifiers.json")
+	for part in ["prefixes", "suffixes"]:
+		for m in modifiers.get(part, []):
+			modifier_defs[m.id] = m
+	for a in _load_json("res://data/abilities.json").get("abilities", []):
+		abilities[a.id] = a
+		ability_list.append(a)
 	_validate()
 
 func _load_json(path: String) -> Dictionary:
@@ -74,6 +85,9 @@ func _validate() -> void:
 	for it in items.values():
 		for s in it.get("scrap", []):
 			assert(items.has(s.item), "item %s: unknown scrap %s" % [it.id, s.item])
+	for a in ability_list:
+		var req: String = a.get("requires", "")
+		assert(req == "" or abilities.has(req), "ability %s: unknown requirement %s" % [a.id, req])
 	print("Data: %d items, %d blocks, %d objects, %d recipes" % [items.size(), blocks.size(), objects.size(), recipe_list.size()])
 
 # --- Accessors ---

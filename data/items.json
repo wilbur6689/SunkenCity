@@ -351,6 +351,11 @@
      "item": "plastic",
      "count": 2
     }
+   ],
+   "tint": [
+    0.6,
+    0.78,
+    0.95
    ]
   },
   {
@@ -380,6 +385,11 @@
      "item": "cloth",
      "count": 2
     }
+   ],
+   "tint": [
+    1.0,
+    0.78,
+    0.45
    ]
   },
   {
@@ -665,6 +675,93 @@
     "learn_recipe": "hard_suit"
    },
    "desc": "Teaches the hard suit at the Dive Station."
+  },
+  {
+   "id": "pistol",
+   "name": "Pistol",
+   "category": "weapon",
+   "weight": 2.0,
+   "stack": 1,
+   "icon": [
+    0,
+    6
+   ],
+   "weapon": {
+    "damage": 8,
+    "speed": 2.0,
+    "reload": 1.0,
+    "ammo": "pistol_rounds"
+   },
+   "found_only": true,
+   "desc": "Found only. Quick and loud - and dead weight underwater.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "iron",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "smg",
+   "name": "Sub-Machine Gun",
+   "category": "weapon",
+   "weight": 3.5,
+   "stack": 1,
+   "icon": [
+    1,
+    6
+   ],
+   "weapon": {
+    "damage": 6,
+    "speed": 5.0,
+    "reload": 1.8,
+    "ammo": "pistol_rounds"
+   },
+   "found_only": true,
+   "desc": "Found only. A semi-auto scrounger's dream; useless submerged.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    },
+    {
+     "item": "iron",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "rifle",
+   "name": "Rifle",
+   "category": "weapon",
+   "weight": 4.0,
+   "stack": 1,
+   "icon": [
+    2,
+    6
+   ],
+   "weapon": {
+    "damage": 18,
+    "speed": 0.8,
+    "reload": 2.2,
+    "ammo": "rifle_rounds"
+   },
+   "found_only": true,
+   "desc": "Found only. One heavy answer per trigger pull; useless submerged.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    },
+    {
+     "item": "iron",
+     "count": 3
+    }
+   ]
   }
  ]
 }

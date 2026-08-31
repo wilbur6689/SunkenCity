@@ -58,7 +58,7 @@ func tick(delta: float) -> void:
 	if message_timer <= 0.0:
 		message = ""
 	target_cell = World.cell_at(player.aim_position)
-	var reach := Constants.REACH_BLOCKS * Constants.BLOCK_SIZE
+	var reach := player.reach_blocks() * Constants.BLOCK_SIZE
 	target_in_reach = player.global_position.distance_to(World.cell_center(target_cell)) <= reach
 	_update_hover()
 	_update_ghost()
@@ -219,7 +219,9 @@ func _hammer(tool: Dictionary) -> void:
 			player.inventory.add(obj.id, 1)
 			say("Picked up " + obj.def.name)
 		return
-	var result := World.damage_block(target_cell, float(tool.get("damage", 0)), int(tool.get("tier", 0)))
+	# Demolitionist (tech tree) lands hammer blows harder.
+	var dmg := float(tool.get("damage", 0)) * player.skills.effect("hammer_mult", 1.0)
+	var result := World.damage_block(target_cell, dmg, int(tool.get("tier", 0)))
 	match result:
 		"structure":
 			say("Building structure cannot be broken")
@@ -262,7 +264,7 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 	scrap_progress += delta * speed / float(obj.def.get("scrap_time", 2.0))
 	obj.scrap_progress = scrap_progress
 	if scrap_progress >= 1.0:
-		var yields := obj.roll_yields(false, rng)
+		var yields := obj.roll_yields(false, rng, player)
 		var pos := obj.center()
 		World.remove_object(obj)
 		for y in yields:

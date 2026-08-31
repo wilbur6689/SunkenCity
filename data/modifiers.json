@@ -1,0 +1,23 @@
+{
+ "_comment": "Gear modifiers (LT-05..10). Max one prefix + one suffix per item (LT-07). power 1..3 scales stats linearly; 3 is top strength. Rarity is derived (LT-08): no mods gray, one green, both blue, both at power 3 purple. Found gear rolls these at loot gen; crafted gear is clean and takes LEARNED mods at the Modification Bench (learning destroys the donor item, LT-09). applies gates what an id can roll onto: tool (has tool block), weapon (firearms), gear (has an equip slot). learnable false = junk rolls that the bench refuses to learn. Stat keys: tool_damage/tool_speed/knockback merge into the held tool block (knockback is honoured when M4 combat lands); the rest stack like equip stats; weight_mult scales the item's own weight; yield_chance is a per-power chance to double a scrap roll.",
+ "prefixes": [
+  {"id": "sharp", "name": "Sharp", "applies": ["tool", "weapon"], "stats": {"tool_damage": 1}},
+  {"id": "swift", "name": "Swift", "applies": ["tool", "weapon"], "stats": {"tool_speed": 0.15}},
+  {"id": "heavy", "name": "Heavy", "applies": ["tool", "weapon"], "stats": {"knockback": 0.5, "tool_speed": -0.08}},
+  {"id": "balanced", "name": "Balanced", "applies": ["tool", "weapon"], "stats": {"tool_damage": 0.5, "tool_speed": 0.08}},
+  {"id": "brutal", "name": "Brutal", "applies": ["tool", "weapon"], "stats": {"tool_damage": 2, "tool_speed": -0.15}},
+  {"id": "keen", "name": "Keen", "applies": ["tool"], "stats": {"scrap_speed": 0.1}},
+  {"id": "reinforced", "name": "Reinforced", "applies": ["gear"], "stats": {"defense": 1}},
+  {"id": "rusty", "name": "Rusty", "applies": ["tool", "weapon"], "learnable": false, "stats": {"tool_damage": -1, "tool_speed": -0.1}}
+ ],
+ "suffixes": [
+  {"id": "of_the_deep", "name": "of the Deep", "applies": ["gear"], "stats": {"oxygen": 15}},
+  {"id": "of_currents", "name": "of Currents", "applies": ["gear"], "stats": {"swim": 0.08}},
+  {"id": "of_the_shore", "name": "of the Shore", "applies": ["gear", "tool", "weapon"], "stats": {"weight_mult": -0.25}},
+  {"id": "of_warmth", "name": "of Warmth", "applies": ["gear"], "stats": {"cold": 1}},
+  {"id": "of_pressure", "name": "of Pressure", "applies": ["gear"], "stats": {"crush": 1}},
+  {"id": "of_sight", "name": "of Sight", "applies": ["gear"], "stats": {"light": 3}},
+  {"id": "of_the_scavenger", "name": "of the Scavenger", "applies": ["gear", "tool"], "stats": {"yield_chance": 0.08}},
+  {"id": "of_echoes", "name": "of Echoes", "applies": ["gear"], "stats": {"reveal": 2}}
+ ]
+}

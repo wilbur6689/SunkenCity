@@ -31,7 +31,14 @@ static func fill_containers(records: Array, waterline: int, seed_value: int) -> 
 		var picks := rng.randi_range(3, 5) if zkey == "safe" else rng.randi_range(2, 4)
 		for i in picks:
 			var e := _pick(rng, table)
-			rec.storage.add(String(e.item), rng.randi_range(int(e.min), int(e.max)))
+			var id := String(e.item)
+			# Found gear may roll prefixes/suffixes (LT-05..08, LT-10);
+			# a modded piece is a unique instance, stored as its own stack.
+			var mods := ItemMods.roll(rng, id)
+			if mods.is_empty():
+				rec.storage.add(id, rng.randi_range(int(e.min), int(e.max)))
+			else:
+				rec.storage.add_stack({"id": id, "count": 1, "mods": mods})
 
 static func _pick(rng: RandomNumberGenerator, table: Array) -> Dictionary:
 	var total := 0
