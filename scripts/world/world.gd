@@ -97,7 +97,9 @@ func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
 		return 0.0
 	if not line_of_sight(viewer_pos, cell):
 		return 0.0
-	return minf(float(light_at(cell)), cap)
+	# In sight and in range = fully illuminated (the player sees what they
+	# look at); tile light remains for lamp accents and gameplay queries.
+	return cap
 
 func _gather_light_sources() -> Array:
 	var out := []

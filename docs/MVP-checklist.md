@@ -126,7 +126,7 @@ small base with a working bed spawn — no debug commands.
 - [x] Carried light (held glowstick glows), placed lamps, dropped glowsticks sink and glow
 - [x] Godot 2D light accents (PointLight2D on lamps/glowsticks) as warm glow inside lit areas *(render at window res since the canvas_items stretch change — chunky low-res glow is a revisit)*
 - [x] Building power: breaker objects (fixed infrastructure, E to flip) power wired ceiling lamps within 24 blocks; flooding a breaker trips it off (WS-17)
-- [x] **Fog of war** (user request): applies **inside buildings only** (back-wall cells, WS-20) with **raycast line of sight** — floors and walls occlude, no seeing around corners or into rooms below; visibility = min(tile light, sight falloff); the exterior (sky, open water, backdrop, facades) stays fully revealed with the depth grade carrying deep-water mood
+- [x] **Fog of war** (user request): applies **inside buildings only** (back-wall cells, WS-20) with **raycast line of sight** — floors and walls occlude, no seeing around corners or into rooms below; everything in sight range and line of sight is **fully illuminated** (sight is the light source; tile light stays for lamp accents and gameplay queries), fading beyond; rendered as a bilinear visibility texture quantized to **1/4-block steps** (soft edges, no full-block squares); the exterior (sky, open water, backdrop, facades) stays fully revealed with the depth grade carrying deep-water mood
 
 **GATE:** breach-flood a dry room, then patch it, pump it dry, and move in — bed, station, and
 refilling tanks all working in the reclaimed room.
