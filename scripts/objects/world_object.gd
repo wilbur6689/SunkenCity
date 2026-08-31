@@ -76,6 +76,22 @@ func _ready() -> void:
 			add_child(_light)
 			set_powered(false) # wired lights start dark until a breaker feeds them
 
+## Re-apply saved state after place_object (must run once _ready has built
+## the door body / storage). Power re-resolves via World.update_power later.
+func restore_state(st: Dictionary) -> void:
+	if def.kind == "door" and st.get("open", false):
+		open = true
+		_shape.disabled = true
+		sprite.modulate.a = 0.45
+	if def.kind == "breaker":
+		powered_on = st.get("powered", false)
+	outlet_cell = st.get("outlet", NO_OUTLET)
+	if storage != null and st.has("storage"):
+		var slots: Array = (st.storage as Array).duplicate(true)
+		slots.resize(storage.slots.size())
+		storage.slots = slots
+		storage.changed.emit()
+
 ## Objects that respond to E (everything except wired-in lights).
 func is_interactable() -> bool:
 	return def.kind != "light"

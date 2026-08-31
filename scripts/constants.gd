@@ -96,6 +96,11 @@ const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
 
 # --- World scale, bands, clock (M3: CT-28, GD-16, CC-11) ---
 const LIGHT_WINDOW: Vector2i = Vector2i(120, 72) # cells relit around the camera
+
+# Map + minimap (CC-25)
+const MAP_REVEAL_RADIUS: int = 14        # blocks revealed around the player
+const MINIMAP_WINDOW: Vector2i = Vector2i(96, 56) # cells shown on the minimap
+const MINIMAP_REFRESH_SECONDS: float = 0.25
 const DAY_LENGTH_SECONDS: float = 600.0          # full day/night cycle
 const BAND_SHALLOWS_DEPTH: int = 40  # rows below the waterline where each band ends
 const BAND_COLD_DEPTH: int = 120

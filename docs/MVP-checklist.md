@@ -163,13 +163,14 @@ refilling tanks all working in the reclaimed room.
 - [x] Day/night cycle (CC-11): 10-minute day drives the sun strength in the light map
 
 ### Persistence (CC-09)
-- [ ] World save: compressed grid + entity/container state + water state + waterline
-- [ ] Character save separate: inventory, skills, spawn, map reveal
-- [ ] Save/load mid-run anywhere; world picker ↔ character picker flow
-- [ ] Fog-of-war map data per character + top-right minimap UI (CC-25)
+- [x] World save: `SaveGame.save_world` — zstd-compressed grid layers + water levels, object states (doors/breakers/pump outlets/storage contents), dropped items, placed-blocks ledger, clock, spawn — binary store_var files under `user://saves/worlds/`
+- [x] Character save separate (`user://saves/chars/`): inventory, equipment, skills, vitals, selected slot, plus per-world map reveal + position (Terraria model — any character can join any world)
+- [x] Save/load mid-run anywhere: **F5** saves world + character, **F9** reboots from the files; title screen (`scenes/ui/title.tscn`, now the main scene) is the world picker ↔ character picker — saved worlds / fresh seed on one side, saved characters / new name on the other; dev runs passing `--seed`/`--shot` skip straight into the city
+- [x] Fog-of-war map data per character (`MapReveal` bitset, revealed by proximity r=14, zstd into the character save) + top-right minimap UI (CC-25): 96×56-cell window, material/water/sky/interior colors, redrawn 4×/s
 
 **GATE:** a fresh seed generates a full explorable city — bands, gates, minimap — that saves and
-loads reliably.
+loads reliably. ✔ `save_smoke.tscn` (19 checks): full round trip — grid bit-for-bit, water exact,
+object/storage/door state, character inventory/skills/position, map reveal. **M3 complete.**
 
 ---
 

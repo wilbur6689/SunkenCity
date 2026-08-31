@@ -197,10 +197,11 @@ static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Ar
 	var sr: int = top + FLOOR_H - 1
 	var zone_x: int = tower.stair_wall + 1
 	var zone_end: int = tower.shaft_wall - 1
-	# Clear whatever the generator put on this floor (objects and partitions).
+	# Clear whatever the generator put on this floor (objects — wall art
+	# included, which anchors above the standing row — and partitions).
 	for i in range(objects.size() - 1, -1, -1):
 		var c: Vector2i = objects[i].cell
-		if c.y == sr and c.x >= zone_x - 1 and c.x <= zone_end:
+		if c.y <= sr and c.y > sr - FLOOR_H and c.x >= zone_x - 1 and c.x <= zone_end:
 			objects.remove_at(i)
 	for wy in range(top + 1, sr + 1):
 		for wx in range(zone_x, zone_end + 1):

@@ -17,6 +17,7 @@ var spawn_position: Vector2 # feet position (bottom-center) of the spawn
 var water_sim: WaterSim
 var pumps: Array = [] # WorldObjects of kind "pump"
 var light_map: LightMap
+var map_reveal: MapReveal # fog-of-war world map (CC-25); saved per character
 var _light_tick: int = 0
 
 ## Depth bands (GD-16): world data every system can query.
@@ -44,6 +45,7 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	water_sim = WaterSim.new(grid.bounds, is_solid_cell)
 	water_sim.budget_per_tick = Constants.WATER_BUDGET_PER_TICK
 	light_map = LightMap.new()
+	map_reveal = MapReveal.new(grid.bounds)
 
 func is_ready() -> bool:
 	return grid != null
@@ -64,6 +66,7 @@ func _physics_process(delta: float) -> void:
 		var p := get_tree().get_first_node_in_group("player") as Node2D
 		if p != null:
 			var center := cell_at(p.global_position)
+			map_reveal.reveal_disc(center, Constants.MAP_REVEAL_RADIUS)
 			var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
 			var window := Rect2i(center - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
 			light_map.compute_window(window, grid.bounds.position.y, is_solid_cell,

@@ -1,0 +1,136 @@
+class_name SaveGame
+extends RefCounted
+## Persistence (CC-09) — the Terraria model: **world saves and character
+## saves are separate files** under user://saves/, so any character can join
+## any world. Binary via store_var (Vector2i / PackedByteArray serialize
+## natively); the big layers (grid, water, map reveal) zstd-compress.
+## The map reveal is per character *per world* (CC-25), keyed by world name.
+
+const WORLD_DIR := "user://saves/worlds/"
+const CHAR_DIR := "user://saves/chars/"
+const WORLD_EXT := ".world"
+const CHAR_EXT := ".char"
+const VERSION := 1
+
+## Handoff into the city scene's next boot (set by the title screen or the
+## quick-load key before a scene change/reload).
+static var pending_world: String = ""
+static var pending_character: String = ""
+static var pending_seed: int = -1
+
+# --- Listing ---
+
+static func _names_in(dir: String, ext: String) -> Array:
+	var out: Array = []
+	var d := DirAccess.open(dir)
+	if d == null:
+		return out
+	for f in d.get_files():
+		if f.ends_with(ext):
+			out.append(f.trim_suffix(ext))
+	out.sort()
+	return out
+
+static func world_names() -> Array:
+	return _names_in(WORLD_DIR, WORLD_EXT)
+
+static func character_names() -> Array:
+	return _names_in(CHAR_DIR, CHAR_EXT)
+
+# --- World ---
+
+static func save_world(world_name: String, seed_value: int) -> void:
+	var g: WorldGrid = World.grid
+	var objs: Array = []
+	for obj in World.objects_root.get_children():
+		if obj is WorldObject and not obj.is_queued_for_deletion():
+			var st := {"id": obj.id, "cell": obj.cell, "placed": obj.placed_by_player,
+				"open": obj.open, "powered": obj.powered_on, "outlet": obj.outlet_cell}
+			if obj.storage != null:
+				st["storage"] = obj.storage.slots.duplicate(true)
+			objs.append(st)
+	var items: Array = []
+	for it in World.items_root.get_children():
+		if it is WorldItem and not it.is_queued_for_deletion():
+			items.append({"id": it.id, "count": it.count, "pos": it.global_position})
+	var data := {
+		"version": VERSION, "name": world_name, "seed": seed_value,
+		"waterline_row": World.waterline_row, "time_of_day": World.time_of_day,
+		"bounds": g.bounds, "spawn": World.spawn_position,
+		"structure": g.structure.compress(FileAccess.COMPRESSION_ZSTD),
+		"back": g.back.compress(FileAccess.COMPRESSION_ZSTD),
+		"climb": g.climb.compress(FileAccess.COMPRESSION_ZSTD),
+		"water": World.water_sim.levels.compress(FileAccess.COMPRESSION_ZSTD),
+		"placed_blocks": World.placed_blocks.duplicate(true),
+		"objects": objs, "items": items,
+	}
+	DirAccess.make_dir_recursive_absolute(WORLD_DIR)
+	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.WRITE)
+	f.store_var(data)
+	f.close()
+
+static func read_world(world_name: String) -> Dictionary:
+	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.READ)
+	if f == null:
+		return {}
+	var data = f.get_var()
+	f.close()
+	return data if data is Dictionary else {}
+
+## Rebuild a WorldGrid from a world-save dict.
+static func build_grid(data: Dictionary) -> WorldGrid:
+	var b: Rect2i = data.bounds
+	var g := WorldGrid.new(b)
+	var n: int = b.size.x * b.size.y
+	g.structure = (data.structure as PackedByteArray).decompress(n, FileAccess.COMPRESSION_ZSTD)
+	g.back = (data.back as PackedByteArray).decompress(n, FileAccess.COMPRESSION_ZSTD)
+	g.climb = (data.climb as PackedByteArray).decompress(n, FileAccess.COMPRESSION_ZSTD)
+	return g
+
+# --- Character ---
+
+static func save_character(char_name: String, player, world_key: String) -> void:
+	var data := read_character(char_name)
+	if data.is_empty():
+		data = {"version": VERSION, "name": char_name, "maps": {}, "positions": {}}
+	data["inventory"] = player.inventory.slots.duplicate(true)
+	data["equipment"] = player.equipment.duplicate(true)
+	data["skills"] = {"xp": player.skills.xp.duplicate(), "spent": player.skills.spent_points}
+	data["health"] = player.health
+	data["oxygen"] = player.oxygen
+	data["selected_slot"] = player.selected_slot
+	data.maps[world_key] = World.map_reveal.to_bytes()
+	data.positions[world_key] = player.global_position
+	DirAccess.make_dir_recursive_absolute(CHAR_DIR)
+	var f := FileAccess.open(CHAR_DIR + char_name + CHAR_EXT, FileAccess.WRITE)
+	f.store_var(data)
+	f.close()
+
+static func read_character(char_name: String) -> Dictionary:
+	var f := FileAccess.open(CHAR_DIR + char_name + CHAR_EXT, FileAccess.READ)
+	if f == null:
+		return {}
+	var data = f.get_var()
+	f.close()
+	return data if data is Dictionary else {}
+
+## Apply a character-save dict to a live player (inventory, skills, vitals,
+## and — when this world was visited before — map reveal and position).
+static func apply_character(data: Dictionary, player, world_key: String) -> void:
+	if data.is_empty():
+		return
+	player.inventory.slots = (data.inventory as Array).duplicate(true)
+	player.inventory.slots.resize(Constants.INVENTORY_SLOTS)
+	player.inventory.changed.emit()
+	for slot_name in player.equipment.keys():
+		player.set_equipment(slot_name, data.equipment.get(slot_name))
+	player.skills.xp = (data.skills.xp as Dictionary).duplicate()
+	player.skills.spent_points = int(data.skills.spent)
+	player.health = float(data.health)
+	player.oxygen = float(data.oxygen)
+	player.selected_slot = int(data.selected_slot)
+	if data.maps.has(world_key):
+		World.map_reveal.from_bytes(data.maps[world_key])
+	if data.positions.has(world_key):
+		player.global_position = data.positions[world_key]
+		player.velocity = Vector2.ZERO
