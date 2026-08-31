@@ -6,6 +6,7 @@ extends Control
 
 const CITY_SCENE := "res://scenes/city/city.tscn"
 
+var frame: Control # fixed 640x360 design frame, centred on wide screens
 var world_list: ItemList
 var char_list: ItemList
 var seed_spin: SpinBox
@@ -29,6 +30,16 @@ func _build_ui() -> void:
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
+	# Wide screens (expand stretch) widen the viewport past 640x360; the
+	# layout keeps its design coordinates inside this centred frame.
+	frame = Control.new()
+	frame.set_anchors_preset(Control.PRESET_CENTER)
+	frame.offset_left = -320
+	frame.offset_top = -180
+	frame.offset_right = 320
+	frame.offset_bottom = 180
+	add_child(frame)
+
 	var title := Label.new()
 	title.text = "SUNKEN CITY"
 	title.add_theme_font_size_override("font_size", 28)
@@ -36,7 +47,7 @@ func _build_ui() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	title.offset_top = 24
-	add_child(title)
+	frame.add_child(title)
 
 	var sub := Label.new()
 	sub.text = "The city drowned to keep the virus down. Dive."
@@ -45,7 +56,7 @@ func _build_ui() -> void:
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	sub.offset_top = 58
-	add_child(sub)
+	frame.add_child(sub)
 
 	world_list = _picker_panel(96, "WORLD")
 	char_list = _picker_panel(344, "CHARACTER")
@@ -55,26 +66,26 @@ func _build_ui() -> void:
 	seed_label.text = "Seed"
 	seed_label.add_theme_font_size_override("font_size", 10)
 	seed_label.position = Vector2(96, 262)
-	add_child(seed_label)
+	frame.add_child(seed_label)
 	seed_spin = SpinBox.new()
 	seed_spin.min_value = 1
 	seed_spin.max_value = 999999
 	seed_spin.value = randi_range(1, 999999)
 	seed_spin.position = Vector2(126, 258)
 	seed_spin.custom_minimum_size = Vector2(110, 0)
-	add_child(seed_spin)
+	frame.add_child(seed_spin)
 	var rand_btn := Button.new()
 	rand_btn.text = "Reroll"
 	rand_btn.position = Vector2(242, 258)
 	rand_btn.pressed.connect(func(): seed_spin.value = randi_range(1, 999999))
-	add_child(rand_btn)
+	frame.add_child(rand_btn)
 
 	# New-character name row under the character panel.
 	name_edit = LineEdit.new()
 	name_edit.placeholder_text = "new character name"
 	name_edit.position = Vector2(344, 258)
 	name_edit.custom_minimum_size = Vector2(200, 0)
-	add_child(name_edit)
+	frame.add_child(name_edit)
 
 	var hint := Label.new()
 	hint.text = "Pick or create on both sides, then dive. Progress saves when you leave (Esc) — F5 saves any time."
@@ -83,7 +94,7 @@ func _build_ui() -> void:
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	hint.offset_top = -14
-	add_child(hint)
+	frame.add_child(hint)
 
 	var play := Button.new()
 	play.text = "DIVE"
@@ -92,7 +103,7 @@ func _build_ui() -> void:
 	play.position = Vector2(-40, -46)
 	play.custom_minimum_size = Vector2(80, 30)
 	play.pressed.connect(_play)
-	add_child(play)
+	frame.add_child(play)
 
 	_refresh_lists()
 
@@ -102,12 +113,12 @@ func _picker_panel(x: float, label_text: String) -> ItemList:
 	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(0.75, 0.85, 0.9))
 	label.position = Vector2(x, 86)
-	add_child(label)
+	frame.add_child(label)
 	var list := ItemList.new()
 	list.position = Vector2(x, 104)
 	list.custom_minimum_size = Vector2(200, 148)
 	list.size = Vector2(200, 148)
-	add_child(list)
+	frame.add_child(list)
 	return list
 
 func _refresh_lists() -> void:

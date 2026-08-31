@@ -22,6 +22,7 @@ var fresh: Dictionary = {}      # index -> ripple direction (+1/-1); set on side
 var is_solid: Callable          # func(cell: Vector2i) -> bool
 var budget_per_tick: int = 3000
 var processed_last_tick: int = 0
+var changed_last_tick: int = 0 # cells that actually moved water this tick
 
 func _init(p_bounds: Rect2i, p_is_solid: Callable) -> void:
 	bounds = p_bounds
@@ -130,22 +131,28 @@ func tick() -> void:
 	flow.clear()
 	if awake.is_empty():
 		processed_last_tick = 0
+		changed_last_tick = 0
 		if not _settled_recently.is_empty():
 			_flatten_settled()
+			changed_last_tick = 1 # flattening moved levels; light may care
 		return
 	var order := awake.keys()
 	order.sort_custom(func(a, b): return a > b) # bottom-up (higher index = lower row)
 	var processed := 0
+	var changed := 0
 	for i in order:
 		if processed >= budget_per_tick:
 			break
 		processed += 1
 		var moved := _step_cell(i)
-		if not moved:
+		if moved:
+			changed += 1
+		else:
 			awake.erase(i) # settle; a neighbour change re-wakes it
 			if levels[i] > 0:
 				_settled_recently[i] = true
 	processed_last_tick = processed
+	changed_last_tick = changed
 
 ## When a body finishes moving, redistribute it to true equilibrium: the
 ## flow rules freeze slope-1 staircases (diff >= 2 only), so a settled body

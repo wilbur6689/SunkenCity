@@ -62,13 +62,25 @@ func _ready() -> void:
 	root.visible = false
 	add_child(root)
 
+	# A fixed 640x360 design frame, centred: on wide screens (expand stretch)
+	# the viewport is wider than the design space, so absolute positions
+	# would drift left without it.
+	var design_frame := Control.new()
+	design_frame.set_anchors_preset(Control.PRESET_CENTER)
+	design_frame.offset_left = -DESIGN_W * 0.5
+	design_frame.offset_top = -180
+	design_frame.offset_right = DESIGN_W * 0.5
+	design_frame.offset_bottom = 180
+	design_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(design_frame)
+
 	# Popup window: steel frame with the underwater rock art as its interior
 	var window := Control.new()
 	window.position = WIN_POS
 	window.size = WIN_SIZE
 	window.clip_contents = true
 	window.mouse_filter = Control.MOUSE_FILTER_STOP
-	root.add_child(window)
+	design_frame.add_child(window)
 	var backdrop := TextureRect.new()
 	backdrop.texture = load("res://assets/backgrounds/menu_backdrop.png")
 	backdrop.size = WIN_SIZE

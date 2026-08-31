@@ -24,6 +24,7 @@ var _light_tick: int = 0
 ## active water, or the window/sun/sources key.
 var _light_dirty: bool = true
 var _light_key: Array = []
+var _water_relight_at: int = 0 # next _light_tick water motion may relight at
 
 ## Depth bands (GD-16): world data every system can query.
 var waterline_row: int = 0
@@ -95,7 +96,14 @@ func _physics_process(delta: float) -> void:
 			var window := Rect2i(center - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
 			var sources := _gather_light_sources()
 			var key: Array = [window, int(roundf(sun_strength() * LightMap.MAX_LIGHT)), hash(str(sources))]
-			if _light_dirty or water_sim.processed_last_tick > 0 or key != _light_key:
+			# Water in motion (a pump, a slosh that never settles) must not
+			# force the full 40ms relight every cycle — its light effect is
+			# subtle, so it refreshes at most once a second. Blocks, doors,
+			# lamps, and the window/sun/sources key stay instant.
+			var water_due: bool = water_sim.changed_last_tick > 0 and _light_tick >= _water_relight_at
+			if _light_dirty or water_due or key != _light_key:
+				if water_due:
+					_water_relight_at = _light_tick + 60
 				_light_dirty = false
 				_light_key = key
 				var lt0 := Time.get_ticks_usec()
