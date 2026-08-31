@@ -17,7 +17,9 @@ Development has completed **M0–M2** in `docs/MVP-overview.md` (gates pass head
 `m0/m1/m2_smoke.tscn`; manual feel passes pending); next is **M3 — The City**. The water sim is
 `scripts/world/water_sim.gd` (8-level cells, awake-set dormancy — see `WaterPhysics.md` "M2
 Implementation Decisions"); lighting is `scripts/world/light_map.gd` (0–15 tile light, sun +
-BFS point sources) with **fog of war** = min(light, sight falloff) drawn by `LightRenderer`;
+BFS point sources) with **fog of war inside buildings only** (back-wall cells, WS-20): raycast
+line of sight (floors/walls occlude) + min(light, sight falloff), drawn by `LightRenderer`;
+exteriors are always revealed;
 breaker objects power wired lights and trip when flooded. `World` owns and ticks water, light,
 pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items off as they land.
 

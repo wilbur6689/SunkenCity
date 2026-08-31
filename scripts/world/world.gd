@@ -61,13 +61,42 @@ func _physics_process(_delta: float) -> void:
 func light_at(cell: Vector2i) -> int:
 	return light_map.light_at(cell) if light_map != null else LightMap.MAX_LIGHT
 
-## What a viewer at `viewer_pos` actually sees at `cell`: tile light capped
-## by sight falloff with distance — the fog of war.
+## Raycast from `from_pos` to the centre of `to_cell`, sampling the grid:
+## true if no solid cell (blocks, closed doors, slabs) lies between them.
+## The target cell itself never blocks, so exposed faces stay visible.
+func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
+	var target := cell_center(to_cell)
+	var delta := target - from_pos
+	var dist := delta.length()
+	if dist < 1.0:
+		return true
+	var steps := int(dist / (Constants.BLOCK_SIZE * 0.4)) + 1
+	for i in range(1, steps):
+		var c := cell_at(from_pos + delta * (float(i) / steps))
+		if c == to_cell:
+			break
+		if is_solid_cell(c):
+			return false
+	return true
+
+## What a viewer at `viewer_pos` actually sees at `cell`. Fog of war applies
+## only INSIDE buildings — marked by background walls (WS-20): there, a cell
+## needs an unobstructed ray from the viewer (floors and walls occlude — no
+## seeing around corners or through slabs), and tile light is capped by
+## sight falloff with distance. The exterior (sky, open water, backdrop,
+## facades) is always fully revealed; the depth colour grade alone carries
+## the deep-water mood.
 func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
+	if not has_back_wall_cell(cell):
+		return float(LightMap.MAX_LIGHT)
 	var d := cell_center(cell).distance_to(viewer_pos) / Constants.BLOCK_SIZE
 	var cap := float(LightMap.MAX_LIGHT)
 	if d > Constants.SIGHT_FULL_BLOCKS:
 		cap = maxf(cap - (d - Constants.SIGHT_FULL_BLOCKS) * Constants.SIGHT_FADE_PER_BLOCK, 0.0)
+	if cap <= 0.0:
+		return 0.0
+	if not line_of_sight(viewer_pos, cell):
+		return 0.0
 	return minf(float(light_at(cell)), cap)
 
 func _gather_light_sources() -> Array:
