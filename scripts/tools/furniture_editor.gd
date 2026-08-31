@@ -9,7 +9,7 @@ extends Control
 ## Save writes data/objects.json AND assets/sprites/objects/<id>.png.
 
 const ZONES := ["residential", "commercial", "industrial", "hospital"]
-const KINDS := ["scrap", "chest", "bed", "light", "door"]
+const KINDS := ["scrap", "chest", "bed", "light", "door", "pump", "breaker", "station"]
 const YIELD_ITEMS := ["wood", "scrap_metal", "plastic", "cloth", "stone", "iron"]
 const PX := 5 # canvas zoom
 const MAX_BLOCKS := 4
@@ -47,6 +47,8 @@ var skill_spin: SpinBox
 var time_spin: SpinBox
 var xp_spin: SpinBox
 var yields_box: VBoxContainer
+var storage_check: CheckBox
+var storage_slots_spin: SpinBox
 var load_option: OptionButton
 var status_label: Label
 var tool_label: Label
@@ -127,6 +129,16 @@ func _build_ui() -> void:
 	sv.add_child(g)
 	w_spin.value_changed.connect(func(_v): _resize_canvas())
 	h_spin.value_changed.connect(func(_v): _resize_canvas())
+	var strow := HBoxContainer.new()
+	strow.add_theme_constant_override("separation", 4)
+	storage_check = CheckBox.new()
+	storage_check.text = "Has inventory"
+	storage_check.add_theme_font_size_override("font_size", 8)
+	strow.add_child(storage_check)
+	storage_slots_spin = _spin(4, 20, 12, "Slots")
+	strow.add_child(storage_slots_spin)
+	strow.add_child(UITheme.label("slots", 8, Color(0.6, 0.66, 0.72)))
+	sv.add_child(strow)
 	sv.add_child(UITheme.label("Yields (item / min / max)", 8, Color(0.56, 0.75, 0.81)))
 	yields_box = VBoxContainer.new()
 	yields_box.add_theme_constant_override("separation", 1)
@@ -403,6 +415,9 @@ func _sync_to_ui() -> void:
 	skill_spin.value = int(def.get("skill", 0))
 	time_spin.value = float(def.get("scrap_time", 2.5))
 	xp_spin.value = int(def.get("xp", 4))
+	var slots := int(def.get("storage_slots", def.get("slots", 0)))
+	storage_check.button_pressed = def.get("kind", "") == "chest" or slots > 0
+	storage_slots_spin.value = clampi(slots if slots > 0 else 12, 4, 20)
 	_rebuild_yields()
 	_dirty()
 
@@ -421,8 +436,15 @@ func _apply_ui() -> void:
 		if zone_checks[z].button_pressed:
 			zones.append(z)
 	def.zones = zones
+	# Storage flag: chests always have it; anything else opts in (cabinets…).
+	if storage_check.button_pressed:
+		def["storage_slots"] = int(storage_slots_spin.value)
+	else:
+		def.erase("storage_slots")
 	if def.kind == "light":
 		def["light"] = def.get("light", {"radius_blocks": 6, "color": [1.0, 0.8, 0.55]})
+	elif def.kind == "station":
+		def["station"] = def.get("station", "workbench") # preserve on round-trips
 
 func _read_library() -> Dictionary:
 	var parsed = null

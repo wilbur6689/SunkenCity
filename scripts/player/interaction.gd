@@ -242,6 +242,10 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		say("Needs Scrapping %d" % obj.def.skill)
 		_stop_scrapping()
 		return
+	if obj.storage != null and not obj.storage.is_empty():
+		say("Empty it before scrapping")
+		_stop_scrapping()
+		return
 	if scrapping != obj:
 		_stop_scrapping()
 		scrapping = obj

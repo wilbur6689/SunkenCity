@@ -37,6 +37,19 @@ func _ready() -> void:
 	ed._save()
 	lib = JSON.parse_string(FileAccess.get_file_as_string("user://objects_test.json"))
 	check(lib.objects.size() == 1, "re-saving updates instead of duplicating")
+	# Storage flag (user request): mark as having an inventory, save, reload.
+	ed.storage_check.button_pressed = true
+	ed.storage_slots_spin.value = 8
+	ed._save()
+	lib = JSON.parse_string(FileAccess.get_file_as_string("user://objects_test.json"))
+	check(int(lib.objects[0].storage_slots) == 8, "inventory flag + slot count exported")
+	# Load roundtrip: wipe the canvas, load the saved piece back.
+	ed.image.fill(Color(0, 0, 0, 0))
+	ed.def = ed._default_def()
+	ed._refresh_load_list()
+	ed._load_selected(1)
+	check(ed.def.id == "smoke_shelf" and ed.storage_check.button_pressed and int(ed.storage_slots_spin.value) == 8, "load restores settings incl. inventory flag")
+	check(ed.image.get_pixel(3, 3).a > 0.9, "load restores the sprite pixels")
 	DirAccess.remove_absolute("user://objects_test.json")
 	DirAccess.remove_absolute("user://smoke_shelf.png")
 	print("\nFurniture editor smoke: %d checks, %d failures" % [checks, failures])

@@ -39,8 +39,13 @@ func setup(p_id: String, p_cell: Vector2i, p_placed: bool) -> void:
 	cell = p_cell
 	size = Vector2i(def.size[0], def.size[1])
 	placed_by_player = p_placed
-	if def.kind == "chest":
-		storage = Inventory.new(int(def.get("slots", Constants.CHEST_SLOTS)))
+	# Storage: chests always; any furniture may opt in via storage_slots
+	# (cabinets, lockers… — authored in the Furniture Editor).
+	var slots := int(def.get("storage_slots", def.get("slots", 0)))
+	if def.kind == "chest" and slots == 0:
+		slots = Constants.CHEST_SLOTS
+	if slots > 0:
+		storage = Inventory.new(slots)
 
 func _ready() -> void:
 	add_to_group("world_objects")
@@ -124,6 +129,9 @@ func interact(player) -> String:
 		_:
 			if def.get("fixed", false):
 				return "It is wired into the building"
+			if storage != null: # furniture with an inventory opens like a chest
+				player.open_container(self)
+				return ""
 			# Plain furniture: picking up whole is the LONG press (GL-07 haul);
 			# a short click just hints.
 			return "Hold LMB to pick up · RMB to scrap"
