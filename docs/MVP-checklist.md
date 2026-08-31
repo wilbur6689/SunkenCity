@@ -141,24 +141,24 @@ refilling tanks all working in the reclaimed room.
 ## M3 — The City
 
 ### Generation pipeline (CT-04/05)
-- [ ] Room template format: tile layout, sockets (doors/openings), furniture spawn points, container spawn points, type tag
-- [ ] **Authoring tool: proc-gen room generator + in-editor curate/save workflow** (generate until liked → save to library)
-- [ ] Curated starter library: ~10 rooms × 3 types (residential, office, hospital)
-- [ ] Floor assembler: rooms stitched by sockets, stairwell + elevator shaft guaranteed per tower (CT-06)
-- [ ] Two-jump rule validator on assembled floors (WS-04)
-- [ ] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve
-- [ ] City layout: ~40 towers, center-out height/gap curve, edge water, invisible walls (CT-01/22)
-- [ ] Wear pass: breaches scaling with depth, collapsed sections (CT-11)
-- [ ] Flood pass: run sim to equilibrium at gen; sealed rooms stay dry (CT-12/13)
-- [ ] Authored inserts: starting hospital room/tower, relay station shells, central station shell, bare concrete ground (CT-20, CT-07/08)
+- [x] Room template format (`data/rooms.json`): width, type tag, furniture/container spawn offsets, block details; doorway sockets are cut by the assembler
+- [x] Authoring tool v1: `tools/gen_rooms.py` proc-generates the library (re-run with a new seed until liked); curation = hand-editing the JSON, which is canonical. *In-editor curate/save workflow still open*
+- [x] Starter library: 12 rooms × 3 types (residential, office, hospital)
+- [x] Floor assembler: rooms stitched with doorway partitions; west stairwell (ladder + landings) and east elevator shaft guaranteed per tower (CT-06)
+- [ ] Two-jump rule validator on assembled floors (WS-04) — *floors are currently flat so the rule holds by construction; validator still to write*
+- [x] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve (4–56 floors; the tallest crowns break the surface)
+- [x] City layout: 40 towers over 2400×400 cells, centre-out height/gap curve, open ocean at the edges (CT-01) — *invisible edge walls still to add (CT-22)*
+- [x] Wear pass: exterior breaches scaling with depth + occasional slab collapses (CT-11)
+- [x] Flood pass: connectivity flooding from the ocean at/below the waterline after doors exist (CT-12/13); ~85% of sealed floors keep their air, wear breaches the rest
+- [x] Authored inserts: starting medical room atop the tallest tower (bed spawn, med kit furniture) + bare concrete ground (CT-20/07) — *relay/central station shells still to add (CT-08)*
 - [ ] Surface debris pass (light, CT-23)
-- [ ] Deterministic seeds: same seed + version = same city (CT-21)
+- [x] Deterministic seeds (CT-21): same seed = identical grid + object hashes (m3 smoke); `--seed=N` on the command line; ~1.5 s per full generation
 
 ### World runtime
-- [ ] Full grid in RAM; ~32×32 chunk scheduling for render + sim (CT-28)
-- [ ] Depth bands defined (Dry/Shallows/Cold/Dark/Crush) as world data all systems query (GD-16)
-- [ ] Cold gates: slow → damage below band thresholds by suit tier (CC-16); crush: rapid damage (GL-12)
-- [ ] Day/night cycle with surface light change (CC-11)
+- [x] Full grid in RAM (`WorldGrid` byte layers); rendering, collision tiles, lighting, and water drawing all window around the camera (CT-28) — *instant-settle for far water regions still open*
+- [x] Depth bands (GD-16): `World.band_at` from the waterline row — Dry/Shallows/Cold/Dark/Crush
+- [x] Cold gates while submerged: Cold slows, The Dark slows + chills, The Crush hurts fast (CC-16/GL-12); suit stats lift them from M5; drained rooms are safe (GL-17)
+- [x] Day/night cycle (CC-11): 10-minute day drives the sun strength in the light map
 
 ### Persistence (CC-09)
 - [ ] World save: compressed grid + entity/container state + water state + waterline

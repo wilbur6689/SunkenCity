@@ -22,7 +22,7 @@ const SKY_HEIGHT := 2000.0
 func setup(waterline_y: float, origin_x: float) -> void:
 	scroll_scale = Vector2(0.4, 1.0) # slow horizontal parallax, pinned vertically to the waterline
 	repeat_size = Vector2(PLATE_W * PLATES.size(), 0)
-	repeat_times = 3
+	repeat_times = 9 # enough coverage for the full city width at 0.4 parallax
 	var sky := ColorRect.new()
 	sky.color = SKY_COLOR
 	sky.position = Vector2(origin_x, waterline_y - SKY_HEIGHT)

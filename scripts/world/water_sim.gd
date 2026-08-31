@@ -83,6 +83,11 @@ func remove_water(cell: Vector2i, units: int) -> int:
 		wake_around(cell)
 	return t
 
+## Seeds one cell without waking anything (world-gen flooding).
+func seed_cell(cell: Vector2i, level: int) -> void:
+	if in_bounds(cell) and not is_solid.call(cell):
+		levels[_idx(cell)] = level
+
 ## Seeds a rect at the given level without waking anything (already settled).
 func fill_rect(rect: Rect2i, level: int) -> void:
 	for y in range(rect.position.y, rect.end.y):
