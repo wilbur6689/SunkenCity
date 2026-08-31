@@ -419,6 +419,13 @@ func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) ->
 				return false
 			if def.kind == "door" and _cell_overlaps_body(c, by):
 				return false
+	if def.get("wall_mounted", false):
+		# Wall art hangs on background walls — no floor needed (WS-20/21).
+		for dy in h:
+			for dx in w:
+				if not has_back_wall_cell(Vector2i(cell.x + dx, cell.y - dy)):
+					return false
+		return true
 	for dx in w:
 		if not has_block_cell(Vector2i(cell.x + dx, cell.y + 1)):
 			return false

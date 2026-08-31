@@ -395,6 +395,196 @@
    "height": 5,
    "depth_min": -9999,
    "depth_max": 9999
+  },
+  {
+   "id": "apartment_pack",
+   "type": "apartment",
+   "zone": "residential",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_sofa",
+     "x": 0
+    },
+    {
+     "id": "res_coffee_table",
+     "x": 4
+    },
+    {
+     "id": "res_tv_stand",
+     "x": 7
+    },
+    {
+     "id": "res_dresser",
+     "x": 10
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 1,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_pack",
+   "type": "office",
+   "zone": "commercial",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_conference_table",
+     "x": 0
+    },
+    {
+     "id": "com_office_chair",
+     "x": 5
+    },
+    {
+     "id": "com_filing_cabinet",
+     "x": 7
+    },
+    {
+     "id": "com_copier",
+     "x": 9
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 6,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_pack",
+   "type": "utility",
+   "zone": "industrial",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_generator",
+     "x": 0
+    },
+    {
+     "id": "ind_pipe_manifold",
+     "x": 4
+    },
+    {
+     "id": "ind_tool_chest",
+     "x": 7
+    },
+    {
+     "id": "ind_parts_shelf",
+     "x": 10
+    },
+    {
+     "id": "ind_hazard_sign",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "ind_pipe_diagram",
+     "x": 1,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_pack",
+   "type": "ward",
+   "zone": "hospital",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_gurney",
+     "x": 0
+    },
+    {
+     "id": "hos_iv_stand",
+     "x": 4
+    },
+    {
+     "id": "hos_med_cabinet",
+     "x": 6
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 9
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 0,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_pack",
+   "type": "retail",
+   "zone": "commercial",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_counter",
+     "x": 0
+    },
+    {
+     "id": "ret_gondola",
+     "x": 4
+    },
+    {
+     "id": "ret_vending",
+     "x": 7
+    },
+    {
+     "id": "ret_basket",
+     "x": 10
+    },
+    {
+     "id": "ret_open_sign",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "ret_menu_board",
+     "x": 4,
+     "dy": 3
+    }
+   ],
+   "blocks": []
   }
  ]
 }

@@ -1,442 +1,3110 @@
 {
-  "_comment": "Multi-tile world objects. Each entry also registers an item with the same id (category placeable_object) so furniture can be picked up (E) and re-placed. kind: scrap (found furniture) | station | chest | bed | light | door. size = [w, h] blocks, anchored bottom-left. Scrap yields are the FULL (station) yield; in-place scrapping applies FIELD_SCRAP_YIELD. tool_tier = minimum tool tier to scrap in place (0 = hands). skill = required Scrapping level. sprite = assets/sprites/objects/<id>.png. Yields are generous on purpose: depletion comes from objects running out (LT-27), not from stingy rolls.",
-  "objects": [
+ "_comment": "Multi-tile world objects. Each entry also registers an item with the same id (category placeable_object) so furniture can be picked up (E) and re-placed. kind: scrap (found furniture) | station | chest | bed | light | door. size = [w, h] blocks, anchored bottom-left. Scrap yields are the FULL (station) yield; in-place scrapping applies FIELD_SCRAP_YIELD. tool_tier = minimum tool tier to scrap in place (0 = hands). skill = required Scrapping level. sprite = assets/sprites/objects/<id>.png. Yields are generous on purpose: depletion comes from objects running out (LT-27), not from stingy rolls.",
+ "objects": [
+  {
+   "id": "bed_frame",
+   "name": "Bed Frame",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 25,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
     {
-      "id": "bed_frame",
-      "name": "Bed Frame",
-      "kind": "scrap",
-      "size": [
-        3,
-        2
-      ],
-      "weight": 25,
-      "tool_tier": 0,
-      "skill": 0,
-      "scrap_time": 3.0,
-      "xp": 6,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 6,
-          "max": 8
-        },
-        {
-          "item": "cloth",
-          "min": 8,
-          "max": 10
-        }
-      ]
+     "item": "scrap_metal",
+     "min": 6,
+     "max": 8
     },
     {
-      "id": "cabinet",
-      "name": "Cabinet",
-      "kind": "scrap",
-      "size": [
-        2,
-        3
-      ],
-      "weight": 20,
-      "tool_tier": 0,
-      "skill": 0,
-      "scrap_time": 3.0,
-      "xp": 6,
-      "yields": [
-        {
-          "item": "wood",
-          "min": 12,
-          "max": 16
-        }
-      ]
-    },
-    {
-      "id": "desk",
-      "name": "Desk",
-      "kind": "scrap",
-      "size": [
-        3,
-        2
-      ],
-      "weight": 20,
-      "tool_tier": 0,
-      "skill": 0,
-      "scrap_time": 2.5,
-      "xp": 5,
-      "yields": [
-        {
-          "item": "wood",
-          "min": 10,
-          "max": 14
-        },
-        {
-          "item": "scrap_metal",
-          "min": 1,
-          "max": 2
-        }
-      ]
-    },
-    {
-      "id": "chair",
-      "name": "Chair",
-      "kind": "scrap",
-      "size": [
-        1,
-        2
-      ],
-      "weight": 6,
-      "tool_tier": 0,
-      "skill": 0,
-      "scrap_time": 1.5,
-      "xp": 3,
-      "yields": [
-        {
-          "item": "wood",
-          "min": 5,
-          "max": 7
-        }
-      ]
-    },
-    {
-      "id": "locker",
-      "name": "Locker",
-      "kind": "scrap",
-      "size": [
-        1,
-        3
-      ],
-      "weight": 18,
-      "tool_tier": 1,
-      "skill": 0,
-      "scrap_time": 3.0,
-      "xp": 6,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 8,
-          "max": 10
-        }
-      ]
-    },
-    {
-      "id": "fridge",
-      "name": "Fridge",
-      "kind": "scrap",
-      "size": [
-        2,
-        3
-      ],
-      "weight": 40,
-      "tool_tier": 1,
-      "skill": 1,
-      "scrap_time": 4.0,
-      "xp": 10,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 10,
-          "max": 14
-        },
-        {
-          "item": "plastic",
-          "min": 4,
-          "max": 6
-        }
-      ]
-    },
-    {
-      "id": "med_cart",
-      "name": "Medical Cart",
-      "kind": "scrap",
-      "size": [
-        2,
-        2
-      ],
-      "weight": 15,
-      "tool_tier": 0,
-      "skill": 0,
-      "scrap_time": 2.0,
-      "xp": 4,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 3,
-          "max": 5
-        },
-        {
-          "item": "plastic",
-          "min": 4,
-          "max": 6
-        },
-        {
-          "item": "cloth",
-          "min": 2,
-          "max": 4
-        }
-      ]
-    },
-    {
-      "id": "workbench",
-      "name": "Workbench",
-      "kind": "station",
-      "station": "workbench",
-      "size": [
-        3,
-        2
-      ],
-      "weight": 30,
-      "yields": [
-        {
-          "item": "wood",
-          "min": 6,
-          "max": 6
-        },
-        {
-          "item": "scrap_metal",
-          "min": 2,
-          "max": 2
-        }
-      ]
-    },
-    {
-      "id": "forge",
-      "name": "Forge",
-      "kind": "station",
-      "station": "forge",
-      "size": [
-        2,
-        2
-      ],
-      "weight": 40,
-      "yields": [
-        {
-          "item": "stone",
-          "min": 8,
-          "max": 8
-        },
-        {
-          "item": "scrap_metal",
-          "min": 3,
-          "max": 3
-        }
-      ]
-    },
-    {
-      "id": "med_station",
-      "name": "Med Station",
-      "kind": "station",
-      "station": "med_station",
-      "size": [
-        2,
-        2
-      ],
-      "weight": 20,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 3,
-          "max": 3
-        },
-        {
-          "item": "plastic",
-          "min": 3,
-          "max": 3
-        }
-      ]
-    },
-    {
-      "id": "dive_station",
-      "name": "Dive Station",
-      "kind": "station",
-      "station": "dive_station",
-      "size": [
-        2,
-        3
-      ],
-      "weight": 35,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 5,
-          "max": 5
-        },
-        {
-          "item": "plastic",
-          "min": 3,
-          "max": 3
-        }
-      ]
-    },
-    {
-      "id": "mod_bench",
-      "name": "Modification Bench",
-      "kind": "station",
-      "station": "mod_bench",
-      "size": [
-        3,
-        2
-      ],
-      "weight": 30,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 5,
-          "max": 5
-        },
-        {
-          "item": "wood",
-          "min": 3,
-          "max": 3
-        }
-      ]
-    },
-    {
-      "id": "chest",
-      "name": "Chest",
-      "kind": "chest",
-      "size": [
-        2,
-        1
-      ],
-      "weight": 8,
-      "slots": 20,
-      "yields": [
-        {
-          "item": "wood",
-          "min": 5,
-          "max": 5
-        },
-        {
-          "item": "scrap_metal",
-          "min": 1,
-          "max": 1
-        }
-      ]
-    },
-    {
-      "id": "bed",
-      "name": "Bed",
-      "kind": "bed",
-      "size": [
-        3,
-        2
-      ],
-      "weight": 20,
-      "yields": [
-        {
-          "item": "wood",
-          "min": 5,
-          "max": 5
-        },
-        {
-          "item": "cloth",
-          "min": 3,
-          "max": 3
-        }
-      ]
-    },
-    {
-      "id": "standing_lamp",
-      "name": "Standing Lamp",
-      "kind": "light",
-      "size": [
-        1,
-        2
-      ],
-      "weight": 3,
-      "light": {
-        "radius_blocks": 6,
-        "color": [
-          1.0,
-          0.8,
-          0.55
-        ]
-      },
-      "yields": [
-        {
-          "item": "wood",
-          "min": 1,
-          "max": 1
-        },
-        {
-          "item": "plastic",
-          "min": 1,
-          "max": 1
-        }
-      ]
-    },
-    {
-      "id": "wood_door",
-      "name": "Wood Door",
-      "kind": "door",
-      "size": [
-        1,
-        3
-      ],
-      "weight": 6,
-      "yields": [
-        {
-          "item": "wood",
-          "min": 3,
-          "max": 3
-        }
-      ]
-    },
-    {
-      "id": "pump",
-      "name": "Pump",
-      "kind": "pump",
-      "size": [
-        1,
-        2
-      ],
-      "weight": 15,
-      "place_in_water": true,
-      "yields": [
-        {
-          "item": "scrap_metal",
-          "min": 4,
-          "max": 4
-        },
-        {
-          "item": "plastic",
-          "min": 2,
-          "max": 2
-        }
-      ]
-    },
-    {
-      "id": "breaker",
-      "name": "Breaker Panel",
-      "kind": "breaker",
-      "size": [
-        1,
-        1
-      ],
-      "weight": 10,
-      "fixed": true,
-      "no_item": true,
-      "yields": []
-    },
-    {
-      "id": "ceiling_lamp",
-      "name": "Ceiling Lamp",
-      "kind": "light",
-      "size": [
-        1,
-        1
-      ],
-      "weight": 3,
-      "fixed": true,
-      "no_item": true,
-      "powered": true,
-      "light": {
-        "radius_blocks": 7,
-        "color": [
-          1.0,
-          0.9,
-          0.7
-        ]
-      },
-      "yields": []
+     "item": "cloth",
+     "min": 8,
+     "max": 10
     }
-  ]
+   ]
+  },
+  {
+   "id": "cabinet",
+   "name": "Cabinet",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 20,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 12,
+     "max": 16
+    }
+   ]
+  },
+  {
+   "id": "desk",
+   "name": "Desk",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 20,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 10,
+     "max": 14
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ]
+  },
+  {
+   "id": "chair",
+   "name": "Chair",
+   "kind": "scrap",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 6,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 5,
+     "max": 7
+    }
+   ]
+  },
+  {
+   "id": "locker",
+   "name": "Locker",
+   "kind": "scrap",
+   "size": [
+    1,
+    3
+   ],
+   "weight": 18,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 8,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "fridge",
+   "name": "Fridge",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 40,
+   "tool_tier": 1,
+   "skill": 1,
+   "scrap_time": 4.0,
+   "xp": 10,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 10,
+     "max": 14
+    },
+    {
+     "item": "plastic",
+     "min": 4,
+     "max": 6
+    }
+   ]
+  },
+  {
+   "id": "med_cart",
+   "name": "Medical Cart",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 15,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "plastic",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "cloth",
+     "min": 2,
+     "max": 4
+    }
+   ]
+  },
+  {
+   "id": "workbench",
+   "name": "Workbench",
+   "kind": "station",
+   "station": "workbench",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 30,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 6,
+     "max": 6
+    },
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 2
+    }
+   ]
+  },
+  {
+   "id": "forge",
+   "name": "Forge",
+   "kind": "station",
+   "station": "forge",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 40,
+   "yields": [
+    {
+     "item": "stone",
+     "min": 8,
+     "max": 8
+    },
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 3
+    }
+   ]
+  },
+  {
+   "id": "med_station",
+   "name": "Med Station",
+   "kind": "station",
+   "station": "med_station",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 20,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 3
+    },
+    {
+     "item": "plastic",
+     "min": 3,
+     "max": 3
+    }
+   ]
+  },
+  {
+   "id": "dive_station",
+   "name": "Dive Station",
+   "kind": "station",
+   "station": "dive_station",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 35,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "item": "plastic",
+     "min": 3,
+     "max": 3
+    }
+   ]
+  },
+  {
+   "id": "mod_bench",
+   "name": "Modification Bench",
+   "kind": "station",
+   "station": "mod_bench",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 30,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "item": "wood",
+     "min": 3,
+     "max": 3
+    }
+   ]
+  },
+  {
+   "id": "chest",
+   "name": "Chest",
+   "kind": "chest",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 8,
+   "slots": 20,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "bed",
+   "name": "Bed",
+   "kind": "bed",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 20,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "item": "cloth",
+     "min": 3,
+     "max": 3
+    }
+   ]
+  },
+  {
+   "id": "standing_lamp",
+   "name": "Standing Lamp",
+   "kind": "light",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 3,
+   "light": {
+    "radius_blocks": 6,
+    "color": [
+     1.0,
+     0.8,
+     0.55
+    ]
+   },
+   "yields": [
+    {
+     "item": "wood",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "wood_door",
+   "name": "Wood Door",
+   "kind": "door",
+   "size": [
+    1,
+    3
+   ],
+   "weight": 6,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 3,
+     "max": 3
+    }
+   ]
+  },
+  {
+   "id": "pump",
+   "name": "Pump",
+   "kind": "pump",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 15,
+   "place_in_water": true,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 4,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 2
+    }
+   ]
+  },
+  {
+   "id": "breaker",
+   "name": "Breaker Panel",
+   "kind": "breaker",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 10,
+   "fixed": true,
+   "no_item": true,
+   "yields": []
+  },
+  {
+   "id": "ceiling_lamp",
+   "name": "Ceiling Lamp",
+   "kind": "light",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 3,
+   "fixed": true,
+   "no_item": true,
+   "powered": true,
+   "light": {
+    "radius_blocks": 7,
+    "color": [
+     1.0,
+     0.9,
+     0.7
+    ]
+   },
+   "yields": []
+  },
+  {
+   "id": "com_conference_table",
+   "name": "Conference Table",
+   "kind": "scrap",
+   "size": [
+    4,
+    1
+   ],
+   "weight": 20,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 6,
+     "max": 10
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    144,
+    0,
+    64,
+    16
+   ]
+  },
+  {
+   "id": "com_office_chair",
+   "name": "Office Chair",
+   "kind": "scrap",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 8,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    96,
+    0,
+    16,
+    32
+   ]
+  },
+  {
+   "id": "com_cubicle_wall",
+   "name": "Cubicle Divider",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 12,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    32,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "com_water_cooler",
+   "name": "Water Cooler",
+   "kind": "scrap",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 10,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    112,
+    0,
+    16,
+    32
+   ]
+  },
+  {
+   "id": "com_copier",
+   "name": "Office Copier",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 22,
+   "tool_tier": 1,
+   "skill": 1,
+   "scrap_time": 4.0,
+   "xp": 8,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "plastic",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "iron",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    64,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "com_filing_cabinet",
+   "name": "Filing Cabinet",
+   "kind": "scrap",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 14,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 4,
+     "max": 7
+    },
+    {
+     "item": "iron",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    128,
+    0,
+    16,
+    32
+   ],
+   "storage_slots": 6
+  },
+  {
+   "id": "com_supply_cabinet",
+   "name": "Supply Cabinet",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 18,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 5,
+     "max": 8
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    0,
+    0,
+    32,
+    48
+   ],
+   "storage_slots": 10
+  },
+  {
+   "id": "com_monitor",
+   "name": "Desktop Monitor",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "scrap_metal",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    32,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "com_desk_phone",
+   "name": "Desk Phone",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 1,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    48,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "com_paper_stack",
+   "name": "Stack of Reports",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 1,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    64,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "com_trash_bin",
+   "name": "Waste Bin",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    80,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "com_motivation_poster",
+   "name": "Motivational Poster",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 1,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    96,
+    48,
+    16,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "com_whiteboard",
+   "name": "Whiteboard",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 5,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    208,
+    0,
+    32,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "com_logo_sign",
+   "name": "Corporate Logo Sign",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 6,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "office",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/commercial_office.png",
+   "rect": [
+    0,
+    48,
+    32,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "ret_counter",
+   "name": "Checkout Counter",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 20,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    112,
+    0,
+    48,
+    32
+   ]
+  },
+  {
+   "id": "ret_gondola",
+   "name": "Shelf Gondola",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 16,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 4
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    48,
+    0,
+    32,
+    48
+   ]
+  },
+  {
+   "id": "ret_vending",
+   "name": "Vending Machine",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 28,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 4.0,
+   "xp": 8,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 5,
+     "max": 7
+    },
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "iron",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    80,
+    0,
+    32,
+    48
+   ]
+  },
+  {
+   "id": "ret_display_case",
+   "name": "Display Case",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 18,
+   "tool_tier": 0,
+   "skill": 1,
+   "scrap_time": 3.0,
+   "xp": 8,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "iron",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    160,
+    0,
+    48,
+    32
+   ]
+  },
+  {
+   "id": "ret_clothes_rack",
+   "name": "Clothing Rack",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 10,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "cloth",
+     "min": 3,
+     "max": 5
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    0,
+    48,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "ret_booth",
+   "name": "Diner Booth",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 18,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "cloth",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    208,
+    0,
+    48,
+    32
+   ]
+  },
+  {
+   "id": "ret_stock_shelf",
+   "name": "Stockroom Shelf",
+   "kind": "scrap",
+   "size": [
+    3,
+    3
+   ],
+   "weight": 24,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.5,
+   "xp": 7,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "wood",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    0,
+    0,
+    48,
+    48
+   ],
+   "storage_slots": 10
+  },
+  {
+   "id": "ret_undercounter",
+   "name": "Under-Counter Storage",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 8,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "scrap_metal",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    32,
+    48,
+    32,
+    16
+   ],
+   "storage_slots": 6
+  },
+  {
+   "id": "ret_basket",
+   "name": "Shopping Basket",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    128,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "ret_cans",
+   "name": "Canned Goods Stack",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    144,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "ret_box",
+   "name": "Cardboard Box",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    160,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "ret_open_sign",
+   "name": "Neon OPEN Sign",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    64,
+    48,
+    32,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "ret_menu_board",
+   "name": "Menu Board",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    96,
+    48,
+    32,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "ret_poster",
+   "name": "Sale Poster",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 1,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "commercial"
+   ],
+   "room_type": "retail",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/commercial_retail.png",
+   "rect": [
+    176,
+    48,
+    16,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "hos_gurney",
+   "name": "Hospital Gurney",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 20,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.5,
+   "xp": 7,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "cloth",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    32,
+    0,
+    48,
+    32
+   ]
+  },
+  {
+   "id": "hos_iv_stand",
+   "name": "IV Stand",
+   "kind": "scrap",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 6,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    176,
+    0,
+    16,
+    32
+   ]
+  },
+  {
+   "id": "hos_privacy_screen",
+   "name": "Privacy Screen",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 10,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    80,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "hos_wheelchair",
+   "name": "Wheelchair",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 14,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    112,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "hos_vitals_monitor",
+   "name": "Vitals Monitor",
+   "kind": "scrap",
+   "size": [
+    1,
+    2
+   ],
+   "weight": 10,
+   "tool_tier": 0,
+   "skill": 1,
+   "scrap_time": 2.5,
+   "xp": 8,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "iron",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    192,
+    0,
+    16,
+    32
+   ]
+  },
+  {
+   "id": "hos_med_cabinet",
+   "name": "Medicine Cabinet",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 18,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.5,
+   "xp": 7,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "iron",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    0,
+    0,
+    32,
+    48
+   ],
+   "storage_slots": 10
+  },
+  {
+   "id": "hos_linen_hamper",
+   "name": "Linen Hamper",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 12,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    144,
+    0,
+    32,
+    32
+   ],
+   "storage_slots": 6
+  },
+  {
+   "id": "hos_pill_bottles",
+   "name": "Pill Bottles",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 1,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    240,
+    0,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "hos_bedpan",
+   "name": "Bedpan",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    0,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "hos_biohazard_bin",
+   "name": "Biohazard Bin",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.2,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    16,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "hos_oxygen_tank",
+   "name": "Oxygen Tanks",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 4,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    32,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "hos_eye_chart",
+   "name": "Eye Chart",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    48,
+    48,
+    16,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "hos_xray_lightbox",
+   "name": "X-ray Lightbox",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 6,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    208,
+    0,
+    32,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "hos_sanitizer",
+   "name": "Sanitizer Dispenser",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "hospital"
+   ],
+   "room_type": "ward",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/hospital_ward.png",
+   "rect": [
+    64,
+    48,
+    16,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "ind_generator",
+   "name": "Diesel Generator",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 26,
+   "tool_tier": 1,
+   "skill": 1,
+   "scrap_time": 4.0,
+   "xp": 8,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "iron",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    64,
+    0,
+    48,
+    32
+   ]
+  },
+  {
+   "id": "ind_boiler",
+   "name": "Boiler Tank",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 28,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.5,
+   "xp": 7,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "iron",
+     "min": 2,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    0,
+    0,
+    32,
+    48
+   ]
+  },
+  {
+   "id": "ind_pipe_manifold",
+   "name": "Pipe Manifold",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 14,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 4
+    },
+    {
+     "item": "iron",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    160,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "ind_tool_table",
+   "name": "Machinist's Table",
+   "kind": "scrap",
+   "size": [
+    3,
+    2
+   ],
+   "weight": 16,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "iron",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "wood",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    112,
+    0,
+    48,
+    32
+   ]
+  },
+  {
+   "id": "ind_vent_unit",
+   "name": "Ventilation Unit",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 15,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "plastic",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    192,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "ind_barrel_rack",
+   "name": "Barrel Rack",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 18,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "iron",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    224,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "ind_tool_chest",
+   "name": "Rolling Tool Chest",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 14,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 3,
+     "max": 4
+    },
+    {
+     "item": "iron",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    0,
+    48,
+    32,
+    32
+   ],
+   "storage_slots": 8
+  },
+  {
+   "id": "ind_parts_shelf",
+   "name": "Parts Bin Shelf",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 16,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "item": "iron",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    32,
+    0,
+    32,
+    48
+   ],
+   "storage_slots": 12
+  },
+  {
+   "id": "ind_oil_can",
+   "name": "Oil Can",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    64,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "ind_gas_cylinder",
+   "name": "Gas Cylinder",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 4,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "iron",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    80,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "ind_bucket",
+   "name": "Steel Bucket",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    96,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "ind_hose_coil",
+   "name": "Coiled Hose",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "cloth",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    112,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "ind_hazard_sign",
+   "name": "Hazard Sign",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 1,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    128,
+    48,
+    16,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "ind_pipe_diagram",
+   "name": "Pipe Diagram Board",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "scrap_metal",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "industrial"
+   ],
+   "room_type": "utility",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/industrial_utility.png",
+   "rect": [
+    32,
+    48,
+    32,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "res_sofa",
+   "name": "Sofa",
+   "kind": "scrap",
+   "size": [
+    3,
+    1
+   ],
+   "weight": 18,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "wood",
+     "min": 2,
+     "max": 4
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    128,
+    0,
+    48,
+    16
+   ]
+  },
+  {
+   "id": "res_bookshelf",
+   "name": "Bookshelf",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 14,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 5,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    32,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "res_tv_stand",
+   "name": "TV Stand",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 15,
+   "tool_tier": 1,
+   "skill": 1,
+   "scrap_time": 3.0,
+   "xp": 8,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "plastic",
+     "min": 2,
+     "max": 4
+    },
+    {
+     "item": "wood",
+     "min": 2,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    64,
+    0,
+    32,
+    32
+   ]
+  },
+  {
+   "id": "res_kitchen_counter",
+   "name": "Kitchen Counter",
+   "kind": "scrap",
+   "size": [
+    3,
+    1
+   ],
+   "weight": 16,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 3.0,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "item": "stone",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    176,
+    0,
+    48,
+    16
+   ]
+  },
+  {
+   "id": "res_wardrobe",
+   "name": "Wardrobe",
+   "kind": "scrap",
+   "size": [
+    2,
+    3
+   ],
+   "weight": 22,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 3.5,
+   "xp": 7,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 5,
+     "max": 8
+    },
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    0,
+    0,
+    32,
+    48
+   ]
+  },
+  {
+   "id": "res_coffee_table",
+   "name": "Coffee Table",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 8,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 4,
+     "max": 6
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    224,
+    0,
+    32,
+    16
+   ]
+  },
+  {
+   "id": "res_dresser",
+   "name": "Dresser",
+   "kind": "scrap",
+   "size": [
+    2,
+    2
+   ],
+   "weight": 16,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.5,
+   "xp": 6,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 4,
+     "max": 6
+    },
+    {
+     "item": "cloth",
+     "min": 2,
+     "max": 3
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    96,
+    0,
+    32,
+    32
+   ],
+   "storage_slots": 8
+  },
+  {
+   "id": "res_kitchen_cabinet",
+   "name": "Kitchen Cabinet",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 10,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 2.0,
+   "xp": 4,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "furniture",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    0,
+    48,
+    32,
+    16
+   ],
+   "storage_slots": 6
+  },
+  {
+   "id": "res_potted_plant",
+   "name": "Potted Plant",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 4,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "stone",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    64,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "res_book_stack",
+   "name": "Stack of Books",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "cloth",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    80,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "res_microwave",
+   "name": "Microwave",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 6,
+   "tool_tier": 1,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "scrap_metal",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "plastic",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    96,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "res_dish_stack",
+   "name": "Stack of Dishes",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "stone",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "clutter",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    112,
+    48,
+    16,
+    16
+   ]
+  },
+  {
+   "id": "res_wall_painting",
+   "name": "Framed Painting",
+   "kind": "scrap",
+   "size": [
+    2,
+    1
+   ],
+   "weight": 3,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.5,
+   "xp": 3,
+   "yields": [
+    {
+     "item": "wood",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "item": "cloth",
+     "min": 0,
+     "max": 1
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    32,
+    48,
+    32,
+    16
+   ],
+   "wall_mounted": true
+  },
+  {
+   "id": "res_wall_clock",
+   "name": "Wall Clock",
+   "kind": "scrap",
+   "size": [
+    1,
+    1
+   ],
+   "weight": 2,
+   "tool_tier": 0,
+   "skill": 0,
+   "scrap_time": 1.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "plastic",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "zones": [
+    "residential"
+   ],
+   "room_type": "apartment",
+   "category": "wall_art",
+   "sheet": "res://assets/sprites/sets/residential_apartment.png",
+   "rect": [
+    128,
+    48,
+    16,
+    16
+   ],
+   "wall_mounted": true
+  }
+ ]
 }

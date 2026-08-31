@@ -49,9 +49,7 @@ func setup(p_id: String, p_cell: Vector2i, p_placed: bool) -> void:
 
 func _ready() -> void:
 	add_to_group("world_objects")
-	var path: String = Data.OBJECT_SPRITE_DIR + id + ".png"
-	if ResourceLoader.exists(path):
-		sprite.texture = load(path)
+	sprite.texture = Data.object_texture(id)
 	sprite.centered = false
 	# Node origin = bottom-left cell's top-left corner; sprite is size*16 px.
 	var px := Vector2(size) * Constants.BLOCK_SIZE

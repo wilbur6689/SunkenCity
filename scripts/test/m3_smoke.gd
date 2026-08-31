@@ -102,6 +102,24 @@ func _ready() -> void:
 	check(World.sun_strength() >= 0.99, "midday sun is full (%.2f)" % World.sun_strength())
 	World.time_of_day = 0.35
 
+	print("== G. room packs (sheet sprites + wall art)")
+	var pack_count := 0
+	for oid in Data.objects:
+		if Data.objects[oid].has("sheet"):
+			pack_count += 1
+	check(pack_count >= 70, "objects.json carries %d sheet-packed items" % pack_count)
+	var gurney_tex := Data.object_texture("hos_gurney")
+	check(gurney_tex is AtlasTexture and gurney_tex.get_size() == Vector2(48, 32),
+			"pack sprite loads as an AtlasTexture region (hos_gurney 48x32)")
+	# Wall art needs back walls behind every cell (WS-20/21): a spot inside
+	# the medical room has them; the open sky above the city does not.
+	var sc := World.cell_at(World.spawn_position) + Vector2i(0, -3) # above the bed
+	check(World.has_back_wall_cell(sc) and World.can_place_object("hos_eye_chart", sc),
+			"wall art hangs on an interior back wall")
+	check(not World.can_place_object("hos_eye_chart", Vector2i(6, 10)), "but not on open sky")
+	var sofa := World.place_object("res_sofa", World.cell_at(World.spawn_position) + Vector2i(6, 0), true)
+	check(sofa != null and sofa.sprite.texture != null, "a pack item places with its sheet sprite")
+
 	print("\nM3 smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:
 		print("  FAIL: " + f)

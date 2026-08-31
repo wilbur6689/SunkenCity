@@ -232,7 +232,7 @@ func _apply_settings() -> void:
 	room.width = int(width_spin.value)
 	room.height = int(height_spin.value)
 	# Clip content that fell outside after a resize
-	room.objects = room.objects.filter(func(o): return _fits_object(o.id, int(o.x), o))
+	room.objects = room.objects.filter(func(o): return _fits_object(o.id, int(o.x), o, int(o.get("dy", 0))))
 	room.blocks = room.blocks.filter(func(b): return int(b.x) < room.width and int(b.dy) < room.height)
 	canvas.queue_redraw()
 
@@ -248,16 +248,36 @@ func _cell_at(pos: Vector2) -> Vector2i:
 func _standing_row() -> int:
 	return room.height - 1 # dy 0 = standing row (bottom interior row)
 
-func _fits_object(oid: String, x: int, ignore = null) -> bool:
+func _is_wall(oid: String) -> bool:
+	return Data.objects.get(oid, {}).get("wall_mounted", false)
+
+## Floor furniture packs along the standing row; wall art hangs anywhere on
+## the wall plane (dy above the standing row) and only collides with other
+## wall art.
+func _fits_object(oid: String, x: int, ignore = null, dy: int = 0) -> bool:
 	var def: Dictionary = Data.objects.get(oid, {})
 	if def.is_empty():
 		return false
 	var w := int(def.size[0])
 	var h := int(def.size[1])
-	if x < 0 or x + w > int(room.width) or h > int(room.height):
+	if x < 0 or x + w > int(room.width):
+		return false
+	if _is_wall(oid):
+		if dy < 0 or dy + h > int(room.height):
+			return false
+		for o in room.objects:
+			if o == ignore or not _is_wall(o.id):
+				continue
+			var od: Dictionary = Data.objects[o.id]
+			var ody := int(o.get("dy", 0))
+			if x < int(o.x) + int(od.size[0]) and int(o.x) < x + w \
+					and dy < ody + int(od.size[1]) and ody < dy + int(od.size[1]):
+				return false
+		return true
+	if h > int(room.height):
 		return false
 	for o in room.objects:
-		if o == ignore:
+		if o == ignore or _is_wall(o.id):
 			continue
 		var ow := int(Data.objects[o.id].size[0])
 		if x < int(o.x) + ow and int(o.x) < x + w:
@@ -306,28 +326,53 @@ func _use_tool(cell: Vector2i) -> void:
 		_erase(cell)
 	elif tool_mode.begins_with("object:"):
 		var oid := tool_mode.substr(7)
-		if _in_room(cell) and _fits_object(oid, cell.x):
-			room.objects.append({"id": oid, "x": cell.x})
+		var dy := _wall_dy_at(oid, cell)
+		if _in_room(cell) and _fits_object(oid, cell.x, null, dy):
+			var entry := {"id": oid, "x": cell.x}
+			if _is_wall(oid):
+				entry["dy"] = dy
+			room.objects.append(entry)
 			_say("Placed " + oid)
 	else: # pointer: grab / drop furniture (click-drag-click)
 		if not grabbed.is_empty():
-			if _in_room(cell) and _fits_object(grabbed.id, cell.x):
-				room.objects.append({"id": grabbed.id, "x": cell.x})
+			var gdy := _wall_dy_at(grabbed.id, cell)
+			if _in_room(cell) and _fits_object(grabbed.id, cell.x, null, gdy):
+				var gentry := {"id": grabbed.id, "x": cell.x}
+				if _is_wall(grabbed.id):
+					gentry["dy"] = gdy
+				room.objects.append(gentry)
 				grabbed = {}
 				_say("Moved")
 		elif _in_room(cell):
-			var o = _object_at_x(cell.x)
-			if o != null and cell.y >= int(room.height) - int(Data.objects[o.id].size[1]):
+			var o = _object_at_cell(cell)
+			if o != null:
 				grabbed = o
 				room.objects.erase(o)
 				_say("Grabbed %s — click to drop" % grabbed.id)
+
+## dy for a wall-mounted piece dropped at `cell` (its BOTTOM sits there).
+func _wall_dy_at(oid: String, cell: Vector2i) -> int:
+	if not _is_wall(oid):
+		return 0
+	return _standing_row() - cell.y
+
+## The object (floor or wall) covering this cell, if any.
+func _object_at_cell(cell: Vector2i):
+	for o in room.objects:
+		var od: Dictionary = Data.objects[o.id]
+		var w := int(od.size[0])
+		var h := int(od.size[1])
+		var bottom := _standing_row() - int(o.get("dy", 0))
+		if cell.x >= int(o.x) and cell.x < int(o.x) + w and cell.y <= bottom and cell.y > bottom - h:
+			return o
+	return null
 
 func _paint(cell: Vector2i) -> void:
 	if not _in_room(cell):
 		return
 	var dy := _standing_row() - cell.y
-	if _object_at_x(cell.x) != null and dy < int(Data.objects[_object_at_x(cell.x).id].size[1]):
-		return # occupied by furniture
+	if _object_at_cell(cell) != null:
+		return # occupied by furniture or wall art
 	var existing = _block_at(cell.x, dy)
 	var mat := int(tool_mode.substr(6))
 	if existing != null:
@@ -343,8 +388,8 @@ func _erase(cell: Vector2i) -> void:
 	if b != null:
 		room.blocks.erase(b)
 		return
-	var o = _object_at_x(cell.x)
-	if o != null and cell.y >= int(room.height) - int(Data.objects[o.id].size[1]):
+	var o = _object_at_cell(cell)
+	if o != null:
 		room.objects.erase(o)
 		_say("Removed " + o.id)
 
@@ -372,17 +417,19 @@ func _draw_canvas() -> void:
 	for b in room.blocks:
 		var cy := _standing_row() - int(b.dy)
 		_draw_tile(org + Vector2(int(b.x), cy) * CELL, int(b.mat), Color.WHITE)
-	# Furniture (bottom-aligned to the standing row)
+	# Furniture (bottom-aligned to the standing row; wall art lifted by dy)
 	for o in room.objects:
-		_draw_object(org, o.id, int(o.x), Color.WHITE)
+		_draw_object(org, o.id, int(o.x), Color.WHITE, int(o.get("dy", 0)))
 	# Ghost previews
 	if tool_mode.begins_with("object:") and _in_room(hover_cell):
 		var oid := tool_mode.substr(7)
-		var ok := _fits_object(oid, hover_cell.x)
-		_draw_object(org, oid, hover_cell.x, Color(0.6, 1.0, 0.6, 0.55) if ok else Color(1.0, 0.5, 0.5, 0.55))
+		var gdy := _wall_dy_at(oid, hover_cell)
+		var ok := _fits_object(oid, hover_cell.x, null, gdy)
+		_draw_object(org, oid, hover_cell.x, Color(0.6, 1.0, 0.6, 0.55) if ok else Color(1.0, 0.5, 0.5, 0.55), gdy)
 	elif not grabbed.is_empty() and _in_room(hover_cell):
-		var ok2 := _fits_object(grabbed.id, hover_cell.x)
-		_draw_object(org, grabbed.id, hover_cell.x, Color(0.6, 1.0, 0.6, 0.55) if ok2 else Color(1.0, 0.5, 0.5, 0.55))
+		var gdy2 := _wall_dy_at(grabbed.id, hover_cell)
+		var ok2 := _fits_object(grabbed.id, hover_cell.x, null, gdy2)
+		_draw_object(org, grabbed.id, hover_cell.x, Color(0.6, 1.0, 0.6, 0.55) if ok2 else Color(1.0, 0.5, 0.5, 0.55), gdy2)
 	if _in_room(hover_cell):
 		canvas.draw_rect(Rect2(org + Vector2(hover_cell) * CELL, Vector2(CELL, CELL)), Color(1, 1, 0.6, 0.6), false)
 
@@ -391,17 +438,17 @@ func _draw_tile(pos: Vector2, mat: int, mod: Color) -> void:
 	canvas.draw_texture_rect_region(ATLAS, Rect2(pos, Vector2(CELL, CELL)),
 		Rect2(variant * 16, (mat - 1) * 16, 16, 16), mod)
 
-func _draw_object(org: Vector2, oid: String, x: int, mod: Color) -> void:
+func _draw_object(org: Vector2, oid: String, x: int, mod: Color, dy: int = 0) -> void:
 	var def: Dictionary = Data.objects.get(oid, {})
 	if def.is_empty():
 		return
 	if not _obj_textures.has(oid):
-		_obj_textures[oid] = load(Data.OBJECT_SPRITE_DIR + oid + ".png")
+		_obj_textures[oid] = Data.object_texture(oid)
 	var tex: Texture2D = _obj_textures[oid]
 	if tex == null:
 		return
 	var h := int(def.size[1])
-	var pos := org + Vector2(x, room.height - h) * CELL
+	var pos := org + Vector2(x, room.height - h - dy) * CELL
 	canvas.draw_texture_rect(tex, Rect2(pos, Vector2(def.size[0] * CELL, h * CELL)), false, mod)
 
 # --- Library I/O ---

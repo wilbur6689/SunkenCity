@@ -115,11 +115,22 @@ func icon(id: String) -> Texture2D:
 	elif blocks.has(id):
 		tex = _atlas(BLOCK_ATLAS, Vector2i(0, blocks[id].atlas_row))
 	elif objects.has(id):
-		var path := OBJECT_SPRITE_DIR + id + ".png"
-		if ResourceLoader.exists(path):
-			tex = load(path)
+		tex = object_texture(id)
 	_icon_cache[id] = tex
 	return tex
+
+## An object's sprite: a region of its pack's sprite sheet when it has one,
+## otherwise its standalone PNG.
+func object_texture(id: String) -> Texture2D:
+	var def: Dictionary = objects.get(id, {})
+	if def.has("sheet"):
+		var at := AtlasTexture.new()
+		at.atlas = load(def.sheet)
+		var r: Array = def.rect
+		at.region = Rect2(r[0], r[1], r[2], r[3])
+		return at
+	var path := OBJECT_SPRITE_DIR + id + ".png"
+	return load(path) if ResourceLoader.exists(path) else null
 
 func _atlas(sheet: String, cell: Vector2i) -> Texture2D:
 	var at := AtlasTexture.new()

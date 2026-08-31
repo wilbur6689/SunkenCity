@@ -128,7 +128,8 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 				tw = zone_end - cx
 			for o in t.objects:
 				if cx + int(o.x) + 3 <= zone_end:
-					objects.append({"id": o.id, "cell": Vector2i(cx + int(o.x), sr)})
+					# dy lifts wall-mounted pieces above the standing row
+					objects.append({"id": o.id, "cell": Vector2i(cx + int(o.x), sr - int(o.get("dy", 0)))})
 			for b in t.get("blocks", []):
 				if int(b.dy) >= FLOOR_H - 1:
 					continue # rooms authored taller than the floor cavity crop

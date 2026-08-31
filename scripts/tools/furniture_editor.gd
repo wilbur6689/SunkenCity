@@ -470,12 +470,20 @@ func _load_selected(index: int) -> void:
 			def["zones"] = def.get("zones", [])
 			def["yields"] = def.get("yields", [])
 			_new_image()
-			var sprite_file: String = sprites_dir + def.id + ".png"
-			if FileAccess.file_exists(sprite_file):
-				var loaded := Image.load_from_file(ProjectSettings.globalize_path(sprite_file))
-				if loaded != null:
-					image = loaded
+			if def.has("sheet"):
+				# Sheet-packed item (room packs): extract its region to edit.
+				var sheet := Image.load_from_file(ProjectSettings.globalize_path(def.sheet))
+				if sheet != null:
+					var r: Array = def.rect
+					image = sheet.get_region(Rect2i(r[0], r[1], r[2], r[3]))
 					image.convert(Image.FORMAT_RGBA8)
+			else:
+				var sprite_file: String = sprites_dir + def.id + ".png"
+				if FileAccess.file_exists(sprite_file):
+					var loaded := Image.load_from_file(ProjectSettings.globalize_path(sprite_file))
+					if loaded != null:
+						image = loaded
+						image.convert(Image.FORMAT_RGBA8)
 			_sync_to_ui()
 			_say("Loaded " + def.id)
 			return
