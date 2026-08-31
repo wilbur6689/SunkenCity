@@ -13,8 +13,9 @@ The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records set
 decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
 base) comes first; do not add other major aspects before it works.
 
-Development is at **M0** of the milestone plan in `docs/MVP-overview.md`; the task tracker is
-`docs/MVP-checklist.md` — check items off there as they land.
+Development is at the end of **M0** of the milestone plan in `docs/MVP-overview.md` (all M0 items
+land; the gate passes headless, manual feel pass pending); next is **M1 — The Loop**. The task
+tracker is `docs/MVP-checklist.md` — check items off there as they land.
 
 ## Running the Project
 
@@ -23,6 +24,8 @@ Development is at **M0** of the milestone plan in `docs/MVP-overview.md`; the ta
 - Open the editor: add `-e`
 - Headless validation (use after editing scenes/scripts): `--headless --import` to check assets
   parse; `--headless --quit-after 10` to boot the main scene and surface script errors.
+- M0 gate test: `--headless res://scenes/test/m0_smoke.tscn` (exit 0 = all checks pass). Drives the
+  player with `Input.action_press`; extend it when controller behaviour changes.
 
 ## Code Conventions
 
@@ -30,6 +33,12 @@ Development is at **M0** of the milestone plan in `docs/MVP-overview.md`; the ta
   tuning value lives in `scripts/constants.gd` (autoloaded as `Constants`), never inline.
 - Player logic (`scripts/player/player.gd`) keeps an **input-snapshot → state-machine
   separation** so a networked client can later feed the same input fields (LAN-readiness rule).
+  Input is read only when `is_multiplayer_authority()`.
+- **World queries go through the `World` autoload** (`scripts/world/world.gd`) — `is_solid`,
+  `is_water`, `is_climbable`, `water_surface_y`, `surface_has_air`, `rect_is_clear`. Gameplay code
+  never touches `TileMapLayer`s directly; M2's water sim replaces World's storage, not its callers.
+- Placeholder atlas `assets/tiles/placeholder_blocks.png`: columns = 5 shades, rows = stone, wood,
+  metal, plastic, water, ladder, rope (rows 4–6 have no collision).
 - Recipes, items, loot tables, and enemy stats must be **data files**, not code (per LT-11).
 - Main scene is currently `scenes/test/test_tower.tscn` (M0 test environment).
 

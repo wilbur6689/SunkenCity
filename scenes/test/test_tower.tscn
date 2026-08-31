@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/test/test_tower.gd" id="1_tower"]
 [ext_resource type="TileSet" path="res://assets/tiles/placeholder_blocks.tres" id="2_tileset"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_playerscene"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
 
 [node name="TestTower" type="Node2D"]
 script = ExtResource("1_tower")
@@ -11,7 +12,7 @@ script = ExtResource("1_tower")
 offset_left = -700.0
 offset_top = -500.0
 offset_right = 1400.0
-offset_bottom = 900.0
+offset_bottom = 1100.0
 color = Color(0.07, 0.09, 0.13, 1)
 
 [node name="BackWalls" type="TileMapLayer" parent="."]
@@ -22,6 +23,16 @@ collision_enabled = false
 [node name="Blocks" type="TileMapLayer" parent="."]
 tile_set = ExtResource("2_tileset")
 
+[node name="Climbables" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tileset")
+collision_enabled = false
+
 [node name="SpawnPoint" type="Marker2D" parent="." groups=["spawn_point"]]
 
 [node name="Player" parent="." instance=ExtResource("3_playerscene")]
+
+[node name="Water" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tileset")
+collision_enabled = false
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]

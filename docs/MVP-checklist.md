@@ -18,36 +18,38 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 - [x] Game constants singleton (`BLOCK_SIZE`, speeds, jump, reach, oxygen) — single tuning surface (WS-03/30)
 
 ### Test environment
-- [ ] Hand-built test tower scene: 3 dry floors + 2 flooded floors + connecting shaft (static water volume placeholder — real sim is M2) *(dry tower + shaft + two-jump ledges built programmatically; flooded floors pending)*
+- [x] Hand-built test tower scene: 3 dry floors + 2 flooded floors + connecting shaft (static water volume placeholder — real sim is M2) *(built programmatically in `scripts/test/test_tower.gd`: ladder in the shaft, rope through a 1-block hole, crawl vent + pool on floor 3, swim hole between the flooded floors)*
 - [x] Placeholder tiles — **material palette, 5 shades each** (real sprite sheets later; swap `assets/tiles/placeholder_blocks.png`, layout: columns = shades, rows = materials):
-  - stone = gray (row 0) · wood = brown (row 1) · metal = blue (row 2) · plastic = green (row 3)
-  - *(still to add: water, ladder, rope tiles)*
+  - stone = gray (row 0) · wood = brown (row 1) · metal = blue (row 2) · plastic = green (row 3) · water (row 4, no collision) · ladder (row 5) · rope (row 6)
 - [x] TileMap layers: foreground solid (collision) + cosmetic background walls (WS-20)
 
 ### Character controller (`CharacterBody2D` + state machine, WS-19)
-- [ ] State machine scaffold with debug state readout
-- [ ] Grounded: walk 5 bl/s, sprint 7 bl/s, accel/friction tuned
+- [x] State machine scaffold with debug state readout (HUD bottom-left)
+- [x] Grounded: walk 5 bl/s, sprint 7 bl/s, accel/friction tuned
 - [x] Jump 3 blocks exactly; coyote time + jump buffer
-- [ ] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15) *(fall damage done; water-entry safety waits on water volumes)*
-- [ ] Crouch/crawl through 2-block gaps; can't stand where blocked (WS-05)
-- [ ] Climb state: ropes and ladders (walk anim reuse, WS-27)
-- [ ] Surface-swim: auto-tread, lateral 5 bl/s, ~2-block water-jump, down input dives (WS-07)
-- [ ] Underwater: free 8-way at 4 bl/s, neutral buoyancy (WS-06/09)
-- [ ] 12×22px hitbox; fits through 1-block holes when swimming/crawling (WS-02) *(hitbox done; 1-block-hole fit waits on swim/crawl states)*
-- [ ] Camera: fixed zoom, smooth follow, directional lookahead scaling with speed (WS-18) *(smooth follow done; lookahead pending)*
+- [x] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15)
+- [x] Crouch/crawl through low gaps; can't stand where blocked (WS-05) *(see the WS-05 note: the 22px hitbox already fits 2-block gaps standing; crawl is what fits 1-block gaps)*
+- [x] Climb state: ropes and ladders (walk anim reuse, WS-27)
+- [x] Surface-swim: auto-tread, lateral 5 bl/s, ~2-block water-jump, down input dives (WS-07)
+- [x] Underwater: free 8-way at 4 bl/s, neutral buoyancy (WS-06/09); a flooded ceiling is not a surface
+- [x] 12×22px hitbox; 12×12 compact form fits through 1-block holes when swimming/crawling (WS-02)
+- [x] Camera: fixed zoom, smooth follow, directional lookahead scaling with speed (WS-18)
 
 ### Oxygen & death (first pass)
-- [ ] O2 meter: 30s, drains only fully submerged, instant refill in air (WS-08, LT-17)
-- [ ] Drowning: ~10s health drain at zero O2 (GD-20)
+- [x] O2 meter: 30s, drains only fully submerged, instant refill in air (WS-08, LT-17)
+- [x] Drowning: ~10s health drain at zero O2 (GD-20)
 - [x] Health + death + respawn at world spawn point (full backpack loop is M4)
-- [ ] Minimal HUD: health, O2 (O2 visible only when draining or submerged)
+- [x] Minimal HUD: health, O2 (O2 visible only when draining or submerged) — `scenes/ui/hud.tscn`
 
 ### Multiplayer-ready foundations (CC-06)
-- [ ] World/sim state owned by an authority layer even in single-player (host-authoritative pattern)
+- [x] World/sim state owned by an authority layer even in single-player (host-authoritative pattern) — `World` autoload (`scripts/world/world.gd`) answers all tile/water/climbable queries; the player reads input only when it is the multiplayer authority
 - [x] Player input → state separation clean enough for later client replication (input snapshot → state machine in `player.gd`)
 
 **GATE:** run, jump, crawl, and climb through the test tower; dive its flooded floors; drown in
 them; respawn.
+- [x] Automated: `scenes/test/m0_smoke.tscn` drives all of the above headless (50 checks) — run
+  `godot --path . --headless res://scenes/test/m0_smoke.tscn`
+- [ ] Manual play-through of the gate (feel pass: jump/accel/tread tuning)
 
 ---
 

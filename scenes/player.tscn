@@ -8,7 +8,7 @@ size = Vector2(12, 22)
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_body"]
 size = Vector2(12, 24)
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" groups=["player"]]
 script = ExtResource("1_player")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

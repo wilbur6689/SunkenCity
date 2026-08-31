@@ -88,6 +88,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
   - **A:** **3 blocks.** Two-jump rule: the next floor up must be reachable in two jumps via an intermediate foothold (furniture/rubble) — a world-gen guarantee.
 - [x] **WS-05.** Can the player crouch/crawl through gaps smaller than their standing height?
   - **A:** Yes — **crawl through 2-block gaps** (vents, collapsed passages); standing traversal needs 3 blocks.
+  - *Implementation note (M0, 2026-08-31):* with the canon 12×22px hitbox (WS-02) a standing player already fits a 2-block (32px) gap; crawling (12×12 compact form) is what fits **1-block** gaps. Either amend this answer to "crawl through 1-block gaps, stand through 2" or raise the standing hitbox — decide before M3 room templates bake gap sizes.
 - [x] **WS-06.** How does underwater movement control — free 8-directional swim, or gravity-biased?
   - **A:** (From WS-09) **Free 8-directional swim** with neutral buoyancy.
 - [x] **WS-07.** How does surface swimming differ from being underwater (treading, faster lateral movement)?

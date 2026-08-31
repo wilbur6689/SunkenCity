@@ -1,33 +1,54 @@
 extends Node2D
-## M0 test tower, built programmatically from the placeholder palette.
+## M0 test tower, built programmatically from the placeholder palette:
+## 3 dry floors over 2 flooded floors, an elevator shaft with a ladder down
+## to the waterline, a rope through a 1-block floor hole, a 1-block crawl
+## vent, and a 1-block swim hole between the flooded floors.
 ## Materials map to atlas rows; the shade (atlas column 0-4) is picked by a
 ## position hash so repeated materials get variety. Replaced by real
 ## world-gen in M3; the palette PNG is swapped for real sprite sheets later.
 
-enum Mat { STONE = 0, WOOD = 1, METAL = 2, PLASTIC = 3 }
+enum Mat { STONE = 0, WOOD = 1, METAL = 2, PLASTIC = 3, WATER = 4, LADDER = 5, ROPE = 6 }
 
 const WIDTH := 40          # tower width in blocks
 const FLOOR_H := 6         # floor-to-floor height (WS-11)
-const FLOOR_COUNT := 4
+const FLOOR_COUNT := 5     # 3 dry + 2 flooded
+const DRY_FLOORS := 3
 const SHAFT_X := 33        # elevator-shaft gap, 3 blocks wide
 const SHAFT_W := 3
+const ROPE_X := 15         # rope + 1-block hole between floors 1 and 2
+const VENT_X := 16         # 2-wide wall with a 1-block crawl gap on floor 3
+const POOL_X0 := 3         # collapsed slab section under floor 3: open water surface
+const POOL_X1 := 9
+const SWIM_HOLE_X := 10    # 1-block hole between the flooded floors
 
 @onready var blocks: TileMapLayer = $Blocks
 @onready var back_walls: TileMapLayer = $BackWalls
+@onready var water: TileMapLayer = $Water
+@onready var climbables: TileMapLayer = $Climbables
 @onready var spawn_point: Marker2D = $SpawnPoint
-@onready var player: CharacterBody2D = $Player
+@onready var player: Player = $Player
 
 func _ready() -> void:
 	_build_tower()
-	var spawn_cell := Vector2i(5, FLOOR_COUNT * FLOOR_H - 1)
+	# Spawn on floor 1 (top dry floor); feet on the standing row's bottom edge.
+	var spawn_cell := Vector2i(5, FLOOR_H - 1)
 	spawn_point.global_position = blocks.map_to_local(spawn_cell)
-	player.global_position = spawn_point.global_position
+	var feet := spawn_point.global_position + Vector2(0, Constants.BLOCK_SIZE * 0.5)
+	World.register(blocks, water, climbables, feet)
+	player.respawn()
 
 func _set_block(x: int, y: int, mat: Mat) -> void:
 	blocks.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x, y), mat))
 
 func _set_back(x: int, y: int, mat: Mat) -> void:
 	back_walls.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x + 7, y + 3), mat))
+
+func _set_water(x: int, y: int, _mat: Mat) -> void:
+	if blocks.get_cell_source_id(Vector2i(x, y)) == -1:
+		water.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x, y), Mat.WATER))
+
+func _set_climbable(x: int, y: int, mat: Mat) -> void:
+	climbables.set_cell(Vector2i(x, y), 0, Vector2i(0, mat))
 
 func _shade(x: int, y: int) -> int:
 	return posmod(hash(Vector2i(x, y)), 5)
@@ -39,6 +60,7 @@ func _fill(x0: int, y0: int, x1: int, y1: int, mat: Mat, fn: Callable) -> void:
 
 func _build_tower() -> void:
 	var bottom := FLOOR_COUNT * FLOOR_H # ground slab row
+	var waterline := DRY_FLOORS * FLOOR_H # first flooded row (slab under floor 3)
 
 	# Background walls (cosmetic, WS-20): stone interior facing
 	_fill(1, 1, WIDTH - 2, bottom - 1, Mat.STONE, _set_back)
@@ -54,7 +76,10 @@ func _build_tower() -> void:
 		for x in range(1, WIDTH - 1):
 			var in_shaft := x >= SHAFT_X and x < SHAFT_X + SHAFT_W
 			var is_ground := y == bottom
-			if not in_shaft or is_ground:
+			var rope_hole := x == ROPE_X and y == FLOOR_H
+			var pool := x >= POOL_X0 and x <= POOL_X1 and y == waterline
+			var swim_hole := x == SWIM_HOLE_X and y == (DRY_FLOORS + 1) * FLOOR_H
+			if is_ground or not (in_shaft or rope_hole or pool or swim_hole):
 				_set_block(x, y, Mat.METAL)
 
 	# Two-jump ledges (WS-04): a wood platform 3 blocks above each slab,
@@ -64,7 +89,10 @@ func _build_tower() -> void:
 		_fill(SHAFT_X - 4, slab_y - 3, SHAFT_X - 2, slab_y - 3, Mat.WOOD, _set_block)
 
 	# Interior dressing per floor: wood platforms and plastic crates
+	# (floor 3 is kept clear as the obstacle course: vent + pool).
 	for f in range(1, FLOOR_COUNT + 1):
+		if f == DRY_FLOORS:
+			continue
 		var floor_y := f * FLOOR_H - 1 # standing row above each slab
 		_fill(6, floor_y - 2, 8, floor_y - 2, Mat.WOOD, _set_block)   # table/shelf
 		_set_block(12, floor_y, Mat.PLASTIC)                           # crate
@@ -72,3 +100,18 @@ func _build_tower() -> void:
 		_set_block(12, floor_y - 1, Mat.PLASTIC)
 		_fill(20, floor_y - 2, 22, floor_y - 2, Mat.WOOD, _set_block)
 		_set_block(27, floor_y, Mat.PLASTIC)
+
+	# Crawl vent (WS-05): a 2-wide wall on floor 3 leaving a 1-block gap
+	# at floor level — passable only in the compact form.
+	var vent_slab := DRY_FLOORS * FLOOR_H
+	_fill(VENT_X, vent_slab - 5, VENT_X + 1, vent_slab - 2, Mat.STONE, _set_block)
+
+	# Ladder (WS-16): shaft center column, roof down to the waterline.
+	_fill(SHAFT_X + 1, 1, SHAFT_X + 1, waterline - 1, Mat.LADDER, _set_climbable)
+
+	# Rope (WS-16): hangs from the floor-1 hole down to floor 2's standing row.
+	_fill(ROPE_X, FLOOR_H, ROPE_X, 2 * FLOOR_H - 1, Mat.ROPE, _set_climbable)
+
+	# Static water placeholder (real sim is M2): every open cell at or below
+	# the waterline row is flooded.
+	_fill(1, waterline, WIDTH - 2, bottom - 1, Mat.WATER, _set_water)

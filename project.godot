@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Constants="*res://scripts/constants.gd"
+World="*res://scripts/world/world.gd"
 
 [display]
 
