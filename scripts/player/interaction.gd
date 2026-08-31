@@ -17,6 +17,7 @@ var target_in_reach: bool = false
 var scrapping: WorldObject = null
 var scrap_progress: float = 0.0
 var pending_pump: WorldObject = null # E on a pump -> next use click sets its outlet
+var hovered: WorldObject = null      # interactable under the mouse (glows)
 var hit_cooldown: float = 0.0
 var message: String = ""
 var message_timer: float = 0.0
@@ -52,6 +53,7 @@ func tick(delta: float) -> void:
 	target_cell = World.cell_at(player.aim_position)
 	var reach := Constants.REACH_BLOCKS * Constants.BLOCK_SIZE
 	target_in_reach = player.global_position.distance_to(World.cell_center(target_cell)) <= reach
+	_update_hover()
 	_update_ghost()
 
 	if player.wants_interact:
@@ -218,6 +220,22 @@ func _stop_scrapping() -> void:
 		scrapping.scrap_progress = 0.0
 	scrapping = null
 	scrap_progress = 0.0
+
+## Interactables glow slightly while the mouse is over them and in reach
+## (self_modulate, so door transparency and power dimming are untouched).
+func _update_hover() -> void:
+	var new_hover: WorldObject = null
+	if target_in_reach and not player.ui_blocking():
+		var obj := World.object_at(target_cell)
+		if obj != null and obj.is_interactable():
+			new_hover = obj
+	if new_hover == hovered:
+		return
+	if hovered != null and is_instance_valid(hovered):
+		hovered.sprite.self_modulate = Color.WHITE
+	hovered = new_hover
+	if hovered != null:
+		hovered.sprite.self_modulate = Color(1.45, 1.42, 1.2)
 
 # --- Ghost preview ---
 

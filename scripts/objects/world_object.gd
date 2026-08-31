@@ -73,6 +73,10 @@ func _ready() -> void:
 			add_child(_light)
 			set_powered(false) # wired lights start dark until a breaker feeds them
 
+## Objects that respond to E (everything except wired-in lights).
+func is_interactable() -> bool:
+	return def.kind != "light"
+
 func covered_cells() -> Array:
 	var cells := []
 	for dy in size.y:

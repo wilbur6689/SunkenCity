@@ -35,6 +35,8 @@ var _equip_buttons: Dictionary = {}
 var preview: TextureRect
 var char_name: Label
 var stats_label: Label
+var stats_panel: PanelContainer
+var storage_panel: PanelContainer
 var equip_hint: Label
 var recipe_list: VBoxContainer
 var detail_box: VBoxContainer
@@ -103,7 +105,7 @@ func _ready() -> void:
 	tabs.position = Vector2(185, 26)
 	tabs.add_theme_constant_override("separation", 3)
 	content.add_child(tabs)
-	for name in ["inventory", "crafting", "skills", "chest"]:
+	for name in ["inventory", "crafting", "skills"]:
 		var b := Button.new()
 		b.text = name.capitalize()
 		b.custom_minimum_size = Vector2(48, 16)
@@ -111,12 +113,10 @@ func _ready() -> void:
 		b.pressed.connect(show_screen.bind(name))
 		tabs.add_child(b)
 		tab_buttons[name] = b
-	tab_buttons["chest"].visible = false
 
 	_build_inventory_screen()
 	_build_crafting_screen()
 	_build_skills_screen()
-	_build_chest_screen()
 
 	# Shared bag grid (wood frame) at the bottom
 	var frame := PanelContainer.new()
@@ -211,12 +211,33 @@ func _build_inventory_screen() -> void:
 		eq.add_child(b)
 		_equip_buttons[slot_name] = {"button": b, "icon": icon, "glyph": g}
 
-	# Stats (steel panel)
-	var sp := _panel(Vector2(355, 46), Vector2(100, 148), UITheme.steel_panel())
-	s.add_child(sp)
+	# Stats (steel panel; hidden while a storage unit is open)
+	stats_panel = _panel(Vector2(355, 46), Vector2(100, 148), UITheme.steel_panel())
+	s.add_child(stats_panel)
 	stats_label = UITheme.label("")
 	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	sp.add_child(stats_label)
+	stats_panel.add_child(stats_label)
+
+	# Storage side panel (user request: opening storage shows the inventory
+	# screen with the unit's own inventory beside it)
+	storage_panel = _panel(Vector2(349, 34), Vector2(108, 168), UITheme.steel_panel())
+	storage_panel.visible = false
+	s.add_child(storage_panel)
+	var sv := VBoxContainer.new()
+	sv.add_theme_constant_override("separation", 2)
+	storage_panel.add_child(sv)
+	sv.add_child(UITheme.label("STORAGE", 8, Color(0.56, 0.75, 0.81)))
+	chest_grid = GridContainer.new()
+	chest_grid.columns = 4
+	chest_grid.add_theme_constant_override("h_separation", GAP)
+	chest_grid.add_theme_constant_override("v_separation", GAP)
+	sv.add_child(chest_grid)
+	var qs := Button.new()
+	qs.text = "Quick stack"
+	qs.custom_minimum_size = Vector2(0, 14)
+	UITheme.style_button(qs)
+	qs.pressed.connect(_quick_stack)
+	sv.add_child(qs)
 
 func _build_crafting_screen() -> void:
 	var s := Control.new()
@@ -320,33 +341,6 @@ func _refresh_skills() -> void:
 		row.add_child(UITheme.label("%.0f / %.0f xp to next" % [into, Constants.SKILL_XP_PER_LEVEL], 8, Color(0.55, 0.6, 0.68)))
 		skills_box.add_child(row)
 
-func _build_chest_screen() -> void:
-	var s := Control.new()
-	s.set_anchors_preset(Control.PRESET_FULL_RECT)
-	s.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	s.visible = false
-	content.add_child(s)
-	screens["chest"] = s
-
-	var cp := _panel(Vector2(185, 46), Vector2(5 * SLOT + 4 * GAP + 8, 4 * SLOT + 3 * GAP + 8), UITheme.steel_panel())
-	s.add_child(cp)
-	chest_grid = GridContainer.new()
-	chest_grid.columns = 5
-	chest_grid.add_theme_constant_override("h_separation", GAP)
-	chest_grid.add_theme_constant_override("v_separation", GAP)
-	cp.add_child(chest_grid)
-
-	var qs := Button.new()
-	qs.text = "Quick stack"
-	qs.custom_minimum_size = Vector2(80, 18)
-	qs.position = Vector2(340, 46)
-	UITheme.style_button(qs)
-	qs.pressed.connect(_quick_stack)
-	s.add_child(qs)
-	var hint := UITheme.label("Shift+click moves\nbetween bag and chest", 8, Color(0.7, 0.78, 0.85))
-	hint.position = Vector2(340, 70)
-	s.add_child(hint)
-
 func _make_slots(target: GridContainer, inv: Inventory, which: String) -> Array:
 	for c in target.get_children():
 		c.queue_free()
@@ -395,7 +389,9 @@ func close() -> void:
 	open = false
 	root.visible = false
 	container = null
-	tab_buttons["chest"].visible = false
+	if storage_panel != null:
+		storage_panel.visible = false
+		stats_panel.visible = true
 	if player != null:
 		player.ui_blocks_mouse = false
 		if cursor_stack != null: # never lose a held stack on close
@@ -407,13 +403,12 @@ func close() -> void:
 func open_container(obj: WorldObject) -> void:
 	container = obj
 	open_panel()
-	tab_buttons["chest"].visible = true
 	_chest_slots = _make_slots(chest_grid, obj.storage, "chest")
-	show_screen("chest")
+	stats_panel.visible = false
+	storage_panel.visible = true
+	show_screen("inventory")
 
 func show_screen(name: String) -> void:
-	if name == "chest" and container == null:
-		name = "inventory"
 	screen = name
 	for k in screens.keys():
 		screens[k].visible = (k == name)
