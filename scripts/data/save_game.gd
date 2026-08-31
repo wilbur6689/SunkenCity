@@ -42,13 +42,14 @@ static func character_names() -> Array:
 static func save_world(world_name: String, seed_value: int) -> void:
 	var g: WorldGrid = World.grid
 	var objs: Array = []
-	for obj in World.objects_root.get_children():
-		if obj is WorldObject and not obj.is_queued_for_deletion():
-			var st := {"id": obj.id, "cell": obj.cell, "placed": obj.placed_by_player,
-				"open": obj.open, "powered": obj.powered_on, "outlet": obj.outlet_cell}
-			if obj.storage != null:
-				st["storage"] = obj.storage.slots.duplicate(true)
-			objs.append(st)
+	for rec: Dictionary in World.object_records:
+		if rec.node != null and is_instance_valid(rec.node):
+			World.sync_record(rec, rec.node) # bank live node state first
+		var st := {"id": rec.id, "cell": rec.cell, "placed": rec.placed,
+			"open": rec.open, "powered": rec.powered, "outlet": rec.outlet}
+		if rec.storage != null:
+			st["storage"] = rec.storage.slots.duplicate(true)
+		objs.append(st)
 	var items: Array = []
 	for it in World.items_root.get_children():
 		if it is WorldItem and not it.is_queued_for_deletion():

@@ -158,6 +158,8 @@ refilling tanks all working in the reclaimed room.
 
 ### World runtime
 - [x] Full grid in RAM (`WorldGrid` byte layers); rendering, collision tiles, lighting, and water drawing all window around the camera (CT-28) — *instant-settle for far water regions still open*
+- [x] **Object streaming** (user perf request, 2026-08-31): `World.object_records` is the canonical store for all ~6k city objects; only records inside `OBJECT_WINDOW` (200×160 cells around the player) are instantiated as nodes — solidity/sight read the record so far doors still seal water. Window relight and fog raycasts are also change-gated/cached now. Spawn framerate went 2 → ~118 FPS
+- [x] Debug tooling: always-on FPS counter (top right) + **F3 overlay** — build/version/GPU, frame/physics/draw-call/node stats, position/depth/band, water/light/fog costs, object window counts (`--f3` arg pre-opens it for screenshots)
 - [x] Depth bands (GD-16): `World.band_at` from the waterline row — Dry/Shallows/Cold/Dark/Crush
 - [x] Cold gates while submerged: Cold slows, The Dark slows + chills, The Crush hurts fast (CC-16/GL-12); suit stats lift them from M5; drained rooms are safe (GL-17)
 - [x] Day/night cycle (CC-11): 10-minute day drives the sun strength in the light map

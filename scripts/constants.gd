@@ -97,6 +97,12 @@ const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
 # --- World scale, bands, clock (M3: CT-28, GD-16, CC-11) ---
 const LIGHT_WINDOW: Vector2i = Vector2i(120, 72) # cells relit around the camera
 
+# Object streaming: records within this window (cells, centred on the
+# player) are instantiated as nodes; the rest of the city stays data.
+# Generous on purpose — it must cover the tallest zoom-out and the test
+# tower's full height so held references never despawn mid-test.
+const OBJECT_WINDOW: Vector2i = Vector2i(200, 160)
+
 # Map + minimap (CC-25)
 const MAP_REVEAL_RADIUS: int = 14        # blocks revealed around the player
 const MINIMAP_WINDOW: Vector2i = Vector2i(96, 56) # cells shown on the minimap

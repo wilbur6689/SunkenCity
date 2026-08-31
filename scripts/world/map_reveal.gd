@@ -6,6 +6,7 @@ extends RefCounted
 
 var bounds: Rect2i
 var bits := PackedByteArray()
+var revealed := 0 # running count (the bitset is too big to walk per frame)
 
 func _init(p_bounds: Rect2i) -> void:
 	bounds = p_bounds
@@ -24,7 +25,10 @@ func reveal_cell(cell: Vector2i) -> void:
 	if not bounds.has_point(cell):
 		return
 	var i := _idx(cell)
-	bits[i >> 3] |= 1 << (i & 7)
+	var mask := 1 << (i & 7)
+	if bits[i >> 3] & mask == 0:
+		bits[i >> 3] |= mask
+		revealed += 1
 
 ## Reveal a disc of cells around the player's position.
 func reveal_disc(center: Vector2i, radius: int) -> void:
@@ -35,18 +39,19 @@ func reveal_disc(center: Vector2i, radius: int) -> void:
 				reveal_cell(center + Vector2i(dx, dy))
 
 func revealed_count() -> int:
-	var n := 0
-	for i in bits.size():
-		var b := bits[i]
-		while b > 0:
-			n += b & 1
-			b >>= 1
-	return n
+	return revealed
 
 func to_bytes() -> PackedByteArray:
 	return bits.compress(FileAccess.COMPRESSION_ZSTD)
 
 func from_bytes(data: PackedByteArray) -> void:
 	var raw := data.decompress(bits.size(), FileAccess.COMPRESSION_ZSTD)
-	if raw.size() == bits.size():
-		bits = raw
+	if raw.size() != bits.size():
+		return
+	bits = raw
+	revealed = 0 # recount once; cheap enough at load time
+	for i in bits.size():
+		var b := bits[i]
+		while b > 0:
+			revealed += b & 1
+			b >>= 1

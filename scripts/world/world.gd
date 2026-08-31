@@ -19,6 +19,11 @@ var pumps: Array = [] # WorldObjects of kind "pump"
 var light_map: LightMap
 var map_reveal: MapReveal # fog-of-war world map (CC-25); saved per character
 var _light_tick: int = 0
+## The window relight is the priciest tick job, so it only reruns when
+## something it depends on changed: blocks/doors/power (_light_dirty),
+## active water, or the window/sun/sources key.
+var _light_dirty: bool = true
+var _light_key: Array = []
 
 ## Depth bands (GD-16): world data every system can query.
 var waterline_row: int = 0
@@ -28,8 +33,20 @@ var time_of_day: float = 0.35 # start in the morning
 ## Player-placed blocks (WS-22): key -> {id, hp, layer}. Anything in the
 ## grid NOT here is building structure and unbreakable (GL-01).
 var placed_blocks: Dictionary = {}
-## Every cell covered by an object -> WorldObject.
+## Canonical object store — one record per object in the whole city:
+## {id, def, cell, placed, open, powered, outlet, storage: Inventory|null,
+## node: WorldObject|null}. Nodes are only a *windowed view*: records near
+## the camera get instantiated, everything else stays data (a full city
+## holds thousands of objects — sprites, point lights, and door bodies for
+## all of them is what tanked the spawn framerate). Solidity and sight
+## queries read the record, so far doors still seal water.
+var object_records: Array = []
+## Every cell covered by an object -> its record.
 var object_cells: Dictionary = {}
+var _obj_window_center := Vector2i(-99999, -99999)
+## Per-system frame costs + counters for the F3 debug overlay.
+var perf: Dictionary = {"water_ms": 0.0, "light_ms": 0.0, "fog_ms": 0.0,
+	"objects_live": 0, "objects_total": 0}
 
 func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 		p_objects_root: Node, p_renderer: StructureRenderer, p_waterline_row: int) -> void:
@@ -40,12 +57,16 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	spawn_position = p_spawn
 	waterline_row = p_waterline_row
 	placed_blocks.clear()
+	object_records.clear()
 	object_cells.clear()
 	pumps.clear()
+	_obj_window_center = Vector2i(-99999, -99999)
 	water_sim = WaterSim.new(grid.bounds, is_solid_cell)
 	water_sim.budget_per_tick = Constants.WATER_BUDGET_PER_TICK
 	light_map = LightMap.new()
 	map_reveal = MapReveal.new(grid.bounds)
+	_light_dirty = true
+	_light_key = []
 
 func is_ready() -> bool:
 	return grid != null
@@ -58,7 +79,9 @@ func _physics_process(delta: float) -> void:
 		return
 	time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
 	_tick_pumps()
+	var t0 := Time.get_ticks_usec()
 	water_sim.tick()
+	perf.water_ms = (Time.get_ticks_usec() - t0) / 1000.0
 	_light_tick += 1
 	if _light_tick % Constants.BREAKER_CHECK_TICKS == 0:
 		_check_breakers()
@@ -67,10 +90,18 @@ func _physics_process(delta: float) -> void:
 		if p != null:
 			var center := cell_at(p.global_position)
 			map_reveal.reveal_disc(center, Constants.MAP_REVEAL_RADIUS)
+			_update_object_window(center)
 			var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
 			var window := Rect2i(center - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
-			light_map.compute_window(window, grid.bounds.position.y, is_solid_cell,
-				water_sim.level_at, _gather_light_sources(), sun_strength())
+			var sources := _gather_light_sources()
+			var key: Array = [window, int(roundf(sun_strength() * LightMap.MAX_LIGHT)), hash(str(sources))]
+			if _light_dirty or water_sim.processed_last_tick > 0 or key != _light_key:
+				_light_dirty = false
+				_light_key = key
+				var lt0 := Time.get_ticks_usec()
+				light_map.compute_window(window, grid.bounds.position.y, is_solid_cell,
+					water_sim.level_at, sources, sun_strength())
+				perf.light_ms = (Time.get_ticks_usec() - lt0) / 1000.0
 
 ## Daylight factor (CC-11): full sun by day, a dim glow at night.
 func sun_strength() -> float:
@@ -114,8 +145,12 @@ func band_at(cell: Vector2i) -> String:
 func is_solid_cell(cell: Vector2i) -> bool:
 	if grid.structure_at(cell) != WorldGrid.M.AIR:
 		return true
-	var obj: WorldObject = object_cells.get(cell)
-	return obj != null and obj.is_solid()
+	var rec: Dictionary = object_cells.get(cell, {})
+	return not rec.is_empty() and _record_solid(rec)
+
+## Solidity from the record (valid whether or not the node is instantiated).
+func _record_solid(rec: Dictionary) -> bool:
+	return rec.def.kind == "door" and not rec.open
 
 func is_solid(global_pos: Vector2) -> bool:
 	return is_solid_cell(cell_at(global_pos))
@@ -213,8 +248,8 @@ func light_at(cell: Vector2i) -> int:
 ## How much sight passes through a cell: structure (stone/metal, closed
 ## doors) blacks out; obstacle materials (wood, plastic) attenuate.
 func sight_transparency_cell(cell: Vector2i) -> float:
-	var obj: WorldObject = object_cells.get(cell)
-	if obj != null and obj.is_solid():
+	var rec: Dictionary = object_cells.get(cell, {})
+	if not rec.is_empty() and _record_solid(rec):
 		return 0.0
 	var m := grid.structure_at(cell)
 	if m == WorldGrid.M.AIR:
@@ -285,6 +320,7 @@ func _gather_light_sources() -> Array:
 func update_power() -> void:
 	if objects_root == null:
 		return
+	_light_dirty = true
 	var breakers := []
 	for obj in objects_root.get_children():
 		if obj is WorldObject and obj.def.kind == "breaker" and not obj.is_queued_for_deletion():
@@ -349,6 +385,7 @@ func _key(cell: Vector2i, layer_name: String) -> Variant:
 	return cell if layer_name == "blocks" else "%s:%d,%d" % [layer_name, cell.x, cell.y]
 
 func _cell_changed(cell: Vector2i) -> void:
+	_light_dirty = true
 	if water_sim != null:
 		water_sim.notify_changed(cell)
 	if renderer != null:
@@ -404,8 +441,14 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 
 # --- Objects ---
 
+## The instantiated node covering this cell (null when none, or when the
+## object is outside the window — gameplay only touches nearby objects).
 func object_at(cell: Vector2i) -> WorldObject:
-	return object_cells.get(cell)
+	var rec: Dictionary = object_cells.get(cell, {})
+	return rec.get("node") if not rec.is_empty() else null
+
+func object_record_at(cell: Vector2i) -> Dictionary:
+	return object_cells.get(cell, {})
 
 func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) -> bool:
 	var def: Dictionary = Data.objects.get(id, {})
@@ -434,30 +477,115 @@ func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) ->
 			return false
 	return true
 
-func place_object(id: String, cell: Vector2i, placed_by_player: bool) -> WorldObject:
-	var obj: WorldObject = WORLD_OBJECT_SCENE.instantiate()
-	obj.setup(id, cell, placed_by_player)
-	obj.global_position = cell_center(cell) - Vector2.ONE * Constants.BLOCK_SIZE * 0.5
-	objects_root.add_child(obj)
-	for c in obj.covered_cells():
-		object_cells[c] = obj
-		if water_sim != null and obj.is_solid():
+## Register an object as data only (no node) — the bulk path city boot uses
+## for its thousands of objects; the window instantiates the nearby ones.
+func add_object_record(id: String, cell: Vector2i, placed_by_player: bool) -> Dictionary:
+	var def: Dictionary = Data.objects[id]
+	var slots := int(def.get("storage_slots", def.get("slots", 0)))
+	if def.kind == "chest" and slots == 0:
+		slots = Constants.CHEST_SLOTS
+	var rec := {"id": id, "def": def, "cell": cell, "placed": placed_by_player,
+		"open": false, "powered": false, "outlet": WorldObject.NO_OUTLET,
+		"storage": Inventory.new(slots) if slots > 0 else null, "node": null}
+	object_records.append(rec)
+	if _record_solid(rec):
+		_light_dirty = true
+	for c in _record_cells(rec):
+		object_cells[c] = rec
+		if water_sim != null and _record_solid(rec):
 			water_sim.notify_changed(c)
-	if obj.def.kind == "pump":
+	return rec
+
+func _record_cells(rec: Dictionary) -> Array:
+	var cells := []
+	for dy in int(rec.def.size[1]):
+		for dx in int(rec.def.size[0]):
+			cells.append(Vector2i(rec.cell.x + dx, rec.cell.y - dy))
+	return cells
+
+## Place an object and instantiate it right away (player actions and tests
+## always act near the camera, so the node exists from the start).
+func place_object(id: String, cell: Vector2i, placed_by_player: bool) -> WorldObject:
+	return _instantiate_record(add_object_record(id, cell, placed_by_player))
+
+func _instantiate_record(rec: Dictionary) -> WorldObject:
+	var obj: WorldObject = WORLD_OBJECT_SCENE.instantiate()
+	obj.setup(rec.id, rec.cell, rec.placed)
+	obj.storage = rec.storage # the record's inventory is the canonical one
+	obj.global_position = cell_center(rec.cell) - Vector2.ONE * Constants.BLOCK_SIZE * 0.5
+	objects_root.add_child(obj)
+	obj.restore_state({"open": rec.open, "powered": rec.powered, "outlet": rec.outlet})
+	rec.node = obj
+	if rec.def.kind == "pump":
 		pumps.append(obj)
 	return obj
 
+## Free a far node, banking its live state back into the record.
+func _despawn_record(rec: Dictionary) -> void:
+	var obj: WorldObject = rec.node
+	rec.node = null
+	if obj == null or not is_instance_valid(obj):
+		return
+	sync_record(rec, obj)
+	pumps.erase(obj)
+	obj.queue_free()
+
+func sync_record(rec: Dictionary, obj: WorldObject) -> void:
+	rec.open = obj.open
+	rec.powered = obj.powered_on
+	rec.outlet = obj.outlet_cell
+
+## Force an immediate window fill (scene boot: objects must exist before
+## the first frame renders or the first test assertion runs).
+func refresh_objects_around(pos: Vector2) -> void:
+	_obj_window_center = Vector2i(-99999, -99999)
+	_update_object_window(cell_at(pos))
+
+## Instantiate records near `center`, free the rest. Runs when the player
+## has moved a few cells; the window is generous so teleport-happy tests
+## and normal play never see furniture pop.
+func _update_object_window(center: Vector2i) -> void:
+	if (_obj_window_center - center).length_squared() < 36: # < 6 cells moved
+		return
+	_obj_window_center = center
+	var half: Vector2i = Constants.OBJECT_WINDOW / 2
+	var win := Rect2i(center - half, Constants.OBJECT_WINDOW)
+	var live := 0
+	var changed := false
+	for rec: Dictionary in object_records:
+		var inside := win.has_point(rec.cell)
+		if inside != (rec.node != null):
+			if inside:
+				_instantiate_record(rec)
+			else:
+				_despawn_record(rec)
+			changed = true
+		if inside:
+			live += 1
+	perf.objects_live = live
+	perf.objects_total = object_records.size()
+	if changed:
+		update_power() # newly loaded wired lights resolve against breakers
+
 func remove_object(obj: WorldObject) -> void:
-	for c in obj.covered_cells():
-		if object_cells.get(c) == obj:
-			object_cells.erase(c)
-		if water_sim != null:
-			water_sim.notify_changed(c)
+	_light_dirty = true
+	var rec: Dictionary = object_cells.get(obj.cell, {})
+	if not rec.is_empty() and rec.node == obj:
+		object_records.erase(rec)
+		for c in _record_cells(rec):
+			if object_cells.get(c) == rec:
+				object_cells.erase(c)
+			if water_sim != null:
+				water_sim.notify_changed(c)
 	pumps.erase(obj)
 	obj.queue_free()
 
 ## Called when an object's solidity changes in place (door toggled).
 func notify_object_changed(obj: WorldObject) -> void:
+	_light_dirty = true
+	var rec: Dictionary = object_cells.get(obj.cell, {})
+	if not rec.is_empty() and rec.node == obj:
+		rec.open = obj.open
 	if water_sim != null:
 		for c in obj.covered_cells():
 			water_sim.notify_changed(c)

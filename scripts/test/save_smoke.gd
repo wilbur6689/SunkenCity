@@ -45,14 +45,9 @@ func _ready() -> void:
 	var chest := World.place_object("chest", sc + Vector2i(7, -1), true)
 	chest.storage.slots[0] = {"id": "scrap_metal", "count": 7}
 	World.spawn_item("plastic", 3, World.cell_center(sc + Vector2i(2, -1)))
-	var door: WorldObject = null
-	for obj in World.objects_root.get_children():
-		if obj is WorldObject and obj.def.kind == "door":
-			door = obj
-			break
-	if door != null:
-		door.interact(player)
-	check(door != null and door.open, "a door stands open")
+	var door := World.place_object("wood_door", sc + Vector2i(9, -1), true)
+	door.interact(player)
+	check(door.open, "a door stands open")
 	player.inventory.add("wood", 9)
 	player.skills.add_xp("scrapping", 42.0)
 	World.time_of_day = 0.123

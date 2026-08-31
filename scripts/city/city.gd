@@ -46,10 +46,11 @@ func _boot_generated() -> void:
 	var t0 := Time.get_ticks_msec()
 	gen = CityGen.generate(seed_value)
 	World.register(gen.grid, gen.spawn_feet, items_root, objects_root, structure_renderer, gen.waterline_row)
+	# Data-only records: the object window instantiates the ones near spawn.
 	for o in gen.objects:
-		World.place_object(o.id, o.cell, false)
+		World.add_object_record(o.id, o.cell, false)
 	for dc in gen.doors:
-		World.place_object("wood_door", dc, false)
+		World.add_object_record("wood_door", dc, false)
 	CityGen.flood(World) # after doors exist: sealing is solidity (WS-20)
 	print("City seed %d: %d towers, generated in %d ms" % [seed_value, gen.towers, Time.get_ticks_msec() - t0])
 	_setup_visuals()
@@ -60,6 +61,7 @@ func _boot_generated() -> void:
 	var char_data := SaveGame.read_character(character_name)
 	if not char_data.is_empty(): # returning character entering a fresh world
 		SaveGame.apply_character(char_data, player, world_name)
+	World.refresh_objects_around(player.global_position)
 
 func _boot_loaded(data: Dictionary) -> void:
 	var t0 := Time.get_ticks_msec()
@@ -69,8 +71,14 @@ func _boot_loaded(data: Dictionary) -> void:
 	World.time_of_day = float(data.time_of_day)
 	World.placed_blocks = (data.placed_blocks as Dictionary).duplicate(true)
 	for st in data.objects:
-		var obj := World.place_object(st.id, st.cell, bool(st.placed))
-		obj.restore_state(st)
+		var rec := World.add_object_record(st.id, st.cell, bool(st.placed))
+		rec.open = bool(st.get("open", false))
+		rec.powered = bool(st.get("powered", false))
+		rec.outlet = st.get("outlet", WorldObject.NO_OUTLET)
+		if rec.storage != null and st.has("storage"):
+			var slots: Array = (st.storage as Array).duplicate(true)
+			slots.resize(rec.storage.slots.size())
+			rec.storage.slots = slots
 	for it in data.items:
 		World.spawn_item(it.id, int(it.count), it.pos)
 	# Water restores exactly as saved; nothing is awake until disturbed.
@@ -81,6 +89,7 @@ func _boot_loaded(data: Dictionary) -> void:
 	_setup_visuals()
 	player.respawn()
 	SaveGame.apply_character(SaveGame.read_character(character_name), player, String(data.name))
+	World.refresh_objects_around(player.global_position)
 
 func _setup_visuals() -> void:
 	water_renderer.setup(World.waterline_row * Constants.BLOCK_SIZE)
@@ -109,7 +118,7 @@ func _take_shot(spec: String) -> void:
 		for i in absi(int(parts[1])):
 			player.zoom_step(-1 if int(parts[1]) < 0 else 1)
 		player.camera.reset_smoothing()
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(2.5).timeout # past the generation hitch
 	get_viewport().get_texture().get_image().save_png(path)
 	print("shot saved: ", path)
 	get_tree().quit()

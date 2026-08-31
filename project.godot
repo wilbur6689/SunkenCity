@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="SunkenCity"
+config/version="0.3.0-m3"
 config/description="A 2D block-based survival sandbox in a flooded city. Terraria x 7 Days to Die."
 run/main_scene="res://scenes/ui/title.tscn"
 config/features=PackedStringArray("4.8")

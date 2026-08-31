@@ -18,6 +18,10 @@ var _minimap: TextureRect
 var _minimap_img: Image
 var _minimap_tex: ImageTexture
 var _minimap_timer: float = 0.0
+var _fps_label: Label
+var _debug_panel: PanelContainer
+var _debug_text: Label
+var _debug_timer: float = 0.0
 
 func _ready() -> void:
 	for i in Constants.HOTBAR_SLOTS:
@@ -42,6 +46,78 @@ func _ready() -> void:
 		hotbar.add_child(panel)
 		_slots.append({"panel": panel, "style": style, "icon": icon, "count": count})
 	_build_minimap()
+	_build_debug()
+
+## FPS counter (always on, top right beside the minimap) + the F3 debug
+## overlay: build info, height/depth, and per-system perf counters.
+func _build_debug() -> void:
+	_fps_label = Label.new()
+	_fps_label.add_theme_font_size_override("font_size", 9)
+	_fps_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_fps_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_fps_label.position = Vector2(-Constants.MINIMAP_WINDOW.x - 62, 6)
+	_fps_label.custom_minimum_size = Vector2(48, 0)
+	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	get_node("Root").add_child(_fps_label)
+
+	_debug_panel = PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.03, 0.04, 0.06, 0.85)
+	style.border_color = Color(0.4, 0.45, 0.5, 0.8)
+	style.set_border_width_all(1)
+	style.set_content_margin_all(4)
+	_debug_panel.add_theme_stylebox_override("panel", style)
+	_debug_panel.position = Vector2(6, 34)
+	_debug_panel.visible = false
+	_debug_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_debug_text = Label.new()
+	_debug_text.add_theme_font_size_override("font_size", 8)
+	_debug_text.add_theme_color_override("font_color", Color(0.85, 0.9, 0.92))
+	_debug_panel.add_child(_debug_text)
+	get_node("Root").add_child(_debug_panel)
+	debug_label.visible = false # the old always-on state line lives behind F3 now
+	debug_label.position.y -= 24 # clear of the bottom-centre hotbar
+	if OS.get_cmdline_user_args().has("--f3"): # dev aid for screenshots
+		_debug_panel.visible = true
+		debug_label.visible = true
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
+		_debug_panel.visible = not _debug_panel.visible
+		debug_label.visible = _debug_panel.visible
+
+func _refresh_debug() -> void:
+	if not _debug_panel.visible or not World.is_ready():
+		return
+	var v := Engine.get_version_info()
+	var cell := World.cell_at(player.global_position)
+	var depth := World.depth_below_waterline(cell)
+	var lines: Array = [
+		"SunkenCity %s (%s) · Godot %s · %s" % [
+			ProjectSettings.get_setting("application/config/version", "dev"),
+			"debug" if OS.is_debug_build() else "release", v.string, OS.get_name()],
+		"GPU: %s" % RenderingServer.get_video_adapter_name(),
+		"fps %d · frame %.1f ms · physics %.1f ms · draw calls %d · nodes %d" % [
+			Engine.get_frames_per_second(),
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+			Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0,
+			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+			Performance.get_monitor(Performance.OBJECT_NODE_COUNT)],
+		"pos (%.0f, %.0f) px · cell (%d, %d) · depth %+d blk (%+d ft) · band %s" % [
+			player.global_position.x, player.global_position.y, cell.x, cell.y,
+			depth, depth * 2, World.band_at(cell)],
+		"water: awake %d · processed %d · tick %.2f ms" % [
+			World.water_sim.awake.size(), World.water_sim.processed_last_tick, World.perf.water_ms],
+		"light: window %dx%d · compute %.2f ms · fog raycast %.2f ms" % [
+			Constants.LIGHT_WINDOW.x, Constants.LIGHT_WINDOW.y, World.perf.light_ms, World.perf.fog_ms],
+		"objects: %d live / %d total · items %d · placed blocks %d" % [
+			World.perf.objects_live, World.perf.objects_total,
+			World.items_root.get_child_count(), World.placed_blocks.size()],
+		"map revealed %d cells · clock %.2f · sun %.2f" % [
+			World.map_reveal.revealed_count(), World.time_of_day, World.sun_strength()],
+	]
+	_debug_text.text = "\n".join(PackedStringArray(lines))
 
 ## Top-right minimap (CC-25): a window of the fog-of-war world map centred
 ## on the player, redrawn a few times a second from World.map_reveal.
@@ -136,6 +212,14 @@ func _process(delta: float) -> void:
 	if _minimap_timer <= 0.0:
 		_minimap_timer = Constants.MINIMAP_REFRESH_SECONDS
 		_redraw_minimap()
+	_debug_timer -= delta
+	if _debug_timer <= 0.0:
+		_debug_timer = 0.25
+		var fps := Engine.get_frames_per_second()
+		_fps_label.text = "%d FPS" % fps
+		_fps_label.add_theme_color_override("font_color",
+			Color(0.5, 0.95, 0.55) if fps >= 50 else (Color(0.95, 0.85, 0.4) if fps >= 30 else Color(0.95, 0.45, 0.4)))
+		_refresh_debug()
 
 	var inter := player.interaction
 	scrap_bar.visible = inter.scrapping != null
