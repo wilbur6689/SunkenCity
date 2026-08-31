@@ -210,13 +210,24 @@ no environmental hazards in MVP (electrified water is on the ideas list).
   tapering to 5–10 floor submerged buildings at the edges; world ≈ 2,500 × 400 blocks.
 - **Generation:** curated room templates, procedurally assembled — rooms are proc-generated
   during development, the keepers saved as templates, and the game stitches templates into
-  floors and towers before applying wear (breaches, collapse, flooding).
-- Buildings may contain **holes/breaches** that flood the affected floors, mixing dry and
-  submerged sections within a single structure.
+  floors and towers before applying wear (breaches, collapse, flooding). Worlds are seed-based
+  and shareable.
+- **Building types:** residential, office, hospital in MVP — **mixed-use per floor**, driving
+  template pools and scrap flavor. Every tower has an elevator shaft as a vertical highway.
+- **Flooding is connectivity:** breaches are placed at gen (more with depth); the water sim runs
+  to equilibrium, so whatever connects to the ocean floods and sealed rooms keep their air —
+  air pockets emerge, never authored.
+- **Palette:** concrete, steel, brick, wood, glass (no drywall); glass is a fragile transparent
+  block; furniture is scrappable multi-tile objects, never blocks.
 - **City profile:** tallest towers at the center; shorter, sparser, mostly submerged buildings
-  toward the edges; open water at the map borders (one city per world).
-- **Depth scaling:** the farther below the water's surface the player goes, the harder the enemies
-  and the better the loot.
+  toward the edges; open water (and an invisible wall) at the map borders; light floating debris
+  on the surface. Ground level is bare concrete roads — The Crush's floor — with nothing below
+  it in MVP.
+- **Landmarks:** the starting hospital tower and the pump relay stations only.
+- **Depth scaling:** the farther below the surface, the harder the enemies and the better the
+  loot; the depth color grade differentiates the five bands visually in MVP.
+- **Tech model:** the whole ~1M-tile world lives in RAM on the host; chunks only schedule
+  rendering/simulation; no structural-integrity sim (placed blocks float).
 - **Endgame:** reach ground level and drain the whole city via the mega-pump relay network.
 
 ---
@@ -225,8 +236,7 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 Deeper design and implementation details live in the `technical/` folder. Open design questions
 are tracked in [OpenQuestions.md](OpenQuestions.md) *(reviewed: Core Concept & Setting ✅, World
-Scale & Character ✅, Main Game Loop ✅, Game Dangers ✅, Loot ⏸️ deferred, The City 🔄 in
-progress — paused at CT-02/03)*.
+Scale & Character ✅, Main Game Loop ✅, Game Dangers ✅, The City ✅, Loot ⏸️ deferred)*.
 
 - [technical/WaterPhysics.md](technical/WaterPhysics.md) — water simulation, pumps, draining ✅
 - World generation (building layouts, flooding, breach placement)

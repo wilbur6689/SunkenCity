@@ -315,41 +315,65 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 6. The City & World Generation (CT) — 🔄 In progress (paused 2026-08-30 at CT-02/03)
+## 6. The City & World Generation (CT) — ✅ Reviewed 2026-08-31
 
 - [x] **CT-01.** How big is the city — number of buildings, world width, and depth to ground in blocks?
   - **A:** **~40 towers**; center towers ~50 floors (50 × 6 = ~300 blocks ≈ 600 ft), tapering per the CC-28 bell curve to 5–10 floor fully submerged buildings at the edges. Total world ≈ **2,500 × 400 blocks**.
-- [ ] **CT-02.** What building types exist (residential, office, hospital, police, mall, industrial)?
-- [ ] **CT-03.** Do building types drive their loot tables and enemy types?
+- [x] **CT-02.** What building types exist (residential, office, hospital, police, mall, industrial)?
+  - **A:** MVP: **residential, office, hospital** — and towers are **mixed-use: types are assigned per floor/section**, so one skyscraper can stack all three. More types (police, mall, industrial) join with the materials balancing pass.
+- [x] **CT-03.** Do building types drive their loot tables and enemy types?
+  - **A:** Yes — a floor's type drives its room-template pool and scrap/loot flavor (residential: cloth/wood/food; office: metal/electronics; hospital: med supplies).
 - [x] **CT-04.** How are buildings generated — hand-made templates with variation, or fully procedural?
   - **A:** **Curated room templates, procedurally assembled.** Authoring workflow: during MVP development, rooms are procedurally generated, the keepers are curated and **saved as templates**, and the game assembles buildings from that curated library.
 - [x] **CT-05.** How are interiors laid out (rooms, corridors, stairwells, elevator shafts)?
   - **A:** Room templates carry door/opening sockets; the generator stitches rooms into floors, stacks floors into towers, then applies wear — breaches, collapsed sections, flooding. Must respect the two-jump rule (WS-04).
-- [ ] **CT-06.** Are elevator shafts usable as vertical traversal routes (or even repairable)?
-- [ ] **CT-07.** Is there anything below street level (subways, parking garages, sewers)?
-- [ ] **CT-08.** Are the streets at ground level explorable terrain with their own content?
-- [ ] **CT-09.** What is between buildings — open water only, or debris, wrecks, and ruins?
-- [ ] **CT-10.** Are there skybridges or collapsed structures connecting towers?
-- [ ] **CT-11.** What rules govern breach/hole generation in buildings (frequency, size, location)?
-- [ ] **CT-12.** How is flooding determined — purely by breach connectivity, or partly authored?
-- [ ] **CT-13.** How are air pockets generated in flooded floors (sealed rooms holding air)?
-- [ ] **CT-14.** What is the block palette per building — wood/stone variants only, or also concrete, glass, metal?
-- [ ] **CT-15.** Are glass windows distinct breakable blocks (the "openings" of stage one)?
-- [ ] **CT-16.** Are furniture and props placed as scrappable objects, tiles, or both?
-- [ ] **CT-17.** Is there structural integrity (unsupported blocks collapse, 7DtD-style)?
+- [x] **CT-06.** Are elevator shafts usable as vertical traversal routes (or even repairable)?
+  - **A:** Every tower template includes an **elevator shaft as a vertical highway** — stuck cabs are pry-bar/torch obstacles; dry shafts are rope drops, flooded shafts are swim tubes and prime pump-out targets. No working elevators in MVP.
+- [x] **CT-07.** Is there anything below street level (subways, parking garages, sewers)?
+  - **A:** Nothing in MVP. Subways/garages are a future hook (they'd still be flooded after the drain — natural post-drain content).
+- [x] **CT-08.** Are the streets at ground level explorable terrain with their own content?
+  - **A:** Yes — ground level is **The Crush's floor** and holds the central pump station. MVP-simplified to **bare concrete roads**, nothing else.
+- [x] **CT-09.** What is between buildings — open water only, or debris, wrecks, and ruins?
+  - **A:** **Open water only** for MVP — clean shark territory and swim-planning space. Sunken debris/wrecks join post-MVP.
+- [x] **CT-10.** Are there skybridges or collapsed structures connecting towers?
+  - **A:** Not in MVP — on the post-MVP open-water content list.
+- [x] **CT-11.** What rules govern breach/hole generation in buildings (frequency, size, location)?
+  - **A:** Breaches (broken windows, holes, collapsed walls) are placed at world-gen with **frequency rising by depth and wear**.
+- [x] **CT-12.** How is flooding determined — purely by breach connectivity, or partly authored?
+  - **A:** **Pure connectivity** — the water sim runs to equilibrium at gen time; whatever connects to the ocean floods. No authored water.
+- [x] **CT-13.** How are air pockets generated in flooded floors (sealed rooms holding air)?
+  - **A:** They **emerge** — sealed rooms simply stay dry. Never placed by hand, so they're always honest (patch the route, pump it, it stays dry).
+- [x] **CT-14.** What is the block palette per building — wood/stone variants only, or also concrete, glass, metal?
+  - **A:** Modern palette: **concrete, steel, brick, wood, glass**. No drywall — interior partitions are wood/brick. (Supersedes the overview's original wood-and-stone sketch.)
+- [x] **CT-15.** Are glass windows distinct breakable blocks (the "openings" of stage one)?
+  - **A:** Yes — glass is a distinct fragile transparent block; unbreakable structural glass also exists for sealed facades.
+- [x] **CT-16.** Are furniture and props placed as scrappable objects, tiles, or both?
+  - **A:** **Multi-tile objects**, not blocks — placed by room templates, scrappable in place (GL-07), blocking movement but never sealing water. Objects carry loot/scrap; blocks carry structure.
+- [x] **CT-17.** Is there structural integrity (unsupported blocks collapse, 7DtD-style)?
+  - **A:** No integrity simulation — **player-placed blocks float Terraria-style**; city structure can't be removed anyway.
 - [x] **CT-18.** Can the player destroy any block, or are structural frames protected?
   - **A:** (From GL-01) **Structural walls/floors/ceilings are unbreakable** — buildings keep their shape forever. Breakable: contents/furniture, glass, interior partitions, player-placed blocks.
 - [x] **CT-19.** Is there an unbreakable boundary layer (bedrock equivalent at city floor/edges)?
   - **A:** (From GL-01) Building structure is itself the unbreakable frame; the city floor (street level/ground) is likewise unbreakable terrain. Horizontal edge mechanism: see CT-22 (still open).
-- [ ] **CT-20.** Are there hand-designed landmark buildings with unique content (one per world)?
-- [ ] **CT-21.** Are worlds seed-based and shareable/regenerable?
-- [ ] **CT-22.** What bounds the map horizontally — invisible wall, endless ocean, city wall?
-  - *Partial (CC-28):* map edges are large open-water areas past the last submerged buildings; the hard-stop mechanism is still open.
-- [ ] **CT-23.** What decorates the water surface (debris, buoys, derelict boats, birds)?
-- [ ] **CT-24.** Do depth zones get distinct visual theming (light, color, block wear)?
-- [ ] **CT-25.** When the city is drained, does the world state permanently change (water gone, new areas)?
-- [ ] **CT-26.** Are pump stations / drainage infrastructure discoverable world objects tied to GL-26?
-- [ ] **CT-27.** How is the city's story told environmentally (notes, corpses, barricades, graffiti)?
-- [ ] **CT-28.** What is the chunk/streaming strategy for a massive vertical world in Godot 4.8?
-- [ ] **CT-29.** Is there cartography — does the player map explored floors (per CC-25)?
-- [ ] **CT-30.** Do city districts vary like biomes (financial, industrial, residential zones)?
+- [x] **CT-20.** Are there hand-designed landmark buildings with unique content (one per world)?
+  - **A:** MVP landmarks are the two authored-by-necessity structures: the **starting hospital tower** and the **mega-pump relay stations** (+ central ground station). Other landmarks wait for the story pass.
+- [x] **CT-21.** Are worlds seed-based and shareable/regenerable?
+  - **A:** Yes — seed shown at creation, enterable, deterministic per game version.
+- [x] **CT-22.** What bounds the map horizontally — invisible wall, endless ocean, city wall?
+  - **A:** **Invisible wall** past the open-water edges (CC-28). Simple for MVP; a themed boundary could replace it later.
+- [x] **CT-23.** What decorates the water surface (debris, buoys, derelict boats, birds)?
+  - **A:** **Light floating debris** placed at gen for mood; fuller dressing (boats, buoys, birds) post-MVP.
+- [x] **CT-24.** Do depth zones get distinct visual theming (light, color, block wear)?
+  - **A:** MVP: the **depth color grade + fading light** differentiate bands. Post-MVP: band wear overlays (algae in The Shallows, barnacles in The Cold, pale growth in The Dark, silt in The Crush).
+- [x] **CT-25.** When the city is drained, does the world state permanently change (water gone, new areas)?
+  - **A:** (From CC-26/27) Yes — each restored relay permanently lowers the waterline; the drained world persists in freeplay.
+- [x] **CT-26.** Are pump stations / drainage infrastructure discoverable world objects tied to GL-26?
+  - **A:** (From CC-26) Yes — the central station and depth-band relays exist as discoverable world structures.
+- [~] **CT-27.** How is the city's story told environmentally (notes, corpses, barricades, graffiti)?
+  - **A:** Deferred — rides with the story pass (CC-04).
+- [x] **CT-28.** What is the chunk/streaming strategy for a massive vertical world in Godot 4.8?
+  - **A:** At ~2,500×400 = 1M tiles, the **whole world lives in RAM** on the host (a few MB). ~32×32-block chunks exist only to **schedule rendering and simulation** near players; everything else sleeps. Joining LAN clients get one full sync, then deltas. Saves are the compressed grid.
+- [x] **CT-29.** Is there cartography — does the player map explored floors (per CC-25)?
+  - **A:** (From CC-25) Yes — fog-of-war exploration map, tracked per character.
+- [x] **CT-30.** Do city districts vary like biomes (financial, industrial, residential zones)?
+  - **A:** Not in MVP — the bell curve and per-floor types are the variation. Districts arrive with the materials balancing pass, when geography would matter.
