@@ -206,38 +206,71 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 4. Game Dangers (GD)
+## 4. Game Dangers (GD) — ✅ Reviewed 2026-08-30
 
-- [ ] **GD-01.** What zombie variants exist (walker, crawler, bloated floater, armored)?
-- [ ] **GD-02.** How do zombies spawn — placed at world-gen, dynamic spawning, or both?
-- [ ] **GD-03.** Do zombies respawn in cleared buildings, and on what timer?
-- [ ] **GD-04.** How smart is zombie AI — pathfinding, breaking blocks/doors, climbing?
-- [ ] **GD-05.** How do floating zombies behave — surface hazards drifting between buildings?
-- [ ] **GD-06.** What senses do enemies use (sight cones, sound, blood in water)?
-- [ ] **GD-07.** What is the combat model — melee-focused, ranged, or balanced mix?
-- [ ] **GD-08.** How do weapons behave underwater (guns disabled? spearguns? slowed melee)?
-- [ ] **GD-09.** How are small fish caught — rod, net, spear, by hand?
-- [ ] **GD-10.** What large fish species exist, and what are their attack behaviors?
-- [ ] **GD-11.** Where do sharks live — open water between buildings, specific depth bands?
-- [ ] **GD-12.** What triggers shark aggression (blood from injury, splashing, proximity)?
-- [ ] **GD-13.** What are mutants, lore-wise — mutated humans, sea life, or something else?
-- [ ] **GD-14.** What abilities do mutants have (ranged attacks, ambush, camouflage, grabs)?
-- [ ] **GD-15.** Are there boss enemies, and are they tied to depth zones or locations?
-- [ ] **GD-16.** Should depth be formalized into named danger zones/tiers (e.g., every N floors)?
-- [ ] **GD-17.** What environmental hazards exist (live wires, gas pockets, collapsing debris)?
-- [ ] **GD-18.** Is darkness itself a danger (enemies stronger in dark, sanity/visibility)?
-- [ ] **GD-19.** Is there pressure or cold damage at depth, distinct from oxygen (per GL-12)?
-- [ ] **GD-20.** How does drowning damage work once oxygen runs out (rate, recovery)?
-- [ ] **GD-21.** What status effects exist (bleeding, poison, infection, hypothermia)?
-- [ ] **GD-22.** Can zombies infect the player, and is there a cure mechanic?
-- [ ] **GD-23.** What is the difficulty scaling formula with depth (HP/damage multipliers, new types)?
-- [ ] **GD-24.** Do enemies drop loot, and is it distinct from container loot?
-- [ ] **GD-25.** Is stealth/avoidance a viable playstyle (sneaking past dry-floor zombies)?
-- [ ] **GD-26.** Is there a noise system where actions (mining, gunfire) attract enemies?
-- [ ] **GD-27.** How is enemy density tuned per stage so early game isn't overwhelming?
-- [ ] **GD-28.** Are there passive/neutral creatures beyond small fish (ambience, secondary resources)?
-- [ ] **GD-29.** Does danger on the surface change at night (per CC-11)?
-- [ ] **GD-30.** What fills the "other" slot — rival survivors, security systems, drones, sea monsters?
+> **Standing note:** MVP priority is the core loop — **harvest, craft, build base** — before any
+> other major aspect is added.
+
+- [x] **GD-01.** What zombie variants exist (walker, crawler, bloated floater, armored)?
+  - **A:** MVP roster of three, mapped to spaces: **Walker** (dry floors), **Crawler** (legless; moves through 2-block gaps and vents), **Floater** (bloated surface drifter). Variants build on these later.
+- [x] **GD-02.** How do zombies spawn — placed at world-gen, dynamic spawning, or both?
+  - **A:** Seeded into buildings at world-gen; no ambient spawning. Red moon waves leave stragglers that slowly re-seed cleared areas.
+- [x] **GD-03.** Do zombies respawn in cleared buildings, and on what timer?
+  - **A:** **Cleared stays cleared** — no timers; red moons are the only replenishment.
+- [x] **GD-04.** How smart is zombie AI — pathfinding, breaking blocks/doors, climbing?
+  - **A:** Simple and physical: walk toward stimuli, fall off ledges (falling *is* their pathfinding), squeeze through openings they fit, pound player-placed blocks/doors when blocked. No navigation, no climbing.
+- [x] **GD-05.** How do floating zombies behave — surface hazards drifting between buildings?
+  - **A:** (From GD-01/29) Floaters drift the surface between buildings; extra floaters appear at night and disperse at dawn.
+- [x] **GD-06.** What senses do enemies use (sight cones, sound, blood in water)?
+  - **A:** **Proximity aggro only** — activation radius; no light/sound/scent modeling.
+- [x] **GD-07.** What is the combat model — melee-focused, ranged, or balanced mix?
+  - **A:** **Balanced arsenal** — melee: knives, swords, axes; ranged: pistols, semi-automatics, rifles; craftable ammo makes ranged sustainable.
+- [x] **GD-08.** How do weapons behave underwater (guns disabled? spearguns? slowed melee)?
+  - **A:** Firearms don't fire submerged; melee works slowed (knives least penalized); the **speargun** is the underwater ranged weapon (craftable, retrievable bolts). Loud lead above, silent spears below.
+- [x] **GD-09.** How are small fish caught — rod, net, spear, by hand?
+  - **A:** Small fish are **grabbed by hand** (swim close + interact); bigger fish take a speargun bolt or knife. No rod minigame (possible post-MVP cozy layer).
+- [x] **GD-10.** What large fish species exist, and what are their attack behaviors?
+  - **A:** MVP: **no fish threats inside buildings** — flooded interiors belong to zombies/mutants; fish threats live in open water.
+- [x] **GD-11.** Where do sharks live — open water between buildings, specific depth bands?
+  - **A:** Sharks patrol **open water from The Cold band downward**; the surface and Shallows are shark-free. They menace swimmers only — boats and the sub are safe.
+- [x] **GD-12.** What triggers shark aggression (blood from injury, splashing, proximity)?
+  - **A:** Proximity, with a generous radius (consistent with GD-06). No blood-scent layer.
+- [x] **GD-13.** What are mutants, lore-wise — mutated humans, sea life, or something else?
+  - **A:** **The Drowned** — infected who never died, remade by depth and dark into swimmers. Found in The Dark and The Crush.
+- [x] **GD-14.** What abilities do mutants have (ranged attacks, ambush, camouflage, grabs)?
+  - **A:** Core identity: **fast in water** (they out-swim you), able to move through flooded interiors. Ability variants (grabbers, spitters, lurkers) per depth band later.
+- [x] **GD-15.** Are there boss enemies, and are they tied to depth zones or locations?
+  - **A:** No bosses in MVP. Post-MVP: **guardians at the mega-pump relay stations** — one hand-designed Drowned variant per depth band, making each drain activation a set-piece.
+- [x] **GD-16.** Should depth be formalized into named danger zones/tiers (e.g., every N floors)?
+  - **A:** Yes — five named bands aligned with the gear gates: **The Dry, The Shallows, The Cold, The Dark, The Crush.** All systems (enemies, loot, relays, color grade) speak this vocabulary.
+- [x] **GD-17.** What environmental hazards exist (live wires, gas pockets, collapsing debris)?
+  - **A:** **None in MVP** — wiring stays a lighting system. Electrified water (weaponizable flooding of powered areas) is on the future-ideas list.
+- [x] **GD-18.** Is darkness itself a danger (enemies stronger in dark, sanity/visibility)?
+  - **A:** Darkness is **visibility only** — no buffs, meters, or damage.
+- [x] **GD-19.** Is there pressure or cold damage at depth, distinct from oxygen (per GL-12)?
+  - **A:** (From GL-12) Yes — cold is the soft gate, crush depth the hard wall.
+- [x] **GD-20.** How does drowning damage work once oxygen runs out (rate, recovery)?
+  - **A:** **~10 seconds of rapidly draining health** after zero oxygen — one desperate dash. Reaching air stops it instantly.
+- [x] **GD-21.** What status effects exist (bleeding, poison, infection, hypothermia)?
+  - **A:** MVP: **bleeding only** (from zombie/Drowned hits) — drips health until bandaged. Cold's slow already exists as a depth mechanic.
+- [x] **GD-22.** Can zombies infect the player, and is there a cure mechanic?
+  - **A:** No infection — **the player is immune**. Quiet lore hook: that's why you woke up in a medical room.
+- [x] **GD-23.** What is the difficulty scaling formula with depth (HP/damage multipliers, new types)?
+  - **A:** **Authored per-band stat tables** (HP/damage/speed + roster mix), no formulas. Red moon waves scale separately by day count.
+- [x] **GD-24.** Do enemies drop loot, and is it distinct from container loot?
+  - **A:** Light drops only — cloth/scrap bits from zombies, meat from fish. Real loot (gear, schematics, keys) lives in containers; combat clears the path to treasure.
+- [x] **GD-25.** Is stealth/avoidance a viable playstyle (sneaking past dry-floor zombies)?
+  - **A:** (From GD-06) No formal stealth — proximity aggro only; avoidance is just staying out of range.
+- [x] **GD-26.** Is there a noise system where actions (mining, gunfire) attract enemies?
+  - **A:** (From GD-06) No noise system.
+- [x] **GD-27.** How is enemy density tuned per stage so early game isn't overwhelming?
+  - **A:** **Uniform density** across the world — same crowd sizes everywhere; per-band strength does the scaling.
+- [x] **GD-28.** Are there passive/neutral creatures beyond small fish (ambience, secondary resources)?
+  - **A:** MVP: **small fish schools only** — food and ambience in one. Cosmetic surface life (gulls, etc.) post-MVP.
+- [x] **GD-29.** Does danger on the surface change at night (per CC-11)?
+  - **A:** Yes — at night, **aggro radii grow** and **extra floaters drift in** (dispersing at dawn — the one ambient-spawn exception). Bands below The Shallows never see the sun.
+- [x] **GD-30.** What fills the "other" slot — rival survivors, security systems, drones, sea monsters?
+  - **A:** **Skipped for MVP** — the roster may expand later; nothing committed.
 
 ---
 

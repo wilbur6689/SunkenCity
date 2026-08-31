@@ -61,6 +61,8 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
 
 ## Key Decisions (Design Canon)
 
+- **MVP priority:** get the core loop working first — **harvest → craft → build base** — before
+  adding any other major aspect.
 - **Roadmap:** 1) MVP local single-player → 2) LAN multiplayer → 3) Steam demo → 4) full
   commercial release. **LAN networking is architected in from day one** (Godot multiplayer
   authority model; one player hosts). Not couch co-op.
@@ -170,17 +172,24 @@ Progression is staged around **how deep the player can go** and **what they can 
 
 ## Game Dangers
 
+**Depth bands (shared vocabulary):** The Dry → The Shallows → The Cold → The Dark → The Crush.
+Enemy stats are authored per band; density is uniform (strength scales, not crowd size).
+
 | Danger | Description |
 |---|---|
-| **Drowning** | Players have a limited oxygen supply; running out underwater is lethal. |
-| **Zombies** | Found in dry sections of buildings. Can't swim well — they float. |
-| **Red moon waves** | Every random 5–10 days, a red moon brings a zombie wave event (mechanics TBD). |
-| **Cold** | Deep water slows, then damages, players without the right suit tier. |
-| **Small fish** | Mostly harmless; serve as a food source. |
-| **Large fish** | May attack players. |
-| **Mutants** | Found in the deeper underwater zones. |
-| **Sharks** | *(To be designed — likely open-water/between-building threat.)* |
-| **Other** | *(Placeholder for future threats — environmental hazards, pressure, darkness, etc.)* |
+| **Drowning** | 30s baseline oxygen; at zero, ~10 seconds of draining health — one desperate dash to air. |
+| **Zombies** | MVP roster: **Walker** (dry floors), **Crawler** (fits 2-block gaps), **Floater** (surface drifter). Seeded at world-gen; cleared stays cleared; red moons re-seed. Simple physical AI, proximity aggro. |
+| **Red moon waves** | Every random 5–10 days; waves converge on players, damage only player-placed structures, scale by day count. |
+| **Cold & crush** | Cold = soft depth gate (slow, then damage); crush depth = hard lethal wall without the hard suit. |
+| **Small fish** | Grabbed by hand; food and ambience. No fish threats inside buildings in MVP. |
+| **Sharks** | Patrol open water from The Cold down; menace swimmers only — boats/sub are safe. Proximity aggro. |
+| **The Drowned** | Mutants — infected remade by the deep into fast swimmers; at home in The Dark and The Crush. |
+| **Bleeding** | The MVP's only status effect — stopped by bandages. No infection: the player is immune (hence the medical-room start). |
+
+**Combat:** balanced arsenal (knives/swords/axes; pistols/semi-autos/rifles, craftable ammo).
+Firearms don't fire underwater; melee slows; the **speargun** rules the deep.
+No bosses in MVP — post-MVP, guardians defend the relay stations. Darkness is visibility only;
+no environmental hazards in MVP (electrified water is on the ideas list).
 
 ---
 
@@ -212,7 +221,7 @@ Progression is staged around **how deep the player can go** and **what they can 
 
 Deeper design and implementation details live in the `technical/` folder. Open design questions
 are tracked in [OpenQuestions.md](OpenQuestions.md) *(reviewed: Core Concept & Setting ✅, World
-Scale & Character ✅, Main Game Loop ✅)*.
+Scale & Character ✅, Main Game Loop ✅, Game Dangers ✅)*.
 
 - [technical/WaterPhysics.md](technical/WaterPhysics.md) — water simulation, pumps, draining ✅
 - World generation (building layouts, flooding, breach placement)

@@ -12,7 +12,8 @@ procedurally generated city deliberately flooded to contain a zombie virus, wher
 progressively deeper through submerged skyscrapers. Roadmap: MVP local single-player → LAN
 multiplayer (networked architecture from day one) → Steam demo → full commercial release.
 The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records settled design
-decisions — treat them as canon.
+decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
+base) comes first; do not add other major aspects before it works.
 
 ## Fixed Design Constants
 
