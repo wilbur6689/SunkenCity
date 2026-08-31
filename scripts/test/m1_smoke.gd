@@ -173,8 +173,13 @@ func _run() -> void:
 	check(World.stations_near(player.global_position, Constants.REACH_BLOCKS * B * 1.5).has("workbench"), "workbench in crafting range")
 	var wood_before := inv_count("wood")
 	await goto(21)
-	await interact(Vector2i(22, row))
-	check(inv_count("chair") == 1 and obj_at(Vector2i(22, row)) == null, "picked up the second chair whole (E)")
+	# Long LMB press picks furniture up whole (short click only hints)
+	aim(Vector2i(22, row))
+	player.wants_use = true
+	await ticks(40)
+	player.wants_use = false
+	await ticks(2)
+	check(inv_count("chair") == 1 and obj_at(Vector2i(22, row)) == null, "long press picked up the second chair whole")
 	await goto(13)
 	check(player.scrap_item("chair", 1) and inv_count("wood") >= wood_before + 5, "station scrap = full yield (wood %d -> %d)" % [wood_before, inv_count("wood")])
 	var stations := World.stations_near(player.global_position, Constants.REACH_BLOCKS * B * 1.5)

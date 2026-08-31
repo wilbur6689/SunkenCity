@@ -61,10 +61,11 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
 - Backgrounds: user art in `docs/Examples/Backgrounds` (City plates + Building seam covers) is
   downscaled by the art tool into `assets/backgrounds/` and assembled by
   `scripts/world/backdrop.gd` (Parallax2D) hanging from the waterline.
-- Interaction model (`scripts/player/interaction.gd`): LMB interacts with the held item — place
-  block/object, hammer hits, use a consumable/schematic, aim a pump outlet; RMB = hold-to-scrap
-  furniture (knife or bare hands), place back walls, hammer wall removal; E = interact (doors,
-  chest, bed spawn, station crafting, pump outlet mode, pick up furniture whole). `World.placed_blocks` separates breakable player blocks from unbreakable
+- Interaction model (`scripts/player/interaction.gd`): LMB on a highlighted interactable —
+  short click interacts (open storage/doors, flip breakers, bed spawn, station crafting, pump
+  targeting), holding ~0.5s picks the object up (storage must be empty); otherwise LMB uses the
+  held item — place block/object, hammer hits, consumables, pump-outlet click. RMB =
+  hold-to-scrap furniture, place back walls, hammer wall removal. E remains a legacy interact. `World.placed_blocks` separates breakable player blocks from unbreakable
   structure (GL-01).
 - Main scene is currently `scenes/test/test_tower.tscn` — a 15-floor test tower (3 dry, 12
   flooded; themed deep floors, stairwell, sealed door-floods). Rows 0-30 are load-bearing for

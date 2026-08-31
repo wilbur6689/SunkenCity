@@ -124,12 +124,9 @@ func interact(player) -> String:
 		_:
 			if def.get("fixed", false):
 				return "It is wired into the building"
-			# Found furniture / placeables: pick up whole (haul it home for full yield, GL-07).
-			if player.inventory.can_add(id, 1):
-				World.remove_object(self)
-				player.inventory.add(id, 1)
-				return "Picked up " + def.name
-			return "Inventory full"
+			# Plain furniture: picking up whole is the LONG press (GL-07 haul);
+			# a short click just hints.
+			return "Hold LMB to pick up · RMB to scrap"
 
 ## Rolls this object's yields. full = station yield; otherwise field yield.
 func roll_yields(full: bool, rng: RandomNumberGenerator) -> Array:

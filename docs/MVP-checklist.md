@@ -83,7 +83,7 @@ them; respawn.
 - [x] Player-placed blocks have HP + hardness (`data/blocks.json`); hammer tier-gated breaking, paced hits (WS-22)
 - [x] Structure unbreakable (GL-01): any tile not in `World.placed_blocks` refuses the hammer
 - [x] Chests: opening storage shows the inventory screen with the unit's own grid beside it + quick-stack (LT-23); a full chest cannot be picked up
-- [x] Interactables (chests, cabinets, breakers, doors, stations, pumps…) glow softly under the mouse when in reach
+- [x] Interactables (chests, cabinets, breakers, doors, stations, pumps…) glow softly under the mouse when in reach; **LMB click interacts, LMB hold (~0.5s) picks up** (E stays as legacy)
 - [x] Bed sets spawn (GL-23) — per-character once characters exist (M3 saves)
 - [x] Background wall placement/removal with secondary use (cosmetic layer, WS-21)
 

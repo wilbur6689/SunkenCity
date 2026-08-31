@@ -64,6 +64,7 @@ const PICKUP_RADIUS_BLOCKS: float = 1.0
 const DROP_PICKUP_DELAY: float = 1.0 # seconds before a dropped item can be re-picked
 
 # --- Scrapping (GL-07) ---
+const SCRAP_SPEED_MULT: float = 2.0 # global scrap-speed multiplier (2.0 = testing boost, user request)
 const FIELD_SCRAP_YIELD: float = 0.5 # fraction of full yield when scrapping in place
 const HAND_TOOL_TIER: int = 0
 const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
@@ -87,6 +88,9 @@ const SIGHT_FULL_BLOCKS: float = 7.0  # full visibility inside this radius
 const SIGHT_FADE_PER_BLOCK: float = 1.5 # visibility lost per block beyond it (0 ≈ 17 blocks)
 const POWER_RADIUS_BLOCKS: float = 24.0 # a breaker powers wired lights within this range
 const OBSTACLE_SIGHT_TRANSMISSION: float = 0.45 # sight through a shelf/crate cell (structure = 0)
+
+# --- Object interaction (LMB; hold to pick up) ---
+const OBJECT_LONG_PRESS: float = 0.5 # seconds of held LMB that picks an object up
 const LIGHT_RECOMPUTE_TICKS: int = 3
 const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
 

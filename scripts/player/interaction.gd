@@ -16,8 +16,14 @@ var target_cell: Vector2i = Vector2i.ZERO
 var target_in_reach: bool = false
 var scrapping: WorldObject = null
 var scrap_progress: float = 0.0
-var pending_pump: WorldObject = null # E on a pump -> next use click sets its outlet
+var pending_pump: WorldObject = null # click a pump -> next use click sets its outlet
 var hovered: WorldObject = null      # interactable under the mouse (glows)
+# LMB-on-object lifecycle: short press interacts on release, holding
+# OBJECT_LONG_PRESS picks the object up (user request).
+var press_obj: WorldObject = null
+var press_time: float = 0.0
+var press_consumed: bool = false
+var press_lock: bool = false # a press that began on an object suppresses held-item actions
 var hit_cooldown: float = 0.0
 var message: String = ""
 var message_timer: float = 0.0
@@ -58,7 +64,8 @@ func tick(delta: float) -> void:
 
 	if player.wants_interact:
 		_interact()
-	if player.wants_use:
+	_object_press(delta)
+	if player.wants_use and not press_lock:
 		_primary()
 	if player.wants_use_secondary:
 		_secondary(delta)
@@ -66,6 +73,46 @@ func tick(delta: float) -> void:
 		_stop_scrapping()
 	_used_last_tick = player.wants_use
 	_used_secondary_last_tick = player.wants_use_secondary
+
+## LMB on an interactable: interact on a short click's release; picking it
+## up on a long hold. Dragging off the object cancels the press.
+func _object_press(delta: float) -> void:
+	if player.wants_use:
+		if not _used_last_tick and pending_pump == null:
+			press_obj = hovered
+			press_time = 0.0
+			press_consumed = false
+			press_lock = press_obj != null
+		if press_obj != null:
+			if not is_instance_valid(press_obj) or World.object_at(target_cell) != press_obj:
+				press_obj = null # dragged off: cancel (press_lock stays until release)
+			else:
+				press_time += delta
+				if press_time >= Constants.OBJECT_LONG_PRESS and not press_consumed:
+					press_consumed = true
+					_pickup_object(press_obj)
+	else:
+		if press_obj != null and is_instance_valid(press_obj) and not press_consumed:
+			var msg := press_obj.interact(player)
+			if msg != "":
+				say(msg)
+		press_obj = null
+		press_lock = false
+
+func _pickup_object(obj: WorldObject) -> void:
+	if obj.def.get("fixed", false) or Data.item(obj.id).is_empty():
+		say("It is wired into the building")
+		return
+	if obj.storage != null and not obj.storage.is_empty():
+		say("Empty the chest first")
+		return
+	if player.inventory.can_add(obj.id, 1):
+		var obj_name: String = obj.def.name
+		World.remove_object(obj)
+		player.inventory.add(obj.id, 1)
+		say("Picked up " + obj_name)
+	else:
+		say("Inventory full")
 
 func say(text: String) -> void:
 	message = text
@@ -199,7 +246,7 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		_stop_scrapping()
 		scrapping = obj
 		scrap_progress = 0.0
-	var speed: float = float(tool.get("speed", Constants.HAND_SCRAP_SPEED))
+	var speed: float = float(tool.get("speed", Constants.HAND_SCRAP_SPEED)) * Constants.SCRAP_SPEED_MULT
 	scrap_progress += delta * speed / float(obj.def.get("scrap_time", 2.0))
 	obj.scrap_progress = scrap_progress
 	if scrap_progress >= 1.0:
