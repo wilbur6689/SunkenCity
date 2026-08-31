@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-**SunkenCity** (working title; repo: wilbur6689/SunkenCity; local folder still named TowerDive) is
+**SunkenCity** (working title; repo: wilbur6689/SunkenCity; formerly TowerDive) is
 a **Godot 4.8** 2D side-scrolling block-based survival sandbox (Terraria × 7 Days to Die): a
 procedurally generated city deliberately flooded to contain a zombie virus, where the player dives
 progressively deeper through submerged skyscrapers. Roadmap: MVP local single-player → LAN
@@ -73,5 +73,5 @@ GL-12) — check whether a referenced question was already decided before asking
 
 - Docs are Markdown; keep the existing section structure and ID schemes stable — other documents
   and future sessions reference them.
-- Once the Godot project is created, add build/run/test commands and engine architecture notes
-  here.
+- Keep the "Running the Project" commands and engine architecture notes above current as the
+  project grows.

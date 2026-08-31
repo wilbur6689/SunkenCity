@@ -14,7 +14,7 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 - [x] Default texture filter = Nearest project-wide
 - [x] 2D transform + vertex pixel snapping enabled
 - [x] Folder layout: `scenes/`, `scripts/`, `assets/`, `data/`, `scenes/test/`
-- [x] Input actions defined (move, jump, sprint, crouch, dive, interact, use, inventory) — action-based from day one (CC-21)
+- [x] Input actions defined (move ×4, jump, sprint, crouch, interact, inventory) — action-based from day one (CC-21). *Dive = down input while swimming (WS-07); a `use` action lands with block placement in M1.*
 - [x] Game constants singleton (`BLOCK_SIZE`, speeds, jump, reach, oxygen) — single tuning surface (WS-03/30)
 
 ### Test environment
@@ -28,23 +28,23 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 - [ ] State machine scaffold with debug state readout
 - [ ] Grounded: walk 5 bl/s, sprint 7 bl/s, accel/friction tuned
 - [x] Jump 3 blocks exactly; coyote time + jump buffer
-- [ ] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15)
+- [ ] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15) *(fall damage done; water-entry safety waits on water volumes)*
 - [ ] Crouch/crawl through 2-block gaps; can't stand where blocked (WS-05)
 - [ ] Climb state: ropes and ladders (walk anim reuse, WS-27)
 - [ ] Surface-swim: auto-tread, lateral 5 bl/s, ~2-block water-jump, down input dives (WS-07)
 - [ ] Underwater: free 8-way at 4 bl/s, neutral buoyancy (WS-06/09)
-- [ ] 12×22px hitbox; fits through 1-block holes when swimming/crawling (WS-02)
-- [ ] Camera: fixed zoom, smooth follow, directional lookahead scaling with speed (WS-18)
+- [ ] 12×22px hitbox; fits through 1-block holes when swimming/crawling (WS-02) *(hitbox done; 1-block-hole fit waits on swim/crawl states)*
+- [ ] Camera: fixed zoom, smooth follow, directional lookahead scaling with speed (WS-18) *(smooth follow done; lookahead pending)*
 
 ### Oxygen & death (first pass)
 - [ ] O2 meter: 30s, drains only fully submerged, instant refill in air (WS-08, LT-17)
 - [ ] Drowning: ~10s health drain at zero O2 (GD-20)
-- [ ] Health + death + respawn at world spawn point (full backpack loop is M4)
+- [x] Health + death + respawn at world spawn point (full backpack loop is M4)
 - [ ] Minimal HUD: health, O2 (O2 visible only when draining or submerged)
 
 ### Multiplayer-ready foundations (CC-06)
 - [ ] World/sim state owned by an authority layer even in single-player (host-authoritative pattern)
-- [ ] Player input → state separation clean enough for later client replication
+- [x] Player input → state separation clean enough for later client replication (input snapshot → state machine in `player.gd`)
 
 **GATE:** run, jump, crawl, and climb through the test tower; dive its flooded floors; drown in
 them; respawn.
