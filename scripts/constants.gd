@@ -103,6 +103,12 @@ const LIGHT_WINDOW: Vector2i = Vector2i(120, 72) # cells relit around the camera
 # tower's full height so held references never despawn mid-test.
 const OBJECT_WINDOW: Vector2i = Vector2i(200, 160)
 
+# Audio
+const MUSIC_VOLUME_DB: float = -8.0
+const AMBIENT_VOLUME_DB: float = -6.0
+const MUSIC_SILENCE_MIN: float = 25.0   # quiet stretch between tracks (s)
+const MUSIC_SILENCE_MAX: float = 70.0
+
 # Map + minimap (CC-25)
 const MAP_REVEAL_RADIUS: int = 14        # blocks revealed around the player
 const MINIMAP_WINDOW: Vector2i = Vector2i(96, 56) # cells shown on the minimap

@@ -563,15 +563,19 @@ def build_player_sheet():
     if not REF_SHEET.exists():
         print("skip player sheet: reference not found", REF_SHEET)
         return
+    from PIL import ImageSequence
     src = Image.open(REF_SHEET).convert("RGBA")
     out = Image.new("RGBA", (7 * FRAME, 2 * FRAME), (0, 0, 0, 0))
-    # Source pairing verified visually: idle col 2 + walk row 3 face east (right),
-    # idle col 6 + walk row 2 face west (left). (An earlier "compensation" had
-    # these swapped, which made the character walk right while facing left.)
-    for r, (idle_col, walk_row) in enumerate(((2, 3), (6, 2))):  # east, west
+    # Idle facing verified visually: idle col 2 faces east (right), col 6 west.
+    # Walk frames come from the GIFs, whose frame ORDER is authoritative —
+    # the PNG's walk rows are stored in reverse, which made the cycle moonwalk.
+    for r, (idle_col, gif) in enumerate(((2, "east"), (6, "west"))):
         out.paste(_cell(src, idle_col, 0), (0, r * FRAME))
-        for i in range(6):
-            out.paste(_cell(src, i, walk_row), ((i + 1) * FRAME, r * FRAME))
+        g = Image.open(REF_SHEET.parent / f"Idle_walk_{gif}.gif")
+        for i, frame in enumerate(ImageSequence.Iterator(g)):
+            if i >= 6:
+                break
+            out.paste(frame.convert("RGBA"), ((i + 1) * FRAME, r * FRAME))
     path = ROOT / "assets" / "sprites" / "player.png"
     out.save(path)
     print("wrote", path, out.size)

@@ -142,6 +142,19 @@ func _ready() -> void:
 		blockages += CityGen.floor_blockages(World.grid, tw).size()
 	check(blockages == 0, "two-jump rule holds on every assembled floor (WS-04)")
 
+	print("== J. audio director")
+	check(AudioServer.get_bus_index("Music") >= 0 and AudioServer.get_bus_index("Ambient") >= 0 \
+			and AudioServer.get_bus_index("SFX") >= 0, "Music/Ambient/SFX buses exist")
+	check(Audio.desired_pool() == "adventure", "safe band scores adventure music")
+	player.global_position = Vector2(8 * B, (CityGen.WATERLINE + 150) * B)
+	player.velocity = Vector2.ZERO
+	await ticks(3)
+	check(Audio.desired_pool() == "threat", "The Dark calls up threat music")
+	await ticks(45) # submerged in open water: the outside bed fades in
+	check(Audio.amb_outside.volume_db > -50.0, "open-water ambient bed fading in (%.0f dB)" % Audio.amb_outside.volume_db)
+	check(Audio.amb_inside.volume_db <= -50.0, "interior bed stays quiet outside")
+	player.respawn()
+
 	print("\nM3 smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:
 		print("  FAIL: " + f)

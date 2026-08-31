@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 Constants="*res://scripts/constants.gd"
 Data="*res://scripts/data/data.gd"
 World="*res://scripts/world/world.gd"
+Audio="*res://scripts/audio/audio_manager.gd"
 
 [display]
 
