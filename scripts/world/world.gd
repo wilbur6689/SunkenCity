@@ -61,23 +61,47 @@ func _physics_process(_delta: float) -> void:
 func light_at(cell: Vector2i) -> int:
 	return light_map.light_at(cell) if light_map != null else LightMap.MAX_LIGHT
 
-## Raycast from `from_pos` to the centre of `to_cell`, sampling the grid:
-## true if no solid cell (blocks, closed doors, slabs) lies between them.
-## The target cell itself never blocks, so exposed faces stay visible.
-func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
+## How much sight passes through a cell: 1.0 = clear, 0.0 = structure
+## (stone walls, metal slabs, closed doors — total blackout behind), and a
+## partial factor for obstacle materials (wood shelves, plastic crates) so
+## sight bleeds around and dimly through small cover.
+func sight_transparency_cell(cell: Vector2i) -> float:
+	var obj: WorldObject = object_cells.get(cell)
+	if obj != null and obj.is_solid():
+		return 0.0 # closed doors seal sight
+	if blocks.get_cell_source_id(cell) == -1:
+		return 1.0
+	var row := blocks.get_cell_atlas_coords(cell).y
+	if row == 0 or row == 2: # stone, metal = building structure
+		return 0.0
+	return Constants.OBSTACLE_SIGHT_TRANSMISSION # wood, plastic = obstacles
+
+## Raycast from `from_pos` to the centre of `to_cell`: the fraction of sight
+## surviving the path (each obstacle cell crossed attenuates; structure
+## zeroes it). The target cell itself never blocks its own visibility.
+func sight_transmission(from_pos: Vector2, to_cell: Vector2i) -> float:
 	var target := cell_center(to_cell)
 	var delta := target - from_pos
 	var dist := delta.length()
 	if dist < 1.0:
-		return true
+		return 1.0
+	var trans := 1.0
+	var last := cell_at(from_pos)
 	var steps := int(dist / (Constants.BLOCK_SIZE * 0.4)) + 1
 	for i in range(1, steps):
 		var c := cell_at(from_pos + delta * (float(i) / steps))
 		if c == to_cell:
 			break
-		if is_solid_cell(c):
-			return false
-	return true
+		if c == last:
+			continue
+		last = c
+		trans *= sight_transparency_cell(c)
+		if trans < 0.05:
+			return 0.0
+	return trans
+
+func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
+	return sight_transmission(from_pos, to_cell) > 0.01
 
 ## What a viewer at `viewer_pos` actually sees at `cell`. Fog of war applies
 ## only INSIDE buildings — marked by background walls (WS-20): there, a cell
@@ -95,11 +119,10 @@ func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
 		cap = maxf(cap - (d - Constants.SIGHT_FULL_BLOCKS) * Constants.SIGHT_FADE_PER_BLOCK, 0.0)
 	if cap <= 0.0:
 		return 0.0
-	if not line_of_sight(viewer_pos, cell):
-		return 0.0
 	# In sight and in range = fully illuminated (the player sees what they
-	# look at); tile light remains for lamp accents and gameplay queries.
-	return cap
+	# look at), scaled by what survives obstacles along the ray; tile light
+	# remains for lamp accents and gameplay queries.
+	return cap * sight_transmission(viewer_pos, cell)
 
 func _gather_light_sources() -> Array:
 	var out := []

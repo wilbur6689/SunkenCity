@@ -84,6 +84,7 @@ const PLAYER_SIGHT_LIGHT: int = 9     # the player's inherent glow (baseline sig
 const SIGHT_FULL_BLOCKS: float = 7.0  # full visibility inside this radius
 const SIGHT_FADE_PER_BLOCK: float = 1.5 # visibility lost per block beyond it (0 ≈ 17 blocks)
 const POWER_RADIUS_BLOCKS: float = 24.0 # a breaker powers wired lights within this range
+const OBSTACLE_SIGHT_TRANSMISSION: float = 0.45 # sight through a shelf/crate cell (structure = 0)
 const LIGHT_RECOMPUTE_TICKS: int = 3
 const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
 
