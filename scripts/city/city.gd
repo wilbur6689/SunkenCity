@@ -95,12 +95,27 @@ func _setup_visuals() -> void:
 	water_renderer.setup(World.waterline_row * Constants.BLOCK_SIZE)
 	$Backdrop.setup(World.waterline_row * Constants.BLOCK_SIZE, -900.0)
 
+## Write both save files for the current run.
+func save_now() -> void:
+	SaveGame.save_world(world_name, seed_value)
+	SaveGame.save_character(character_name, player, world_name)
+
+## Esc from the game: bank everything, then back to the title. Without this
+## a fresh world/character only became files on F5, so quitting made them
+## look like they were never created (the pickers list files).
+func save_and_exit_to_title() -> void:
+	save_now()
+	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and World.is_ready() and player != null:
+		save_now() # closing the window mid-run loses nothing
+
 ## Quick save/load (CC-09): F5 writes both files, F9 reboots from them.
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F5:
-			SaveGame.save_world(world_name, seed_value)
-			SaveGame.save_character(character_name, player, world_name)
+			save_now()
 			player.message.emit("Saved '%s' / '%s'" % [world_name, character_name])
 		elif event.keycode == KEY_F9:
 			if SaveGame.read_world(world_name).is_empty():

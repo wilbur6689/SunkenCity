@@ -16,7 +16,8 @@ base) comes first; do not add other major aspects before it works.
 Development has completed **M0–M3** (next: M4 — Danger). The main scene is now
 `scenes/ui/title.tscn` — the world picker ↔ character picker (CC-09; separate world/character
 saves under `user://saves/`, written by `scripts/data/save_game.gd`; **F5** saves, **F9**
-reloads in-game; dev runs passing `--seed`/`--shot` skip the title). The game scene is
+reloads in-game; **Esc** saves + returns to the title, and quits from there; dev runs passing
+`--seed`/`--shot` skip the title; gate: `title_smoke.tscn`). The game scene is
 `scenes/city/city.tscn` — a seeded 2400×400 drowned city (`CityGen`, ~1.5 s, deterministic;
 `--seed=N`, `--shot=path[:zoom]` — shots need a window, not --headless) with mega-pump station
 shells, surface debris rafts, invisible edge walls (player x-clamp), a WS-04 two-jump repair

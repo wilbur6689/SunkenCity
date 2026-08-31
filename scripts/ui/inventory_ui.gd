@@ -427,7 +427,14 @@ func _process(_delta: float) -> void:
 		toggle()
 	if not open:
 		if Input.is_action_just_pressed("ui_cancel"):
-			get_tree().quit() # Esc quits the game (Esc with the menu open just closes it)
+			# Esc with the menu open just closes it. Without a menu: in the
+			# city, save and return to the title (quit from there); in bare
+			# test scenes there is no title flow, so quit outright.
+			var scene := get_tree().current_scene
+			if scene != null and scene.has_method("save_and_exit_to_title"):
+				scene.save_and_exit_to_title()
+			else:
+				get_tree().quit()
 		return
 	if Input.is_action_just_pressed("ui_cancel"):
 		close()

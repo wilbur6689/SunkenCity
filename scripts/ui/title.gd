@@ -76,6 +76,15 @@ func _build_ui() -> void:
 	name_edit.custom_minimum_size = Vector2(200, 0)
 	add_child(name_edit)
 
+	var hint := Label.new()
+	hint.text = "Pick or create on both sides, then dive. Progress saves when you leave (Esc) — F5 saves any time."
+	hint.add_theme_font_size_override("font_size", 8)
+	hint.add_theme_color_override("font_color", Color(0.45, 0.55, 0.6))
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	hint.offset_top = -14
+	add_child(hint)
+
 	var play := Button.new()
 	play.text = "DIVE"
 	play.add_theme_font_size_override("font_size", 16)
@@ -113,7 +122,12 @@ func _refresh_lists() -> void:
 		char_list.add_item(c)
 	char_list.select(mini(1, char_list.item_count - 1))
 
-func _play() -> void:
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().quit() # Esc at the title quits the game
+
+## Turn the pickers' selection into SaveGame's pending handoff.
+func _apply_selection() -> void:
 	var wi := world_list.get_selected_items()
 	if wi.size() > 0 and wi[0] > 0:
 		SaveGame.pending_world = world_list.get_item_text(wi[0])
@@ -124,4 +138,7 @@ func _play() -> void:
 		SaveGame.pending_character = char_list.get_item_text(ci[0])
 	elif name_edit.text.strip_edges() != "":
 		SaveGame.pending_character = name_edit.text.strip_edges()
+
+func _play() -> void:
+	_apply_selection()
 	get_tree().change_scene_to_file(CITY_SCENE)
