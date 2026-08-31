@@ -285,6 +285,17 @@ func _sense() -> void:
 
 # --- Shared helpers ---
 
+## y of the ladder-top surface directly under the feet (WS-16: ladder tops
+## are stand-able one-way platforms), or NAN when there is none.
+func _ladder_top_surface() -> float:
+	var feet_y := global_position.y + FEET_Y
+	var cell := World.cell_at(Vector2(global_position.x, feet_y + 1.0))
+	if World.is_ladder_top_cell(cell):
+		var top := World.cell_top_y(cell)
+		if feet_y <= top + 2.0:
+			return top
+	return NAN
+
 func _accelerate_x(target: float, accel: float, delta: float) -> void:
 	velocity.x = move_toward(velocity.x, target, accel * delta)
 
@@ -358,6 +369,12 @@ func _state_grounded(delta: float) -> void:
 		_jump()
 		return
 	if not is_on_floor():
+		var ladder_top := _ladder_top_surface()
+		if not is_nan(ladder_top) and velocity.y >= 0.0:
+			# Standing on a ladder top: keep the feet pinned to the surface.
+			global_position.y = ladder_top - FEET_Y
+			velocity.y = 0.0
+			return
 		coyote_timer = Constants.COYOTE_TIME
 		_enter_airborne()
 
@@ -371,6 +388,18 @@ func _state_airborne(delta: float) -> void:
 	if coyote_timer > 0.0 and _consume_jump():
 		_jump()
 		return
+	# Falling across a ladder-top surface lands on it (one-way platform).
+	if velocity.y > 0.0 and input_dir.y <= 0.0:
+		var feet_y := global_position.y + FEET_Y
+		var next_feet := feet_y + velocity.y * delta
+		var cell := World.cell_at(Vector2(global_position.x, next_feet + 0.5))
+		if World.is_ladder_top_cell(cell):
+			var top := World.cell_top_y(cell)
+			if feet_y <= top + 0.5 and next_feet >= top - 0.5:
+				global_position.y = top - FEET_Y
+				velocity.y = 0.0
+				_land()
+				return
 	if is_on_floor():
 		_land()
 
@@ -395,7 +424,9 @@ func _state_crawling(delta: float) -> void:
 func _state_climbing(delta: float) -> void:
 	if _try_enter_water():
 		return
-	if not on_climbable:
+	# Descending onto/through a ladder counts as climbing even while the body
+	# center is still above the top rung (stepping down from a ladder top).
+	if not on_climbable and not (input_dir.y > 0.0 and climbable_below):
 		if is_on_floor():
 			state = State.GROUNDED
 		else:

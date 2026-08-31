@@ -31,7 +31,7 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 - [x] Jump 3 blocks exactly; coyote time + jump buffer
 - [x] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15)
 - [x] Crouch/crawl through low gaps; can't stand where blocked (WS-05) *(see the WS-05 note: the 22px hitbox already fits 2-block gaps standing; crawl is what fits 1-block gaps)*
-- [x] Climb state: ropes and ladders (walk anim reuse, WS-27)
+- [x] Climb state: ropes and ladders (walk anim reuse, WS-27); ladder tops are stand-able one-way platforms (walk off, jump, down input climbs through — ropes stay pass-through)
 - [x] Surface-swim: auto-tread, lateral 5 bl/s, ~2-block water-jump, down input dives (WS-07)
 - [x] Underwater: free 8-way at 4 bl/s, neutral buoyancy (WS-06/09); a flooded ceiling is not a surface
 - [x] 12×22px hitbox; 12×12 compact form fits through 1-block holes when swimming/crawling (WS-02)

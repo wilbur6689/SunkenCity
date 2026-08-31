@@ -88,6 +88,16 @@ func is_climbable_cell(cell: Vector2i) -> bool:
 func is_climbable(global_pos: Vector2) -> bool:
 	return is_climbable_cell(cell_at(global_pos))
 
+const LADDER_ATLAS_ROW := 5 # ropes (row 6) stay pass-through
+
+func is_ladder_cell(cell: Vector2i) -> bool:
+	return climbables != null and climbables.get_cell_source_id(cell) != -1 \
+		and climbables.get_cell_atlas_coords(cell).y == LADDER_ATLAS_ROW
+
+## The topmost cell of a ladder acts as a stand-on surface (one-way platform).
+func is_ladder_top_cell(cell: Vector2i) -> bool:
+	return is_ladder_cell(cell) and not is_ladder_cell(cell + Vector2i.UP)
+
 func is_player_block(cell: Vector2i) -> bool:
 	return placed_blocks.has(cell)
 
