@@ -20,14 +20,19 @@ func check(cond: bool, msg: String) -> void:
 func _ready() -> void:
 	_delete_saves()
 
-	print("== A. fresh title: only the create rows")
+	print("== A. fresh title: create rows on top (real saves may exist beside them)")
+	SaveGame.pending_world = ""
+	SaveGame.pending_character = ""
+	SaveGame.pending_seed = -1
 	var title: Control = load("res://scenes/ui/title.tscn").instantiate()
 	add_child(title)
-	check(title.world_list != null and title.world_list.item_count == 1, "world list holds just '+ New world'")
-	check(title.char_list.item_count == 1, "character list holds just '+ New character'")
+	check(title.world_list != null and title.world_list.get_item_text(0) == "+ New world", "world list leads with '+ New world'")
+	check(title.char_list.get_item_text(0) == "+ New character", "character list leads with '+ New character'")
 	check(title.world_list.get_selected_items().size() == 1, "a row starts selected (DIVE always works)")
 
 	print("== B. create a new world + character")
+	title.world_list.select(0) # the create rows
+	title.char_list.select(0)
 	title.seed_spin.value = 424242
 	title.name_edit.text = "  __test_diver  "
 	title._apply_selection()

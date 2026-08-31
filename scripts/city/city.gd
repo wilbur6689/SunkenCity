@@ -134,6 +134,19 @@ func _take_shot(spec: String) -> void:
 			player.zoom_step(-1 if int(parts[1]) < 0 else 1)
 		player.camera.reset_smoothing()
 	await get_tree().create_timer(2.5).timeout # past the generation hitch
+	if OS.get_cmdline_user_args().has("--hover"): # park the mouse on furniture
+		var nearest: WorldObject = null
+		var best := 1e9
+		for obj in World.objects_root.get_children():
+			if obj is WorldObject and obj.is_interactable():
+				var d: float = obj.center().distance_to(player.global_position)
+				if d < best and d < 5 * Constants.BLOCK_SIZE:
+					best = d
+					nearest = obj
+		if nearest != null:
+			var vp := get_viewport()
+			Input.warp_mouse(vp.get_screen_transform() * vp.get_canvas_transform() * nearest.center())
+			await get_tree().create_timer(0.5).timeout # let the card slide up
 	get_viewport().get_texture().get_image().save_png(path)
 	print("shot saved: ", path)
 	get_tree().quit()

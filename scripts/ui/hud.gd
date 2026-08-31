@@ -22,6 +22,12 @@ var _fps_label: Label
 var _debug_panel: PanelContainer
 var _debug_text: Label
 var _debug_timer: float = 0.0
+var _hover_panel: PanelContainer
+var _hover_title: Label
+var _hover_desc: Label
+var _hover_action: Label
+var _hover_shown: float = 0.0 # 0 = fully hidden, 1 = fully up
+var _hover_obj: WorldObject = null
 
 func _ready() -> void:
 	for i in Constants.HOTBAR_SLOTS:
@@ -47,6 +53,100 @@ func _ready() -> void:
 		_slots.append({"panel": panel, "style": style, "icon": icon, "count": count})
 	_build_minimap()
 	_build_debug()
+	_build_hover_panel()
+
+## Bottom-right info card: slides up while an interactable glows under the
+## mouse — name, what it is, and how to use it (interact / container).
+func _build_hover_panel() -> void:
+	_hover_panel = PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.06, 0.09, 0.9)
+	style.border_color = Color(0.55, 0.6, 0.65, 0.9)
+	style.set_border_width_all(1)
+	style.set_content_margin_all(5)
+	_hover_panel.add_theme_stylebox_override("panel", style)
+	_hover_panel.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_hover_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 1)
+	_hover_title = Label.new()
+	_hover_title.add_theme_font_size_override("font_size", 10)
+	_hover_title.add_theme_color_override("font_color", Color(0.95, 0.9, 0.7))
+	_hover_desc = Label.new()
+	_hover_desc.add_theme_font_size_override("font_size", 8)
+	_hover_desc.add_theme_color_override("font_color", Color(0.75, 0.8, 0.82))
+	_hover_action = Label.new()
+	_hover_action.add_theme_font_size_override("font_size", 8)
+	_hover_action.add_theme_color_override("font_color", Color(0.55, 0.8, 0.95))
+	for l: Label in [_hover_title, _hover_desc, _hover_action]:
+		box.add_child(l)
+	_hover_panel.add_child(box)
+	get_node("Root").add_child(_hover_panel)
+	_hover_panel.visible = false
+
+func _hover_lines(obj: WorldObject) -> Array:
+	var def: Dictionary = obj.def
+	var title: String = def.get("name", obj.id.capitalize())
+	var what := ""
+	var how := ""
+	match def.kind:
+		"door":
+			what = "Door — blocks water while closed"
+			how = "LMB: " + ("close" if obj.open else "open")
+		"breaker":
+			what = "Circuit breaker — powers nearby wired lights"
+			how = "LMB: switch " + ("off" if obj.powered_on else "on")
+		"bed":
+			what = "Rest point"
+			how = "LMB: set spawn"
+		"pump":
+			what = "Water pump — moves water to a targeted outlet"
+			how = "LMB: aim the outlet"
+		"station":
+			what = "Crafting station (%s)" % def.get("station", "")
+			how = "LMB: craft here"
+		"chest":
+			what = "Container — %d slots" % obj.storage.slots.size()
+			how = "LMB: open · hold LMB: pick up (when empty) · RMB: scrap"
+		_:
+			if obj.storage != null:
+				what = "Container — %d slots" % obj.storage.slots.size()
+				how = "LMB: open · hold LMB: pick up (when empty) · RMB: scrap"
+			elif def.get("fixed", false):
+				what = "Furniture — wired into the building"
+				how = "RMB: scrap"
+			else:
+				what = "Furniture"
+				how = "Hold LMB: pick up · RMB: scrap"
+	if what.begins_with("Furniture") or def.kind == "chest" or obj.storage != null:
+		var mats: Array = []
+		for y in def.get("yields", []):
+			if not mats.has(String(y.item)):
+				mats.append(String(y.item))
+		if not mats.is_empty():
+			what += " · scraps into " + ", ".join(PackedStringArray(mats)).replace("_", " ")
+	return [title, what, how]
+
+func _update_hover_panel(delta: float) -> void:
+	var obj: WorldObject = player.interaction.hovered
+	if obj != null and is_instance_valid(obj):
+		if obj != _hover_obj:
+			_hover_obj = obj
+			var lines := _hover_lines(obj)
+			_hover_title.text = lines[0]
+			_hover_desc.text = lines[1]
+			_hover_action.text = lines[2]
+		_hover_shown = minf(_hover_shown + delta * 6.0, 1.0)
+	else:
+		_hover_obj = null
+		_hover_shown = maxf(_hover_shown - delta * 6.0, 0.0)
+	_hover_panel.visible = _hover_shown > 0.0
+	if _hover_panel.visible:
+		var sz := _hover_panel.get_combined_minimum_size()
+		var rs: Vector2 = (get_node("Root") as Control).size
+		# Slide up out of the bottom edge; ease the tail of the motion.
+		var t := 1.0 - pow(1.0 - _hover_shown, 2.0)
+		_hover_panel.position = Vector2(rs.x - sz.x - 6, rs.y - t * (sz.y + 6))
 
 ## FPS counter (always on, top right beside the minimap) + the F3 debug
 ## overlay: build info, height/depth, and per-system perf counters.
@@ -220,6 +320,8 @@ func _process(delta: float) -> void:
 		_fps_label.add_theme_color_override("font_color",
 			Color(0.5, 0.95, 0.55) if fps >= 50 else (Color(0.95, 0.85, 0.4) if fps >= 30 else Color(0.95, 0.45, 0.4)))
 		_refresh_debug()
+
+	_update_hover_panel(delta)
 
 	var inter := player.interaction
 	scrap_bar.visible = inter.scrapping != null
