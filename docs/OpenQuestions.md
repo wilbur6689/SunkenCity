@@ -152,9 +152,9 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **GL-04.** Is crafting done by hand anywhere, at stations, or both (tiered)?
   - **A:** Both — simple recipes hand-craft anywhere; advanced recipes need stations.
 - [x] **GL-05.** What crafting stations exist (workbench, forge, chem station, dive station)?
-  - **A:** Four: **Workbench** (tools/weapons/building), **Forge** (metal/armor), **Med Station** (medicine), **Dive Station** (suits/tanks/pumps/pipes).
+  - **A:** Five (amended by LT-09/10): **Workbench** (tools/weapons/building), **Forge** (metal/armor), **Med Station** (medicine), **Dive Station** (suits/tanks/pumps/pipes), **Modification Bench** (learn modifiers from sacrificed gear; apply them to unmodified gear).
 - [x] **GL-06.** Are recipes known from the start, unlocked by finding items, or learned from schematics?
-  - **A:** Basics + tier-1 known; advanced recipes from **schematics found as loot**. Also planned: **modifier schematics** that teach prefix/suffix attributes for crafting (→ LT-05/06/10).
+  - **A:** Basics + tier-1 known; advanced recipes from **schematics found as loot**. ~~Modifier schematics~~ superseded by LT-09: modifiers are learned by sacrificing modded gear at the Modification Bench.
 - [x] **GL-07.** How does scrapping work — anywhere from inventory, or requiring a tool/station?
   - **A:** Scrap anything anywhere, but at **reduced yield**; the same item scrapped at a base station returns full materials. Keeps the haul-it-home decision alive.
 - [x] **GL-08.** What are the tool/material tiers (e.g., scrap → iron → steel → titanium)?
@@ -274,44 +274,68 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 5. Loot: Weapons, Armor & Tools (LT) — ⏸️ Deferred (skipped 2026-08-30; revisit after City section / MVP loop work)
+## 5. Loot: Weapons, Armor & Tools (LT) — ✅ Reviewed 2026-08-31
 
-> Carried-in context for the future review: GD-07 fixed the weapon families (knives/swords/axes,
-> pistols/semi-autos/rifles, speargun); GL-06 added the **modifier schematics** idea
-> (prefix/suffix attributes learnable for crafting); GL-28 implies non-respawning near-surface
-> loot (see LT-27 partial).
-
-- [ ] **LT-01.** What is the full base weapon list at launch?
-- [ ] **LT-02.** What weapon categories exist (melee, ranged, underwater-specific like spearguns)?
-- [ ] **LT-03.** What armor slots exist (head, chest, legs, accessory slots)?
-- [ ] **LT-04.** What is the tool list (pry bar, pickaxe, hatchet, cutting torch, lockpicks)?
-- [ ] **LT-05.** What stat-modifying **prefixes** exist, with examples (e.g., "Sharp", "Rusty")?
-- [ ] **LT-06.** What stat-modifying **suffixes** exist, with examples (e.g., "of the Deep")?
-- [ ] **LT-07.** Can one item roll both a prefix and a suffix, or only one?
-- [ ] **LT-08.** Are there rarity tiers, and how do they interact with modifiers (colors, roll counts)?
-- [ ] **LT-09.** Can modifiers be rerolled/reforged, and at what cost?
-- [ ] **LT-10.** Do modifiers roll only on found loot, or on crafted items too?
-- [ ] **LT-11.** How is the balance set between crafted gear and found gear (which is better when)?
-- [ ] **LT-12.** What loot container types exist (cabinets, desks, safes, submerged crates)?
-- [ ] **LT-13.** How are loot tables structured — by building type, by depth, or both?
-- [ ] **LT-14.** Are some containers locked, requiring tools/keys from GL-09?
-- [ ] **LT-15.** Is there item durability, and how does repair work?
-- [ ] **LT-16.** What ammo types exist, and how scarce is ammo?
-- [ ] **LT-17.** What consumables exist (medkits, O2 refills, buff foods, flares)?
-- [ ] **LT-18.** Are there accessories/trinkets with passive effects (swim speed, O2 bonus)?
-- [ ] **LT-19.** Are there unique/legendary named items with fixed special effects?
-- [ ] **LT-20.** What item stats exist overall (damage, attack speed, crit, knockback, reach)?
-- [ ] **LT-21.** What armor stats exist (defense, O2 capacity, swim speed, warmth, pressure rating)?
-- [ ] **LT-22.** Are there armor set bonuses for wearing matched pieces?
-- [ ] **LT-23.** How does storage work — base chests, item stacking rules, sorting?
-- [ ] **LT-24.** Is there a currency/trading economy (per CC-05), or pure barter/scrap value?
-- [ ] **LT-25.** Are there material quality tiers within a category (scrap metal vs steel vs titanium)?
-- [ ] **LT-26.** Can gear be salvaged back into raw materials, and at what return rate?
-- [ ] **LT-27.** Does looted-out loot respawn, or is each container one-time?
-  - *Partial (GL-28):* near-surface material depletion is a deliberate descent driver, implying containers/scrap do not respawn — confirm in the LT review.
-- [ ] **LT-28.** What is the depth-based loot quality curve (how fast does loot improve going down)?
-- [ ] **LT-29.** Do blueprints/schematics drop as loot to unlock recipes (per GL-06)?
-- [ ] **LT-30.** What equipment does the player start with, if anything?
+- [x] **LT-01.** What is the full base weapon list at launch?
+  - **A:** Melee — knives, swords, axes — craftable at all four tiers, plus the **speargun**. Firearms — pistols, semi-automatics, rifles — **loot-only**. Per-tier variants live in data-driven recipes (LT-11) and expand post-MVP.
+- [x] **LT-02.** What weapon categories exist (melee, ranged, underwater-specific like spearguns)?
+  - **A:** (From GD-07/08) Melee (works everywhere, slowed underwater), firearms (dry/surface only), speargun (the underwater ranged weapon).
+- [x] **LT-03.** What armor slots exist (head, chest, legs, accessory slots)?
+  - **A:** **Suit** (full-body: clothes → wetsuit → hard suit — the depth-gate layer), **Head**, and **two Accessory slots**.
+- [x] **LT-04.** What is the tool list (pry bar, pickaxe, hatchet, cutting torch, lockpicks)?
+  - **A:** (From GL-03/09) Pry bar, scrap knife, hammer, bolt cutters, cutting torch. No pickaxe (structure is unbreakable), no lockpicks.
+- [x] **LT-05.** What stat-modifying **prefixes** exist, with examples (e.g., "Sharp", "Rusty")?
+  - **A:** ~8 power prefixes: *Sharp* (+dmg), *Swift* (+speed), *Heavy* (+knockback −speed), *Balanced*, *Rusty* (found-only junk), etc.
+- [x] **LT-06.** What stat-modifying **suffixes** exist, with examples (e.g., "of the Deep")?
+  - **A:** ~8 utility suffixes, aquatic lean: *of the Deep* (+O2), *of Currents* (+swim), *of the Shore* (−weight), *of Warmth* (+cold resist), *of Sight* (+light), etc.
+- [x] **LT-07.** Can one item roll both a prefix and a suffix, or only one?
+  - **A:** Both — max one prefix + one suffix.
+- [x] **LT-08.** Are there rarity tiers, and how do they interact with modifiers (colors, roll counts)?
+  - **A:** **Rarity is derived from modifier state** — no separate roll. Color applies to the gear's title text: no mods → gray, one mod → green, both → blue, both at top strength → purple.
+- [x] **LT-09.** Can modifiers be rerolled/reforged, and at what cost?
+  - **A:** No rerolling. **Learning a modifier destroys the gear** carrying it (at the Modification Bench); learned modifiers can be applied **only to unmodified gear** — once modded, locked.
+- [x] **LT-10.** Do modifiers roll only on found loot, or on crafted items too?
+  - **A:** Found gear rolls randomly; crafted gear comes out clean and takes learned modifiers at the **Modification Bench** (craft at Workbench/Forge, mod later). Found modded gear = *use it or learn it*.
+- [x] **LT-11.** How is the balance set between crafted gear and found gear (which is better when)?
+  - **A:** Crafted = reliable baseline (melee, speargun, suits); found = firepower and jackpots (firearms, modded gear, accessories). **Recipes are data-driven** — trivially extensible — with a large post-MVP recipe expansion planned.
+- [x] **LT-12.** What loot container types exist (cabinets, desks, safes, submerged crates)?
+  - **A:** Cabinets, desks, lockers, fridges, safes — placed by room templates so they always fit the room.
+- [x] **LT-13.** How are loot tables structured — by building type, by depth, or both?
+  - **A:** Keyed by **building type × depth band** — the two axes that already exist (CT-03, GD-16).
+- [x] **LT-14.** Are some containers locked, requiring tools/keys from GL-09?
+  - **A:** Yes — **safes** (torch or key) hold each band's best rolls.
+- [x] **LT-15.** Is there item durability, and how does repair work?
+  - **A:** **No durability in MVP.** Revisit as a world toggle if the post-MVP economy needs a sink.
+- [x] **LT-16.** What ammo types exist, and how scarce is ammo?
+  - **A:** Three: **pistol rounds** (pistols + semi-autos), **rifle rounds**, **retrievable spear bolts**. All craft from scrap at the Workbench; found ammo is a bonus, not the supply.
+- [x] **LT-17.** What consumables exist (medkits, O2 refills, buff foods, flares)?
+  - **A:** Lean set: bandages, medkits, food/fish, glowsticks, ammo/bolts. **Air tanks refill automatically in breathable air** — forward camps are refuel stops. Buff consumables wait for the cooking layer.
+- [x] **LT-18.** Are there accessories/trinkets with passive effects (swim speed, O2 bonus)?
+  - **A:** ~6 **found-only** accessories: fins (+swim), weight belt (+carry), waterproof pouch (+slots), headlamp strap, thermal liner (+cold resist), sixth TBD.
+- [x] **LT-19.** Are there unique/legendary named items with fixed special effects?
+  - **A:** None in MVP; post-MVP, each relay guardian (GD-15) drops one fixed unique trophy.
+- [x] **LT-20.** What item stats exist overall (damage, attack speed, crit, knockback, reach)?
+  - **A:** Lean sheet. Everything: **weight**. Weapons: **damage, attack speed, knockback** (guns swap knockback for **reload**; speargun keeps both). No crit, no elements.
+- [x] **LT-21.** What armor stats exist (defense, O2 capacity, swim speed, warmth, pressure rating)?
+  - **A:** Suits: **defense, cold rating, crush rating, swim penalty**. Head: **defense, O2 bonus, light**.
+- [x] **LT-22.** Are there armor set bonuses for wearing matched pieces?
+  - **A:** No set bonuses — the slot layout barely forms sets, and bonuses would fight modifier mixing.
+- [x] **LT-23.** How does storage work — base chests, item stacking rules, sorting?
+  - **A:** Craftable chests (wood → metal capacity), materials stack to 999, gear doesn't stack. **Physical access only** — no linked/remote storage. Quick-stack-to-nearby-chests included at MVP.
+- [x] **LT-24.** Is there a currency/trading economy (per CC-05), or pure barter/scrap value?
+  - **A:** (From CC-05) No currency or trading in MVP — no one to trade with.
+- [x] **LT-25.** Are there material quality tiers within a category (scrap metal vs steel vs titanium)?
+  - **A:** (From GL-08) Wood → Scrap → Iron → Steel.
+- [x] **LT-26.** Can gear be salvaged back into raw materials, and at what return rate?
+  - **A:** (From GL-07) Yes — gear scraps like anything: reduced yield in the field, full yield at base stations.
+- [x] **LT-27.** Does looted-out loot respawn, or is each container one-time?
+  - **A:** **One-time everything** — containers roll once, scrapped furniture is gone, depletion drives descent (GL-28). Red moon stragglers (light drops) and **fish** are the only renewables.
+- [x] **LT-28.** What is the depth-based loot quality curve (how fast does loot improve going down)?
+  - **A:** (From LT-13/GD-16) Quality steps up via the per-band tables — authored per band like enemy stats, not a formula.
+- [x] **LT-29.** Do blueprints/schematics drop as loot to unlock recipes (per GL-06)?
+  - **A:** **Recipe schematics: yes** (GL-06). **Modifier schematics: no** — superseded; modifiers are learned only by sacrificing modded gear (LT-09).
+- [x] **LT-30.** What equipment does the player start with, if anything?
+  - **A:** Plain clothes (tier-0 suit, no stats) plus a couple of bandages and one food item guaranteed by the starting room's templates. Tools come from scrapping the room (GL-03).
 
 ---
 

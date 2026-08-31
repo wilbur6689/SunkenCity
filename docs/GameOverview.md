@@ -105,8 +105,8 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
   Breakable: furniture/contents, glass, interior partitions, and player-placed blocks — those
   carry HP + hardness tiers (tool-gated). Background walls are cosmetic only; water sealing is
   decided purely by solid blocks.
-- **Crafting loop:** hand-craft basics anywhere; four base stations (Workbench, Forge, Med
-  Station, Dive Station). Material tiers **Wood → Scrap → Iron → Steel**. Advanced recipes come
+- **Crafting loop:** hand-craft basics anywhere; five base stations (Workbench, Forge, Med
+  Station, Dive Station, Modification Bench). Material tiers **Wood → Scrap → Iron → Steel**. Advanced recipes come
   from found **schematics** (plus planned modifier schematics for prefix/suffix attributes).
   Scrapping works anywhere at reduced yield — full yield back at base stations.
 - **Dive progression:** tanks extend time (scrap +30s → iron +60s → steel rebreather ~3 min);
@@ -195,12 +195,26 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 ## Loot: Weapons, Armor, Tools
 
-- The game has a **standard set** of tools and weapons, each with base stats.
-- Weapons and armor can roll **prefixes and suffixes** that modify or improve stats above the
-  defaults (Terraria-style modifiers).
-- Loot is **randomly found** throughout the abandoned buildings — left behind by the city's former
-  inhabitants.
-- Better loot is found at greater depths, matching the escalating enemy difficulty.
+- **Sourcing split:** melee (knives/swords/axes) and the speargun craft at every material tier;
+  **firearms (pistols, semi-autos, rifles) are loot-only** — every gun is an event. Ammo (pistol
+  rounds, rifle rounds, retrievable spear bolts) is craftable.
+- **Modifiers:** found gear rolls a random prefix and/or suffix (~8 power prefixes + ~8 aquatic
+  utility suffixes; max one of each). At the **Modification Bench** (5th station), sacrificing a
+  modded item **destroys it and teaches its modifiers**, which can then be applied to
+  **unmodified gear only** — once modded, locked. Found gear = *use it or learn it*. No modifier
+  schematics, no rerolling.
+- **Rarity is derived** from modifier state and shown as gear title-text color (gray → green →
+  blue → purple).
+- **Slots & stats:** Suit + Head + two Accessories; lean stat sheet (weight on everything;
+  damage/speed/knockback; suit defense/cold/crush/swim). No crit, no durability, no set bonuses.
+- **Containers:** placed by room templates, rolling tables keyed **building type × depth band**;
+  safes (torch/key) hold each band's best. **All loot is one-time** — depletion drives descent;
+  fish are the only renewable.
+- **Consumables:** bandages, medkits, food, glowsticks, ammo. Air tanks refill automatically in
+  breathable air — drained forward camps are refuel stops.
+- ~6 found-only **accessories** (fins, weight belt, pouch…); uniques arrive post-MVP as relay
+  guardian trophies. **Recipes are data-driven** for heavy post-MVP expansion.
+- Starting kit: plain clothes, a couple of bandages, one food item — everything else is earned.
 
 ---
 
@@ -235,8 +249,9 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 ## Document Map
 
 Deeper design and implementation details live in the `technical/` folder. Open design questions
-are tracked in [OpenQuestions.md](OpenQuestions.md) *(reviewed: Core Concept & Setting ✅, World
-Scale & Character ✅, Main Game Loop ✅, Game Dangers ✅, The City ✅, Loot ⏸️ deferred)*.
+are tracked in [OpenQuestions.md](OpenQuestions.md) — **all six sections reviewed ✅**
+(2026-08-31). Remaining deferred topics: story delivery (CC-04), onboarding/tutorial (CC-24),
+environmental storytelling (CT-27).
 
 - [technical/WaterPhysics.md](technical/WaterPhysics.md) — water simulation, pumps, draining ✅
 - World generation (building layouts, flooding, breach placement)
