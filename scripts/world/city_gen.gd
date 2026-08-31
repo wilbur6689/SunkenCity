@@ -152,16 +152,7 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 			var tw := int(t.width)
 			if cx + tw > zone_end:
 				tw = zone_end - cx
-			for o in t.objects:
-				if cx + int(o.x) + 3 <= zone_end:
-					# dy lifts wall-mounted pieces above the standing row
-					objects.append({"id": o.id, "cell": Vector2i(cx + int(o.x), sr - int(o.get("dy", 0)))})
-			for b in t.get("blocks", []):
-				if int(b.dy) >= FLOOR_H - 1:
-					continue # rooms authored taller than the floor cavity crop
-				var bc := Vector2i(cx + int(b.x), sr - int(b.dy))
-				if bc.x < zone_end:
-					grid.set_structure(bc, int(b.mat))
+			_stamp_room(grid, rng, t, tw, cx, sr, zone_end, objects, rtype)
 			cx += tw
 			# interior partition with a doorway (rooms stitch by sockets)
 			if zone_end - cx >= 8:
@@ -192,6 +183,84 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 				grid.set_structure(Vector2i(hx, cy), WorldGrid.M.AIR)
 	return tower
 
+## Stamp one room template with per-instance variety (CT-05, user request:
+## identical layouts everywhere read as copy-paste): random mirroring,
+## ±1 furniture jitter, pieces occasionally missing (looted before the
+## flood), wall art hung at slightly different heights, and a sprinkle of
+## zone clutter in the leftover floor space. All rng-driven = seed-stable.
+static func _stamp_room(grid: WorldGrid, rng: RandomNumberGenerator, t: Dictionary,
+		tw: int, cx: int, sr: int, zone_end: int, objects: Array, zone: String) -> void:
+	var mirror := rng.randf() < 0.5
+	var taken: Array = [] # [x0, x1) floor intervals used by furniture
+	for o in t.objects:
+		var def: Dictionary = Data.objects.get(o.id, {})
+		if def.is_empty():
+			continue
+		var w := int(def.size[0])
+		var h := int(def.size[1])
+		var wall: bool = def.get("wall_mounted", false)
+		if rng.randf() < 0.15:
+			continue # somebody got here first
+		var ox := int(o.x)
+		if mirror:
+			ox = tw - w - ox
+		ox += rng.randi_range(-1, 1)
+		ox = clampi(ox, 0, tw - w)
+		if wall:
+			var dy := int(o.get("dy", 3))
+			dy = clampi(dy + rng.randi_range(0, 1), 1, FLOOR_H - 1 - h)
+			if cx + ox + w <= zone_end:
+				objects.append({"id": o.id, "cell": Vector2i(cx + ox, sr - dy)})
+			continue
+		for attempt in 3: # slide right until the jittered spot is free
+			if not _interval_taken(taken, ox, ox + w) and cx + ox + w <= zone_end:
+				taken.append([ox, ox + w])
+				objects.append({"id": o.id, "cell": Vector2i(cx + ox, sr)})
+				break
+			ox = clampi(ox + 1, 0, tw - w)
+	# Mirrored authored blocks keep counters against the intended wall.
+	for b in t.get("blocks", []):
+		if int(b.dy) >= FLOOR_H - 1:
+			continue # rooms authored taller than the floor cavity crop
+		var bx := int(b.x)
+		if mirror:
+			bx = tw - 1 - bx
+		var bc := Vector2i(cx + bx, sr - int(b.dy))
+		if bc.x < zone_end:
+			grid.set_structure(bc, int(b.mat))
+	# A little lived-in mess: 0-2 clutter pieces from this zone's set.
+	var clutter := _zone_clutter(zone)
+	if not clutter.is_empty():
+		for i in rng.randi_range(0, 2):
+			var id: String = clutter[rng.randi_range(0, clutter.size() - 1)]
+			var ox2 := rng.randi_range(0, tw - 1)
+			if not _interval_taken(taken, ox2, ox2 + 1) and cx + ox2 + 1 <= zone_end:
+				taken.append([ox2, ox2 + 1])
+				objects.append({"id": id, "cell": Vector2i(cx + ox2, sr)})
+
+static func _interval_taken(taken: Array, x0: int, x1: int) -> bool:
+	for iv in taken:
+		if x0 < int(iv[1]) and int(iv[0]) < x1:
+			return true
+	return false
+
+static var _clutter_cache: Dictionary = {}
+
+## 1x1 scrap items tagged for this zone (pack clutter), sorted for CT-21.
+static func _zone_clutter(zone: String) -> Array:
+	if _clutter_cache.has(zone):
+		return _clutter_cache[zone]
+	var out: Array = []
+	for id in Data.objects:
+		var def: Dictionary = Data.objects[id]
+		if def.get("kind", "") == "scrap" and def.get("category", "") == "clutter" \
+				and int(def.size[0]) == 1 and int(def.size[1]) == 1 \
+				and (def.get("zones", []) as Array).has(zone):
+			out.append(id)
+	out.sort()
+	_clutter_cache[zone] = out
+	return out
+
 static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Array, result: Dictionary) -> void:
 	var top: int = tower.top
 	var sr: int = top + FLOOR_H - 1
@@ -205,7 +274,9 @@ static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Ar
 			objects.remove_at(i)
 	for wy in range(top + 1, sr + 1):
 		for wx in range(zone_x, zone_end + 1):
-			if grid.structure_at(Vector2i(wx, wy)) == WorldGrid.M.STONE:
+			# ANY leftover template structure goes (wood shelves included —
+			# only stone was cleared before, leaving planks over the bed).
+			if grid.structure_at(Vector2i(wx, wy)) != WorldGrid.M.AIR:
 				grid.set_structure(Vector2i(wx, wy), WorldGrid.M.AIR)
 	# The authored kit: a real bed (spawn), medical gear, storage (GL-02).
 	objects.append({"id": "bed", "cell": Vector2i(zone_x + 1, sr)})

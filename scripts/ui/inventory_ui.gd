@@ -387,6 +387,7 @@ func open_panel(station: String = "") -> void:
 
 func close() -> void:
 	open = false
+	_clear_slot_scrap()
 	root.visible = false
 	container = null
 	if storage_panel != null:
@@ -447,6 +448,7 @@ func _process(_delta: float) -> void:
 	var m := root.get_local_mouse_position()
 	cursor_icon.position = m + Vector2(4, 4)
 	cursor_count.position = m + Vector2(12, 8)
+	_tick_slot_scrap(get_process_delta_time())
 	if screen == "crafting":
 		_refresh_crafting()
 
@@ -491,7 +493,7 @@ func _refresh_crafting(force: bool = false) -> void:
 	var stations := _stations()
 	if not force and stations == _last_stations:
 		for b in recipe_list.get_children():
-			b.disabled = not player.can_craft(b.get_meta("recipe"))
+			_dim_recipe_row(b, player.can_craft(b.get_meta("recipe")))
 		craft_button.disabled = selected_recipe.is_empty() or not player.can_craft(selected_recipe)
 		return
 	_last_stations = stations.duplicate()
@@ -518,10 +520,16 @@ func _refresh_crafting(force: bool = false) -> void:
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UITheme.style_row(b, r == selected_recipe)
 		b.set_meta("recipe", r)
-		b.disabled = not player.can_craft(r)
+		# Uncraftable recipes stay CLICKABLE (user request) — dimmed so the
+		# player can inspect what they will need; only CRAFT is gated.
+		_dim_recipe_row(b, player.can_craft(r))
 		b.pressed.connect(_select_recipe.bind(r))
 		recipe_list.add_child(b)
 	_refresh_detail()
+
+func _dim_recipe_row(b: Button, craftable: bool) -> void:
+	b.disabled = false
+	b.modulate = Color.WHITE if craftable else Color(0.55, 0.57, 0.62)
 
 func _select_recipe(r: Dictionary) -> void:
 	selected_recipe = r
@@ -551,6 +559,11 @@ func _refresh_detail() -> void:
 	detail_box.add_child(title)
 	var st_name: String = "By hand" if r.station == "hand" else (Data.objects[r.station].name if Data.objects.has(r.station) else r.station)
 	detail_box.add_child(UITheme.label("%s · tier %d" % [st_name, int(r.tier)], 8, Color(0.7, 0.78, 0.85)))
+	var desc := Data.item_desc(r.output.item)
+	if desc != "": # what the item is commonly used for (user request)
+		var dl := UITheme.label(desc, 8, Color(0.82, 0.84, 0.78))
+		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		detail_box.add_child(dl)
 	detail_box.add_child(UITheme.label("Needs:", 8, Color(0.7, 0.78, 0.85)))
 	for inp in r.inputs:
 		var have: int = player.inventory.count(inp.item)
@@ -622,10 +635,13 @@ func _on_slot_input(event: InputEvent, which: String, index: int) -> void:
 	elif event.button_index == MOUSE_BUTTON_RIGHT:
 		if cursor_stack == null:
 			if slot != null:
-				var half: int = int(ceil(slot.count / 2.0))
-				cursor_stack = {"id": slot.id, "count": half}
-				slot.count -= half
-				inv.set_slot(index, slot)
+				# Scrappable bag items: RMB press starts a hold-to-scrap
+				# (same rule as scrapping furniture in the world); a quick
+				# tap still takes half the stack.
+				if which == "inv" and not Data.scrap_yield(slot.id).is_empty():
+					_begin_slot_scrap(index, slot.id)
+					return
+				_rmb_take_half(inv, index)
 		elif slot == null:
 			inv.set_slot(index, {"id": cursor_stack.id, "count": 1})
 			cursor_stack.count -= 1
@@ -638,6 +654,73 @@ func _on_slot_input(event: InputEvent, which: String, index: int) -> void:
 				cursor_stack = null
 			inv.set_slot(index, slot)
 	_refresh_all()
+
+# --- Hold-RMB scrapping from the bag (user request) ---
+
+var scrap_hold: Dictionary = {} # {index, id, time, duration} while RMB held
+var scrap_hold_bar: ProgressBar = null
+
+func _rmb_take_half(inv: Inventory, index: int) -> void:
+	var slot = inv.slots[index]
+	if slot == null:
+		return
+	var half: int = int(ceil(slot.count / 2.0))
+	cursor_stack = {"id": slot.id, "count": half}
+	slot.count -= half
+	inv.set_slot(index, slot if slot.count > 0 else null)
+	_refresh_all()
+
+func _begin_slot_scrap(index: int, id: String) -> void:
+	var src: Dictionary = Data.objects.get(id, Data.item(id))
+	scrap_hold = {"index": index, "id": id, "time": 0.0,
+		"duration": float(src.get("scrap_time", 1.5)) / Constants.SCRAP_SPEED_MULT}
+	if scrap_hold_bar == null:
+		scrap_hold_bar = ProgressBar.new()
+		scrap_hold_bar.show_percentage = false
+		scrap_hold_bar.custom_minimum_size = Vector2(0, 3)
+		var bg := StyleBoxFlat.new()
+		bg.bg_color = Color(0.05, 0.05, 0.08, 0.9)
+		var fill := StyleBoxFlat.new()
+		fill.bg_color = Color(0.95, 0.8, 0.35)
+		scrap_hold_bar.add_theme_stylebox_override("background", bg)
+		scrap_hold_bar.add_theme_stylebox_override("fill", fill)
+		scrap_hold_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var btn: Button = _bag_slots[index].button
+	if scrap_hold_bar.get_parent() != null:
+		scrap_hold_bar.get_parent().remove_child(scrap_hold_bar)
+	btn.add_child(scrap_hold_bar)
+	scrap_hold_bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	scrap_hold_bar.offset_top = -3
+	scrap_hold_bar.value = 0.0
+	scrap_hold_bar.visible = true
+
+func _clear_slot_scrap() -> void:
+	scrap_hold = {}
+	if scrap_hold_bar != null:
+		scrap_hold_bar.visible = false
+
+func _tick_slot_scrap(delta: float) -> void:
+	if scrap_hold.is_empty():
+		return
+	var inv := player.inventory
+	var slot = inv.slots[scrap_hold.index]
+	if slot == null or slot.id != scrap_hold.id:
+		_clear_slot_scrap()
+		return
+	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		if scrap_hold.time < 0.25: # a quick tap keeps the split-stack action
+			_rmb_take_half(inv, scrap_hold.index)
+		_clear_slot_scrap()
+		return
+	scrap_hold.time += delta
+	scrap_hold_bar.value = scrap_hold.time / scrap_hold.duration * 100.0
+	if scrap_hold.time >= scrap_hold.duration:
+		if player.scrap_item(scrap_hold.id, 1, true):
+			_refresh_all()
+			scrap_hold.time = 0.0 # keep holding to keep scrapping the stack
+			scrap_hold_bar.value = 0.0
+		else:
+			_clear_slot_scrap()
 
 ## Equipment slots hold one item; LMB swaps with the cursor when the item fits the slot.
 func _equip_click(event: InputEventMouseButton, slot_name: String) -> void:

@@ -1,17 +1,101 @@
 {
-  "_comment": "Placeable tiles. Each entry also registers an item with the same id (category placeable_block). layer: blocks (solid, collision) | back (cosmetic wall) | climb (rope/ladder). atlas_row indexes assets/tiles/placeholder_blocks.png. hp/hardness apply to player-placed blocks only (WS-22); structure is unbreakable (GL-01). hardness = minimum tool tier to break.",
-  "blocks": [
-    {"id": "wood_block",  "name": "Wood Block",        "layer": "blocks", "atlas_row": 1, "hp": 20, "hardness": 1, "weight": 0.5,
-     "scrap": [{"item": "wood", "count": 1}]},
-    {"id": "scrap_block", "name": "Scrap Metal Block", "layer": "blocks", "atlas_row": 2, "hp": 40, "hardness": 1, "weight": 1.0,
-     "scrap": [{"item": "scrap_metal", "count": 1}]},
-    {"id": "stone_block", "name": "Stone Block",       "layer": "blocks", "atlas_row": 0, "hp": 60, "hardness": 2, "weight": 1.5,
-     "scrap": [{"item": "stone", "count": 1}]},
-    {"id": "wood_wall",   "name": "Wood Wall",         "layer": "back",   "atlas_row": 1, "hp": 5,  "hardness": 1, "weight": 0.1,
-     "scrap": [{"item": "wood", "count": 1}]},
-    {"id": "rope",        "name": "Rope",              "layer": "climb",  "atlas_row": 6, "hp": 5,  "hardness": 0, "weight": 0.2,
-     "scrap": [{"item": "cloth", "count": 1}]},
-    {"id": "ladder",      "name": "Ladder",            "layer": "climb",  "atlas_row": 5, "hp": 10, "hardness": 0, "weight": 0.8,
-     "scrap": [{"item": "wood", "count": 1}]}
-  ]
+ "_comment": "Placeable tiles. Each entry also registers an item with the same id (category placeable_block). layer: blocks (solid, collision) | back (cosmetic wall) | climb (rope/ladder). atlas_row indexes assets/tiles/placeholder_blocks.png. hp/hardness apply to player-placed blocks only (WS-22); structure is unbreakable (GL-01). hardness = minimum tool tier to break.",
+ "blocks": [
+  {
+   "id": "wood_block",
+   "name": "Wood Block",
+   "layer": "blocks",
+   "atlas_row": 1,
+   "hp": 20,
+   "hardness": 1,
+   "weight": 0.5,
+   "scrap": [
+    {
+     "item": "wood",
+     "count": 1
+    }
+   ],
+   "desc": "Basic building block. Seals breaches; scraps back cheap."
+  },
+  {
+   "id": "scrap_block",
+   "name": "Scrap Metal Block",
+   "layer": "blocks",
+   "atlas_row": 2,
+   "hp": 40,
+   "hardness": 1,
+   "weight": 1.0,
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ],
+   "desc": "Sturdier metal block for hulls and airlocks."
+  },
+  {
+   "id": "stone_block",
+   "name": "Stone Block",
+   "layer": "blocks",
+   "atlas_row": 0,
+   "hp": 60,
+   "hardness": 2,
+   "weight": 1.5,
+   "scrap": [
+    {
+     "item": "stone",
+     "count": 1
+    }
+   ],
+   "desc": "Heavy block \u2014 strongest wall material you can craft."
+  },
+  {
+   "id": "wood_wall",
+   "name": "Wood Wall",
+   "layer": "back",
+   "atlas_row": 1,
+   "hp": 5,
+   "hardness": 1,
+   "weight": 0.1,
+   "scrap": [
+    {
+     "item": "wood",
+     "count": 1
+    }
+   ],
+   "desc": "Back wall \u2014 seals a room's interior so it can be pumped dry."
+  },
+  {
+   "id": "rope",
+   "name": "Rope",
+   "layer": "climb",
+   "atlas_row": 6,
+   "hp": 5,
+   "hardness": 0,
+   "weight": 0.2,
+   "scrap": [
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ],
+   "desc": "Climbable line \u2014 hang it from ledges to descend safely."
+  },
+  {
+   "id": "ladder",
+   "name": "Ladder",
+   "layer": "climb",
+   "atlas_row": 5,
+   "hp": 10,
+   "hardness": 0,
+   "weight": 0.8,
+   "scrap": [
+    {
+     "item": "wood",
+     "count": 1
+    }
+   ],
+   "desc": "Climbable; stand on its top. The backbone of vertical bases."
+  }
+ ]
 }

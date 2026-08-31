@@ -30,6 +30,7 @@ func _load_all() -> void:
 		items[b.id] = {
 			"id": b.id, "name": b.name, "category": "placeable_block", "weight": b.get("weight", 1.0),
 			"stack": Constants.MATERIAL_STACK, "places_block": b.id, "scrap": b.get("scrap", []),
+			"desc": b.get("desc", ""),
 		}
 	for o in _load_json("res://data/objects.json").get("objects", []):
 		objects[o.id] = o
@@ -41,6 +42,7 @@ func _load_all() -> void:
 		items[o.id] = {
 			"id": o.id, "name": o.name, "category": "placeable_object", "weight": o.get("weight", 10.0),
 			"stack": 1 if o.kind != "light" and o.kind != "door" else 20, "places_object": o.id, "scrap": full_scrap,
+			"desc": o.get("desc", ""),
 		}
 	for r in _load_json("res://data/recipes.json").get("recipes", []):
 		recipes[r.id] = r
@@ -76,6 +78,9 @@ func _validate() -> void:
 
 func item(id: String) -> Dictionary:
 	return items.get(id, {})
+
+func item_desc(id: String) -> String:
+	return items.get(id, {}).get("desc", "")
 
 func item_name(id: String) -> String:
 	return items.get(id, {}).get("name", id)

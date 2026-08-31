@@ -100,6 +100,7 @@ static func save_character(char_name: String, player, world_key: String) -> void
 	data["health"] = player.health
 	data["oxygen"] = player.oxygen
 	data["selected_slot"] = player.selected_slot
+	data["compact"] = player.compact
 	data.maps[world_key] = World.map_reveal.to_bytes()
 	data.positions[world_key] = player.global_position
 	DirAccess.make_dir_recursive_absolute(CHAR_DIR)
@@ -135,3 +136,6 @@ static func apply_character(data: Dictionary, player, world_key: String) -> void
 	if data.positions.has(world_key):
 		player.global_position = data.positions[world_key]
 		player.velocity = Vector2.ZERO
+		if bool(data.get("compact", false)):
+			player.begin_loaded_crawl()
+		player.unstick()

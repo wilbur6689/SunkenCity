@@ -194,7 +194,8 @@
      "min": 2,
      "max": 2
     }
-   ]
+   ],
+   "desc": "Tier-1 station: unlocks most tool and furniture recipes nearby."
   },
   {
    "id": "forge",
@@ -217,7 +218,8 @@
      "min": 3,
      "max": 3
     }
-   ]
+   ],
+   "desc": "Station for metalwork \u2014 iron tools and hard blocks."
   },
   {
    "id": "med_station",
@@ -240,7 +242,8 @@
      "min": 3,
      "max": 3
     }
-   ]
+   ],
+   "desc": "Station for medical crafting \u2014 bandages and better."
   },
   {
    "id": "dive_station",
@@ -263,7 +266,8 @@
      "min": 3,
      "max": 3
     }
-   ]
+   ],
+   "desc": "Station for dive gear \u2014 suits and tanks for the deep."
   },
   {
    "id": "mod_bench",
@@ -286,7 +290,8 @@
      "min": 3,
      "max": 3
     }
-   ]
+   ],
+   "desc": "Station for upgrades and accessories."
   },
   {
    "id": "chest",
@@ -309,7 +314,8 @@
      "min": 1,
      "max": 1
     }
-   ]
+   ],
+   "desc": "Storage, 12 slots. Empty chests can be picked up and moved."
   },
   {
    "id": "bed",
@@ -331,7 +337,8 @@
      "min": 3,
      "max": 3
     }
-   ]
+   ],
+   "desc": "Sets your respawn point. The heart of a base."
   },
   {
    "id": "standing_lamp",
@@ -361,7 +368,8 @@
      "min": 1,
      "max": 1
     }
-   ]
+   ],
+   "desc": "A bright floor lamp for lighting a room without wiring."
   },
   {
    "id": "wood_door",
@@ -378,7 +386,8 @@
      "min": 3,
      "max": 3
     }
-   ]
+   ],
+   "desc": "Blocks water while closed; the key to sealing rooms."
   },
   {
    "id": "pump",
@@ -401,7 +410,8 @@
      "min": 2,
      "max": 2
     }
-   ]
+   ],
+   "desc": "Moves water: aim its outlet and drain (or flood) a room."
   },
   {
    "id": "breaker",

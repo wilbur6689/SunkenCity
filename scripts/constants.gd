@@ -103,6 +103,8 @@ const LIGHT_WINDOW: Vector2i = Vector2i(120, 72) # cells relit around the camera
 # tower's full height so held references never despawn mid-test.
 const OBJECT_WINDOW: Vector2i = Vector2i(200, 160)
 
+const TOOL_SWING_TIME: float = 0.18 # seconds per hammer swing arc
+
 # Audio
 const MUSIC_VOLUME_DB: float = -8.0
 const AMBIENT_VOLUME_DB: float = -6.0

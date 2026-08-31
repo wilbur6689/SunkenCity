@@ -204,6 +204,7 @@ func _hammer(tool: Dictionary) -> void:
 	if not target_in_reach or (hit_cooldown > 0.0 and _used_last_tick):
 		return
 	hit_cooldown = Constants.BLOCK_HIT_INTERVAL
+	player.play_swing()
 	var obj := World.object_at(target_cell)
 	if obj != null:
 		if obj.def.kind == "scrap":
@@ -224,7 +225,9 @@ func _hammer(tool: Dictionary) -> void:
 		"too_hard":
 			say("Needs a better tool")
 		"broken":
-			pass # World dropped the block item
+			Audio.play_sfx("wood_break", World.cell_center(target_cell), 4)
+		"damaged":
+			Audio.play_sfx("wood_hit", World.cell_center(target_cell), 2)
 		_:
 			pass
 

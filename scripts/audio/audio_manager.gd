@@ -75,6 +75,28 @@ func _player(bus_name: String, loop_path: String = "") -> AudioStreamPlayer:
 			p.play()
 	return p
 
+const SFX_DIR := "res://assets/audio/sfx/"
+
+## Positional one-shot from assets/audio/sfx. With variants > 1 a random
+## numbered take plays (e.g. "wood_hit" -> wood_hit_1 / wood_hit_2).
+func play_sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 0.0) -> void:
+	if _headless:
+		return
+	var sfx_name := base if variants <= 1 else "%s_%d" % [base, randi() % variants + 1]
+	var path := SFX_DIR + sfx_name + ".wav"
+	if not ResourceLoader.exists(path):
+		return
+	var p := AudioStreamPlayer2D.new()
+	p.bus = "SFX"
+	p.stream = load(path)
+	p.volume_db = volume_db
+	p.max_distance = 30 * Constants.BLOCK_SIZE
+	p.pitch_scale = randf_range(0.95, 1.05)
+	add_child(p)
+	p.global_position = pos
+	p.finished.connect(p.queue_free)
+	p.play()
+
 ## The pool the current situation calls for: threat music in the deep
 ## danger bands, adventure everywhere else (title screen included).
 func desired_pool() -> String:

@@ -102,12 +102,17 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_clamp_to_world_bounds()
 	_update_sprite(delta)
+	_update_swing(delta)
 	_update_oxygen(delta)
 	_update_environment(delta)
 	_update_camera(delta)
 	interaction.tick(delta)
-	if wants_drop:
-		drop_held(1)
+	if wants_drop: # Q toggles bare hands (user request) — dropping moved to the UI
+		bare_hands = not bare_hands
+		if bare_hands:
+			message.emit("Hands free")
+		elif held_item() != "":
+			message.emit("Holding " + Data.item_name(held_item()))
 	if state == State.SURFACE_SWIM or state == State.UNDERWATER:
 		skills.add_xp("swimming", Constants.XP_SWIM_PER_SECOND * delta)
 	# one-frame flags
@@ -151,6 +156,7 @@ func _tick_timers(delta: float) -> void:
 func _apply_hotbar() -> void:
 	if hotbar_select >= 0:
 		selected_slot = hotbar_select
+		bare_hands = false # reselecting a slot takes the item in hand again
 
 func _consume_jump() -> bool:
 	if jump_buffer_timer > 0.0:
@@ -160,7 +166,13 @@ func _consume_jump() -> bool:
 
 # --- Items ---
 
+## Empty hands (user request): Q clears the hand — no placing, tools, or
+## consumables until Q is pressed again or a hotbar slot is reselected.
+var bare_hands: bool = false
+
 func held_item() -> String:
+	if bare_hands:
+		return ""
 	var s = inventory.slots[selected_slot]
 	return s.id if s != null else ""
 
@@ -255,11 +267,13 @@ func craft(recipe: Dictionary) -> bool:
 	inventory.add(recipe.output.item, int(recipe.output.count))
 	return true
 
-## Station scrapping (GL-07): full yield, needs any station in reach, and the
-## same Scrapping level the object demands in the field.
-func scrap_item(id: String, n: int = 1) -> bool:
+## Item scrapping (GL-07): full yield near any station. With allow_field
+## (hold-RMB in the bag) it also works away from stations at the reduced
+## field yield — the same rule as scrapping furniture in place.
+func scrap_item(id: String, n: int = 1, allow_field: bool = false) -> bool:
 	var reach := Constants.REACH_BLOCKS * Constants.BLOCK_SIZE * 1.5
-	if World.stations_near(global_position, reach).size() <= 1:
+	var full := World.stations_near(global_position, reach).size() > 1
+	if not full and not allow_field:
 		message.emit("Scrapping for full yield needs a station")
 		return false
 	var yields := Data.scrap_yield(id)
@@ -271,11 +285,14 @@ func scrap_item(id: String, n: int = 1) -> bool:
 		return false
 	inventory.remove(id, n)
 	for y in yields:
-		var leftover: int = inventory.add(y.item, int(y.count) * n)
+		var count := int(y.count) * n
+		if not full:
+			count = int(ceil(count * Constants.FIELD_SCRAP_YIELD))
+		var leftover: int = inventory.add(y.item, count)
 		if leftover > 0:
 			World.spawn_item(y.item, leftover, global_position)
 	skills.add_xp("scrapping", float(obj_def.get("xp", 2)) * n)
-	message.emit("Scrapped %s x%d" % [Data.item_name(id), n])
+	message.emit("Scrapped %s x%d%s" % [Data.item_name(id), n, "" if full else " (field yield)"])
 	return true
 
 func open_container(obj: WorldObject) -> void:
@@ -314,6 +331,31 @@ func _can_stand() -> bool:
 	var size := Constants.STAND_HITBOX
 	var rect := Rect2(global_position + Vector2(-size.x * 0.5, FEET_Y - size.y), size)
 	return World.rect_is_clear(rect)
+
+func _pose_clear(pos: Vector2, compact_form: bool) -> bool:
+	var size := Constants.COMPACT_HITBOX if compact_form else Constants.STAND_HITBOX
+	return World.rect_is_clear(Rect2(pos + Vector2(-size.x * 0.5, FEET_Y - size.y), size))
+
+## Put a loaded save back into its crawl pose (saving in a vent, restoring
+## standing, wedged the head into the ceiling and the body into the floor).
+func begin_loaded_crawl() -> void:
+	_set_compact(true)
+	state = State.CRAWLING
+
+## Post-load safety net: if the restored pose overlaps solids anyway, climb
+## up in quarter-block steps (falling back to a crawl pose) until legal;
+## a hopeless overlap respawns at the bed instead of wedging in the floor.
+func unstick() -> void:
+	for i in 13:
+		var off := Vector2(0, -4.0 * i)
+		if _pose_clear(global_position + off, compact):
+			global_position += off
+			return
+		if not compact and _pose_clear(global_position + off, true):
+			global_position += off
+			begin_loaded_crawl()
+			return
+	respawn()
 
 # --- Environment ---
 
@@ -569,6 +611,34 @@ const WALK_FRAME_TIME: float = 0.1 # seconds per frame at walk speed; scales wit
 var facing: int = 1 # +1 east, -1 west
 var _anim_time: float = 0.0
 
+# Tool swing (user request): the held tool arcs in front of the player on
+# each hammer hit so breaking your own blocks reads as an action.
+var _swing_time: float = 0.0
+var _tool_sprite: Sprite2D = null
+
+func play_swing() -> void:
+	if _tool_sprite == null:
+		_tool_sprite = Sprite2D.new()
+		_tool_sprite.z_index = 1
+		add_child(_tool_sprite)
+	_tool_sprite.texture = Data.icon(held_item())
+	_swing_time = Constants.TOOL_SWING_TIME
+
+func _update_swing(delta: float) -> void:
+	if _tool_sprite == null:
+		return
+	if _swing_time <= 0.0:
+		_tool_sprite.visible = false
+		return
+	_swing_time = maxf(_swing_time - delta, 0.0)
+	var t := 1.0 - _swing_time / Constants.TOOL_SWING_TIME
+	var dir := 1.0 if aim_position.x >= global_position.x else -1.0
+	var ang := lerpf(-1.9, 0.6, t) # overhead wind-up to forward-down
+	_tool_sprite.visible = true
+	_tool_sprite.rotation = ang * dir
+	_tool_sprite.flip_h = dir < 0
+	_tool_sprite.position = Vector2(dir * 7.0, 0.0) + Vector2(sin(ang) * dir, -cos(ang)) * 5.0
+
 func _update_sprite(delta: float) -> void:
 	if input_dir.x != 0.0:
 		facing = 1 if input_dir.x > 0.0 else -1
@@ -581,8 +651,9 @@ func _update_sprite(delta: float) -> void:
 	else:
 		_anim_time = 0.0
 	sprite.frame_coords = Vector2i(frame_col, 0 if facing > 0 else 1)
-	if compact:
-		# Crawling / swimming: lay the body along the compact hitbox, head toward facing.
+	if compact and state != State.SURFACE_SWIM:
+		# Crawling / diving: lay the body along the compact hitbox, head
+		# toward facing. Treading at the surface stays upright (user request).
 		sprite.rotation = facing * PI * 0.5
 		sprite.position = Vector2(0, 5)
 	else:

@@ -84,7 +84,11 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   short click interacts (open storage/doors, flip breakers, bed spawn, station crafting, pump
   targeting), holding ~0.5s picks the object up (storage must be empty); otherwise LMB uses the
   held item — place block/object, hammer hits, consumables, pump-outlet click. RMB =
-  hold-to-scrap furniture, place back walls, hammer wall removal. E remains a legacy interact. `World.placed_blocks` separates breakable player blocks from unbreakable
+  hold-to-scrap furniture, place back walls, hammer wall removal. E remains a legacy interact. **Q** toggles bare hands (clears the held item until pressed again
+or a hotbar slot is reselected; it no longer drops). Hold-RMB on a bag slot scraps that item
+(field yield away from stations; quick tap still takes half). Hammer hits play a swing arc +
+impact SFX (`Audio.play_sfx`). Grayed crafting recipes stay clickable to inspect (with `desc`
+lines from the data files); only CRAFT is gated. `World.placed_blocks` separates breakable player blocks from unbreakable
   structure (GL-01).
 - Main scene is currently `scenes/test/test_tower.tscn` — a 15-floor test tower (3 dry, 12
   flooded; themed deep floors, stairwell, sealed door-floods). Rows 0-30 are load-bearing for
