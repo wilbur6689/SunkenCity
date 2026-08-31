@@ -29,7 +29,7 @@ godot --path . --headless --quit-after 10   # boot the main scene, surface scrip
 ```
 
 Controls: **A/D** or arrows move · **Space** jump · **Shift** sprint · **C** crouch · **E** interact ·
-**Tab/I** inventory · **1–0** hotbar · **wheel** zoom · **LMB** use held item (place / hit / consume) ·
+**Tab/I** inventory · **1–0** hotbar · **Ctrl+wheel** zoom · **LMB** use held item (place / hit / consume) ·
 **RMB** scrap furniture, back walls · **Q** drop.
 
 ## Layout

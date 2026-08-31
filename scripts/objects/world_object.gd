@@ -14,6 +14,16 @@ var open: bool = false            # doors
 
 const NO_OUTLET := Vector2i(-99999, -99999)
 var outlet_cell: Vector2i = NO_OUTLET # pumps (GL-16): where pumped water goes
+var powered_on: bool = false      # breakers: switch state; wired lights: powered state
+
+## Wired lights (def.powered) glow only while powered; others always.
+func set_powered(v: bool) -> void:
+	powered_on = v
+	var lit: bool = v or not def.get("powered", false)
+	if _light != null:
+		_light.enabled = lit
+	if def.kind == "light":
+		sprite.modulate = Color.WHITE if lit else Color(0.55, 0.55, 0.6)
 var scrap_progress: float = 0.0   # 0..1 while being scrapped in place
 var placed_by_player: bool = false
 
@@ -61,6 +71,7 @@ func _ready() -> void:
 			_light.energy = 1.0
 			_light.position = sprite.position + Vector2(px.x * 0.5, 4)
 			add_child(_light)
+			set_powered(false) # wired lights start dark until a breaker feeds them
 
 func covered_cells() -> Array:
 	var cells := []
@@ -91,6 +102,12 @@ func interact(player) -> String:
 		"pump":
 			player.interaction.begin_pump_targeting(self)
 			return ""
+		"breaker":
+			if World.water_sim != null and World.water_sim.level_at(cell) > 2:
+				return "The breaker is flooded"
+			powered_on = not powered_on
+			World.update_power()
+			return "Breaker switched " + ("on" if powered_on else "off")
 		"bed":
 			World.set_spawn(bottom_center())
 			return "Spawn point set"
@@ -101,6 +118,8 @@ func interact(player) -> String:
 			player.open_crafting(def.station)
 			return ""
 		_:
+			if def.get("fixed", false):
+				return "It is wired into the building"
 			# Found furniture / placeables: pick up whole (haul it home for full yield, GL-07).
 			if player.inventory.can_add(id, 1):
 				World.remove_object(self)

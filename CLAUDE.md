@@ -13,13 +13,13 @@ The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records set
 decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
 base) comes first; do not add other major aspects before it works.
 
-Development has completed **M0**, **M1**, and the water half of **M2** in `docs/MVP-overview.md`
-(gates pass headless via `m0/m1/m2_smoke.tscn`; manual feel passes pending). **Still open in M2:
-the Lighting block** (tile light propagation, breakers/building power, WS-17). The water sim
-lives in `scripts/world/water_sim.gd` (8-level cells, awake-set dormancy — see
-`docs/technical/WaterPhysics.md` "M2 Implementation Decisions"); `World` owns and ticks it, the
-`WaterRenderer` draws it, pumps use a targeted outlet. The task tracker is
-`docs/MVP-checklist.md` — check items off there as they land.
+Development has completed **M0–M2** in `docs/MVP-overview.md` (gates pass headless via
+`m0/m1/m2_smoke.tscn`; manual feel passes pending); next is **M3 — The City**. The water sim is
+`scripts/world/water_sim.gd` (8-level cells, awake-set dormancy — see `WaterPhysics.md` "M2
+Implementation Decisions"); lighting is `scripts/world/light_map.gd` (0–15 tile light, sun +
+BFS point sources) with **fog of war** = min(light, sight falloff) drawn by `LightRenderer`;
+breaker objects power wired lights and trip when flooded. `World` owns and ticks water, light,
+pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items off as they land.
 
 ## Running the Project
 

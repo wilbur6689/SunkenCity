@@ -77,6 +77,16 @@ const PUMP_RANGE_BLOCKS: float = 24.0   # how far a pump's outlet can be set
 const CURRENT_PUSH: float = 14.0        # px/s of push per unit of flow (WS-16; tuned escapable)
 const ITEM_BUOYANCY_RISE: float = 3.0 * BLOCK_SIZE # floating items rise at this speed (CC-07)
 
+# --- Lighting & sight (WS-17 + fog of war) ---
+const LAMP_LIGHT: int = 13            # placed lights (tile-light seed, 0..15)
+const GLOWSTICK_LIGHT: int = 11       # dropped or held glowsticks
+const PLAYER_SIGHT_LIGHT: int = 9     # the player's inherent glow (baseline sight)
+const SIGHT_FULL_BLOCKS: float = 7.0  # full visibility inside this radius
+const SIGHT_FADE_PER_BLOCK: float = 1.5 # visibility lost per block beyond it (0 ≈ 17 blocks)
+const POWER_RADIUS_BLOCKS: float = 24.0 # a breaker powers wired lights within this range
+const LIGHT_RECOMPUTE_TICKS: int = 3
+const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
+
 # --- Skills (CC-18) ---
 const SKILL_XP_PER_LEVEL: float = 20.0
 const SKILL_LEVELS_PER_PLAYER_LEVEL: int = 5

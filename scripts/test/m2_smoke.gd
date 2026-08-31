@@ -153,6 +153,48 @@ func _run() -> void:
 	check(pushed, "inflow current pushes a floating body")
 	check(await until(func(): return region_units(1, 19, 38, 23) > 40, 1200), "breach refloods the room")
 
+	print("== H. lighting (WS-17) + fog of war")
+	# Shut the pump off (breach + pump would circulate water forever),
+	# park the player back on floor 1, and let the water resettle.
+	pump.outlet_cell = WorldObject.NO_OUTLET
+	player.global_position = Vector2(16 * B + 8, 6 * B - Player.FEET_Y)
+	player.velocity = Vector2.ZERO
+	check(await until(func(): return sim().awake_count() == 0, 3000), "world resettles after the breach")
+	await ticks(10)
+	var lm: LightMap = World.light_map
+	check(lm.light_at(Vector2i(34, 10)) == 15, "sun falls down the open shaft")
+	check(lm.light_at(Vector2i(34, 21)) < lm.light_at(Vector2i(34, 19)), "light falls off faster through water (%d < %d)" % [lm.light_at(Vector2i(34, 21)), lm.light_at(Vector2i(34, 19))])
+	var interior_before := lm.light_at(Vector2i(5, 10))
+	check(interior_before <= 3, "unlit interior is dark (%d)" % interior_before)
+	var pc := World.cell_at(player.global_position)
+	check(World.visibility_at(pc, player.global_position) >= 8.0, "the player lights their own surroundings")
+	check(World.visibility_at(Vector2i(34, 10), player.global_position) == 0.0, "fog of war: lit but out of sight range = invisible")
+	player.inventory.add("standing_lamp", 1)
+	World.place_object("standing_lamp", Vector2i(6, 11), true)
+	await ticks(10)
+	check(lm.light_at(Vector2i(6, 10)) >= 10, "placed lamp lights its room (%d -> %d)" % [interior_before, lm.light_at(Vector2i(6, 10))])
+
+	print("== I. building power: breaker + wired lamps (WS-17)")
+	var bkr := World.object_at(Vector2i(25, 11))
+	check(bkr != null and bkr.def.kind == "breaker", "breaker present on floor 2")
+	var lamp_cell := Vector2i(10, 8) # below the west ceiling lamp
+	var dark_before := lm.light_at(lamp_cell)
+	# mop up the pumping episode's leftover water so the breaker is dry
+	for y in range(9, 12):
+		for x in range(1, 39):
+			sim().remove_water(Vector2i(x, y), 8)
+	await ticks(30)
+	bkr.interact(player)
+	await ticks(10)
+	check(bkr.powered_on, "breaker switched on")
+	var lit_level := lm.light_at(lamp_cell)
+	check(lit_level > dark_before + 4, "wired ceiling lamp lights up (%d -> %d)" % [dark_before, lit_level])
+	for x in range(23, 28):
+		sim().add_water(Vector2i(x, 11), 8)
+	check(await until(func(): return not bkr.powered_on, 120), "flooding trips the breaker (WS-17)")
+	await ticks(10)
+	check(lm.light_at(lamp_cell) <= lit_level - 4, "wired lamps go dark when tripped (%d -> %d)" % [lit_level, lm.light_at(lamp_cell)])
+
 func check_quiet(cond: bool, msg: String) -> void:
 	if not cond:
 		checks += 1

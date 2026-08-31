@@ -119,7 +119,11 @@ func _run() -> void:
 	print("== A. wake in the medical room")
 	check(await until(func(): return player.state == Player.State.GROUNDED, 60), "on the floor")
 	check(inv_count("bandage") == 2 and inv_count("food_can") == 1, "starting kit: 2 bandages + 1 food (LT-30)")
-	check(tower.get_node("Objects").get_child_count() == 8, "room furnished with 8 scrappable objects")
+	var scrap_count := 0
+	for o in tower.get_node("Objects").get_children():
+		if o.def.kind == "scrap":
+			scrap_count += 1
+	check(scrap_count == 8, "room furnished with 8 scrappable objects (%d)" % scrap_count)
 	check(obj_at(Vector2i(12, row)) != null and obj_at(Vector2i(12, row)).id == "chair", "chair registered on its cells")
 
 	print("== B. hand-scrap a chair (hold-to-scrap)")

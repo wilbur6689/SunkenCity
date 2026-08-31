@@ -35,7 +35,7 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 - [x] Surface-swim: auto-tread, lateral 5 bl/s, ~2-block water-jump, down input dives (WS-07)
 - [x] Underwater: free 8-way at 4 bl/s, neutral buoyancy (WS-06/09); a flooded ceiling is not a surface
 - [x] 12×22px hitbox; 12×12 compact form fits through 1-block holes when swimming/crawling (WS-02)
-- [x] Camera: centred on the player with smooth follow; mouse-wheel zoom steps (WS-18 amended — lookahead dropped after play-testing, 2026-08-31)
+- [x] Camera: centred on the player with smooth follow; Ctrl+wheel zoom steps (bare wheel reserved for menus; WS-18 amended 2026-08-31)
 
 ### Oxygen & death (first pass)
 - [x] O2 meter: 30s, drains only fully submerged, instant refill in air (WS-08, LT-17)
@@ -122,17 +122,18 @@ small base with a working bed spawn — no debug commands.
 - [x] Fill-to-drain tactic works: displacement destroys water that finds no room (enclosed pockets)
 
 ### Lighting (WS-17)
-- [ ] Tile light propagation: sun from surface, faster falloff through water
-- [ ] Carried light (glowstick glow), placed lights, dropped glowsticks sink and glow
-- [ ] Godot 2D light accents rendering into the 640×360 viewport
-- [ ] Building power: breaker object → area lights on; flooding trips breaker (WS-17)
+- [x] Tile light propagation (`scripts/world/light_map.gd`): 0–15 levels, sun seeds sky columns, cost 1/air · 2/water · 4/solid — light spills through openings, dies in walls
+- [x] Carried light (held glowstick glows), placed lamps, dropped glowsticks sink and glow
+- [x] Godot 2D light accents (PointLight2D on lamps/glowsticks) as warm glow inside lit areas *(render at window res since the canvas_items stretch change — chunky low-res glow is a revisit)*
+- [x] Building power: breaker objects (fixed infrastructure, E to flip) power wired ceiling lamps within 24 blocks; flooding a breaker trips it off (WS-17)
+- [x] **Fog of war** (user request): visibility = min(tile light, sight falloff by distance) — lit floors beyond ~17 blocks fade to black; `LightRenderer` darkness overlay
 
 **GATE:** breach-flood a dry room, then patch it, pump it dry, and move in — bed, station, and
 refilling tanks all working in the reclaimed room.
 - [x] Automated: `scenes/test/m2_smoke.tscn` (28 checks) — equilibrium/conservation, pour-and-settle,
   wake + displacement, buoyancy/pinning/sinking, seal → pump dry → move in (breathe, bed, station),
   currents, breach reflooding
-- [ ] Manual play-through (pump targeting UX, water feel, current strength)
+- [ ] Manual play-through (pump targeting UX, water feel, current strength, light/fog brightness tuning)
 
 ---
 

@@ -423,6 +423,7 @@ OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
     "bed_frame": (3, 2), "cabinet": (2, 3), "desk": (3, 2), "chair": (1, 2), "locker": (1, 3),
     "fridge": (2, 3), "med_cart": (2, 2), "pump": (1, 2), "workbench": (3, 2), "forge": (2, 2), "med_station": (2, 2),
     "dive_station": (2, 3), "mod_bench": (3, 2), "chest": (2, 1), "bed": (3, 2), "standing_lamp": (1, 2),
+    "breaker": (1, 1), "ceiling_lamp": (1, 1),
     "wood_door": (1, 3),
 }
 
@@ -501,6 +502,15 @@ def _draw_object(d, oid, W, H):
         d.rectangle([7, 8, 8, H - 3], fill=metal[1][1]); d.rectangle([4, H - 3, 11, H - 1], fill=metal[1][2], outline=OUT)
         d.polygon([(3, 8), (12, 8), (11, 1), (4, 1)], fill=(230, 200, 140), outline=OUT)
         d.rectangle([6, 3, 9, 6], fill=(255, 240, 200))
+    elif oid == "breaker":
+        _box(d, 3, 2, W - 4, H - 3, metal)
+        d.rectangle([6, 5, 9, 10], fill=(40, 40, 44), outline=OUT)   # switch slot
+        d.rectangle([7, 5, 8, 7], fill=ORANGE)                       # lever
+        d.point((5, H - 5), fill=GREEN); d.point((10, H - 5), fill=RED)
+    elif oid == "ceiling_lamp":
+        d.rectangle([6, 0, 9, 3], fill=metal[1][1], outline=OUT)     # mount
+        d.polygon([(3, 8), (12, 8), (10, 3), (5, 3)], fill=metal[1][2], outline=OUT)  # shade
+        d.rectangle([5, 8, 10, 10], fill=(255, 240, 200), outline=OUT)  # tube
     elif oid == "wood_door":
         _box(d, 2, 0, W - 3, H - 1, wood)
         for y in range(4, H - 4, 8):

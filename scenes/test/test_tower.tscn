@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/test/test_tower.gd" id="1_tower"]
 [ext_resource type="Script" path="res://scripts/world/backdrop.gd" id="6_backdrop"]
 [ext_resource type="Script" path="res://scripts/world/water_renderer.gd" id="7_water"]
+[ext_resource type="Script" path="res://scripts/world/light_renderer.gd" id="8_light"]
 [ext_resource type="TileSet" path="res://assets/tiles/placeholder_blocks.tres" id="2_tileset"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_playerscene"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
@@ -22,7 +23,7 @@ color = Color(0.07, 0.09, 0.13, 1)
 script = ExtResource("6_backdrop")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
-color = Color(0.62, 0.66, 0.75, 1)
+color = Color(0.95, 0.96, 1, 1)
 
 [node name="BackWalls" type="TileMapLayer" parent="."]
 modulate = Color(0.42, 0.45, 0.52, 1)
@@ -46,6 +47,9 @@ collision_enabled = false
 
 [node name="WaterRenderer" type="Node2D" parent="."]
 script = ExtResource("7_water")
+
+[node name="LightRenderer" type="Node2D" parent="."]
+script = ExtResource("8_light")
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
 

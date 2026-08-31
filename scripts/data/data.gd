@@ -33,6 +33,8 @@ func _load_all() -> void:
 		}
 	for o in _load_json("res://data/objects.json").get("objects", []):
 		objects[o.id] = o
+		if o.get("no_item", false):
+			continue # fixed infrastructure (breakers, wired lights) has no item form
 		var full_scrap := []
 		for y in o.get("yields", []):
 			full_scrap.append({"item": y.item, "count": y.max})

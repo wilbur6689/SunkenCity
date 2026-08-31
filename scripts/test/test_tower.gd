@@ -133,3 +133,8 @@ func _furnish() -> void:
 	var standing_row := FLOOR_H - 1
 	for entry in MED_ROOM:
 		World.place_object(entry[0], Vector2i(entry[1], standing_row), false)
+	# Building power test rig (WS-17): a breaker on floor 2 wired to two
+	# ceiling lamps. E flips it; flooding it trips it off.
+	World.place_object("breaker", Vector2i(25, 2 * FLOOR_H - 1), false)
+	World.place_object("ceiling_lamp", Vector2i(10, FLOOR_H + 1), false)
+	World.place_object("ceiling_lamp", Vector2i(28, FLOOR_H + 1), false)
