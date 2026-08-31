@@ -5,15 +5,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Status
 
 **SunkenCity** (working title; repo: wilbur6689/SunkenCity; local folder still named TowerDive) is
-in the **design/pre-production phase**. There is no Godot project, code, or build system yet — the
-repository currently contains only design documents and skills. The game will be built in
-**Godot 4.8** as a 2D side-scrolling block-based survival sandbox (Terraria × 7 Days to Die): a
+a **Godot 4.8** 2D side-scrolling block-based survival sandbox (Terraria × 7 Days to Die): a
 procedurally generated city deliberately flooded to contain a zombie virus, where the player dives
 progressively deeper through submerged skyscrapers. Roadmap: MVP local single-player → LAN
 multiplayer (networked architecture from day one) → Steam demo → full commercial release.
 The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records settled design
 decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
 base) comes first; do not add other major aspects before it works.
+
+Development is at **M0** of the milestone plan in `docs/MVP-overview.md`; the task tracker is
+`docs/MVP-checklist.md` — check items off there as they land.
+
+## Running the Project
+
+- Engine: `C:\Programming\Godot_v4.8\Godot_v4.8-dev2_win64.exe`
+- Run the game: `& "C:\Programming\Godot_v4.8\Godot_v4.8-dev2_win64.exe" --path . `
+- Open the editor: add `-e`
+- Headless validation (use after editing scenes/scripts): `--headless --import` to check assets
+  parse; `--headless --quit-after 10` to boot the main scene and surface script errors.
+
+## Code Conventions
+
+- **All design units are blocks** — `Constants.BLOCK_SIZE = 16` px; speeds in blocks/sec. Every
+  tuning value lives in `scripts/constants.gd` (autoloaded as `Constants`), never inline.
+- Player logic (`scripts/player/player.gd`) keeps an **input-snapshot → state-machine
+  separation** so a networked client can later feed the same input fields (LAN-readiness rule).
+- Recipes, items, loot tables, and enemy stats must be **data files**, not code (per LT-11).
+- Main scene is currently `scenes/test/test_tower.tscn` (M0 test environment).
 
 ## Fixed Design Constants
 

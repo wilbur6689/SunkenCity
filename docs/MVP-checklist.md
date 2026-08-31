@@ -1,0 +1,248 @@
+# SunkenCity — MVP Development Checklist
+
+Living tracker for the M0–M6 build order defined in [MVP-overview.md](MVP-overview.md).
+Check items as they land; each milestone ends with its **GATE** — a demonstrable in-build test.
+Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
+
+---
+
+## M0 — Skeleton
+
+### Project & rendering
+- [ ] Godot 4.8 project created (`project.godot` at repo root)
+- [ ] Viewport 640×360, stretch mode `viewport`, aspect `keep`, integer scale
+- [ ] Default texture filter = Nearest project-wide
+- [ ] 2D transform + vertex pixel snapping enabled
+- [ ] Folder layout: `scenes/`, `scripts/`, `assets/`, `data/`, `scenes/test/`
+- [ ] Input actions defined (move, jump, sprint, crouch, dive, interact, use, inventory) — action-based from day one (CC-21)
+- [ ] Game constants singleton (`BLOCK_SIZE`, speeds, jump, reach, oxygen) — single tuning surface (WS-03/30)
+
+### Test environment
+- [ ] Hand-built test tower scene: 3 dry floors + 2 flooded floors + connecting shaft (static water volume placeholder — real sim is M2)
+- [ ] Placeholder tiles: solid block, water block, ladder, rope
+- [ ] TileMap layers: foreground solid (collision) + cosmetic background walls (WS-20)
+
+### Character controller (`CharacterBody2D` + state machine, WS-19)
+- [ ] State machine scaffold with debug state readout
+- [ ] Grounded: walk 5 bl/s, sprint 7 bl/s, accel/friction tuned
+- [ ] Jump 3 blocks exactly; coyote time + jump buffer
+- [ ] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15)
+- [ ] Crouch/crawl through 2-block gaps; can't stand where blocked (WS-05)
+- [ ] Climb state: ropes and ladders (walk anim reuse, WS-27)
+- [ ] Surface-swim: auto-tread, lateral 5 bl/s, ~2-block water-jump, down input dives (WS-07)
+- [ ] Underwater: free 8-way at 4 bl/s, neutral buoyancy (WS-06/09)
+- [ ] 12×22px hitbox; fits through 1-block holes when swimming/crawling (WS-02)
+- [ ] Camera: fixed zoom, smooth follow, directional lookahead scaling with speed (WS-18)
+
+### Oxygen & death (first pass)
+- [ ] O2 meter: 30s, drains only fully submerged, instant refill in air (WS-08, LT-17)
+- [ ] Drowning: ~10s health drain at zero O2 (GD-20)
+- [ ] Health + death + respawn at world spawn point (full backpack loop is M4)
+- [ ] Minimal HUD: health, O2 (O2 visible only when draining or submerged)
+
+### Multiplayer-ready foundations (CC-06)
+- [ ] World/sim state owned by an authority layer even in single-player (host-authoritative pattern)
+- [ ] Player input → state separation clean enough for later client replication
+
+**GATE:** run, jump, crawl, and climb through the test tower; dive its flooded floors; drown in
+them; respawn.
+
+---
+
+## M1 — The Loop *(standing rule: nothing major starts until this works)*
+
+### Items & inventory
+- [ ] Item resource format (data-driven, LT-11): id, name, weight, stack size, category, stats
+- [ ] Inventory: ~40 slots, materials stack 999, gear unstacked (WS-13, LT-23)
+- [ ] Carried weight total → progressive swim slowdown, no hard cap (WS-10/14)
+- [ ] Pickup / drop; dropped items persist in world
+- [ ] Inventory UI: grid, drag/stack/split, weight readout
+
+### Scrapping (GL-07)
+- [ ] Scrappable object component: multi-tile furniture with tool-tier + skill gating and yield table
+- [ ] In-field scrapping at reduced yield; station scrapping at full yield
+- [ ] Scrap tool interaction: hold-to-scrap with progress + better tool = faster
+- [ ] Test room furnished from a scrap-object set (bed frame, cabinet, desk, chairs, fridge)
+
+### Crafting (GL-04/05/06)
+- [ ] Recipe resource format: inputs, output, station (or hand), tier — data files only, zero code per recipe
+- [ ] Hand-crafting menu (anywhere)
+- [ ] Five station blocks placeable + station-filtered crafting UI: Workbench, Forge, Med Station, Dive Station, Modification Bench (bench logic itself is M5)
+- [ ] Starter recipes: pry bar, scrap knife, hammer + ropes, ladder, glowstick, bandage, torch/lamp
+- [ ] Recipe schematic item type: found → learned → appears in menus (GL-06)
+
+### Building
+- [ ] Block placement/removal with 4-block reach, ghost preview, collision checks (WS-12)
+- [ ] Placeable set: wood/scrap blocks, door, rope, ladder, chest, bed, standing light
+- [ ] Player-placed blocks have HP + hardness; tool-gated breaking (WS-22)
+- [ ] Structure tiles flagged unbreakable at the tile level (GL-01)
+- [ ] Chests: storage UI + quick-stack-to-nearby (LT-23)
+- [ ] Bed sets per-character spawn (GL-23)
+- [ ] Background wall placement (cosmetic layer, WS-21)
+
+### Skills (first pass, CC-18)
+- [ ] Skill framework: XP by use → per-skill levels (start set: Scrapping, Swimming, Building)
+- [ ] Player level = total skill levels ÷ 5; banked tech-tree points (tree UI is M5)
+- [ ] Skill-gated harvesting hook on scrap objects (GL-28)
+
+**GATE:** wake in the test room → scrap it → craft the three starter tools → build and light a
+small base with a working bed spawn — no debug commands.
+
+---
+
+## M2 — Living Water
+
+### Cellular sim (WaterPhysics.md)
+- [ ] Water cell grid overlaid on the tile world; fill levels (prototype granularity: binary vs 8-level — decide here)
+- [ ] Flow rules: down → spread → settle; dormancy for settled cells
+- [ ] Wake-on-change: block placed/removed, water added/removed
+- [ ] Displace-or-destroy on block placement into water (WS-24)
+- [ ] Awake-cell budget per tick + instant-settle for distant regions
+- [ ] Water rendering: surface line, fill levels, modest animation at native res
+
+### Player & water
+- [ ] Swim states driven by real water cells (submerged detection per cell)
+- [ ] Depth color grade shader keyed to depth below waterline (WS-29)
+- [ ] Currents: net-flow cells push bodies (player, items) proportional to rate (WS-16); tuning pass: escapable vs trap
+- [ ] Backpack/dropped-item buoyancy: floats up, pins to ceilings (CC-07 physics, used by M4)
+
+### Pumps & draining (GL-16/17)
+- [ ] Pump block: intake/outlet, fixed cells/sec rate; pipe or paired-block routing (decide here)
+- [ ] Patch-and-pump loop: sealed room drains and stays dry
+- [ ] Breathable = any air cell: O2 refills, tanks refill (LT-17)
+- [ ] Stations/bed function in drained rooms (forward camps, GL-17)
+- [ ] Fill-to-drain tactic works (seal a small pocket with blocks)
+
+### Lighting (WS-17)
+- [ ] Tile light propagation: sun from surface, faster falloff through water
+- [ ] Carried light (glowstick glow), placed lights, dropped glowsticks sink and glow
+- [ ] Godot 2D light accents rendering into the 640×360 viewport
+- [ ] Building power: breaker object → area lights on; flooding trips breaker (WS-17)
+
+**GATE:** breach-flood a dry room, then patch it, pump it dry, and move in — bed, station, and
+refilling tanks all working in the reclaimed room.
+
+---
+
+## M3 — The City
+
+### Generation pipeline (CT-04/05)
+- [ ] Room template format: tile layout, sockets (doors/openings), furniture spawn points, container spawn points, type tag
+- [ ] **Authoring tool: proc-gen room generator + in-editor curate/save workflow** (generate until liked → save to library)
+- [ ] Curated starter library: ~10 rooms × 3 types (residential, office, hospital)
+- [ ] Floor assembler: rooms stitched by sockets, stairwell + elevator shaft guaranteed per tower (CT-06)
+- [ ] Two-jump rule validator on assembled floors (WS-04)
+- [ ] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve
+- [ ] City layout: ~40 towers, center-out height/gap curve, edge water, invisible walls (CT-01/22)
+- [ ] Wear pass: breaches scaling with depth, collapsed sections (CT-11)
+- [ ] Flood pass: run sim to equilibrium at gen; sealed rooms stay dry (CT-12/13)
+- [ ] Authored inserts: starting hospital room/tower, relay station shells, central station shell, bare concrete ground (CT-20, CT-07/08)
+- [ ] Surface debris pass (light, CT-23)
+- [ ] Deterministic seeds: same seed + version = same city (CT-21)
+
+### World runtime
+- [ ] Full grid in RAM; ~32×32 chunk scheduling for render + sim (CT-28)
+- [ ] Depth bands defined (Dry/Shallows/Cold/Dark/Crush) as world data all systems query (GD-16)
+- [ ] Cold gates: slow → damage below band thresholds by suit tier (CC-16); crush: rapid damage (GL-12)
+- [ ] Day/night cycle with surface light change (CC-11)
+
+### Persistence (CC-09)
+- [ ] World save: compressed grid + entity/container state + water state + waterline
+- [ ] Character save separate: inventory, skills, spawn, map reveal
+- [ ] Save/load mid-run anywhere; world picker ↔ character picker flow
+- [ ] Fog-of-war map data per character + top-right minimap UI (CC-25)
+
+**GATE:** a fresh seed generates a full explorable city — bands, gates, minimap — that saves and
+loads reliably.
+
+---
+
+## M4 — Danger
+
+### Enemies
+- [ ] Enemy framework: per-band stat tables (data files), uniform density seeding at gen (GD-23/27)
+- [ ] Walker: chase, fall, squeeze, pound player-placed blocks (GD-04)
+- [ ] Crawler: 2-block spaces and vents
+- [ ] Floater: surface drift; night extras that disperse at dawn (GD-29)
+- [ ] The Drowned: fast swimmer, flooded-interior native, Dark/Crush bands (GD-13/14)
+- [ ] Shark: open-water patrol, Cold band down, proximity aggro, ignores boats (GD-11/12)
+- [ ] Proximity aggro component (single shared system, GD-06)
+- [ ] Cleared-stays-cleared: no ambient respawn (GD-02/03)
+- [ ] Small fish: schools, hand-grab catch (GD-09/28)
+
+### Combat
+- [ ] Melee: knife/sword/axe per tier — damage, speed, knockback; slowed underwater, knives least (GD-08)
+- [ ] Firearms: pistol, semi-auto, rifle (loot-only); disabled submerged (LT-01)
+- [ ] Speargun + retrievable bolts (GD-08, LT-16)
+- [ ] Ammo crafting: pistol rounds, rifle rounds, bolts (LT-16)
+- [ ] Enemy light drops: cloth/scrap bits, fish meat (GD-24)
+- [ ] Bleeding status + bandage cure; slow out-of-combat regen; medkits (GD-21, GL-21)
+
+### Death loop (CC-07)
+- [ ] Backpack entity on death: inventory transfers, floats up, ceiling-pins (M2 buoyancy)
+- [ ] Equipped gear kept; recover-on-touch; respawn at bed
+- [ ] Unobstructed packs surface and bob
+
+### Red moons (CC-14, GL-15)
+- [ ] Random 5–10 day timer, red moon visuals + stinger
+- [ ] Wave spawner converging on player locations; scaling by day count (GD-23)
+- [ ] Zombies damage player-placed blocks/doors only; stragglers persist and re-seed (GD-02)
+
+**GATE:** a red moon can kill you; your backpack floats to a ceiling; you dive back and recover
+it.
+
+---
+
+## M5 — The Long Game
+
+### Loot (LT)
+- [ ] Container entities from room templates; loot tables keyed type × band (data files) (LT-12/13)
+- [ ] Safes: locked, torch/key opening, best-of-band tables (LT-14, GL-09)
+- [ ] One-time loot flags persisted (LT-27)
+- [ ] Modifier system: 8 prefixes + 8 suffixes as data; roll on found gear; stat application (LT-05/06/07)
+- [ ] Title-text rarity coloring (LT-08)
+- [ ] Modification Bench: sacrifice-to-learn (destroys item), apply to unmodified gear only (LT-09/10)
+- [ ] Found-only pools: firearms, accessories (~6), modded gear (LT-18)
+- [ ] Keys as placed loot for specific vault doors
+
+### Gear ladder (GL-09/10/11/13)
+- [ ] Tool tiers: pry bar → bolt cutters → cutting torch; door types gated to match
+- [ ] Tanks: scrap +30s / iron +60s / steel rebreather ~3min
+- [ ] Suits: clothes → wetsuit (Cold) → hard suit (Dark/Crush); swim penalties, cold/crush ratings (LT-21)
+- [ ] Helmet lamp; Suit + Head + 2 Accessory equip slots (LT-03)
+- [ ] Paper-doll visible gear: held tool + suit tiers (WS-26)
+
+### Progression completion
+- [ ] **Ability tech tree: design + implement** (open item — design pass due here)
+- [ ] Full skill set finalized (harvest gates across all four material tiers)
+- [ ] Iron/steel recipes, Forge chains, schematic distribution across bands
+- [ ] Depletion pressure verified: surface scrap genuinely runs out (GL-28)
+
+**GATE:** scrap knife to hard suit purely through play — no debug items — at roughly the
+target pacing (GL-27).
+
+---
+
+## M6 — The Drain
+
+- [ ] Relay station interiors: reach → repair (materials) → power → activate loop (CC-26)
+- [ ] Per-band waterline drops: permanent, visible, bathtub-drain drain-down (CT-25)
+- [ ] Central ground station + final activation sequence
+- [ ] Ending: credits + world-complete flag + freeplay (CC-27)
+- [ ] Full-run integrity pass: fresh seed, medical room → drained city, no debug
+- [ ] Performance pass: frame budget with full city + active sim
+- [ ] LAN smoke test: second player joins a listen server and moves/interacts (architecture validation only — full LAN is phase 2)
+
+**GATE (= MVP Definition of Done):** one player, one seed, zero debug commands — medical room to
+drained-city credits, saving/loading along the way.
+
+---
+
+## Cross-cutting (ongoing, any milestone)
+
+- [ ] Placeholder-art discipline: 16×16 tiles + 24px paper-doll rig with tint layers (WS-25); real art passes later
+- [ ] Lean 7-state animation set as sprites replace placeholders (WS-27)
+- [ ] Audio stubs: bus layout per GameAudioPrinciples (Music/SFX/Ambient/UI), underwater low-pass; real audio post-MVP (CC-23)
+- [ ] Character creation: name + shirt/pants/hair color (CC-17) — needed by first release, trivial any time
+- [ ] Tuning config files reviewed as systems land (speeds, oxygen, yields, tables)
+- [ ] Keep `docs/` in sync when implementation forces a design change — amend OpenQuestions.md answers, never silently drift

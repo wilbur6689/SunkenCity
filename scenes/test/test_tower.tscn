@@ -1,0 +1,61 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_playerscene"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_slab"]
+size = Vector2(480, 16)
+
+[node name="TestTower" type="Node2D"]
+
+[node name="Background" type="ColorRect" parent="."]
+offset_left = -400.0
+offset_top = -400.0
+offset_right = 900.0
+offset_bottom = 500.0
+color = Color(0.08, 0.11, 0.16, 1)
+
+[node name="SpawnPoint" type="Marker2D" parent="." groups=["spawn_point"]]
+position = Vector2(320, -40)
+
+[node name="Floor0" type="StaticBody2D" parent="."]
+position = Vector2(320, 8)
+
+[node name="Shape" type="CollisionShape2D" parent="Floor0"]
+shape = SubResource("RectangleShape2D_slab")
+
+[node name="Visual" type="ColorRect" parent="Floor0"]
+offset_left = -240.0
+offset_top = -8.0
+offset_right = 240.0
+offset_bottom = 8.0
+color = Color(0.35, 0.37, 0.4, 1)
+
+[node name="Floor1" type="StaticBody2D" parent="."]
+position = Vector2(320, -88)
+
+[node name="Shape" type="CollisionShape2D" parent="Floor1"]
+shape = SubResource("RectangleShape2D_slab")
+
+[node name="Visual" type="ColorRect" parent="Floor1"]
+offset_left = -240.0
+offset_top = -8.0
+offset_right = 240.0
+offset_bottom = 8.0
+color = Color(0.35, 0.37, 0.4, 1)
+
+[node name="Ledge" type="StaticBody2D" parent="."]
+position = Vector2(200, -40)
+
+[node name="Shape" type="CollisionShape2D" parent="Ledge"]
+shape = SubResource("RectangleShape2D_slab")
+scale = Vector2(0.1, 1)
+
+[node name="Visual" type="ColorRect" parent="Ledge"]
+offset_left = -24.0
+offset_top = -8.0
+offset_right = 24.0
+offset_bottom = 8.0
+color = Color(0.45, 0.4, 0.32, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_playerscene")]
+position = Vector2(320, -40)
