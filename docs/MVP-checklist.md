@@ -9,23 +9,25 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 ## M0 — Skeleton
 
 ### Project & rendering
-- [ ] Godot 4.8 project created (`project.godot` at repo root)
-- [ ] Viewport 640×360, stretch mode `viewport`, aspect `keep`, integer scale
-- [ ] Default texture filter = Nearest project-wide
-- [ ] 2D transform + vertex pixel snapping enabled
-- [ ] Folder layout: `scenes/`, `scripts/`, `assets/`, `data/`, `scenes/test/`
-- [ ] Input actions defined (move, jump, sprint, crouch, dive, interact, use, inventory) — action-based from day one (CC-21)
-- [ ] Game constants singleton (`BLOCK_SIZE`, speeds, jump, reach, oxygen) — single tuning surface (WS-03/30)
+- [x] Godot 4.8 project created (`project.godot` at repo root)
+- [x] Viewport 640×360, stretch mode `viewport`, aspect `keep`, integer scale
+- [x] Default texture filter = Nearest project-wide
+- [x] 2D transform + vertex pixel snapping enabled
+- [x] Folder layout: `scenes/`, `scripts/`, `assets/`, `data/`, `scenes/test/`
+- [x] Input actions defined (move, jump, sprint, crouch, dive, interact, use, inventory) — action-based from day one (CC-21)
+- [x] Game constants singleton (`BLOCK_SIZE`, speeds, jump, reach, oxygen) — single tuning surface (WS-03/30)
 
 ### Test environment
-- [ ] Hand-built test tower scene: 3 dry floors + 2 flooded floors + connecting shaft (static water volume placeholder — real sim is M2)
-- [ ] Placeholder tiles: solid block, water block, ladder, rope
-- [ ] TileMap layers: foreground solid (collision) + cosmetic background walls (WS-20)
+- [ ] Hand-built test tower scene: 3 dry floors + 2 flooded floors + connecting shaft (static water volume placeholder — real sim is M2) *(dry tower + shaft + two-jump ledges built programmatically; flooded floors pending)*
+- [x] Placeholder tiles — **material palette, 5 shades each** (real sprite sheets later; swap `assets/tiles/placeholder_blocks.png`, layout: columns = shades, rows = materials):
+  - stone = gray (row 0) · wood = brown (row 1) · metal = blue (row 2) · plastic = green (row 3)
+  - *(still to add: water, ladder, rope tiles)*
+- [x] TileMap layers: foreground solid (collision) + cosmetic background walls (WS-20)
 
 ### Character controller (`CharacterBody2D` + state machine, WS-19)
 - [ ] State machine scaffold with debug state readout
 - [ ] Grounded: walk 5 bl/s, sprint 7 bl/s, accel/friction tuned
-- [ ] Jump 3 blocks exactly; coyote time + jump buffer
+- [x] Jump 3 blocks exactly; coyote time + jump buffer
 - [ ] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15)
 - [ ] Crouch/crawl through 2-block gaps; can't stand where blocked (WS-05)
 - [ ] Climb state: ropes and ladders (walk anim reuse, WS-27)
