@@ -25,6 +25,7 @@ var press_time: float = 0.0
 var press_consumed: bool = false
 var press_lock: bool = false # a press that began on an object suppresses held-item actions
 var hit_cooldown: float = 0.0
+var _scrap_sfx_timer: float = 0.0
 var message: String = ""
 var message_timer: float = 0.0
 var rng := RandomNumberGenerator.new()
@@ -253,6 +254,10 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		_stop_scrapping()
 		scrapping = obj
 		scrap_progress = 0.0
+	_scrap_sfx_timer -= delta
+	if _scrap_sfx_timer <= 0.0:
+		_scrap_sfx_timer = Constants.SCRAP_SFX_INTERVAL
+		Audio.play_sfx("creak_plastic", obj.center(), 3, -6.0)
 	var speed: float = float(tool.get("speed", Constants.HAND_SCRAP_SPEED)) * player.scrap_speed_mult()
 	scrap_progress += delta * speed / float(obj.def.get("scrap_time", 2.0))
 	obj.scrap_progress = scrap_progress
@@ -266,6 +271,7 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 				World.spawn_item(y.item, leftover, pos)
 		player.skills.add_xp("scrapping", float(obj.def.get("xp", 3)))
 		say("Scrapped " + obj.def.name)
+		Audio.play_sfx("dismantle_rattle", pos)
 		scrapping = null
 		scrap_progress = 0.0
 

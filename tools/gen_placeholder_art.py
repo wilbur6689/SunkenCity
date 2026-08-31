@@ -368,6 +368,7 @@ ICONS = {
     (3, 4): ("belt", "tool"), (4, 4): ("belt", "weight"), (5, 4): ("compass", None),
     # row 5: accessories, vault key, steel
     (0, 5): ("band", None), (1, 5): ("watch", None), (2, 5): ("key", None), (3, 5): ("ingot2", None),
+    (4, 5): ("heavy", None),
 }
 
 
@@ -468,6 +469,10 @@ def _draw_icon(d, kind, arg, ox, oy, rng):
         d.line([ox + 8, oy + 7, ox + 13, oy + 7], fill=(200, 170, 60), width=2)
         d.line([ox + 11, oy + 7, ox + 11, oy + 10], fill=(200, 170, 60))
         d.line([ox + 13, oy + 7, ox + 13, oy + 9], fill=(200, 170, 60))
+    elif kind == "heavy":
+        d.polygon([(ox + 4, oy + 13), (ox + 5, oy + 7), (ox + 10, oy + 7), (ox + 11, oy + 13)], fill=(50, 54, 62), outline=OUT)
+        d.arc([ox + 5, oy + 3, ox + 10, oy + 9], 180, 360, fill=(50, 54, 62), width=2)
+        d.line([ox + 6, oy + 9, ox + 9, oy + 9], fill=(90, 96, 104))
     elif kind == "ingot2":
         d.polygon([(ox + 3, oy + 11), (ox + 5, oy + 6), (ox + 12, oy + 6), (ox + 14, oy + 11)], fill=(120, 140, 165), outline=OUT)
         d.line([ox + 6, oy + 7, ox + 11, oy + 7], fill=(180, 200, 220))

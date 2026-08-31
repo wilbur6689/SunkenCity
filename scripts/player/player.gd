@@ -103,6 +103,7 @@ func _physics_process(delta: float) -> void:
 	_clamp_to_world_bounds()
 	_update_sprite(delta)
 	_update_swing(delta)
+	_update_move_sfx(delta)
 	_update_oxygen(delta)
 	_update_environment(delta)
 	_update_camera(delta)
@@ -141,10 +142,24 @@ func _read_input() -> void:
 	if Input.is_action_just_pressed("zoom_out"):
 		zoom_step(-1)
 
-## True while a UI panel wants the mouse (set by the inventory UI).
+## True while a UI panel wants the mouse (set by the inventory UI); clicks
+## on GUI controls (the hotbar) also stay out of the world.
 var ui_blocks_mouse: bool = false
 func ui_blocking() -> bool:
-	return ui_blocks_mouse
+	return ui_blocks_mouse or get_viewport().gui_get_hovered_control() != null
+
+## Bare mouse wheel cycles the hotbar while no menu is open (user request);
+## Ctrl+wheel stays zoom, and menus consume their own wheel events.
+func _unhandled_input(event: InputEvent) -> void:
+	if not is_multiplayer_authority() or ui_blocks_mouse:
+		return
+	if event is InputEventMouseButton and event.pressed and not event.ctrl_pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			selected_slot = (selected_slot + 1) % Constants.HOTBAR_SLOTS
+			bare_hands = false
+		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			selected_slot = (selected_slot - 1 + Constants.HOTBAR_SLOTS) % Constants.HOTBAR_SLOTS
+			bare_hands = false
 
 func _tick_timers(delta: float) -> void:
 	if wants_jump:
@@ -198,10 +213,14 @@ func reveal_radius() -> int:
 func scrap_speed_mult() -> float:
 	return Constants.SCRAP_SPEED_MULT * (1.0 + equip_stat("scrap_speed"))
 
-func swim_factor() -> float:
-	var w := inventory.total_weight()
+## The weight-only part of the swim slowdown (the HUD's overweight icon
+## watches this; the weight belt raises the reference).
+func weight_swim_factor() -> float:
 	var ref := Constants.WEIGHT_SWIM_REFERENCE + equip_stat("carry")
-	var f := maxf(Constants.WEIGHT_SWIM_MIN_FACTOR, 1.0 - 0.5 * w / ref)
+	return maxf(Constants.WEIGHT_SWIM_MIN_FACTOR, 1.0 - 0.5 * inventory.total_weight() / ref)
+
+func swim_factor() -> float:
+	var f := weight_swim_factor()
 	var suit: Dictionary = Data.item(equipped("suit")).get("stats", {})
 	f *= 1.0 - float(suit.get("swim_penalty", 0.0)) + equip_stat("swim")
 	return f * env_slow
@@ -631,6 +650,35 @@ const WALK_FRAME_TIME: float = 0.1 # seconds per frame at walk speed; scales wit
 
 var facing: int = 1 # +1 east, -1 west
 var _anim_time: float = 0.0
+
+# Movement sounds: footsteps paced by ground distance, a splash on hitting
+# water (volume scales with entry speed).
+var _step_dist: float = 0.0
+var _was_in_water: bool = false
+var _splash_cooldown: float = 0.0
+
+func _update_move_sfx(delta: float) -> void:
+	_splash_cooldown = maxf(_splash_cooldown - delta, 0.0)
+	var stride := Constants.FOOTSTEP_STRIDE_BLOCKS * Constants.BLOCK_SIZE
+	if state == State.GROUNDED and absf(velocity.x) > 0.5 * Constants.BLOCK_SIZE:
+		_step_dist += absf(velocity.x) * delta
+		if _step_dist >= stride:
+			_step_dist = 0.0
+			Audio.play_sfx("footstep_wood", _feet_point(), 12, -8.0)
+	elif state == State.CRAWLING and velocity.length() > 0.4 * Constants.BLOCK_SIZE:
+		_step_dist += velocity.length() * delta
+		if _step_dist >= stride:
+			_step_dist = 0.0
+			Audio.play_sfx("footstep_soft", _feet_point(), 8, -2.0)
+	else:
+		_step_dist = stride * 0.6 # first step lands quickly when moving resumes
+	if in_water and not _was_in_water and _splash_cooldown <= 0.0:
+		var speed := velocity.length()
+		if speed > 1.5 * Constants.BLOCK_SIZE:
+			_splash_cooldown = 0.4
+			var vol := clampf(-18.0 + speed / (6.0 * Constants.BLOCK_SIZE) * 18.0, -18.0, 0.0)
+			Audio.play_sfx("splash", _feet_point(), 5, vol)
+	_was_in_water = in_water
 
 # Tool swing (user request): the held tool arcs in front of the player on
 # each hammer hit so breaking your own blocks reads as an action.

@@ -28,6 +28,7 @@ var _hover_desc: Label
 var _hover_action: Label
 var _hover_shown: float = 0.0 # 0 = fully hidden, 1 = fully up
 var _hover_obj: WorldObject = null
+var _weight_icon: TextureRect
 
 func _ready() -> void:
 	for i in Constants.HOTBAR_SLOTS:
@@ -49,11 +50,34 @@ func _ready() -> void:
 		count.add_theme_font_size_override("font_size", 8)
 		count.set_anchors_preset(Control.PRESET_FULL_RECT)
 		panel.add_child(count)
+		panel.gui_input.connect(_on_hotbar_click.bind(i))
 		hotbar.add_child(panel)
 		_slots.append({"panel": panel, "style": style, "icon": icon, "count": count})
+	# The vitals bars must not swallow world clicks (ui_blocking checks the
+	# hovered control now that the hotbar is clickable).
+	for bar: Control in [health_bar, oxygen_bar, scrap_bar]:
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Overweight marker (user request): shows right of the hotbar once the
+	# load is heavy enough to slow swimming, reddening as it worsens.
+	_weight_icon = TextureRect.new()
+	var wat := AtlasTexture.new()
+	wat.atlas = load("res://assets/sprites/items.png")
+	wat.region = Rect2(4 * 16, 5 * 16, 16, 16)
+	_weight_icon.texture = wat
+	_weight_icon.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_weight_icon.position = Vector2(116, -26)
+	_weight_icon.tooltip_text = "Carrying too much — swimming is slowed"
+	_weight_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_weight_icon.visible = false
+	get_node("Root").add_child(_weight_icon)
 	_build_minimap()
 	_build_debug()
 	_build_hover_panel()
+
+func _on_hotbar_click(ev: InputEvent, i: int) -> void:
+	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT and player != null:
+		player.selected_slot = i
+		player.bare_hands = false
 
 ## Bottom-right info card: slides up while an interactable glows under the
 ## mouse — name, what it is, and how to use it (interact / container).
@@ -307,6 +331,12 @@ func _process(delta: float) -> void:
 		ui.icon.texture = Data.icon(s.id) if s != null else null
 		ui.count.text = str(s.count) if (s != null and s.count > 1) else ""
 		ui.style.border_color = Color(1.0, 0.85, 0.4) if i == player.selected_slot else Color(0.5, 0.5, 0.55, 0.8)
+
+	var wf: float = player.weight_swim_factor()
+	_weight_icon.visible = wf <= 0.8
+	if _weight_icon.visible: # amber -> red as the load approaches the floor
+		var t := clampf(inverse_lerp(0.8, Constants.WEIGHT_SWIM_MIN_FACTOR, wf), 0.0, 1.0)
+		_weight_icon.modulate = Color(1.0, lerpf(0.85, 0.35, t), 0.3)
 
 	_minimap_timer -= delta
 	if _minimap_timer <= 0.0:

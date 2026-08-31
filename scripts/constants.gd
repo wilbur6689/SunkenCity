@@ -104,12 +104,18 @@ const LIGHT_WINDOW: Vector2i = Vector2i(120, 72) # cells relit around the camera
 const OBJECT_WINDOW: Vector2i = Vector2i(200, 160)
 
 const TOOL_SWING_TIME: float = 0.18 # seconds per hammer swing arc
+const FOOTSTEP_STRIDE_BLOCKS: float = 1.6 # ground distance between step sounds
+const SCRAP_SFX_INTERVAL: float = 0.4     # seconds between scrapping creaks
 
 # Audio
 const MUSIC_VOLUME_DB: float = -8.0
 const AMBIENT_VOLUME_DB: float = -6.0
-const MUSIC_SILENCE_MIN: float = 25.0   # quiet stretch between tracks (s)
-const MUSIC_SILENCE_MAX: float = 70.0
+const MUSIC_SILENCE_MIN: float = 90.0   # quiet stretch between tracks (s)
+const MUSIC_SILENCE_MAX: float = 240.0
+const AMBIENT_ON_MIN: float = 60.0      # ambient beds breathe: on a while,
+const AMBIENT_ON_MAX: float = 150.0     # then a long quiet stretch
+const AMBIENT_OFF_MIN: float = 45.0
+const AMBIENT_OFF_MAX: float = 120.0
 
 # Map + minimap (CC-25)
 const MAP_REVEAL_RADIUS: int = 14        # blocks revealed around the player

@@ -735,9 +735,14 @@ func _tick_slot_scrap(delta: float) -> void:
 		_clear_slot_scrap()
 		return
 	scrap_hold.time += delta
+	scrap_hold.sfx = scrap_hold.get("sfx", 0.0) - delta
+	if scrap_hold.sfx <= 0.0:
+		scrap_hold.sfx = Constants.SCRAP_SFX_INTERVAL
+		Audio.play_sfx("creak_plastic", player.global_position, 3, -8.0)
 	scrap_hold_bar.value = scrap_hold.time / scrap_hold.duration * 100.0
 	if scrap_hold.time >= scrap_hold.duration:
 		if player.scrap_item(scrap_hold.id, 1, true):
+			Audio.play_sfx("dismantle_rattle", player.global_position, 1, -4.0)
 			_refresh_all()
 			scrap_hold.time = 0.0 # keep holding to keep scrapping the stack
 			scrap_hold_bar.value = 0.0

@@ -32,6 +32,8 @@ var amb_outside: AudioStreamPlayer
 ## objects otherwise show up as leaked instances at exit.
 var _headless := DisplayServer.get_name() == "headless"
 var _silence_left := 0.0     # countdown between tracks
+var _amb_active := true      # ambient duty cycle (user request: long quiet spells)
+var _amb_cycle := 0.0
 var _current_pool := ""
 var _last_track := ""
 var _fading_out := false
@@ -46,6 +48,7 @@ func _ready() -> void:
 	amb_inside = _player("Ambient", AMB_INSIDE)
 	amb_outside = _player("Ambient", AMB_OUTSIDE)
 	_silence_left = randf_range(2.0, 6.0) # short lead-in on boot
+	_amb_cycle = randf_range(Constants.AMBIENT_ON_MIN, Constants.AMBIENT_ON_MAX)
 
 func _exit_tree() -> void:
 	# Release the streams before engine teardown (quiets the
@@ -112,14 +115,23 @@ func _process(delta: float) -> void:
 	_update_music(delta)
 
 func _update_ambient(delta: float) -> void:
+	# The beds are not wall-to-wall: they play for a stretch, then rest for
+	# a long quiet spell (user request), on top of the submerged/inside gating.
+	_amb_cycle -= delta
+	if _amb_cycle <= 0.0:
+		_amb_active = not _amb_active
+		if _amb_active:
+			_amb_cycle = randf_range(Constants.AMBIENT_ON_MIN, Constants.AMBIENT_ON_MAX)
+		else:
+			_amb_cycle = randf_range(Constants.AMBIENT_OFF_MIN, Constants.AMBIENT_OFF_MAX)
 	var submerged := false
 	var inside := false
 	var p := get_tree().get_first_node_in_group("player")
 	if p != null and World.is_ready():
 		submerged = p.get("submerged") == true
 		inside = World.has_back_wall_cell(World.cell_at(p.global_position))
-	_fade(amb_inside, 0.0 if (submerged and inside) else SILENT_DB, delta)
-	_fade(amb_outside, 0.0 if (submerged and not inside) else SILENT_DB, delta)
+	_fade(amb_inside, 0.0 if (_amb_active and submerged and inside) else SILENT_DB, delta)
+	_fade(amb_outside, 0.0 if (_amb_active and submerged and not inside) else SILENT_DB, delta)
 
 func _fade(p: AudioStreamPlayer, target_db: float, delta: float, rate: float = 40.0) -> void:
 	p.volume_db = move_toward(p.volume_db, target_db, rate * delta)
