@@ -14,14 +14,16 @@ const YIELD_ITEMS := ["wood", "scrap_metal", "plastic", "cloth", "stone", "iron"
 const PX := 5 # canvas zoom
 const MAX_BLOCKS := 4
 
-## TileArt ramps (outline, tones..., highlight) + accents.
+## TileArt material ramps (outline, tones..., highlight).
 const PALETTE := [
 	["Wood", [Color8(40, 26, 14), Color8(94, 62, 38), Color8(120, 82, 50), Color8(146, 104, 66), Color8(168, 126, 86), Color8(192, 152, 108)]],
 	["Metal", [Color8(22, 28, 36), Color8(60, 70, 82), Color8(80, 92, 106), Color8(100, 114, 130), Color8(120, 136, 152), Color8(154, 170, 186)]],
 	["Stone", [Color8(30, 28, 26), Color8(66, 64, 62), Color8(90, 88, 86), Color8(114, 112, 110), Color8(138, 136, 134), Color8(166, 164, 162)]],
 	["Plastic", [Color8(20, 44, 32), Color8(54, 100, 74), Color8(70, 126, 92), Color8(90, 150, 110), Color8(112, 172, 130), Color8(142, 196, 156)]],
-	["Accent", [Color8(226, 226, 220), Color8(190, 60, 50), Color8(220, 130, 50), Color8(90, 140, 190), Color8(150, 90, 190), Color8(110, 210, 120)]],
 ]
+## Accent grid: 8 hues x 6 shades (dark -> light), plus a gray row.
+const ACCENT_HUES := [0.0, 0.07, 0.13, 0.3, 0.5, 0.62, 0.76, 0.9]
+const ACCENT_SHADES := [[0.8, 0.32], [0.85, 0.5], [0.78, 0.68], [0.68, 0.85], [0.5, 0.95], [0.25, 1.0]] # (sat, val)
 
 var objects_path := "res://data/objects.json"
 var sprites_dir := "res://assets/sprites/objects/"
@@ -177,31 +179,53 @@ func _build_ui() -> void:
 		image.fill(Color(0, 0, 0, 0))
 		_dirty()))
 	var brow := HBoxContainer.new()
+	brow.add_theme_constant_override("separation", 4)
 	brow.add_child(UITheme.label("Brush", 8))
 	brush_swatch = ColorRect.new()
 	brush_swatch.custom_minimum_size = Vector2(14, 14)
 	brush_swatch.color = brush
 	brow.add_child(brush_swatch)
+	var picker := ColorPickerButton.new()
+	picker.text = "Custom…"
+	picker.add_theme_font_size_override("font_size", 8)
+	picker.custom_minimum_size = Vector2(56, 14)
+	picker.color = brush
+	picker.color_changed.connect(func(c):
+		brush = c
+		brush_swatch.color = c)
+	brow.add_child(picker)
 	pv.add_child(brow)
-	pv.add_child(UITheme.label("PALETTE", 8, Color(0.56, 0.75, 0.81)))
+	pv.add_child(UITheme.label("MATERIALS", 8, Color(0.56, 0.75, 0.81)))
 	for ramp in PALETTE:
-		pv.add_child(UITheme.label(ramp[0], 8, Color(0.6, 0.66, 0.72)))
-		var srow := HBoxContainer.new()
-		srow.add_theme_constant_override("separation", 1)
-		for col: Color in ramp[1]:
-			var sw := Button.new()
-			sw.custom_minimum_size = Vector2(13, 13)
-			sw.focus_mode = Control.FOCUS_NONE
-			var sb := StyleBoxFlat.new()
-			sb.bg_color = col
-			sw.add_theme_stylebox_override("normal", sb)
-			sw.add_theme_stylebox_override("hover", sb)
-			sw.add_theme_stylebox_override("pressed", sb)
-			sw.pressed.connect(func():
-				brush = col
-				brush_swatch.color = col)
-			srow.add_child(sw)
-		pv.add_child(srow)
+		pv.add_child(_swatch_row(ramp[1]))
+	pv.add_child(UITheme.label("ACCENTS", 8, Color(0.56, 0.75, 0.81)))
+	for hue: float in ACCENT_HUES:
+		var colors: Array[Color] = []
+		for shade in ACCENT_SHADES:
+			colors.append(Color.from_hsv(hue, shade[0], shade[1]))
+		pv.add_child(_swatch_row(colors))
+	var grays: Array[Color] = []
+	for i in 6:
+		grays.append(Color.from_hsv(0.0, 0.0, 0.08 + i * 0.18))
+	pv.add_child(_swatch_row(grays))
+
+func _swatch_row(colors: Array) -> HBoxContainer:
+	var srow := HBoxContainer.new()
+	srow.add_theme_constant_override("separation", 1)
+	for col: Color in colors:
+		var sw := Button.new()
+		sw.custom_minimum_size = Vector2(13, 12)
+		sw.focus_mode = Control.FOCUS_NONE
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = col
+		sw.add_theme_stylebox_override("normal", sb)
+		sw.add_theme_stylebox_override("hover", sb)
+		sw.add_theme_stylebox_override("pressed", sb)
+		sw.pressed.connect(func():
+			brush = col
+			brush_swatch.color = col)
+		srow.add_child(sw)
+	return srow
 
 func _edit(placeholder: String) -> LineEdit:
 	var e := LineEdit.new()
