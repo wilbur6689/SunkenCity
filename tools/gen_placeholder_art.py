@@ -565,9 +565,10 @@ def build_player_sheet():
         return
     src = Image.open(REF_SHEET).convert("RGBA")
     out = Image.new("RGBA", (7 * FRAME, 2 * FRAME), (0, 0, 0, 0))
-    # The export labels idle col 2 "east" and col 6 "west", but those poses face the opposite
-    # way from the walk rows, so pair idle 6 with walk-east and idle 2 with walk-west.
-    for r, (idle_col, walk_row) in enumerate(((6, 2), (2, 3))):  # east, west
+    # Source pairing verified visually: idle col 2 + walk row 3 face east (right),
+    # idle col 6 + walk row 2 face west (left). (An earlier "compensation" had
+    # these swapped, which made the character walk right while facing left.)
+    for r, (idle_col, walk_row) in enumerate(((2, 3), (6, 2))):  # east, west
         out.paste(_cell(src, idle_col, 0), (0, r * FRAME))
         for i in range(6):
             out.paste(_cell(src, i, walk_row), ((i + 1) * FRAME, r * FRAME))
