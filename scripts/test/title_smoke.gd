@@ -71,6 +71,22 @@ func _ready() -> void:
 	check(char_row > 0, "and the new character")
 	check(title2.world_list.get_selected_items()[0] > 0, "a saved world is preselected for the next dive")
 
+	print("== D. deleting saves from the title")
+	title2.world_list.select(world_row)
+	title2._delete_pressed("world")
+	check(title2.world_del.text == "Really?", "delete arms and asks for a second click")
+	title2._delete_pressed("world")
+	check(not SaveGame.world_names().has(WNAME), "the second click deletes the world file")
+	var crow := -1
+	for i in title2.char_list.item_count:
+		if title2.char_list.get_item_text(i) == CNAME:
+			crow = i
+	title2.char_list.select(crow)
+	title2._delete_pressed("char")
+	title2._delete_pressed("char")
+	check(not SaveGame.character_names().has(CNAME), "characters delete the same way")
+	check(title2.world_list.get_item_text(0) == "+ New world", "lists refresh after deleting")
+
 	_delete_saves()
 	print("\nTitle smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:

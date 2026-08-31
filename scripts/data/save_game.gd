@@ -37,6 +37,12 @@ static func world_names() -> Array:
 static func character_names() -> Array:
 	return _names_in(CHAR_DIR, CHAR_EXT)
 
+static func delete_world(world_name: String) -> void:
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(WORLD_DIR + world_name + WORLD_EXT))
+
+static func delete_character(char_name: String) -> void:
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(CHAR_DIR + char_name + CHAR_EXT))
+
 # --- World ---
 
 static func save_world(world_name: String, seed_value: int) -> void:
