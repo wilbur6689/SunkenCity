@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/test/test_tower.gd" id="1_tower"]
+[ext_resource type="Script" path="res://scripts/world/backdrop.gd" id="6_backdrop"]
 [ext_resource type="TileSet" path="res://assets/tiles/placeholder_blocks.tres" id="2_tileset"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_playerscene"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
@@ -15,6 +16,9 @@ offset_top = -500.0
 offset_right = 1400.0
 offset_bottom = 1100.0
 color = Color(0.07, 0.09, 0.13, 1)
+
+[node name="Backdrop" type="Parallax2D" parent="."]
+script = ExtResource("6_backdrop")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
 color = Color(0.62, 0.66, 0.75, 1)

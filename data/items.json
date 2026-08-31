@@ -28,6 +28,10 @@
     {"id": "glowstick", "name": "Glowstick", "category": "consumable", "weight": 0.1, "stack": 50, "icon": [2, 2],
      "use": {"drop_light": {"radius_blocks": 4, "color": [0.5, 1.0, 0.6]}}},
 
+    {"id": "clothes", "name": "Plain Clothes", "category": "gear", "slot": "suit", "weight": 1.0, "icon": [4, 2],
+     "stats": {"defense": 0, "cold": 0, "crush": 0, "swim_penalty": 0.0},
+     "scrap": [{"item": "cloth", "count": 2}]},
+
     {"id": "schematic_iron_knife", "name": "Schematic: Iron Knife", "category": "schematic", "weight": 0.1, "icon": [3, 2],
      "use": {"learn_recipe": "iron_knife"}}
   ]

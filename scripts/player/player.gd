@@ -183,6 +183,25 @@ func drop_held(n: int) -> void:
 	var taken := inventory.remove_from_slot(selected_slot, n)
 	World.spawn_item(id, taken, global_position, Vector2(facing * 4.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
 
+# --- Equipment (LT-03: Suit + Head + two Accessories; two slots reserved) ---
+var equipment: Dictionary = {"head": null, "suit": null, "accessory1": null, "accessory2": null}
+
+func can_equip(slot_name: String, id: String) -> bool:
+	var want: String = Data.item(id).get("slot", "")
+	if want == "":
+		return false
+	if slot_name.begins_with("accessory"):
+		return want == "accessory"
+	return want == slot_name
+
+func set_equipment(slot_name: String, stack) -> void:
+	equipment[slot_name] = stack
+	inventory.changed.emit() # equipment shows in the same UI refresh
+
+func equipped(slot_name: String) -> String:
+	var st = equipment.get(slot_name)
+	return st.id if st != null else ""
+
 func knows_recipe(id: String) -> bool:
 	return known_recipes.has(id)
 

@@ -359,6 +359,7 @@ ICONS = {
     (0, 1): ("pry", None), (1, 1): ("knife", "scrap"), (2, 1): ("hammer", None), (3, 1): ("knife", "iron"),
     # row 2: consumables / schematic
     (0, 2): ("bandage", None), (1, 2): ("can", None), (2, 2): ("glowstick", None), (3, 2): ("paper", None),
+    (4, 2): ("shirt", None),
 }
 
 
@@ -396,6 +397,12 @@ def _draw_icon(d, kind, arg, ox, oy, rng):
         d.line([ox + 4, oy + 12, ox + 11, oy + 4], fill=GREEN, width=3)
         d.line([ox + 4, oy + 12, ox + 11, oy + 4], fill=(200, 255, 200))
         d.point((ox + 11, oy + 4), fill=OUT); d.point((ox + 4, oy + 12), fill=OUT)
+    elif kind == "shirt":
+        khaki = (122, 106, 72)
+        d.polygon([(ox + 2, oy + 5), (ox + 5, oy + 3), (ox + 10, oy + 3), (ox + 13, oy + 5), (ox + 12, oy + 8),
+                   (ox + 11, oy + 7), (ox + 11, oy + 13), (ox + 4, oy + 13), (ox + 4, oy + 7), (ox + 3, oy + 8)],
+                  fill=khaki, outline=OUT)
+        d.line([ox + 6, oy + 4, ox + 9, oy + 4], fill=(94, 80, 54))
     elif kind == "paper":
         d.rectangle([ox + 4, oy + 2, ox + 12, oy + 13], fill=(225, 220, 200), outline=OUT)
         for y in (5, 7, 9, 11):
@@ -553,6 +560,115 @@ def build_player_sheet():
     print("wrote", path, out.size)
 
 
+# --- UI 9-slice textures (palette sampled from docs/Examples/UI Menus mockups) --------------------
+UI_DIR = ROOT / "assets" / "ui"
+WOOD_EDGE = (24, 8, 8)
+WOOD_BEVEL = (184, 144, 104)
+WOOD_BEVEL_DK = (140, 96, 64)
+WOOD_RIM = (88, 48, 32)
+WOOD_FILL = (22, 6, 4)
+WELL_FILL = (48, 32, 32)
+WELL_FILL_HOVER = (70, 50, 46)
+WELL_EDGE = (16, 0, 0)
+WELL_RIM = (72, 40, 32)
+STEEL_LIGHT = (144, 192, 208)
+STEEL_DARK = (32, 56, 64)
+STEEL_FILL = (40, 56, 72)
+STEEL_WELL = (16, 32, 48)
+PLAQUE_DARK = (24, 16, 16)
+PLAQUE_WOOD = (56, 40, 32)
+PLAQUE_WOOD_LT = (120, 84, 56)
+
+
+def _frame(size, layers, fill):
+    """Square 9-slice: concentric 1px layers from the outside in, then fill."""
+    img = Image.new("RGBA", (size, size), (*fill, 255))
+    d = ImageDraw.Draw(img)
+    for i, c in enumerate(layers):
+        d.rectangle([i, i, size - 1 - i, size - 1 - i], outline=(*c, 255))
+    return img
+
+
+def build_ui_textures():
+    UI_DIR.mkdir(parents=True, exist_ok=True)
+    # Wood frame: dark edge, 2px tan bevel, brown rim, near-black fill (the grid backing)
+    _frame(24, [WOOD_EDGE, WOOD_BEVEL, WOOD_BEVEL_DK, WOOD_RIM, WOOD_RIM], WOOD_FILL).save(UI_DIR / "wood_frame.png")
+    # Slot well (normal / hover / selected)
+    _frame(16, [WELL_EDGE, WELL_RIM], WELL_FILL).save(UI_DIR / "slot.png")
+    _frame(16, [WELL_EDGE, WOOD_BEVEL_DK], WELL_FILL_HOVER).save(UI_DIR / "slot_hover.png")
+    _frame(16, [WOOD_BEVEL, WOOD_BEVEL_DK], WELL_FILL_HOVER).save(UI_DIR / "slot_selected.png")
+    # Steel panel: light border, dark inner line, blue-gray fill
+    _frame(16, [STEEL_LIGHT, STEEL_LIGHT, STEEL_DARK], STEEL_FILL).save(UI_DIR / "steel_panel.png")
+    # Steel equipment slot / button
+    _frame(16, [STEEL_LIGHT, STEEL_DARK], STEEL_WELL).save(UI_DIR / "steel_slot.png")
+    _frame(16, [STEEL_LIGHT, STEEL_DARK], STEEL_FILL).save(UI_DIR / "steel_button.png")
+    _frame(16, [(200, 230, 240), STEEL_LIGHT], (60, 84, 104)).save(UI_DIR / "steel_button_hover.png")
+    _frame(16, [STEEL_DARK, STEEL_DARK], (28, 40, 52)).save(UI_DIR / "steel_button_pressed.png")
+    _frame(16, [(70, 80, 90), STEEL_DARK], (34, 44, 54)).save(UI_DIR / "steel_button_disabled.png")
+    # Title plaque: pointed wooden banner, 160x20, drawn whole (not 9-sliced)
+    W, H = 160, 20
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    body = [(8, 0), (W - 9, 0), (W - 1, H // 2), (W - 9, H - 1), (8, H - 1), (0, H // 2)]
+    d.polygon(body, fill=(*PLAQUE_DARK, 255), outline=(*WOOD_EDGE, 255))
+    inner = [(11, 2), (W - 12, 2), (W - 4, H // 2), (W - 12, H - 3), (11, H - 3), (3, H // 2)]
+    d.polygon(inner, fill=(*PLAQUE_WOOD, 255), outline=(*PLAQUE_WOOD_LT, 255))
+    d.rectangle([14, 4, W - 15, H - 5], fill=(*PLAQUE_DARK, 255))
+    img.save(UI_DIR / "plaque.png")
+    # Equipment slot glyphs (16x16, drawn dim): head, suit, accessory, lock
+    glyphs = Image.new("RGBA", (64, 16), (0, 0, 0, 0))
+    g = ImageDraw.Draw(glyphs)
+    dim = (90, 120, 140, 255)
+    g.arc([3, 3, 12, 14], 180, 360, fill=dim, width=2); g.line([3, 9, 12, 9], fill=dim)            # head
+    g.polygon([(4, 4), (11, 4), (13, 7), (11, 13), (4, 13), (2, 7)], outline=dim)                 # suit
+    g.ellipse([4, 4, 11, 11], outline=dim); g.point((7, 7), fill=dim)                              # accessory ring
+    g.rectangle([16 * 3 + 4, 7, 16 * 3 + 11, 13], outline=dim); g.arc([16 * 3 + 5, 2, 16 * 3 + 10, 9], 180, 360, fill=dim)  # lock
+    for i in (1, 2):
+        pass
+    # shift glyphs 1 and 2 into their cells
+    cell = glyphs.crop((0, 0, 16, 16))
+    out = Image.new("RGBA", (64, 16), (0, 0, 0, 0))
+    out.paste(cell, (0, 0))
+    suit = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); ImageDraw.Draw(suit).polygon([(4, 3), (11, 3), (13, 6), (11, 13), (4, 13), (2, 6)], outline=dim); out.paste(suit, (16, 0))
+    acc = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); dd = ImageDraw.Draw(acc); dd.ellipse([4, 4, 11, 11], outline=dim); dd.point((7, 7), fill=dim); out.paste(acc, (32, 0))
+    out.paste(glyphs.crop((48, 0, 64, 16)), (48, 0))
+    out.save(UI_DIR / "equip_glyphs.png")
+    # Character portrait for the inventory panel (front view from the reference art)
+    portrait_src = ROOT / "docs" / "Examples" / "Character" / "MainCharacter-front.png"
+    if portrait_src.exists():
+        p = Image.open(portrait_src).convert("RGBA")
+        h = 116
+        w = round(p.width * h / p.height)
+        p.resize((w, h), Image.LANCZOS).save(UI_DIR / "character_portrait.png")
+    print("wrote UI textures to", UI_DIR)
+
+
+# --- Backgrounds (user art in docs/Examples/Backgrounds, downscaled to the 640x360 world) ---------
+BG_SRC = ROOT / "docs" / "Examples" / "Backgrounds"
+MENU_BG_SRC = ROOT / "docs" / "Examples" / "UI Menus" / "background01.jpg"
+BG_DIR = ROOT / "assets" / "backgrounds"
+
+
+def build_backgrounds():
+    if not BG_SRC.exists():
+        print("skip backgrounds: source not found", BG_SRC)
+        return
+    BG_DIR.mkdir(parents=True, exist_ok=True)
+    for i in (1, 2, 3, 4, 5):
+        src = BG_SRC / f"City0{i}.jpg"
+        if not src.exists():
+            continue
+        im = Image.open(src).convert("RGB")
+        im.resize((im.width // 2, im.height // 2), Image.BOX).save(BG_DIR / f"city0{i}.png")
+    for i in (1, 2, 3, 4):
+        im = Image.open(BG_SRC / f"Building0{i}_clear.png").convert("RGBA")
+        im.resize((im.width // 2, im.height // 2), Image.NEAREST).save(BG_DIR / f"building0{i}.png")
+    if MENU_BG_SRC.exists():
+        im = Image.open(MENU_BG_SRC).convert("RGB")
+        im.resize((im.width // 2, im.height // 2), Image.BOX).save(BG_DIR / "menu_backdrop.png")
+    print("wrote backgrounds to", BG_DIR)
+
+
 if __name__ == "__main__":
     build_atlas()
     build_character()
@@ -560,3 +676,5 @@ if __name__ == "__main__":
     build_objects()
     build_light()
     build_player_sheet()
+    build_ui_textures()
+    build_backgrounds()

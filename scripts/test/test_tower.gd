@@ -46,9 +46,12 @@ func _ready() -> void:
 	var feet := spawn_point.global_position + Vector2(0, Constants.BLOCK_SIZE * 0.5)
 	World.register(blocks, water, climbables, feet, back_walls, items_root, objects_root)
 	_furnish()
+	# Shallows backdrop hangs from the waterline; start it well left of the tower.
+	$Backdrop.setup(DRY_FLOORS * FLOOR_H * Constants.BLOCK_SIZE, -900.0)
 	player.respawn()
 	for kit in START_KIT:
 		player.inventory.add(kit[0], kit[1])
+	player.set_equipment("suit", {"id": "clothes", "count": 1}) # LT-30: plain clothes
 
 func _set_block(x: int, y: int, mat: Mat) -> void:
 	blocks.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x, y), mat))

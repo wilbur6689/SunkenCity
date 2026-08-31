@@ -23,6 +23,7 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
   - stone cobble (row 0) · wood planks (row 1) · metal plates (row 2) · plastic (row 3) · water (row 4, no collision) · ladder (row 5) · rope (row 6)
 - [x] Character sprite: `assets/sprites/player.png` (32×32, idle + 6-frame walk, distinct east/west art) derived by `tools/gen_placeholder_art.py` from the user's `docs/Examples/Character/Main_Character_with_red-Idle-spritesheet` export; crawl/swim reuse the frames rotated 90°. *Character is ~30px tall vs the 24px canon — see TileArt.md.*
 - [x] TileMap layers: foreground solid (collision) + cosmetic background walls (WS-20)
+- [x] Shallows parallax backdrop (`scripts/world/backdrop.gd`): user city plates hanging from the waterline, building overlays covering every seam and breaking the surface; per-band strips later (GD-16)
 
 ### Character controller (`CharacterBody2D` + state machine, WS-19)
 - [x] State machine scaffold with debug state readout (HUD bottom-left)
@@ -61,7 +62,7 @@ them; respawn.
 - [x] Inventory: 40 slots (row 0 = hotbar), materials stack 999, gear unstacked (WS-13, LT-23)
 - [x] Carried weight total → progressive swim slowdown, no hard cap (WS-10/14) — `Player.swim_factor()`
 - [x] Pickup / drop (Q); dropped items persist in world as `WorldItem`s (save/load is M3)
-- [x] Inventory UI (Tab): grid, drag/stack/split (LMB/RMB/Shift), weight + skills readout
+- [x] Inventory UI (Tab): in-game popup window styled after `docs/Examples/UI Menus` — character portrait, equipment slots (Head/Suit/2 Accessories + 2 reserved), stats panel, wood-framed 10×4 grid with drag/stack/split (LMB/RMB/Shift)
 
 ### Scrapping (GL-07)
 - [x] Scrappable objects: multi-tile furniture (`data/objects.json`) with tool-tier + Scrapping-level gating and yield tables
@@ -71,7 +72,7 @@ them; respawn.
 
 ### Crafting (GL-04/05/06)
 - [x] Recipe format `data/recipes.json`: inputs, output, station (or hand), tier, known — zero code per recipe
-- [x] Hand-crafting menu (anywhere) in the inventory panel
+- [x] Crafting screen (popup tab): recipe list with icons, detail panel with a large output picture + have/need inputs, CRAFT button; hand recipes anywhere
 - [x] Five stations placeable + station-filtered crafting UI (stations within reach): Workbench, Forge, Med Station, Dive Station, Modification Bench (bench logic itself is M5)
 - [x] Starter recipes: pry bar, scrap knife, hammer + rope, ladder, glowstick, bandage, standing lamp (+ workbench, wood block/wall)
 - [x] Recipe schematic item type: use → learned → appears in menus (GL-06); example `schematic_iron_knife` → Forge recipe

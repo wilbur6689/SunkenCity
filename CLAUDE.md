@@ -47,6 +47,14 @@ is `docs/MVP-checklist.md` — check items off there as they land.
   `data/items.json`, `data/blocks.json`, `data/objects.json`, `data/recipes.json`, loaded and
   validated by the `Data` autoload (`scripts/data/data.gd`). A block or object id is also an item
   id. Adding content = adding a JSON entry (+ a sprite for objects).
+- UI: the character menu (`scripts/ui/inventory_ui.gd`) is an in-game popup window (styled after
+  `docs/Examples/UI Menus`, textures generated into `assets/ui/`) with Inventory / Crafting /
+  Chest tabs sharing the wood-framed bag grid; `UITheme` (`scripts/ui/ui_theme.gd`) is the
+  stylebox factory. Preview any screen without input:
+  `godot --path . res://scenes/test/menu_preview.tscn -- --screen=inventory|crafting|chest|world`.
+- Backgrounds: user art in `docs/Examples/Backgrounds` (City plates + Building seam covers) is
+  downscaled by the art tool into `assets/backgrounds/` and assembled by
+  `scripts/world/backdrop.gd` (Parallax2D) hanging from the waterline.
 - Interaction model (`scripts/player/interaction.gd`): the held hotbar item decides what LMB does
   (place block/object, hammer hits, knife/hand hold-to-scrap); RMB = back walls, hammer wall
   removal, or use a consumable; E = interact (doors, chest, bed spawn, station crafting, pick up
