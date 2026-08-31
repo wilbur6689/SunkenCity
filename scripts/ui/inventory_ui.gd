@@ -264,9 +264,17 @@ func _build_crafting_screen() -> void:
 
 	var dp := _panel(Vector2(327, 46), Vector2(128, 130), UITheme.steel_panel())
 	s.add_child(dp)
+	# The detail pane scrolls: long ingredient lists + the description
+	# don't fit 130px (user request).
+	var dscroll := ScrollContainer.new()
+	dscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	dscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	dscroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dp.add_child(dscroll)
 	detail_box = VBoxContainer.new()
 	detail_box.add_theme_constant_override("separation", 2)
-	dp.add_child(detail_box)
+	detail_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dscroll.add_child(detail_box)
 
 	craft_button = Button.new()
 	craft_button.text = "CRAFT"
@@ -559,11 +567,6 @@ func _refresh_detail() -> void:
 	detail_box.add_child(title)
 	var st_name: String = "By hand" if r.station == "hand" else (Data.objects[r.station].name if Data.objects.has(r.station) else r.station)
 	detail_box.add_child(UITheme.label("%s · tier %d" % [st_name, int(r.tier)], 8, Color(0.7, 0.78, 0.85)))
-	var desc := Data.item_desc(r.output.item)
-	if desc != "": # what the item is commonly used for (user request)
-		var dl := UITheme.label(desc, 8, Color(0.82, 0.84, 0.78))
-		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		detail_box.add_child(dl)
 	detail_box.add_child(UITheme.label("Needs:", 8, Color(0.7, 0.78, 0.85)))
 	for inp in r.inputs:
 		var have: int = player.inventory.count(inp.item)
@@ -577,6 +580,13 @@ func _refresh_detail() -> void:
 		row.add_child(UITheme.label("%s  %d/%d" % [Data.item_name(inp.item), have, int(inp.count)], 8,
 			Color(0.75, 0.95, 0.75) if ok else Color(0.95, 0.6, 0.55)))
 		detail_box.add_child(row)
+	# Description last (user request): the requirements are what matters.
+	var desc := Data.item_desc(r.output.item)
+	if desc != "":
+		var dl := UITheme.label(desc, 8, Color(0.82, 0.84, 0.78))
+		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		dl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		detail_box.add_child(dl)
 	craft_button.disabled = not player.can_craft(r)
 
 # --- Actions ---
