@@ -114,15 +114,17 @@ Design intent (from the overview):
 - Doors count as solid for sealing (airlocks work); background walls never seal (WS-20).
 - Placement into water: bounded-BFS displacement (WS-24); shallow films (level ≤ 2) don't
   block furniture placement.
-- **Known limitation:** the diff ≥ 2 spread rule freezes slope-1 gradients, so a sustained
-  point source builds a static pyramid (and a point drain a static wedge). The pump paths
-  sidestep this via BFS; free-falling pours still show it. Candidate fix: a "fresh-water
-  ripple" pass that lets just-received units walk downhill with diff ≥ 1.
+- **Ripple rule** (added when door-floods froze as wedges): a cell that just received
+  sideways flow may push one unit onward in the same direction even at a level difference
+  of 1. Unidirectional, so it cannot oscillate; long rooms flooding through a doorway now
+  level out, then the body still goes fully dormant. Residual note: ripples herd shallow
+  films toward walls, so drained rooms collect their last puddles at the edges.
 
 ## Open Items
 
-- Pyramid/wedge relaxation for free pours (see limitation above).
 - Instant-settle for distant regions — with M3 chunking.
+- Pump suction searches the whole connected airspace (deliberate): sealing every opening
+  matters, or you are pumping the ocean. Bound the search radius with M3 chunking.
 - Whether large-body region optimization is needed for target world sizes.
 - Pump mechanics detail (pipes vs. paired blocks, power, tiers).
 - Current strength tuning: escapable vs. trap-capable flows.

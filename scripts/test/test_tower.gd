@@ -11,8 +11,16 @@ enum Mat { STONE = 0, WOOD = 1, METAL = 2, PLASTIC = 3, WATER = 4, LADDER = 5, R
 
 const WIDTH := 40          # tower width in blocks
 const FLOOR_H := 6         # floor-to-floor height (WS-11)
-const FLOOR_COUNT := 5     # 3 dry + 2 flooded
+const FLOOR_COUNT := 15    # 3 dry + 12 flooded (tripled 2026-08-31; rows 0-30 unchanged)
 const DRY_FLOORS := 3
+# Deep floors 6-15: west stairwell, themed rooms, sealed dry floors behind doors.
+const NEW_FLOORS_START := 6
+const STAIR_X0 := 3        # stairwell column (ladders at STAIR_X0+1)
+const STAIR_X1 := 5
+const STAIR_WALL_X := 6    # wall between stairwell and rooms (doorway per floor)
+const SEALED_WALL_X := 32  # sealed floors also close their shaft side
+const SEALED_FLOORS := [8, 11, 14] # dry rooms behind closed doors; open = flood
+const THEMES := ["office", "apartment", "commercial", "utility"]
 const SHAFT_X := 33        # elevator-shaft gap, 3 blocks wide
 const SHAFT_W := 3
 const ROPE_X := 15         # rope + 1-block hole between floors 1 and 2
@@ -46,11 +54,14 @@ func _ready() -> void:
 	var feet := spawn_point.global_position + Vector2(0, Constants.BLOCK_SIZE * 0.5)
 	var water_bounds := Rect2i(0, 0, WIDTH, FLOOR_COUNT * FLOOR_H + 1)
 	World.register(blocks, water_bounds, climbables, feet, back_walls, items_root, objects_root)
-	# Static seed at equilibrium: everything open at or below the waterline is full.
+	_furnish() # before seeding: closed doors must already seal (WS-20 solidity)
+	# Static seed at equilibrium: everything open at or below the waterline is full…
 	var waterline := DRY_FLOORS * FLOOR_H
 	World.water_sim.fill_rect(Rect2i(1, waterline, WIDTH - 2, FLOOR_COUNT * FLOOR_H - waterline), WaterSim.MAX_LEVEL)
+	# …except the sealed floors, which start dry behind their doors.
+	for f: int in SEALED_FLOORS:
+		World.water_sim.fill_rect(Rect2i(STAIR_WALL_X + 1, (f - 1) * FLOOR_H + 1, SEALED_WALL_X - STAIR_WALL_X - 1, FLOOR_H - 1), 0)
 	water_renderer.setup(waterline * Constants.BLOCK_SIZE)
-	_furnish()
 	# Shallows backdrop hangs from the waterline; start it well left of the tower.
 	$Backdrop.setup(DRY_FLOORS * FLOOR_H * Constants.BLOCK_SIZE, -900.0)
 	player.respawn()
@@ -96,8 +107,11 @@ func _build_tower() -> void:
 			var rope_hole := x == ROPE_X and y == FLOOR_H
 			var pool := x >= POOL_X0 and x <= POOL_X1 and y == waterline
 			var swim_hole := x == SWIM_HOLE_X and y == (DRY_FLOORS + 1) * FLOOR_H
-			if is_ground or not (in_shaft or rope_hole or pool or swim_hole):
+			var stair_gap := x >= STAIR_X0 and x <= STAIR_X1 and y >= (NEW_FLOORS_START - 1) * FLOOR_H
+			if is_ground or not (in_shaft or rope_hole or pool or swim_hole or stair_gap):
 				_set_block(x, y, Mat.METAL)
+
+	_build_deep_floors(bottom)
 
 	# Two-jump ledges (WS-04): a wood platform 3 blocks above each slab,
 	# beside the shaft, so each floor is reachable in exactly two jumps.
@@ -105,9 +119,9 @@ func _build_tower() -> void:
 		var slab_y := f * FLOOR_H
 		_fill(SHAFT_X - 4, slab_y - 3, SHAFT_X - 2, slab_y - 3, Mat.WOOD, _set_block)
 
-	# Interior dressing per floor: wood platforms and plastic crates
-	# (floor 1 is the furnished medical room; floor 3 is the obstacle course).
-	for f in range(2, FLOOR_COUNT + 1):
+	# Interior dressing (old floors 2-5 only; deep floors get themes instead;
+	# floor 1 is the furnished medical room; floor 3 is the obstacle course).
+	for f in range(2, NEW_FLOORS_START):
 		if f == DRY_FLOORS:
 			continue
 		var floor_y := f * FLOOR_H - 1 # standing row above each slab
@@ -129,6 +143,52 @@ func _build_tower() -> void:
 	# Rope (WS-16): hangs from the floor-1 hole down to floor 2's standing row.
 	_fill(ROPE_X, FLOOR_H, ROPE_X, 2 * FLOOR_H - 1, Mat.ROPE, _set_climbable)
 
+## Floors 6-15, tile work only (runs before World.register): stairwell
+## ladder, per-floor walls with doorways, sealed partitions, machinery.
+func _build_deep_floors(bottom: int) -> void:
+	var top := (NEW_FLOORS_START - 1) * FLOOR_H # slab 30, the old ground
+	_fill(STAIR_X0 + 1, top, STAIR_X0 + 1, bottom - 1, Mat.LADDER, _set_climbable)
+	for f in range(NEW_FLOORS_START, FLOOR_COUNT + 1):
+		var y0 := (f - 1) * FLOOR_H + 1 # top row of the room
+		var sr := f * FLOOR_H - 1       # standing row
+		# Stairwell wall with a 3-tall doorway at floor level
+		_fill(STAIR_WALL_X, y0, STAIR_WALL_X, sr - 3, Mat.STONE, _set_block)
+		if SEALED_FLOORS.has(f):
+			# East partition seals the room from the elevator shaft
+			_fill(SEALED_WALL_X, y0, SEALED_WALL_X, sr, Mat.STONE, _set_block)
+		if _theme_of(f) == "utility":
+			_fill(24, sr, 25, sr, Mat.METAL, _set_block) # machinery blocks
+
+func _theme_of(f: int) -> String:
+	return THEMES[(f - NEW_FLOORS_START) % THEMES.size()]
+
+## Objects for floors 6-15 (runs from _furnish, after World.register):
+## closed doors on sealed floors, themed furniture, wired ceiling lamps.
+func _furnish_deep_floors() -> void:
+	for f in range(NEW_FLOORS_START, FLOOR_COUNT + 1):
+		var y0 := (f - 1) * FLOOR_H + 1
+		var sr := f * FLOOR_H - 1
+		if SEALED_FLOORS.has(f):
+			World.place_object("wood_door", Vector2i(STAIR_WALL_X, sr), false)
+		var put := func(id: String, x: int) -> void:
+			World.place_object(id, Vector2i(x, sr), false)
+		match _theme_of(f):
+			"office":
+				put.call("desk", 9); put.call("chair", 13); put.call("cabinet", 15)
+				put.call("desk", 19); put.call("chair", 23); put.call("desk", 26)
+			"apartment":
+				put.call("bed_frame", 9); put.call("chair", 13); put.call("fridge", 15)
+				put.call("cabinet", 18); put.call("desk", 21); put.call("chair", 25)
+			"commercial":
+				put.call("cabinet", 9); put.call("locker", 12); put.call("med_cart", 14)
+				put.call("cabinet", 17); put.call("locker", 20); put.call("cabinet", 23)
+				put.call("chair", 26)
+			"utility":
+				put.call("breaker", 10); put.call("locker", 12); put.call("pump", 15)
+				put.call("locker", 18); put.call("med_cart", 21)
+		World.place_object("ceiling_lamp", Vector2i(12, y0), false)
+		World.place_object("ceiling_lamp", Vector2i(26, y0), false)
+
 func _furnish() -> void:
 	var standing_row := FLOOR_H - 1
 	for entry in MED_ROOM:
@@ -138,3 +198,4 @@ func _furnish() -> void:
 	World.place_object("breaker", Vector2i(25, 2 * FLOOR_H - 1), false)
 	World.place_object("ceiling_lamp", Vector2i(10, FLOOR_H + 1), false)
 	World.place_object("ceiling_lamp", Vector2i(28, FLOOR_H + 1), false)
+	_furnish_deep_floors()

@@ -18,6 +18,7 @@ var bounds: Rect2i
 var levels := PackedByteArray()
 var awake: Dictionary = {}      # index -> true
 var flow: Dictionary = {}       # index -> Vector2 (units moved out this tick, for currents)
+var fresh: Dictionary = {}      # index -> ripple direction (+1/-1); set on sideways receive
 var is_solid: Callable          # func(cell: Vector2i) -> bool
 var budget_per_tick: int = 3000
 var processed_last_tick: int = 0
@@ -170,11 +171,31 @@ func _step_cell(i: int) -> bool:
 				var t := diff / 2
 				levels[i] -= t
 				levels[ni] += t
+				fresh[ni] = dir.x
 				_record_flow(i, Vector2(dir.x * t, 0))
 				wake_around(c)
 				wake_around(n)
 				l -= t
 				moved = true
+	# 3. Ripple: a cell that just received sideways flow may push one unit
+	# onward in the SAME direction even at diff 1. Unidirectional, so it
+	# cannot oscillate — it levels the slope-1 wedges the diff>=2 rule
+	# would otherwise freeze (long rooms flooding through a doorway).
+	if fresh.has(i):
+		var dirx: int = fresh[i]
+		fresh.erase(i)
+		if not moved and l > 0:
+			var n2: Vector2i = c + Vector2i(dirx, 0)
+			if (_blocked(below) or level_at(below) == MAX_LEVEL) and not _blocked(n2):
+				var ni2 := _idx(n2)
+				if int(levels[ni2]) < l and levels[ni2] < MAX_LEVEL:
+					levels[i] -= 1
+					levels[ni2] += 1
+					fresh[ni2] = dirx
+					_record_flow(i, Vector2(dirx, 0))
+					wake_around(c)
+					wake_around(n2)
+					moved = true
 	return moved
 
 func _record_flow(i: int, units: Vector2) -> void:

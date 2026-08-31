@@ -27,6 +27,11 @@ func _ready() -> void:
 			player.global_position = Vector2(6 * 16 + 8, 17 * 16 + 16 - Player.FEET_Y)
 			player.zoom_step(-2)
 			player.camera.reset_smoothing()
+		"deep":
+			# Park in the deep-tower stairwell beside a themed floor.
+			player.global_position = Vector2(4 * 16 + 8, 53 * 16 + 16 - Player.FEET_Y)
+			player.zoom_step(-1)
+			player.camera.reset_smoothing()
 		"chest":
 			var chest := World.place_object("chest", Vector2i(13, 5), true)
 			chest.storage.add("plastic", 9)

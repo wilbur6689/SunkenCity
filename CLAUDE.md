@@ -64,7 +64,9 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   furniture (knife or bare hands), place back walls, hammer wall removal; E = interact (doors,
   chest, bed spawn, station crafting, pump outlet mode, pick up furniture whole). `World.placed_blocks` separates breakable player blocks from unbreakable
   structure (GL-01).
-- Main scene is currently `scenes/test/test_tower.tscn` (M0 test environment).
+- Main scene is currently `scenes/test/test_tower.tscn` — a 15-floor test tower (3 dry, 12
+  flooded; themed deep floors, stairwell, sealed door-floods). Rows 0-30 are load-bearing for
+  the smoke tests — extend downward, do not reshape them. Gate tests: `m0/m1/m2/tower_smoke.tscn`.
 
 ## Fixed Design Constants
 

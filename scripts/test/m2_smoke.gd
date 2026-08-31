@@ -109,6 +109,7 @@ func _run() -> void:
 		patches.append(Vector2i(x, 18))
 	for x in range(33, 36):
 		patches.append(Vector2i(x, 18))
+		patches.append(Vector2i(x, 24)) # the shaft continues DOWN too — seal or pump the ocean
 	patches.append(Vector2i(10, 24))
 	for c in patches:
 		check_quiet(World.place_block("wood_block", c), "patch at %s" % c)
@@ -137,7 +138,7 @@ func _run() -> void:
 	var bed := World.place_object("bed", Vector2i(14, 23), true)
 	bed.interact(player)
 	check(absf(World.spawn_position.x - bed.bottom_center().x) < 0.5, "bed sets spawn in the forward camp")
-	check(World.can_place_object("workbench", Vector2i(24, 23), player), "stations work in drained rooms")
+	check(World.can_place_object("workbench", Vector2i(18, 23), player), "stations work in drained rooms")
 
 	print("== G. currents push bodies (WS-16)")
 	# Re-breach the room: remove a patch — the shaft water pours back in.
@@ -179,8 +180,9 @@ func _run() -> void:
 	check(bkr != null and bkr.def.kind == "breaker", "breaker present on floor 2")
 	var lamp_cell := Vector2i(10, 8) # below the west ceiling lamp
 	var dark_before := lm.light_at(lamp_cell)
-	# mop up the pumping episode's leftover water so the breaker is dry
-	for y in range(9, 12):
+	# mop up the pumping episode's leftover water (the outlet filled the whole
+	# floor-2 room, rows 7-11) so the breaker is dry
+	for y in range(7, 12):
 		for x in range(1, 39):
 			sim().remove_water(Vector2i(x, y), 8)
 	await ticks(30)

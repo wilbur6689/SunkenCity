@@ -121,9 +121,9 @@ func _run() -> void:
 	check(inv_count("bandage") == 2 and inv_count("food_can") == 1, "starting kit: 2 bandages + 1 food (LT-30)")
 	var scrap_count := 0
 	for o in tower.get_node("Objects").get_children():
-		if o.def.kind == "scrap":
+		if o.def.kind == "scrap" and o.cell.y <= 5: # the medical room only
 			scrap_count += 1
-	check(scrap_count == 8, "room furnished with 8 scrappable objects (%d)" % scrap_count)
+	check(scrap_count == 8, "medical room furnished with 8 scrappable objects (%d)" % scrap_count)
 	check(obj_at(Vector2i(12, row)) != null and obj_at(Vector2i(12, row)).id == "chair", "chair registered on its cells")
 
 	print("== B. hand-scrap a chair (hold-to-scrap)")
