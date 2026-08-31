@@ -1,0 +1,384 @@
+{
+  "_comment": "Multi-tile world objects. Each entry also registers an item with the same id (category placeable_object) so furniture can be picked up (E) and re-placed. kind: scrap (found furniture) | station | chest | bed | light | door. size = [w, h] blocks, anchored bottom-left. Scrap yields are the FULL (station) yield; in-place scrapping applies FIELD_SCRAP_YIELD. tool_tier = minimum tool tier to scrap in place (0 = hands). skill = required Scrapping level. sprite = assets/sprites/objects/<id>.png. Yields are generous on purpose: depletion comes from objects running out (LT-27), not from stingy rolls.",
+  "objects": [
+    {
+      "id": "bed_frame",
+      "name": "Bed Frame",
+      "kind": "scrap",
+      "size": [
+        3,
+        2
+      ],
+      "weight": 25,
+      "tool_tier": 0,
+      "skill": 0,
+      "scrap_time": 3.0,
+      "xp": 6,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 6,
+          "max": 8
+        },
+        {
+          "item": "cloth",
+          "min": 8,
+          "max": 10
+        }
+      ]
+    },
+    {
+      "id": "cabinet",
+      "name": "Cabinet",
+      "kind": "scrap",
+      "size": [
+        2,
+        3
+      ],
+      "weight": 20,
+      "tool_tier": 0,
+      "skill": 0,
+      "scrap_time": 3.0,
+      "xp": 6,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 12,
+          "max": 16
+        }
+      ]
+    },
+    {
+      "id": "desk",
+      "name": "Desk",
+      "kind": "scrap",
+      "size": [
+        3,
+        2
+      ],
+      "weight": 20,
+      "tool_tier": 0,
+      "skill": 0,
+      "scrap_time": 2.5,
+      "xp": 5,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 10,
+          "max": 14
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "chair",
+      "name": "Chair",
+      "kind": "scrap",
+      "size": [
+        1,
+        2
+      ],
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "scrap_time": 1.5,
+      "xp": 3,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 5,
+          "max": 7
+        }
+      ]
+    },
+    {
+      "id": "locker",
+      "name": "Locker",
+      "kind": "scrap",
+      "size": [
+        1,
+        3
+      ],
+      "weight": 18,
+      "tool_tier": 1,
+      "skill": 0,
+      "scrap_time": 3.0,
+      "xp": 6,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 8,
+          "max": 10
+        }
+      ]
+    },
+    {
+      "id": "fridge",
+      "name": "Fridge",
+      "kind": "scrap",
+      "size": [
+        2,
+        3
+      ],
+      "weight": 40,
+      "tool_tier": 1,
+      "skill": 1,
+      "scrap_time": 4.0,
+      "xp": 10,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 10,
+          "max": 14
+        },
+        {
+          "item": "plastic",
+          "min": 4,
+          "max": 6
+        }
+      ]
+    },
+    {
+      "id": "med_cart",
+      "name": "Medical Cart",
+      "kind": "scrap",
+      "size": [
+        2,
+        2
+      ],
+      "weight": 15,
+      "tool_tier": 0,
+      "skill": 0,
+      "scrap_time": 2.0,
+      "xp": 4,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 5
+        },
+        {
+          "item": "plastic",
+          "min": 4,
+          "max": 6
+        },
+        {
+          "item": "cloth",
+          "min": 2,
+          "max": 4
+        }
+      ]
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "kind": "station",
+      "station": "workbench",
+      "size": [
+        3,
+        2
+      ],
+      "weight": 30,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 6,
+          "max": 6
+        },
+        {
+          "item": "scrap_metal",
+          "min": 2,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "forge",
+      "name": "Forge",
+      "kind": "station",
+      "station": "forge",
+      "size": [
+        2,
+        2
+      ],
+      "weight": 40,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 8,
+          "max": 8
+        },
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "med_station",
+      "name": "Med Station",
+      "kind": "station",
+      "station": "med_station",
+      "size": [
+        2,
+        2
+      ],
+      "weight": 20,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 3
+        },
+        {
+          "item": "plastic",
+          "min": 3,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "dive_station",
+      "name": "Dive Station",
+      "kind": "station",
+      "station": "dive_station",
+      "size": [
+        2,
+        3
+      ],
+      "weight": 35,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 5,
+          "max": 5
+        },
+        {
+          "item": "plastic",
+          "min": 3,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "mod_bench",
+      "name": "Modification Bench",
+      "kind": "station",
+      "station": "mod_bench",
+      "size": [
+        3,
+        2
+      ],
+      "weight": 30,
+      "yields": [
+        {
+          "item": "scrap_metal",
+          "min": 5,
+          "max": 5
+        },
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "chest",
+      "name": "Chest",
+      "kind": "chest",
+      "size": [
+        2,
+        1
+      ],
+      "weight": 8,
+      "slots": 20,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 5,
+          "max": 5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "bed",
+      "name": "Bed",
+      "kind": "bed",
+      "size": [
+        3,
+        2
+      ],
+      "weight": 20,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 5,
+          "max": 5
+        },
+        {
+          "item": "cloth",
+          "min": 3,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "standing_lamp",
+      "name": "Standing Lamp",
+      "kind": "light",
+      "size": [
+        1,
+        2
+      ],
+      "weight": 3,
+      "light": {
+        "radius_blocks": 6,
+        "color": [
+          1.0,
+          0.8,
+          0.55
+        ]
+      },
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "wood_door",
+      "name": "Wood Door",
+      "kind": "door",
+      "size": [
+        1,
+        3
+      ],
+      "weight": 6,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 3
+        }
+      ]
+    }
+  ]
+}

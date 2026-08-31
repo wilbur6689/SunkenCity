@@ -13,8 +13,9 @@ breaches, and can be pumped, piped, and drained. Moving water is this game's "di
 
 ## Status
 
-Pre-alpha, **M0 (Skeleton)** of the MVP milestone plan. Roadmap: local single-player MVP →
-LAN co-op → Steam demo → commercial release. Not yet playable beyond a test tower.
+Pre-alpha, **M0 (Skeleton) and M1 (The Loop) complete** of the MVP milestone plan. Roadmap: local
+single-player MVP → LAN co-op → Steam demo → commercial release. Playable as a test tower: scrap
+the medical room, craft tools, build and light a base.
 
 ## Running
 
@@ -28,7 +29,8 @@ godot --path . --headless --quit-after 10   # boot the main scene, surface scrip
 ```
 
 Controls: **A/D** or arrows move · **Space** jump · **Shift** sprint · **C** crouch · **E** interact ·
-**Tab/I** inventory.
+**Tab/I** inventory · **1–0 / wheel** hotbar · **LMB** use held item (place / hit / scrap) ·
+**RMB** back walls or use consumable · **Q** drop.
 
 ## Layout
 

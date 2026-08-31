@@ -51,6 +51,31 @@ const PASSIVE_REGEN_COMBAT_DELAY: float = 8.0
 # --- Interaction (WS-12) ---
 const REACH_BLOCKS: float = 4.0
 
+# --- Inventory & weight (WS-13/14, LT-23) ---
+const INVENTORY_SLOTS: int = 40
+const HOTBAR_SLOTS: int = 10
+const MATERIAL_STACK: int = 999
+const CHEST_SLOTS: int = 20
+const WEIGHT_SWIM_REFERENCE: float = 60.0 # carried weight at which swim speed is halved (soft cap)
+const WEIGHT_SWIM_MIN_FACTOR: float = 0.3
+const PICKUP_RADIUS_BLOCKS: float = 1.0
+const DROP_PICKUP_DELAY: float = 1.0 # seconds before a dropped item can be re-picked
+
+# --- Scrapping (GL-07) ---
+const FIELD_SCRAP_YIELD: float = 0.5 # fraction of full yield when scrapping in place
+const HAND_TOOL_TIER: int = 0
+const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
+
+# --- Building (WS-22) ---
+const HAND_BLOCK_DAMAGE: float = 0.0 # bare hands cannot break placed blocks
+const BLOCK_HIT_INTERVAL: float = 0.25 # seconds between tool hits while holding use
+
+# --- Skills (CC-18) ---
+const SKILL_XP_PER_LEVEL: float = 20.0
+const SKILL_LEVELS_PER_PLAYER_LEVEL: int = 5
+const XP_SWIM_PER_SECOND: float = 0.5
+const XP_BUILD_PER_BLOCK: float = 1.0
+
 # --- Camera (WS-18: fixed zoom, smooth follow, speed-scaled lookahead) ---
 const CAMERA_LOOKAHEAD_BLOCKS: Vector2 = Vector2(4.0, 2.0) # lead at full sprint / terminal fall
 const CAMERA_LOOKAHEAD_SMOOTHING: float = 3.0 # 1/s

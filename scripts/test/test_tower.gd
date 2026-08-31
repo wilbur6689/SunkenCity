@@ -1,11 +1,11 @@
 extends Node2D
-## M0 test tower, built programmatically from the placeholder palette:
+## Test tower, built programmatically from the placeholder palette:
 ## 3 dry floors over 2 flooded floors, an elevator shaft with a ladder down
 ## to the waterline, a rope through a 1-block floor hole, a 1-block crawl
-## vent, and a 1-block swim hole between the flooded floors.
-## Materials map to atlas rows; the shade (atlas column 0-4) is picked by a
-## position hash so repeated materials get variety. Replaced by real
-## world-gen in M3; the palette PNG is swapped for real sprite sheets later.
+## vent, and a 1-block swim hole between the flooded floors. Floor 1 is
+## furnished as the starting medical room (GL-02) with scrappable objects.
+## Materials map to atlas rows; the variant (atlas column 0-4) is picked by a
+## position hash. Replaced by real world-gen in M3.
 
 enum Mat { STONE = 0, WOOD = 1, METAL = 2, PLASTIC = 3, WATER = 4, LADDER = 5, ROPE = 6 }
 
@@ -21,21 +21,34 @@ const POOL_X0 := 3         # collapsed slab section under floor 3: open water su
 const POOL_X1 := 9
 const SWIM_HOLE_X := 10    # 1-block hole between the flooded floors
 
+## Medical room furniture: [object id, bottom-left x] on floor 1's standing row.
+const MED_ROOM := [
+	["bed_frame", 2], ["med_cart", 6], ["cabinet", 9], ["chair", 12],
+	["desk", 18], ["chair", 22], ["locker", 24], ["fridge", 27],
+]
+## Starting kit (LT-30): plain clothes are implicit; a couple of bandages + one food item.
+const START_KIT := [["bandage", 2], ["food_can", 1]]
+
 @onready var blocks: TileMapLayer = $Blocks
 @onready var back_walls: TileMapLayer = $BackWalls
 @onready var water: TileMapLayer = $Water
 @onready var climbables: TileMapLayer = $Climbables
+@onready var items_root: Node2D = $Items
+@onready var objects_root: Node2D = $Objects
 @onready var spawn_point: Marker2D = $SpawnPoint
 @onready var player: Player = $Player
 
 func _ready() -> void:
 	_build_tower()
-	# Spawn on floor 1 (top dry floor); feet on the standing row's bottom edge.
-	var spawn_cell := Vector2i(5, FLOOR_H - 1)
+	# Spawn on floor 1 (the medical room); feet on the standing row's bottom edge.
+	var spawn_cell := Vector2i(16, FLOOR_H - 1) # not 15: the rope hole is below it
 	spawn_point.global_position = blocks.map_to_local(spawn_cell)
 	var feet := spawn_point.global_position + Vector2(0, Constants.BLOCK_SIZE * 0.5)
-	World.register(blocks, water, climbables, feet)
+	World.register(blocks, water, climbables, feet, back_walls, items_root, objects_root)
+	_furnish()
 	player.respawn()
+	for kit in START_KIT:
+		player.inventory.add(kit[0], kit[1])
 
 func _set_block(x: int, y: int, mat: Mat) -> void:
 	blocks.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x, y), mat))
@@ -89,8 +102,8 @@ func _build_tower() -> void:
 		_fill(SHAFT_X - 4, slab_y - 3, SHAFT_X - 2, slab_y - 3, Mat.WOOD, _set_block)
 
 	# Interior dressing per floor: wood platforms and plastic crates
-	# (floor 3 is kept clear as the obstacle course: vent + pool).
-	for f in range(1, FLOOR_COUNT + 1):
+	# (floor 1 is the furnished medical room; floor 3 is the obstacle course).
+	for f in range(2, FLOOR_COUNT + 1):
 		if f == DRY_FLOORS:
 			continue
 		var floor_y := f * FLOOR_H - 1 # standing row above each slab
@@ -115,3 +128,8 @@ func _build_tower() -> void:
 	# Static water placeholder (real sim is M2): every open cell at or below
 	# the waterline row is flooded.
 	_fill(1, waterline, WIDTH - 2, bottom - 1, Mat.WATER, _set_water)
+
+func _furnish() -> void:
+	var standing_row := FLOOR_H - 1
+	for entry in MED_ROOM:
+		World.place_object(entry[0], Vector2i(entry[1], standing_row), false)

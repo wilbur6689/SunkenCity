@@ -302,6 +302,227 @@ def build_character():
     print("wrote", out, img.size)
 
 
+# --- Item icons, object sprites, light texture (M1) --------------------------------------------
+from PIL import ImageDraw  # noqa: E402
+
+OUT = (24, 18, 14)
+WHITE = (226, 226, 220)
+RED = (190, 60, 50)
+ORANGE = (220, 130, 50)
+BLUE = (90, 140, 190)
+PURPLE = (150, 90, 190)
+GREEN = (110, 210, 120)
+
+
+def _ramp(name):
+    o, t, h = RAMPS[name]
+    return o, t, h
+
+
+def _box(d, x0, y0, x1, y1, ramp, bevel=True):
+    """Filled rect with outline and a 1px light top/left, dark bottom/right bevel."""
+    o, t, h = ramp
+    d.rectangle([x0, y0, x1, y1], fill=t[2], outline=o)
+    if bevel and x1 - x0 > 2 and y1 - y0 > 2:
+        d.line([x0 + 1, y0 + 1, x1 - 1, y0 + 1], fill=t[3])
+        d.line([x0 + 1, y0 + 1, x0 + 1, y1 - 1], fill=t[3])
+        d.line([x0 + 1, y1 - 1, x1 - 1, y1 - 1], fill=t[1])
+        d.line([x1 - 1, y0 + 1, x1 - 1, y1 - 1], fill=t[1])
+
+
+def _blob(d, rng, ramp, cx, cy, r):
+    o, t, h = ramp
+    pts = []
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            if dx * dx + dy * dy <= r * r + rng.randint(0, 2):
+                pts.append((cx + dx, cy + dy))
+    for p in pts:
+        d.point(p, fill=t[2])
+    for p in pts:
+        x, y = p
+        if (x - 1, y) not in pts or (x, y - 1) not in pts:
+            d.point(p, fill=t[3])
+        if (x + 1, y) not in pts or (x, y + 1) not in pts:
+            d.point(p, fill=t[1])
+    for p in pts:
+        x, y = p
+        if any(q not in pts for q in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1))):
+            d.point(p, fill=o)
+
+
+ICONS = {
+    # row 0: materials
+    (0, 0): ("blob", "wood"), (1, 0): ("blob", "metal"), (2, 0): ("blob", "plastic"),
+    (3, 0): ("cloth", None), (4, 0): ("blob", "stone"), (5, 0): ("ingot", None),
+    # row 1: tools
+    (0, 1): ("pry", None), (1, 1): ("knife", "scrap"), (2, 1): ("hammer", None), (3, 1): ("knife", "iron"),
+    # row 2: consumables / schematic
+    (0, 2): ("bandage", None), (1, 2): ("can", None), (2, 2): ("glowstick", None), (3, 2): ("paper", None),
+}
+
+
+def _draw_icon(d, kind, arg, ox, oy, rng):
+    if kind == "blob":
+        _blob(d, rng, _ramp(arg), ox + 8, oy + 8, 5)
+    elif kind == "cloth":
+        d.rectangle([ox + 3, oy + 5, ox + 12, oy + 12], fill=(200, 190, 170), outline=OUT)
+        d.line([ox + 4, oy + 8, ox + 11, oy + 8], fill=(170, 160, 140))
+        d.rectangle([ox + 5, oy + 3, ox + 10, oy + 5], fill=(200, 190, 170), outline=OUT)
+    elif kind == "ingot":
+        d.polygon([(ox + 3, oy + 11), (ox + 5, oy + 6), (ox + 12, oy + 6), (ox + 14, oy + 11)], fill=(150, 150, 158), outline=OUT)
+        d.line([ox + 6, oy + 7, ox + 11, oy + 7], fill=(200, 200, 208))
+    elif kind == "pry":
+        d.line([ox + 3, oy + 13, ox + 12, oy + 4], fill=(120, 130, 140), width=2)
+        d.line([ox + 12, oy + 4, ox + 13, oy + 7], fill=(120, 130, 140), width=2)
+        d.line([ox + 3, oy + 13, ox + 12, oy + 4], fill=(170, 180, 190))
+        d.point((ox + 3, oy + 13), fill=OUT)
+    elif kind == "knife":
+        blade = (200, 205, 215) if arg == "scrap" else (170, 190, 215)
+        d.polygon([(ox + 3, oy + 12), (ox + 11, oy + 4), (ox + 13, oy + 6), (ox + 6, oy + 13)], fill=blade, outline=OUT)
+        d.rectangle([ox + 2, oy + 11, ox + 5, oy + 14], fill=(110, 76, 48), outline=OUT)
+    elif kind == "hammer":
+        d.rectangle([ox + 7, oy + 8, ox + 8, oy + 14], fill=(140, 100, 60), outline=OUT)
+        d.rectangle([ox + 4, oy + 3, ox + 11, oy + 7], fill=(120, 130, 140), outline=OUT)
+        d.line([ox + 5, oy + 4, ox + 10, oy + 4], fill=(170, 180, 190))
+    elif kind == "bandage":
+        d.rounded_rectangle([ox + 3, oy + 5, ox + 12, oy + 11], radius=2, fill=WHITE, outline=OUT)
+        d.point((ox + 7, oy + 8), fill=RED); d.point((ox + 8, oy + 8), fill=RED)
+    elif kind == "can":
+        d.rectangle([ox + 5, oy + 3, ox + 10, oy + 13], fill=(160, 165, 170), outline=OUT)
+        d.rectangle([ox + 5, oy + 6, ox + 10, oy + 10], fill=RED)
+        d.line([ox + 6, oy + 4, ox + 9, oy + 4], fill=(210, 215, 220))
+    elif kind == "glowstick":
+        d.line([ox + 4, oy + 12, ox + 11, oy + 4], fill=GREEN, width=3)
+        d.line([ox + 4, oy + 12, ox + 11, oy + 4], fill=(200, 255, 200))
+        d.point((ox + 11, oy + 4), fill=OUT); d.point((ox + 4, oy + 12), fill=OUT)
+    elif kind == "paper":
+        d.rectangle([ox + 4, oy + 2, ox + 12, oy + 13], fill=(225, 220, 200), outline=OUT)
+        for y in (5, 7, 9, 11):
+            d.line([ox + 6, oy + y, ox + 10, oy + y], fill=BLUE)
+
+
+def build_icons():
+    img = Image.new("RGBA", (6 * T, 3 * T), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    for (c, r), (kind, arg) in ICONS.items():
+        _draw_icon(d, kind, arg, c * T, r * T, random.Random(c * 7 + r * 13))
+    out = ROOT / "assets" / "sprites" / "items.png"
+    img.save(out)
+    print("wrote", out, img.size)
+
+
+OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
+    "bed_frame": (3, 2), "cabinet": (2, 3), "desk": (3, 2), "chair": (1, 2), "locker": (1, 3),
+    "fridge": (2, 3), "med_cart": (2, 2), "workbench": (3, 2), "forge": (2, 2), "med_station": (2, 2),
+    "dive_station": (2, 3), "mod_bench": (3, 2), "chest": (2, 1), "bed": (3, 2), "standing_lamp": (1, 2),
+    "wood_door": (1, 3),
+}
+
+
+def _draw_object(d, oid, W, H):
+    wood, metal, stone, plastic = _ramp("wood"), _ramp("metal"), _ramp("stone"), _ramp("plastic")
+    white = (OUT, [(150, 150, 150), (180, 180, 180), (205, 205, 205), (225, 225, 225)], (240, 240, 240))
+    if oid in ("bed_frame", "bed"):
+        _box(d, 1, H - 8, W - 2, H - 3, metal if oid == "bed_frame" else wood)          # frame
+        d.rectangle([2, H - 12, W - 3, H - 8], fill=(170, 165, 150) if oid == "bed_frame" else (200, 195, 180), outline=OUT)  # mattress
+        d.rectangle([W - 12, H - 15, W - 4, H - 11], fill=WHITE, outline=OUT)          # pillow
+        d.rectangle([1, H - 3, 3, H - 1], fill=OUT); d.rectangle([W - 4, H - 3, W - 2, H - 1], fill=OUT)  # legs
+    elif oid == "cabinet":
+        _box(d, 1, 1, W - 2, H - 2, wood)
+        d.line([W // 2, 3, W // 2, H - 4], fill=OUT)
+        d.point((W // 2 - 2, H // 2), fill=metal[2]); d.point((W // 2 + 2, H // 2), fill=metal[2])
+        d.line([2, H // 2 + 6, W - 3, H // 2 + 6], fill=wood[1][1])
+    elif oid == "desk":
+        _box(d, 0, 6, W - 1, 10, wood)
+        d.rectangle([1, 11, 3, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 4, 11, W - 2, H - 1], fill=wood[1][1], outline=OUT)
+        _box(d, W - 16, 11, W - 5, H - 3, wood); d.point((W - 10, H - 8), fill=metal[2])
+        d.rectangle([3, 2, 9, 6], fill=(200, 200, 200), outline=OUT)                    # papers
+    elif oid == "chair":
+        _box(d, 2, 1, W - 3, 12, wood); d.rectangle([4, 3, W - 5, 10], fill=wood[1][1])
+        _box(d, 1, 13, W - 2, 17, wood)
+        d.rectangle([2, 18, 3, H - 1], fill=OUT); d.rectangle([W - 4, 18, W - 3, H - 1], fill=OUT)
+    elif oid == "locker":
+        _box(d, 1, 0, W - 2, H - 1, metal)
+        for y in range(6, 14, 2):
+            d.line([4, y, W - 5, y], fill=metal[1][1])
+        d.point((W - 5, H // 2 + 4), fill=metal[2])
+    elif oid == "fridge":
+        _box(d, 1, 0, W - 2, H - 1, white)
+        d.line([2, 14, W - 3, 14], fill=OUT)
+        d.rectangle([W - 6, 5, W - 5, 11], fill=(120, 120, 125)); d.rectangle([W - 6, 18, W - 5, 30], fill=(120, 120, 125))
+    elif oid == "med_cart":
+        _box(d, 1, 3, W - 2, H - 5, white)
+        d.rectangle([W // 2 - 1, 8, W // 2, 15], fill=RED); d.rectangle([W // 2 - 4, 11, W // 2 + 3, 12], fill=RED)
+        d.ellipse([2, H - 5, 6, H - 1], fill=OUT); d.ellipse([W - 7, H - 5, W - 3, H - 1], fill=OUT)
+        d.rectangle([3, 0, W - 4, 3], fill=(160, 160, 165), outline=OUT)
+    elif oid == "workbench":
+        _box(d, 0, 8, W - 1, 12, wood)
+        d.rectangle([2, 13, 5, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 6, 13, W - 3, H - 1], fill=wood[1][1], outline=OUT)
+        d.rectangle([6, 4, 14, 7], fill=metal[1][2], outline=OUT); d.rectangle([28, 2, 31, 7], fill=metal[1][3], outline=OUT)
+        d.rectangle([34, 5, 42, 7], fill=(140, 100, 60), outline=OUT)
+    elif oid == "forge":
+        _box(d, 0, 4, W - 1, H - 1, stone, bevel=False)
+        d.rectangle([6, 14, W - 7, H - 5], fill=(60, 30, 20), outline=OUT)
+        d.rectangle([9, 18, W - 10, H - 7], fill=ORANGE); d.point((W // 2, 20), fill=(255, 220, 120))
+        d.rectangle([W // 2 - 3, 0, W // 2 + 2, 4], fill=stone[1][1], outline=OUT)
+    elif oid == "med_station":
+        _box(d, 0, 2, W - 1, H - 1, white)
+        d.rectangle([W // 2 - 1, 8, W // 2, 19], fill=RED); d.rectangle([W // 2 - 6, 13, W // 2 + 5, 14], fill=RED)
+        d.rectangle([3, 5, 9, 9], fill=BLUE, outline=OUT)
+    elif oid == "dive_station":
+        _box(d, 0, 6, W - 1, H - 1, metal)
+        for i, x in enumerate((4, 12, 20)):
+            d.rectangle([x, 12, x + 5, H - 5], fill=(80, 130, 180), outline=OUT); d.rectangle([x + 1, 13, x + 1, H - 8], fill=(150, 200, 240))
+        d.rectangle([2, 0, W - 3, 6], fill=metal[1][1], outline=OUT); d.rectangle([W // 2 - 2, 2, W // 2 + 1, 4], fill=GREEN)
+    elif oid == "mod_bench":
+        _box(d, 0, 8, W - 1, 12, wood)
+        d.rectangle([2, 13, 5, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 6, 13, W - 3, H - 1], fill=wood[1][1], outline=OUT)
+        d.rectangle([8, 3, 18, 7], fill=metal[1][2], outline=OUT)
+        for x in (24, 30, 36):
+            d.polygon([(x, 7), (x + 2, 3), (x + 4, 7)], fill=PURPLE, outline=OUT)
+    elif oid == "chest":
+        _box(d, 1, 3, W - 2, H - 1, wood)
+        d.line([2, 8, W - 3, 8], fill=metal[1][2]); d.rectangle([W // 2 - 1, 7, W // 2, 10], fill=metal[1][3], outline=OUT)
+    elif oid == "standing_lamp":
+        d.rectangle([7, 8, 8, H - 3], fill=metal[1][1]); d.rectangle([4, H - 3, 11, H - 1], fill=metal[1][2], outline=OUT)
+        d.polygon([(3, 8), (12, 8), (11, 1), (4, 1)], fill=(230, 200, 140), outline=OUT)
+        d.rectangle([6, 3, 9, 6], fill=(255, 240, 200))
+    elif oid == "wood_door":
+        _box(d, 2, 0, W - 3, H - 1, wood)
+        for y in range(4, H - 4, 8):
+            d.rectangle([4, y, W - 5, y + 5], fill=wood[1][3], outline=wood[1][1])
+        d.point((W - 6, H // 2), fill=metal[2])
+
+
+def build_objects():
+    out_dir = ROOT / "assets" / "sprites" / "objects"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for oid, (w, h) in OBJECTS.items():
+        W, H = w * T, h * T
+        img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        _draw_object(ImageDraw.Draw(img), oid, W, H)
+        img.save(out_dir / f"{oid}.png")
+    print("wrote", len(OBJECTS), "object sprites to", out_dir)
+
+
+def build_light():
+    size = 128
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    c = size / 2 - 0.5
+    for y in range(size):
+        for x in range(size):
+            dist = ((x - c) ** 2 + (y - c) ** 2) ** 0.5 / (size / 2)
+            a = max(0.0, 1.0 - dist) ** 1.6
+            img.putpixel((x, y), (255, 255, 255, int(255 * a)))
+    out = ROOT / "assets" / "sprites" / "light.png"
+    img.save(out)
+    print("wrote", out)
+
+
 if __name__ == "__main__":
     build_atlas()
     build_character()
+    build_icons()
+    build_objects()
+    build_light()

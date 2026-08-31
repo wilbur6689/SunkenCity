@@ -1,11 +1,15 @@
 class_name Player
 extends CharacterBody2D
-## M0 character controller — explicit state machine (WS-19).
+## Character controller — explicit state machine (WS-19).
 ## Server-authoritative by design (CC-06): input is read into the
-## `input_dir`/`wants_*` snapshot only by the multiplayer authority of this
-## node; states consume the snapshot, never Input directly, so a networked
-## client can later feed the same fields remotely. World queries go through
-## the World authority layer, never the tile layers.
+## `input_dir`/`wants_*`/`aim_position` snapshot only by the multiplayer
+## authority of this node; states and the Interaction child consume the
+## snapshot, never Input directly, so a networked client can later feed the
+## same fields remotely. World queries go through the World authority layer.
+
+signal message(text: String)
+signal container_opened(obj: WorldObject)
+signal crafting_opened(station: String)
 
 enum State { GROUNDED, AIRBORNE, CRAWLING, CLIMBING, SURFACE_SWIM, UNDERWATER }
 
@@ -16,6 +20,12 @@ var input_dir: Vector2 = Vector2.ZERO
 var wants_jump: bool = false # pressed this frame
 var wants_sprint: bool = false
 var wants_crouch: bool = false
+var wants_use: bool = false           # held
+var wants_use_secondary: bool = false # held
+var wants_interact: bool = false      # pressed this frame
+var wants_drop: bool = false          # pressed this frame
+var aim_position: Vector2 = Vector2.ZERO
+var hotbar_select: int = -1           # -1 = no change this frame
 
 # --- Timers ---
 var coyote_timer: float = 0.0
@@ -26,6 +36,12 @@ var health: float = Constants.MAX_HEALTH
 var oxygen: float = Constants.BASE_OXYGEN_SECONDS
 var drowning: bool = false
 var fall_start_y: float = 0.0
+
+# --- Items & progression (M1) ---
+var inventory := Inventory.new(Constants.INVENTORY_SLOTS)
+var skills := Skills.new()
+var known_recipes: Dictionary = {} # recipe id -> true (schematics, GL-06)
+var selected_slot: int = 0
 
 # --- Body form ---
 var compact: bool = false # crawl/swim hitbox (fits 1-block holes, WS-02)
@@ -39,6 +55,7 @@ var climbable_below: bool = false
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var camera: Camera2D = $Camera2D
+@onready var interaction: Interaction = $Interaction
 
 var _stand_shape := RectangleShape2D.new()
 var _compact_shape := RectangleShape2D.new()
@@ -54,6 +71,7 @@ func _physics_process(delta: float) -> void:
 	if is_multiplayer_authority():
 		_read_input()
 	_tick_timers(delta)
+	_apply_hotbar()
 	_sense()
 	match state:
 		State.GROUNDED:
@@ -73,6 +91,15 @@ func _physics_process(delta: float) -> void:
 		sprite.flip_h = input_dir.x < 0.0 # sheet faces right
 	_update_oxygen(delta)
 	_update_camera(delta)
+	interaction.tick(delta)
+	if wants_drop:
+		drop_held(1)
+	if state == State.SURFACE_SWIM or state == State.UNDERWATER:
+		skills.add_xp("swimming", Constants.XP_SWIM_PER_SECOND * delta)
+	# one-frame flags
+	wants_interact = false
+	wants_drop = false
+	hotbar_select = -1
 
 # --- Input & timers ---
 
@@ -81,6 +108,23 @@ func _read_input() -> void:
 	wants_sprint = Input.is_action_pressed("sprint")
 	wants_crouch = Input.is_action_pressed("crouch")
 	wants_jump = Input.is_action_just_pressed("jump")
+	wants_use = Input.is_action_pressed("use") and not ui_blocking()
+	wants_use_secondary = Input.is_action_pressed("use_secondary") and not ui_blocking()
+	wants_interact = Input.is_action_just_pressed("interact")
+	wants_drop = Input.is_action_just_pressed("drop")
+	aim_position = get_global_mouse_position()
+	for i in Constants.HOTBAR_SLOTS:
+		if Input.is_action_just_pressed("hotbar_%d" % (i + 1)):
+			hotbar_select = i
+	if Input.is_action_just_pressed("hotbar_next"):
+		hotbar_select = (selected_slot + 1) % Constants.HOTBAR_SLOTS
+	if Input.is_action_just_pressed("hotbar_prev"):
+		hotbar_select = (selected_slot - 1 + Constants.HOTBAR_SLOTS) % Constants.HOTBAR_SLOTS
+
+## True while a UI panel wants the mouse (set by the inventory UI).
+var ui_blocks_mouse: bool = false
+func ui_blocking() -> bool:
+	return ui_blocks_mouse
 
 func _tick_timers(delta: float) -> void:
 	if wants_jump:
@@ -89,11 +133,98 @@ func _tick_timers(delta: float) -> void:
 	coyote_timer = maxf(coyote_timer - delta, 0.0)
 	jump_buffer_timer = maxf(jump_buffer_timer - delta, 0.0)
 
+func _apply_hotbar() -> void:
+	if hotbar_select >= 0:
+		selected_slot = hotbar_select
+
 func _consume_jump() -> bool:
 	if jump_buffer_timer > 0.0:
 		jump_buffer_timer = 0.0
 		return true
 	return false
+
+# --- Items ---
+
+func held_item() -> String:
+	var s = inventory.slots[selected_slot]
+	return s.id if s != null else ""
+
+func held_tool() -> Dictionary:
+	return Data.tool_of(held_item())
+
+## Weight → swim slowdown (WS-10/14): soft cap, never a hard stop.
+func swim_factor() -> float:
+	var w := inventory.total_weight()
+	return maxf(Constants.WEIGHT_SWIM_MIN_FACTOR, 1.0 - 0.5 * w / Constants.WEIGHT_SWIM_REFERENCE)
+
+func use_item(slot: int) -> void:
+	var s = inventory.slots[slot]
+	if s == null:
+		return
+	var it := Data.item(s.id)
+	var use: Dictionary = it.get("use", {})
+	if use.is_empty():
+		return
+	if use.has("heal"):
+		if health >= Constants.MAX_HEALTH:
+			return
+		health = minf(health + float(use.heal), Constants.MAX_HEALTH)
+	if use.has("learn_recipe"):
+		known_recipes[use.learn_recipe] = true
+		message.emit("Learned recipe: " + Data.item_name(Data.recipes[use.learn_recipe].output.item))
+	if use.has("drop_light"):
+		World.spawn_item(s.id, 1, global_position, Vector2(sprite.scale.x * (-1.0 if sprite.flip_h else 1.0) * 3.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
+	inventory.remove_from_slot(slot, 1)
+
+func drop_held(n: int) -> void:
+	var id := held_item()
+	if id == "":
+		return
+	var taken := inventory.remove_from_slot(selected_slot, n)
+	var dir := -1.0 if sprite.flip_h else 1.0
+	World.spawn_item(id, taken, global_position, Vector2(dir * 4.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
+
+func knows_recipe(id: String) -> bool:
+	return known_recipes.has(id)
+
+func can_craft(recipe: Dictionary) -> bool:
+	return inventory.has_all(recipe.inputs) and inventory.can_add(recipe.output.item, int(recipe.output.count))
+
+func craft(recipe: Dictionary) -> bool:
+	if not can_craft(recipe):
+		return false
+	inventory.remove_all(recipe.inputs)
+	inventory.add(recipe.output.item, int(recipe.output.count))
+	return true
+
+## Station scrapping (GL-07): full yield, needs any station in reach, and the
+## same Scrapping level the object demands in the field.
+func scrap_item(id: String, n: int = 1) -> bool:
+	var reach := Constants.REACH_BLOCKS * Constants.BLOCK_SIZE * 1.5
+	if World.stations_near(global_position, reach).size() <= 1:
+		message.emit("Scrapping for full yield needs a station")
+		return false
+	var yields := Data.scrap_yield(id)
+	if yields.is_empty() or inventory.count(id) < n:
+		return false
+	var obj_def: Dictionary = Data.objects.get(id, {})
+	if skills.level("scrapping") < int(obj_def.get("skill", 0)):
+		message.emit("Needs Scrapping %d" % obj_def.skill)
+		return false
+	inventory.remove(id, n)
+	for y in yields:
+		var leftover: int = inventory.add(y.item, int(y.count) * n)
+		if leftover > 0:
+			World.spawn_item(y.item, leftover, global_position)
+	skills.add_xp("scrapping", float(obj_def.get("xp", 2)) * n)
+	message.emit("Scrapped %s x%d" % [Data.item_name(id), n])
+	return true
+
+func open_container(obj: WorldObject) -> void:
+	container_opened.emit(obj)
+
+func open_crafting(station: String) -> void:
+	crafting_opened.emit(station)
 
 # --- Hitbox geometry (local space; feet are always at local y = 12) ---
 
@@ -279,10 +410,10 @@ func _state_surface_swim(delta: float) -> void:
 		_exit_water_to_air()
 		return
 	if input_dir.y > 0.0:
-		velocity.y = Constants.UNDERWATER_SWIM_SPEED
+		velocity.y = Constants.UNDERWATER_SWIM_SPEED * swim_factor()
 		state = State.UNDERWATER
 		return
-	_accelerate_x(input_dir.x * Constants.SURFACE_SWIM_SPEED, Constants.SWIM_ACCEL, delta)
+	_accelerate_x(input_dir.x * Constants.SURFACE_SWIM_SPEED * swim_factor(), Constants.SWIM_ACCEL, delta)
 	# Auto-tread (WS-07): spring toward the float line.
 	var surface := World.water_surface_y(_center_point())
 	var target_y := surface - Constants.SURFACE_FLOAT_HEIGHT_PX - hitbox_top()
@@ -296,7 +427,7 @@ func _state_underwater(delta: float) -> void:
 		state = State.SURFACE_SWIM
 		return
 	# Free 8-way, neutral buoyancy (WS-06/09): no gravity, drag to rest.
-	var target := input_dir * Constants.UNDERWATER_SWIM_SPEED
+	var target := input_dir * Constants.UNDERWATER_SWIM_SPEED * swim_factor()
 	var rate := Constants.SWIM_ACCEL if input_dir != Vector2.ZERO else Constants.SWIM_DRAG
 	velocity = velocity.move_toward(target, rate * delta)
 
@@ -324,7 +455,7 @@ func apply_damage(amount: float) -> void:
 		_die()
 
 func _die() -> void:
-	# M0: reset at world spawn. Backpack drop (M4) + bed spawn (M1) later.
+	# M1: reset at spawn (bed or world spawn, GL-23). Backpack drop is M4.
 	respawn()
 
 func respawn() -> void:

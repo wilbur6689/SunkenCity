@@ -13,9 +13,9 @@ The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records set
 decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
 base) comes first; do not add other major aspects before it works.
 
-Development is at the end of **M0** of the milestone plan in `docs/MVP-overview.md` (all M0 items
-land; the gate passes headless, manual feel pass pending); next is **M1 — The Loop**. The task
-tracker is `docs/MVP-checklist.md` — check items off there as they land.
+Development has completed **M0** and **M1** of the milestone plan in `docs/MVP-overview.md` (both
+gates pass headless; manual feel passes pending); next is **M2 — Living Water**. The task tracker
+is `docs/MVP-checklist.md` — check items off there as they land.
 
 ## Running the Project
 
@@ -24,8 +24,12 @@ tracker is `docs/MVP-checklist.md` — check items off there as they land.
 - Open the editor: add `-e`
 - Headless validation (use after editing scenes/scripts): `--headless --import` to check assets
   parse; `--headless --quit-after 10` to boot the main scene and surface script errors.
-- M0 gate test: `--headless res://scenes/test/m0_smoke.tscn` (exit 0 = all checks pass). Drives the
-  player with `Input.action_press`; extend it when controller behaviour changes.
+- Gate tests (exit 0 = all checks pass): `--headless res://scenes/test/m0_smoke.tscn` (movement,
+  drives the player with `Input.action_press`) and `--headless res://scenes/test/m1_smoke.tscn`
+  (the loop; feeds the player's input snapshot directly with `set_multiplayer_authority(2)`). Run
+  both after touching the player, World, or data files; extend them when behaviour changes.
+- Regenerate placeholder art: `python tools/gen_placeholder_art.py` (tiles, character, item icons,
+  object sprites, light texture — deterministic).
 
 ## Code Conventions
 
@@ -39,7 +43,15 @@ tracker is `docs/MVP-checklist.md` — check items off there as they land.
   never touches `TileMapLayer`s directly; M2's water sim replaces World's storage, not its callers.
 - Placeholder atlas `assets/tiles/placeholder_blocks.png`: columns = 5 shades, rows = stone, wood,
   metal, plastic, water, ladder, rope (rows 4–6 have no collision).
-- Recipes, items, loot tables, and enemy stats must be **data files**, not code (per LT-11).
+- Recipes, items, loot tables, and enemy stats must be **data files**, not code (per LT-11):
+  `data/items.json`, `data/blocks.json`, `data/objects.json`, `data/recipes.json`, loaded and
+  validated by the `Data` autoload (`scripts/data/data.gd`). A block or object id is also an item
+  id. Adding content = adding a JSON entry (+ a sprite for objects).
+- Interaction model (`scripts/player/interaction.gd`): the held hotbar item decides what LMB does
+  (place block/object, hammer hits, knife/hand hold-to-scrap); RMB = back walls, hammer wall
+  removal, or use a consumable; E = interact (doors, chest, bed spawn, station crafting, pick up
+  furniture whole). `World.placed_blocks` separates breakable player blocks from unbreakable
+  structure (GL-01).
 - Main scene is currently `scenes/test/test_tower.tscn` (M0 test environment).
 
 ## Fixed Design Constants

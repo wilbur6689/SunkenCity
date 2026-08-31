@@ -57,41 +57,43 @@ them; respawn.
 ## M1 — The Loop *(standing rule: nothing major starts until this works)*
 
 ### Items & inventory
-- [ ] Item resource format (data-driven, LT-11): id, name, weight, stack size, category, stats
-- [ ] Inventory: ~40 slots, materials stack 999, gear unstacked (WS-13, LT-23)
-- [ ] Carried weight total → progressive swim slowdown, no hard cap (WS-10/14)
-- [ ] Pickup / drop; dropped items persist in world
-- [ ] Inventory UI: grid, drag/stack/split, weight readout
+- [x] Item resource format (data-driven, LT-11): `data/items.json` (+ blocks/objects auto-register items) — id, name, weight, stack, category, tool/use stats; loaded by the `Data` autoload
+- [x] Inventory: 40 slots (row 0 = hotbar), materials stack 999, gear unstacked (WS-13, LT-23)
+- [x] Carried weight total → progressive swim slowdown, no hard cap (WS-10/14) — `Player.swim_factor()`
+- [x] Pickup / drop (Q); dropped items persist in world as `WorldItem`s (save/load is M3)
+- [x] Inventory UI (Tab): grid, drag/stack/split (LMB/RMB/Shift), weight + skills readout
 
 ### Scrapping (GL-07)
-- [ ] Scrappable object component: multi-tile furniture with tool-tier + skill gating and yield table
-- [ ] In-field scrapping at reduced yield; station scrapping at full yield
-- [ ] Scrap tool interaction: hold-to-scrap with progress + better tool = faster
-- [ ] Test room furnished from a scrap-object set (bed frame, cabinet, desk, chairs, fridge)
+- [x] Scrappable objects: multi-tile furniture (`data/objects.json`) with tool-tier + Scrapping-level gating and yield tables
+- [x] In-field scrapping at half yield; pick furniture up whole (E) and scrap at any station for full yield (`Player.scrap_item`)
+- [x] Hold-to-scrap with progress bar; bare hands slow, knife tier/speed from item data
+- [x] Medical room (floor 1) furnished: bed frame, med cart, cabinet, 2 chairs, desk, locker, fridge
 
 ### Crafting (GL-04/05/06)
-- [ ] Recipe resource format: inputs, output, station (or hand), tier — data files only, zero code per recipe
-- [ ] Hand-crafting menu (anywhere)
-- [ ] Five station blocks placeable + station-filtered crafting UI: Workbench, Forge, Med Station, Dive Station, Modification Bench (bench logic itself is M5)
-- [ ] Starter recipes: pry bar, scrap knife, hammer + ropes, ladder, glowstick, bandage, torch/lamp
-- [ ] Recipe schematic item type: found → learned → appears in menus (GL-06)
+- [x] Recipe format `data/recipes.json`: inputs, output, station (or hand), tier, known — zero code per recipe
+- [x] Hand-crafting menu (anywhere) in the inventory panel
+- [x] Five stations placeable + station-filtered crafting UI (stations within reach): Workbench, Forge, Med Station, Dive Station, Modification Bench (bench logic itself is M5)
+- [x] Starter recipes: pry bar, scrap knife, hammer + rope, ladder, glowstick, bandage, standing lamp (+ workbench, wood block/wall)
+- [x] Recipe schematic item type: use → learned → appears in menus (GL-06); example `schematic_iron_knife` → Forge recipe
 
 ### Building
-- [ ] Block placement/removal with 4-block reach, ghost preview, collision checks (WS-12)
-- [ ] Placeable set: wood/scrap blocks, door, rope, ladder, chest, bed, standing light
-- [ ] Player-placed blocks have HP + hardness; tool-gated breaking (WS-22)
-- [ ] Structure tiles flagged unbreakable at the tile level (GL-01)
-- [ ] Chests: storage UI + quick-stack-to-nearby (LT-23)
-- [ ] Bed sets per-character spawn (GL-23)
-- [ ] Background wall placement (cosmetic layer, WS-21)
+- [x] Block placement/removal with 4-block reach, ghost preview, body-overlap + neighbour-support checks (WS-12)
+- [x] Placeable set: wood/scrap/stone blocks, door, rope, ladder, chest, bed, standing lamp
+- [x] Player-placed blocks have HP + hardness (`data/blocks.json`); hammer tier-gated breaking, paced hits (WS-22)
+- [x] Structure unbreakable (GL-01): any tile not in `World.placed_blocks` refuses the hammer
+- [x] Chests: storage UI + quick-stack (LT-23); a full chest cannot be picked up
+- [x] Bed sets spawn (GL-23) — per-character once characters exist (M3 saves)
+- [x] Background wall placement/removal with secondary use (cosmetic layer, WS-21)
 
 ### Skills (first pass, CC-18)
-- [ ] Skill framework: XP by use → per-skill levels (start set: Scrapping, Swimming, Building)
-- [ ] Player level = total skill levels ÷ 5; banked tech-tree points (tree UI is M5)
-- [ ] Skill-gated harvesting hook on scrap objects (GL-28)
+- [x] Skill framework: XP by use → per-skill levels (Scrapping, Swimming, Building) — `Skills`
+- [x] Player level = total skill levels ÷ 5; banked tech-tree points (tree UI is M5)
+- [x] Skill-gated harvesting on scrap objects (GL-28): fridge needs Scrapping 1, in the field and at stations
 
 **GATE:** wake in the test room → scrap it → craft the three starter tools → build and light a
 small base with a working bed spawn — no debug commands.
+- [x] Automated: `scenes/test/m1_smoke.tscn` runs the gate headless through the player API (66 checks)
+- [ ] Manual play-through of the gate (UI feel: drag/drop, hotbar, ghost preview)
 
 ---
 
