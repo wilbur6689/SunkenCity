@@ -34,6 +34,16 @@ func _build_ui() -> void:
 	bg.color = Color(0.05, 0.09, 0.13)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+	# The underwater rock art behind everything (same plate the character
+	# menu uses), dimmed so the panels stay readable.
+	var backdrop := TextureRect.new()
+	backdrop.texture = load("res://assets/backgrounds/menu_backdrop.png")
+	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	backdrop.modulate = Color(0.24, 0.3, 0.36)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(backdrop)
 
 	# Wide screens (expand stretch) widen the viewport past 640x360; the
 	# layout keeps its design coordinates inside this centred frame.
@@ -49,6 +59,9 @@ func _build_ui() -> void:
 	title.text = "SUNKEN CITY"
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(0.55, 0.85, 0.95))
+	title.add_theme_color_override("font_shadow_color", Color(0.0, 0.05, 0.1, 0.85))
+	title.add_theme_constant_override("shadow_offset_x", 2)
+	title.add_theme_constant_override("shadow_offset_y", 2)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	title.offset_top = 26
@@ -83,11 +96,14 @@ func _build_ui() -> void:
 	seed_spin.position = Vector2(148, 248)
 	seed_spin.custom_minimum_size = Vector2(84, 0)
 	seed_spin.get_line_edit().add_theme_font_size_override("font_size", FONT)
+	UITheme.style_input(seed_spin.get_line_edit())
 	frame.add_child(seed_spin)
 	var rand_btn := Button.new()
 	rand_btn.text = "Reroll"
+	UITheme.style_button(rand_btn)
 	rand_btn.add_theme_font_size_override("font_size", FONT)
 	rand_btn.position = Vector2(238, 248)
+	rand_btn.custom_minimum_size = Vector2(44, 18)
 	rand_btn.pressed.connect(func(): seed_spin.value = randi_range(1, 999999))
 	frame.add_child(rand_btn)
 
@@ -95,6 +111,7 @@ func _build_ui() -> void:
 	name_edit = LineEdit.new()
 	name_edit.placeholder_text = "new character name"
 	name_edit.add_theme_font_size_override("font_size", FONT)
+	UITheme.style_input(name_edit)
 	name_edit.position = Vector2(350, 248)
 	name_edit.custom_minimum_size = Vector2(170, 0)
 	frame.add_child(name_edit)
@@ -110,34 +127,44 @@ func _build_ui() -> void:
 
 	var play := Button.new()
 	play.text = "DIVE"
+	UITheme.style_button(play)
 	play.add_theme_font_size_override("font_size", 14)
 	play.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	play.position = Vector2(-35, -46)
-	play.custom_minimum_size = Vector2(70, 26)
+	play.position = Vector2(-42, -48)
+	play.custom_minimum_size = Vector2(84, 28)
 	play.pressed.connect(_play)
 	frame.add_child(play)
 
 	_refresh_lists()
 
 func _picker_panel(x: float, label_text: String) -> ItemList:
+	# A bordered column panel groups each side: header, list, delete, and
+	# the new-world/new-character row all read as one unit.
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UITheme.flat_panel())
+	panel.position = Vector2(x - 8, 70)
+	panel.custom_minimum_size = Vector2(186, 206)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(panel)
 	var label := Label.new()
 	label.text = label_text
 	label.add_theme_font_size_override("font_size", FONT)
-	label.add_theme_color_override("font_color", Color(0.75, 0.85, 0.9))
-	label.position = Vector2(x, 80)
+	label.add_theme_color_override("font_color", Color(0.56, 0.75, 0.81))
+	label.position = Vector2(x, 76)
 	frame.add_child(label)
 	var list := ItemList.new()
-	list.position = Vector2(x, 96)
+	list.position = Vector2(x, 92)
 	list.custom_minimum_size = Vector2(170, 124)
 	list.size = Vector2(170, 124)
 	list.add_theme_font_size_override("font_size", FONT)
+	UITheme.style_list(list)
 	frame.add_child(list)
 	return list
 
 func _delete_button(x: float, which: String) -> Button:
 	var b := Button.new()
 	b.text = "Delete"
-	b.add_theme_font_size_override("font_size", 8)
+	UITheme.style_button(b)
 	b.position = Vector2(x, 224)
 	b.custom_minimum_size = Vector2(52, 16)
 	b.pressed.connect(_delete_pressed.bind(which))

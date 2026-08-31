@@ -84,6 +84,53 @@ static func style_row(b: Button, selected: bool) -> void:
 	b.add_theme_color_override("font_disabled_color", Color(0.5, 0.55, 0.6))
 	b.focus_mode = Control.FOCUS_NONE
 
+## Flat panel with a visible steel-blue border — for full-screen menus
+## (title) where the textured panels would fight the backdrop.
+static func flat_panel(bg: Color = Color(0.06, 0.11, 0.16, 0.92)) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_color = Color(0.32, 0.47, 0.55)
+	sb.set_border_width_all(1)
+	sb.set_content_margin_all(6)
+	return sb
+
+## Bordered text input: dark well, border brightens with focus.
+static func style_input(e: LineEdit) -> void:
+	var norm := StyleBoxFlat.new()
+	norm.bg_color = Color(0.03, 0.06, 0.09)
+	norm.border_color = Color(0.32, 0.47, 0.55)
+	norm.set_border_width_all(1)
+	norm.set_content_margin_all(4)
+	var foc: StyleBoxFlat = norm.duplicate()
+	foc.border_color = Color(0.56, 0.75, 0.81)
+	e.add_theme_stylebox_override("normal", norm)
+	e.add_theme_stylebox_override("focus", foc)
+	e.add_theme_color_override("font_color", Color(0.9, 0.93, 0.95))
+	e.add_theme_color_override("font_placeholder_color", Color(0.45, 0.53, 0.58))
+
+## Bordered ItemList (title pickers): dark well, steel-blue selection bar,
+## soft hover, no focus rectangle.
+static func style_list(l: ItemList) -> void:
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = Color(0.03, 0.06, 0.09)
+	panel.border_color = Color(0.32, 0.47, 0.55)
+	panel.set_border_width_all(1)
+	panel.set_content_margin_all(4)
+	l.add_theme_stylebox_override("panel", panel)
+	var sel := StyleBoxFlat.new()
+	sel.bg_color = Color(0.56, 0.75, 0.81, 0.3)
+	sel.border_color = Color(0.56, 0.75, 0.81)
+	sel.set_border_width_all(1)
+	l.add_theme_stylebox_override("selected", sel)
+	l.add_theme_stylebox_override("selected_focus", sel)
+	var hov := StyleBoxFlat.new()
+	hov.bg_color = Color(1, 1, 1, 0.07)
+	l.add_theme_stylebox_override("hovered", hov)
+	l.add_theme_stylebox_override("focus", empty())
+	l.add_theme_color_override("font_color", Color(0.85, 0.89, 0.92))
+	l.add_theme_color_override("font_hovered_color", Color(0.95, 0.97, 1.0))
+	l.add_theme_color_override("font_selected_color", Color(0.97, 0.99, 1.0))
+
 static func label(text: String, size: int = FONT_SIZE, color: Color = Color(0.9, 0.93, 0.95)) -> Label:
 	var l := Label.new()
 	l.text = text
