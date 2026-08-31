@@ -274,7 +274,12 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 5. Loot: Weapons, Armor & Tools (LT)
+## 5. Loot: Weapons, Armor & Tools (LT) — ⏸️ Deferred (skipped 2026-08-30; revisit after City section / MVP loop work)
+
+> Carried-in context for the future review: GD-07 fixed the weapon families (knives/swords/axes,
+> pistols/semi-autos/rifles, speargun); GL-06 added the **modifier schematics** idea
+> (prefix/suffix attributes learnable for crafting); GL-28 implies non-respawning near-surface
+> loot (see LT-27 partial).
 
 - [ ] **LT-01.** What is the full base weapon list at launch?
 - [ ] **LT-02.** What weapon categories exist (melee, ranged, underwater-specific like spearguns)?
@@ -310,13 +315,16 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 ---
 
-## 6. The City & World Generation (CT)
+## 6. The City & World Generation (CT) — 🔄 In progress (paused 2026-08-30 at CT-02/03)
 
-- [ ] **CT-01.** How big is the city — number of buildings, world width, and depth to ground in blocks?
+- [x] **CT-01.** How big is the city — number of buildings, world width, and depth to ground in blocks?
+  - **A:** **~40 towers**; center towers ~50 floors (50 × 6 = ~300 blocks ≈ 600 ft), tapering per the CC-28 bell curve to 5–10 floor fully submerged buildings at the edges. Total world ≈ **2,500 × 400 blocks**.
 - [ ] **CT-02.** What building types exist (residential, office, hospital, police, mall, industrial)?
 - [ ] **CT-03.** Do building types drive their loot tables and enemy types?
-- [ ] **CT-04.** How are buildings generated — hand-made templates with variation, or fully procedural?
-- [ ] **CT-05.** How are interiors laid out (rooms, corridors, stairwells, elevator shafts)?
+- [x] **CT-04.** How are buildings generated — hand-made templates with variation, or fully procedural?
+  - **A:** **Curated room templates, procedurally assembled.** Authoring workflow: during MVP development, rooms are procedurally generated, the keepers are curated and **saved as templates**, and the game assembles buildings from that curated library.
+- [x] **CT-05.** How are interiors laid out (rooms, corridors, stairwells, elevator shafts)?
+  - **A:** Room templates carry door/opening sockets; the generator stitches rooms into floors, stacks floors into towers, then applies wear — breaches, collapsed sections, flooding. Must respect the two-jump rule (WS-04).
 - [ ] **CT-06.** Are elevator shafts usable as vertical traversal routes (or even repairable)?
 - [ ] **CT-07.** Is there anything below street level (subways, parking garages, sewers)?
 - [ ] **CT-08.** Are the streets at ground level explorable terrain with their own content?

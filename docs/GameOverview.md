@@ -206,7 +206,11 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 ## The City
 
-- Buildings are **procedurally generated** from different wood and stone block types.
+- **Dimensions:** ~40 towers; center towers ~50 floors (~300 blocks ≈ 600 ft deep to ground),
+  tapering to 5–10 floor submerged buildings at the edges; world ≈ 2,500 × 400 blocks.
+- **Generation:** curated room templates, procedurally assembled — rooms are proc-generated
+  during development, the keepers saved as templates, and the game stitches templates into
+  floors and towers before applying wear (breaches, collapse, flooding).
 - Buildings may contain **holes/breaches** that flood the affected floors, mixing dry and
   submerged sections within a single structure.
 - **City profile:** tallest towers at the center; shorter, sparser, mostly submerged buildings
@@ -221,7 +225,8 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 Deeper design and implementation details live in the `technical/` folder. Open design questions
 are tracked in [OpenQuestions.md](OpenQuestions.md) *(reviewed: Core Concept & Setting ✅, World
-Scale & Character ✅, Main Game Loop ✅, Game Dangers ✅)*.
+Scale & Character ✅, Main Game Loop ✅, Game Dangers ✅, Loot ⏸️ deferred, The City 🔄 in
+progress — paused at CT-02/03)*.
 
 - [technical/WaterPhysics.md](technical/WaterPhysics.md) — water simulation, pumps, draining ✅
 - World generation (building layouts, flooding, breach placement)
