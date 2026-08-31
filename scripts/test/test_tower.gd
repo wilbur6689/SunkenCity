@@ -37,23 +37,21 @@ const MED_ROOM := [
 ## Starting kit (LT-30): plain clothes are implicit; a couple of bandages + one food item.
 const START_KIT := [["bandage", 2], ["food_can", 1]]
 
-@onready var blocks: TileMapLayer = $Blocks
-@onready var back_walls: TileMapLayer = $BackWalls
+@onready var structure_renderer: StructureRenderer = $StructureRenderer
 @onready var water_renderer: WaterRenderer = $WaterRenderer
-@onready var climbables: TileMapLayer = $Climbables
 @onready var items_root: Node2D = $Items
 @onready var objects_root: Node2D = $Objects
 @onready var spawn_point: Marker2D = $SpawnPoint
 @onready var player: Player = $Player
 
 func _ready() -> void:
-	_build_tower()
-	# Spawn on floor 1 (the medical room); feet on the standing row's bottom edge.
+	# Grid first (CT-28), then build through World.
+	var bounds := Rect2i(0, 0, WIDTH, FLOOR_COUNT * FLOOR_H + 1)
 	var spawn_cell := Vector2i(16, FLOOR_H - 1) # not 15: the rope hole is below it
-	spawn_point.global_position = blocks.map_to_local(spawn_cell)
+	spawn_point.global_position = Vector2((spawn_cell.x + 0.5) * Constants.BLOCK_SIZE, (spawn_cell.y + 0.5) * Constants.BLOCK_SIZE)
 	var feet := spawn_point.global_position + Vector2(0, Constants.BLOCK_SIZE * 0.5)
-	var water_bounds := Rect2i(0, 0, WIDTH, FLOOR_COUNT * FLOOR_H + 1)
-	World.register(blocks, water_bounds, climbables, feet, back_walls, items_root, objects_root)
+	World.register(WorldGrid.new(bounds), feet, items_root, objects_root, structure_renderer, DRY_FLOORS * FLOOR_H)
+	_build_tower()
 	_furnish() # before seeding: closed doors must already seal (WS-20 solidity)
 	# Static seed at equilibrium: everything open at or below the waterline is full…
 	var waterline := DRY_FLOORS * FLOOR_H
@@ -70,16 +68,13 @@ func _ready() -> void:
 	player.set_equipment("suit", {"id": "clothes", "count": 1}) # LT-30: plain clothes
 
 func _set_block(x: int, y: int, mat: Mat) -> void:
-	blocks.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x, y), mat))
+	World.grid.set_structure(Vector2i(x, y), mat + 1) # Mat rows -> WorldGrid.M
 
 func _set_back(x: int, y: int, mat: Mat) -> void:
-	back_walls.set_cell(Vector2i(x, y), 0, Vector2i(_shade(x + 7, y + 3), mat))
+	World.grid.set_back(Vector2i(x, y), mat + 1)
 
 func _set_climbable(x: int, y: int, mat: Mat) -> void:
-	climbables.set_cell(Vector2i(x, y), 0, Vector2i(0, mat))
-
-func _shade(x: int, y: int) -> int:
-	return posmod(hash(Vector2i(x, y)), 5)
+	World.grid.set_climb(Vector2i(x, y), WorldGrid.C.LADDER if mat == Mat.LADDER else WorldGrid.C.ROPE)
 
 func _fill(x0: int, y0: int, x1: int, y1: int, mat: Mat, fn: Callable) -> void:
 	for y in range(y0, y1 + 1):

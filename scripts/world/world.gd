@@ -1,20 +1,16 @@
 extends Node
-## World authority layer (CC-06). Owns the canonical world state — tile
-## layers, water, climbables, placed blocks, objects, dropped items, spawn —
-## and answers every world query. In single-player this node *is* the host;
-## in LAN it runs only on the host and clients receive replicated state.
-## Gameplay code never touches the TileMapLayers directly: it asks World.
-##
-## M0/M1: static placeholder water (a tile layer). The cellular sim (M2)
-## replaces the storage behind is_water()/water_surface_y() without
-## changing callers.
+## World authority layer (CC-06). Owns the canonical world state — the tile
+## grid (CT-28: whole world in RAM), water, lighting, placed blocks, objects,
+## dropped items, spawn, clock — and answers every world query. In
+## single-player this node *is* the host; in LAN it runs only on the host.
+## Gameplay code never touches tile layers directly: it asks World, and the
+## StructureRenderer windows the grid into collision tiles near the camera.
 
 const WORLD_ITEM_SCENE := preload("res://scenes/items/world_item.tscn")
 const WORLD_OBJECT_SCENE := preload("res://scenes/objects/world_object.tscn")
 
-var blocks: TileMapLayer
-var back_walls: TileMapLayer
-var climbables: TileMapLayer
+var grid: WorldGrid
+var renderer: StructureRenderer
 var items_root: Node
 var objects_root: Node
 var spawn_position: Vector2 # feet position (bottom-center) of the spawn
@@ -23,193 +19,97 @@ var pumps: Array = [] # WorldObjects of kind "pump"
 var light_map: LightMap
 var _light_tick: int = 0
 
-## Player-placed blocks (WS-22): cell -> {id, hp, layer}. Anything in a tile
-## layer that is NOT here is building structure and unbreakable (GL-01).
+## Depth bands (GD-16): world data every system can query.
+var waterline_row: int = 0
+## Day/night (CC-11): 0..1, 0 = midnight; advances in real time.
+var time_of_day: float = 0.35 # start in the morning
+
+## Player-placed blocks (WS-22): key -> {id, hp, layer}. Anything in the
+## grid NOT here is building structure and unbreakable (GL-01).
 var placed_blocks: Dictionary = {}
 ## Every cell covered by an object -> WorldObject.
 var object_cells: Dictionary = {}
 
-func register(p_blocks: TileMapLayer, p_water_bounds: Rect2i, p_climbables: TileMapLayer,
-		p_spawn: Vector2, p_back_walls: TileMapLayer = null, p_items_root: Node = null,
-		p_objects_root: Node = null) -> void:
-	blocks = p_blocks
-	climbables = p_climbables
-	back_walls = p_back_walls
+func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
+		p_objects_root: Node, p_renderer: StructureRenderer, p_waterline_row: int) -> void:
+	grid = p_grid
 	items_root = p_items_root
 	objects_root = p_objects_root
+	renderer = p_renderer
 	spawn_position = p_spawn
+	waterline_row = p_waterline_row
 	placed_blocks.clear()
 	object_cells.clear()
 	pumps.clear()
-	water_sim = WaterSim.new(p_water_bounds, is_solid_cell)
+	water_sim = WaterSim.new(grid.bounds, is_solid_cell)
 	water_sim.budget_per_tick = Constants.WATER_BUDGET_PER_TICK
-	light_map = LightMap.new(p_water_bounds)
+	light_map = LightMap.new()
 
-func _physics_process(_delta: float) -> void:
+func is_ready() -> bool:
+	return grid != null
+
+func set_spawn(feet_position: Vector2) -> void:
+	spawn_position = feet_position
+
+func _physics_process(delta: float) -> void:
 	if water_sim == null:
 		return
+	time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
 	_tick_pumps()
 	water_sim.tick()
 	_light_tick += 1
 	if _light_tick % Constants.BREAKER_CHECK_TICKS == 0:
 		_check_breakers()
 	if _light_tick % Constants.LIGHT_RECOMPUTE_TICKS == 0:
-		light_map.compute(is_solid_cell, water_sim.level_at, _gather_light_sources())
+		var p := get_tree().get_first_node_in_group("player") as Node2D
+		if p != null:
+			var center := cell_at(p.global_position)
+			var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
+			var window := Rect2i(center - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
+			light_map.compute_window(window, grid.bounds.position.y, is_solid_cell,
+				water_sim.level_at, _gather_light_sources(), sun_strength())
 
-# --- Lighting (WS-17) + fog of war ---
+## Daylight factor (CC-11): full sun by day, a dim glow at night.
+func sun_strength() -> float:
+	var day := clampf(sin(time_of_day * TAU - PI * 0.5) * 1.6 + 0.5, 0.12, 1.0)
+	return day
 
-func light_at(cell: Vector2i) -> int:
-	return light_map.light_at(cell) if light_map != null else LightMap.MAX_LIGHT
-
-## How much sight passes through a cell: 1.0 = clear, 0.0 = structure
-## (stone walls, metal slabs, closed doors — total blackout behind), and a
-## partial factor for obstacle materials (wood shelves, plastic crates) so
-## sight bleeds around and dimly through small cover.
-func sight_transparency_cell(cell: Vector2i) -> float:
-	var obj: WorldObject = object_cells.get(cell)
-	if obj != null and obj.is_solid():
-		return 0.0 # closed doors seal sight
-	if blocks.get_cell_source_id(cell) == -1:
-		return 1.0
-	var row := blocks.get_cell_atlas_coords(cell).y
-	if row == 0 or row == 2: # stone, metal = building structure
-		return 0.0
-	return Constants.OBSTACLE_SIGHT_TRANSMISSION # wood, plastic = obstacles
-
-## Raycast from `from_pos` to the centre of `to_cell`: the fraction of sight
-## surviving the path (each obstacle cell crossed attenuates; structure
-## zeroes it). The target cell itself never blocks its own visibility.
-func sight_transmission(from_pos: Vector2, to_cell: Vector2i) -> float:
-	var target := cell_center(to_cell)
-	var delta := target - from_pos
-	var dist := delta.length()
-	if dist < 1.0:
-		return 1.0
-	var trans := 1.0
-	var last := cell_at(from_pos)
-	var steps := int(dist / (Constants.BLOCK_SIZE * 0.4)) + 1
-	for i in range(1, steps):
-		var c := cell_at(from_pos + delta * (float(i) / steps))
-		if c == to_cell:
-			break
-		if c == last:
-			continue
-		last = c
-		trans *= sight_transparency_cell(c)
-		if trans < 0.05:
-			return 0.0
-	return trans
-
-func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
-	return sight_transmission(from_pos, to_cell) > 0.01
-
-## What a viewer at `viewer_pos` actually sees at `cell`. Fog of war applies
-## only INSIDE buildings — marked by background walls (WS-20): there, a cell
-## needs an unobstructed ray from the viewer (floors and walls occlude — no
-## seeing around corners or through slabs), and tile light is capped by
-## sight falloff with distance. The exterior (sky, open water, backdrop,
-## facades) is always fully revealed; the depth colour grade alone carries
-## the deep-water mood.
-func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
-	if not has_back_wall_cell(cell):
-		return float(LightMap.MAX_LIGHT)
-	var d := cell_center(cell).distance_to(viewer_pos) / Constants.BLOCK_SIZE
-	var cap := float(LightMap.MAX_LIGHT)
-	if d > Constants.SIGHT_FULL_BLOCKS:
-		cap = maxf(cap - (d - Constants.SIGHT_FULL_BLOCKS) * Constants.SIGHT_FADE_PER_BLOCK, 0.0)
-	if cap <= 0.0:
-		return 0.0
-	# In sight and in range = fully illuminated (the player sees what they
-	# look at), scaled by what survives obstacles along the ray; tile light
-	# remains for lamp accents and gameplay queries.
-	return cap * sight_transmission(viewer_pos, cell)
-
-func _gather_light_sources() -> Array:
-	var out := []
-	if objects_root != null:
-		for obj in objects_root.get_children():
-			if not (obj is WorldObject) or obj.is_queued_for_deletion():
-				continue
-			if obj.def.kind == "light" and (not obj.def.get("powered", false) or obj.powered_on):
-				out.append({"cell": cell_at(obj.center()), "level": Constants.LAMP_LIGHT})
-	if items_root != null:
-		for it in items_root.get_children():
-			if it is WorldItem and it.light != null and not it.is_queued_for_deletion():
-				out.append({"cell": cell_at(it.global_position), "level": Constants.GLOWSTICK_LIGHT})
-	for p in get_tree().get_nodes_in_group("player"):
-		var level := Constants.PLAYER_SIGHT_LIGHT
-		var held: Dictionary = Data.item(p.held_item())
-		if held.get("use", {}).has("drop_light"):
-			level = Constants.GLOWSTICK_LIGHT # carried glowstick glows in hand
-		out.append({"cell": cell_at(p.global_position), "level": level})
-	return out
-
-## Building power (WS-17): wired lights turn on when a switched-on breaker
-## is in range; flooding a breaker trips it off.
-func update_power() -> void:
-	if objects_root == null:
-		return
-	var breakers := []
-	for obj in objects_root.get_children():
-		if obj is WorldObject and obj.def.kind == "breaker" and not obj.is_queued_for_deletion():
-			breakers.append(obj)
-	for obj in objects_root.get_children():
-		if obj is WorldObject and obj.def.kind == "light" and obj.def.get("powered", false):
-			var on := false
-			for b in breakers:
-				if b.powered_on and b.center().distance_to(obj.center()) <= Constants.POWER_RADIUS_BLOCKS * Constants.BLOCK_SIZE:
-					on = true
-			obj.set_powered(on)
-
-func _check_breakers() -> void:
-	if objects_root == null:
-		return
-	var tripped := false
-	for obj in objects_root.get_children():
-		if obj is WorldObject and obj.def.kind == "breaker" and obj.powered_on:
-			if water_sim.level_at(obj.cell) > 2:
-				obj.powered_on = false # flooding trips the breaker (WS-17)
-				tripped = true
-	if tripped:
-		update_power()
-
-## Pumps (GL-16): move water from the pump's intake cell to its outlet at a
-## fixed rate; the sim's own flow refills the intake from the connected body.
-func _tick_pumps() -> void:
-	for pump in pumps:
-		if not is_instance_valid(pump) or pump.outlet_cell == WorldObject.NO_OUTLET:
-			continue
-		var intake: Vector2i = pump.cell
-		var taken := water_sim.remove_water_spread(intake, Constants.PUMP_UNITS_PER_TICK)
-		if taken > 0:
-			var leftover := water_sim.add_water_spread(pump.outlet_cell, taken)
-			if leftover > 0: # receiving side completely full: stall (put it back)
-				water_sim.add_water_spread(intake, leftover)
-
-func is_ready() -> bool:
-	return blocks != null
-
-func set_spawn(feet_position: Vector2) -> void:
-	spawn_position = feet_position
-
-# --- Coordinate helpers ---
+# --- Coordinate helpers (pure math; tiles are only a render window) ---
 
 func cell_at(global_pos: Vector2) -> Vector2i:
-	return blocks.local_to_map(blocks.to_local(global_pos))
+	return Vector2i(floori(global_pos.x / Constants.BLOCK_SIZE), floori(global_pos.y / Constants.BLOCK_SIZE))
 
 func cell_center(cell: Vector2i) -> Vector2:
-	return blocks.to_global(blocks.map_to_local(cell))
+	return Vector2((cell.x + 0.5) * Constants.BLOCK_SIZE, (cell.y + 0.5) * Constants.BLOCK_SIZE)
 
 func cell_top_y(cell: Vector2i) -> float:
-	return cell_center(cell).y - Constants.BLOCK_SIZE * 0.5
+	return cell.y * Constants.BLOCK_SIZE
 
 func cell_rect(cell: Vector2i) -> Rect2:
-	return Rect2(cell_center(cell) - Vector2.ONE * Constants.BLOCK_SIZE * 0.5, Vector2.ONE * Constants.BLOCK_SIZE)
+	return Rect2(cell.x * Constants.BLOCK_SIZE, cell.y * Constants.BLOCK_SIZE, Constants.BLOCK_SIZE, Constants.BLOCK_SIZE)
+
+# --- Depth bands (GD-16) ---
+
+## Blocks below the waterline (negative above it).
+func depth_below_waterline(cell: Vector2i) -> int:
+	return cell.y - waterline_row
+
+func band_at(cell: Vector2i) -> String:
+	var d := depth_below_waterline(cell)
+	if d < 0:
+		return "dry"
+	if d < Constants.BAND_SHALLOWS_DEPTH:
+		return "shallows"
+	if d < Constants.BAND_COLD_DEPTH:
+		return "cold"
+	if d < Constants.BAND_DARK_DEPTH:
+		return "dark"
+	return "crush"
 
 # --- Queries ---
 
 func is_solid_cell(cell: Vector2i) -> bool:
-	if blocks.get_cell_source_id(cell) != -1:
+	if grid.structure_at(cell) != WorldGrid.M.AIR:
 		return true
 	var obj: WorldObject = object_cells.get(cell)
 	return obj != null and obj.is_solid()
@@ -218,10 +118,10 @@ func is_solid(global_pos: Vector2) -> bool:
 	return is_solid_cell(cell_at(global_pos))
 
 func has_block_cell(cell: Vector2i) -> bool:
-	return blocks.get_cell_source_id(cell) != -1
+	return grid.structure_at(cell) != WorldGrid.M.AIR
 
 func has_back_wall_cell(cell: Vector2i) -> bool:
-	return back_walls != null and back_walls.get_cell_source_id(cell) != -1
+	return grid.back_at(cell) != WorldGrid.M.AIR
 
 func is_water_cell(cell: Vector2i) -> bool:
 	return water_sim != null and water_sim.level_at(cell) > 0
@@ -234,16 +134,13 @@ func is_water(global_pos: Vector2) -> bool:
 	return global_pos.y >= water_sim.surface_y_in_cell(cell)
 
 func is_climbable_cell(cell: Vector2i) -> bool:
-	return climbables != null and climbables.get_cell_source_id(cell) != -1
+	return grid != null and grid.climb_at(cell) != WorldGrid.C.NONE
 
 func is_climbable(global_pos: Vector2) -> bool:
 	return is_climbable_cell(cell_at(global_pos))
 
-const LADDER_ATLAS_ROW := 5 # ropes (row 6) stay pass-through
-
 func is_ladder_cell(cell: Vector2i) -> bool:
-	return climbables != null and climbables.get_cell_source_id(cell) != -1 \
-		and climbables.get_cell_atlas_coords(cell).y == LADDER_ATLAS_ROW
+	return grid != null and grid.climb_at(cell) == WorldGrid.C.LADDER
 
 ## The topmost cell of a ladder acts as a stand-on surface (one-way platform).
 func is_ladder_top_cell(cell: Vector2i) -> bool:
@@ -270,20 +167,19 @@ func _surface_cell(global_pos: Vector2) -> Vector2i:
 func water_surface_y(global_pos: Vector2) -> float:
 	return water_sim.surface_y_in_cell(_surface_cell(global_pos))
 
+## True if the water column above global_pos meets air (not a ceiling).
+func surface_has_air(global_pos: Vector2) -> bool:
+	return not is_solid_cell(_surface_cell(global_pos) + Vector2i.UP)
+
 ## Current push (px/s) on a body at global_pos (WS-16).
 func current_at(global_pos: Vector2) -> Vector2:
 	if water_sim == null:
 		return Vector2.ZERO
 	return water_sim.flow_at(cell_at(global_pos)) * Constants.CURRENT_PUSH
 
-## True if the water column above global_pos meets air (not a ceiling), so
-## a swimmer there can surface and breathe.
-func surface_has_air(global_pos: Vector2) -> bool:
-	return not is_solid_cell(_surface_cell(global_pos) + Vector2i.UP)
-
 ## True if no solid block overlaps the given global-space rect.
 func rect_is_clear(rect: Rect2) -> bool:
-	var shrunk := rect.grow(-0.5) # ignore exact edge contact
+	var shrunk := rect.grow(-0.5)
 	var c0 := cell_at(shrunk.position)
 	var c1 := cell_at(shrunk.end)
 	for y in range(c0.y, c1.y + 1):
@@ -306,20 +202,118 @@ func _has_neighbor_support(cell: Vector2i) -> bool:
 			return true
 	return has_back_wall_cell(cell)
 
+# --- Lighting (WS-17) + fog of war ---
+
+func light_at(cell: Vector2i) -> int:
+	return light_map.light_at(cell) if light_map != null else LightMap.MAX_LIGHT
+
+## How much sight passes through a cell: structure (stone/metal, closed
+## doors) blacks out; obstacle materials (wood, plastic) attenuate.
+func sight_transparency_cell(cell: Vector2i) -> float:
+	var obj: WorldObject = object_cells.get(cell)
+	if obj != null and obj.is_solid():
+		return 0.0
+	var m := grid.structure_at(cell)
+	if m == WorldGrid.M.AIR:
+		return 1.0
+	if m == WorldGrid.M.STONE or m == WorldGrid.M.METAL:
+		return 0.0
+	return Constants.OBSTACLE_SIGHT_TRANSMISSION
+
+## Raycast: the fraction of sight surviving the path to `to_cell`.
+func sight_transmission(from_pos: Vector2, to_cell: Vector2i) -> float:
+	var target := cell_center(to_cell)
+	var delta := target - from_pos
+	var dist := delta.length()
+	if dist < 1.0:
+		return 1.0
+	var trans := 1.0
+	var last := cell_at(from_pos)
+	var steps := int(dist / (Constants.BLOCK_SIZE * 0.4)) + 1
+	for i in range(1, steps):
+		var c := cell_at(from_pos + delta * (float(i) / steps))
+		if c == to_cell:
+			break
+		if c == last:
+			continue
+		last = c
+		trans *= sight_transparency_cell(c)
+		if trans < 0.05:
+			return 0.0
+	return trans
+
+func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
+	return sight_transmission(from_pos, to_cell) > 0.01
+
+## Fog of war: applies inside buildings only (back-wall cells, WS-20); in
+## sight and in range = fully illuminated, scaled by obstacle transmission.
+func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
+	if not has_back_wall_cell(cell):
+		return float(LightMap.MAX_LIGHT)
+	var d := cell_center(cell).distance_to(viewer_pos) / Constants.BLOCK_SIZE
+	var cap := float(LightMap.MAX_LIGHT)
+	if d > Constants.SIGHT_FULL_BLOCKS:
+		cap = maxf(cap - (d - Constants.SIGHT_FULL_BLOCKS) * Constants.SIGHT_FADE_PER_BLOCK, 0.0)
+	if cap <= 0.0:
+		return 0.0
+	return cap * sight_transmission(viewer_pos, cell)
+
+func _gather_light_sources() -> Array:
+	var out := []
+	if objects_root != null:
+		for obj in objects_root.get_children():
+			if not (obj is WorldObject) or obj.is_queued_for_deletion():
+				continue
+			if obj.def.kind == "light" and (not obj.def.get("powered", false) or obj.powered_on):
+				out.append({"cell": cell_at(obj.center()), "level": Constants.LAMP_LIGHT})
+	if items_root != null:
+		for it in items_root.get_children():
+			if it is WorldItem and it.light != null and not it.is_queued_for_deletion():
+				out.append({"cell": cell_at(it.global_position), "level": Constants.GLOWSTICK_LIGHT})
+	for p in get_tree().get_nodes_in_group("player"):
+		var level := Constants.PLAYER_SIGHT_LIGHT
+		var held: Dictionary = Data.item(p.held_item())
+		if held.get("use", {}).has("drop_light"):
+			level = Constants.GLOWSTICK_LIGHT
+		out.append({"cell": cell_at(p.global_position), "level": level})
+	return out
+
+## Building power (WS-17).
+func update_power() -> void:
+	if objects_root == null:
+		return
+	var breakers := []
+	for obj in objects_root.get_children():
+		if obj is WorldObject and obj.def.kind == "breaker" and not obj.is_queued_for_deletion():
+			breakers.append(obj)
+	for obj in objects_root.get_children():
+		if obj is WorldObject and obj.def.kind == "light" and obj.def.get("powered", false):
+			var on := false
+			for b in breakers:
+				if b.powered_on and b.center().distance_to(obj.center()) <= Constants.POWER_RADIUS_BLOCKS * Constants.BLOCK_SIZE:
+					on = true
+			obj.set_powered(on)
+
+func _check_breakers() -> void:
+	if objects_root == null:
+		return
+	var tripped := false
+	for obj in objects_root.get_children():
+		if obj is WorldObject and obj.def.kind == "breaker" and obj.powered_on:
+			if water_sim.level_at(obj.cell) > 2:
+				obj.powered_on = false
+				tripped = true
+	if tripped:
+		update_power()
+
 # --- Blocks (WS-12/21/22, GL-01) ---
 
-func _layer_for(layer_name: String) -> TileMapLayer:
-	match layer_name:
-		"back":
-			return back_walls
-		"climb":
-			return climbables
-		_:
-			return blocks
+func _mat_for_block(def: Dictionary) -> int:
+	return int(def.atlas_row) + 1
 
 func can_place_block(id: String, cell: Vector2i, by: CharacterBody2D = null) -> bool:
 	var def: Dictionary = Data.blocks.get(id, {})
-	if def.is_empty():
+	if def.is_empty() or not grid.in_bounds(cell):
 		return false
 	match def.layer:
 		"back":
@@ -328,28 +322,34 @@ func can_place_block(id: String, cell: Vector2i, by: CharacterBody2D = null) -> 
 			return not has_block_cell(cell) and not is_climbable_cell(cell) and not object_cells.has(cell) \
 				and (_has_neighbor_support(cell) or is_climbable_cell(cell + Vector2i.UP) or is_climbable_cell(cell + Vector2i.DOWN))
 		_:
-			# Placing into water is allowed — it displaces or destroys (WS-24).
 			return not has_block_cell(cell) and not object_cells.has(cell) \
 				and not _cell_overlaps_body(cell, by) and _has_neighbor_support(cell)
 
 func place_block(id: String, cell: Vector2i) -> bool:
 	var def: Dictionary = Data.blocks.get(id, {})
-	if def.is_empty():
+	if def.is_empty() or not grid.in_bounds(cell):
 		return false
-	var layer := _layer_for(def.layer)
-	if layer == null:
-		return false
-	if def.layer == "blocks" and water_sim != null:
-		water_sim.displace(cell) # WS-24: displace if possible, destroy if enclosed
-	var variant := posmod(hash(cell), 5)
-	layer.set_cell(cell, 0, Vector2i(variant, def.atlas_row))
+	match def.layer:
+		"back":
+			grid.set_back(cell, _mat_for_block(def))
+		"climb":
+			grid.set_climb(cell, WorldGrid.C.LADDER if int(def.atlas_row) == 5 else WorldGrid.C.ROPE)
+		_:
+			if water_sim != null:
+				water_sim.displace(cell) # WS-24
+			grid.set_structure(cell, _mat_for_block(def))
 	placed_blocks[_key(cell, def.layer)] = {"id": id, "hp": float(def.hp), "layer": def.layer}
-	if water_sim != null:
-		water_sim.notify_changed(cell)
+	_cell_changed(cell)
 	return true
 
 func _key(cell: Vector2i, layer_name: String) -> Variant:
 	return cell if layer_name == "blocks" else "%s:%d,%d" % [layer_name, cell.x, cell.y]
+
+func _cell_changed(cell: Vector2i) -> void:
+	if water_sim != null:
+		water_sim.notify_changed(cell)
+	if renderer != null:
+		renderer.refresh_cell(cell)
 
 ## Removes a player-placed block on the given layer; returns its item id or "".
 func remove_block(cell: Vector2i, layer_name: String = "blocks") -> String:
@@ -357,23 +357,27 @@ func remove_block(cell: Vector2i, layer_name: String = "blocks") -> String:
 	if not placed_blocks.has(key):
 		return ""
 	var entry: Dictionary = placed_blocks[key]
-	_layer_for(layer_name).erase_cell(cell)
+	match layer_name:
+		"back":
+			grid.set_back(cell, WorldGrid.M.AIR)
+		"climb":
+			grid.set_climb(cell, WorldGrid.C.NONE)
+		_:
+			grid.set_structure(cell, WorldGrid.M.AIR)
 	placed_blocks.erase(key)
-	if layer_name == "blocks" and water_sim != null:
-		water_sim.notify_changed(cell) # removing a block wakes adjacent water
+	_cell_changed(cell)
 	return entry.id
 
-## Background walls are cosmetic (WS-20/21): any wall can be knocked out with
-## a hammer. Player-placed walls return their item id; structure walls return
-## "" (no free materials) but are still erased.
+## Background walls are cosmetic (WS-20/21): any wall can be knocked out.
 func erase_back_wall(cell: Vector2i) -> bool:
 	if not has_back_wall_cell(cell):
 		return false
 	placed_blocks.erase(_key(cell, "back"))
-	back_walls.erase_cell(cell)
+	grid.set_back(cell, WorldGrid.M.AIR)
+	_cell_changed(cell)
 	return true
 
-## Tool hit on the block at cell. Returns "broken" | "damaged" | "too_hard" | "structure" | "none".
+## Tool hit. Returns "broken" | "damaged" | "too_hard" | "structure" | "none".
 func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 	var layer_name := "blocks"
 	if not has_block_cell(cell):
@@ -406,18 +410,15 @@ func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) ->
 		return false
 	var w: int = def.size[0]
 	var h: int = def.size[1]
-	var allow_water: bool = def.get("place_in_water", false) # pumps work submerged
+	var allow_water: bool = def.get("place_in_water", false)
 	for dy in h:
 		for dx in w:
 			var c := Vector2i(cell.x + dx, cell.y - dy)
-			# A shallow film (level <= 2, the residue a pump cannot lift) does
-			# not block furniture; deeper water does.
 			var deep_water := water_sim != null and water_sim.level_at(c) > 2
 			if has_block_cell(c) or object_cells.has(c) or (deep_water and not allow_water):
 				return false
 			if def.kind == "door" and _cell_overlaps_body(c, by):
 				return false
-	# stands on a fully solid row (doors also need a lintel-free frame, ignored for M1)
 	for dx in w:
 		if not has_block_cell(Vector2i(cell.x + dx, cell.y + 1)):
 			return false
@@ -445,13 +446,13 @@ func remove_object(obj: WorldObject) -> void:
 	pumps.erase(obj)
 	obj.queue_free()
 
-## Called when an object's solidity changes in place (door opened/closed).
+## Called when an object's solidity changes in place (door toggled).
 func notify_object_changed(obj: WorldObject) -> void:
 	if water_sim != null:
 		for c in obj.covered_cells():
 			water_sim.notify_changed(c)
 
-## Station ids within `reach` px of `pos` (GL-04: station-filtered crafting).
+## Station ids within `reach` px of `pos` (GL-04).
 func stations_near(pos: Vector2, reach: float) -> Array:
 	var out := ["hand"]
 	if objects_root == null:
@@ -461,6 +462,18 @@ func stations_near(pos: Vector2, reach: float) -> Array:
 			if not out.has(obj.def.station):
 				out.append(obj.def.station)
 	return out
+
+## Pumps (GL-16): suction and insertion through the connected body/airspace.
+func _tick_pumps() -> void:
+	for pump in pumps:
+		if not is_instance_valid(pump) or pump.outlet_cell == WorldObject.NO_OUTLET:
+			continue
+		var intake: Vector2i = pump.cell
+		var taken := water_sim.remove_water_spread(intake, Constants.PUMP_UNITS_PER_TICK)
+		if taken > 0:
+			var leftover := water_sim.add_water_spread(pump.outlet_cell, taken)
+			if leftover > 0:
+				water_sim.add_water_spread(intake, leftover)
 
 # --- Items ---
 

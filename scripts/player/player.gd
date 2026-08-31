@@ -89,6 +89,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_sprite(delta)
 	_update_oxygen(delta)
+	_update_environment(delta)
 	_update_camera(delta)
 	interaction.tick(delta)
 	if wants_drop:
@@ -152,10 +153,35 @@ func held_item() -> String:
 func held_tool() -> Dictionary:
 	return Data.tool_of(held_item())
 
-## Weight → swim slowdown (WS-10/14): soft cap, never a hard stop.
+## Weight → swim slowdown (WS-10/14) plus the cold slow (CC-16).
 func swim_factor() -> float:
 	var w := inventory.total_weight()
-	return maxf(Constants.WEIGHT_SWIM_MIN_FACTOR, 1.0 - 0.5 * w / Constants.WEIGHT_SWIM_REFERENCE)
+	var f := maxf(Constants.WEIGHT_SWIM_MIN_FACTOR, 1.0 - 0.5 * w / Constants.WEIGHT_SWIM_REFERENCE)
+	return f * env_slow
+
+var env_slow: float = 1.0
+var band: String = "dry"
+
+## Cold/crush depth gates (CC-16, GL-12) — while submerged only, so drained
+## forward camps stay safe (GL-17). Suit ratings lift them (M5 gear).
+func _update_environment(delta: float) -> void:
+	env_slow = 1.0
+	band = World.band_at(World.cell_at(_center_point()))
+	if not in_water:
+		return
+	var suit: Dictionary = Data.item(equipped("suit")).get("stats", {})
+	match band:
+		"cold":
+			if int(suit.get("cold", 0)) < 1:
+				env_slow = Constants.COLD_SLOW_FACTOR
+		"dark":
+			if int(suit.get("cold", 0)) < 2:
+				env_slow = Constants.COLD_SLOW_FACTOR
+				apply_damage(Constants.COLD_DPS * delta)
+		"crush":
+			if int(suit.get("crush", 0)) < 1:
+				env_slow = Constants.COLD_SLOW_FACTOR
+				apply_damage(Constants.CRUSH_DPS * delta)
 
 func use_item(slot: int) -> void:
 	var s = inventory.slots[slot]

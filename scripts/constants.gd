@@ -94,6 +94,18 @@ const OBJECT_LONG_PRESS: float = 0.5 # seconds of held LMB that picks an object 
 const LIGHT_RECOMPUTE_TICKS: int = 3
 const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
 
+# --- World scale, bands, clock (M3: CT-28, GD-16, CC-11) ---
+const LIGHT_WINDOW: Vector2i = Vector2i(120, 72) # cells relit around the camera
+const DAY_LENGTH_SECONDS: float = 600.0          # full day/night cycle
+const BAND_SHALLOWS_DEPTH: int = 40  # rows below the waterline where each band ends
+const BAND_COLD_DEPTH: int = 120
+const BAND_DARK_DEPTH: int = 220
+# Cold/crush gates (CC-16, GL-12) — applied while submerged; drained rooms
+# are safe (forward camps, GL-17). Suit stats lift them from M5 onward.
+const COLD_SLOW_FACTOR: float = 0.65
+const COLD_DPS: float = 2.0    # in The Dark without a cold-rated suit
+const CRUSH_DPS: float = 25.0  # in The Crush without a crush-rated suit
+
 # --- Skills (CC-18) ---
 const SKILL_XP_PER_LEVEL: float = 20.0
 const SKILL_LEVELS_PER_PLAYER_LEVEL: int = 5
