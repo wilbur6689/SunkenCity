@@ -644,6 +644,35 @@ def build_objects():
     print("wrote", len(OBJECTS), "object sprites to", out_dir)
 
 
+def build_cracks():
+    """Block damage overlay (WS-22): 3 crack stages (25/50/75% damage) as a
+    48x16 sheet drawn over the tile. Deterministic jagged random walks that
+    reuse and extend the previous stage so cracks visibly grow."""
+    img = Image.new("RGBA", (48, 16), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    rng = random.Random(1177)
+
+    def walk(ox, x, y, steps, dark):
+        pts = [(x, y)]
+        for _ in range(steps):
+            x = max(1, min(14, x + rng.choice((-2, -1, -1, 1, 1, 2))))
+            y = max(1, min(14, y + rng.choice((-1, 1, 1, 2))))
+            pts.append((x, y))
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            d.line([ox + x0, y0, ox + x1, y1], fill=(14, 10, 8, 235) if dark else (40, 32, 26, 200))
+
+    seeds = [(8, 2, 5), (3, 9, 4), (12, 11, 4), (2, 3, 5), (13, 4, 5), (7, 13, 4), (5, 6, 4), (11, 8, 5)]
+    counts = [2, 5, 8]  # cracks per stage: each stage redraws the last + more
+    for stage, n in enumerate(counts):
+        ox = stage * 16
+        for i, (x, y, steps) in enumerate(seeds[:n]):
+            rng.seed(1000 + i)  # per-crack seed: the same crack grows longer each stage
+            walk(ox, x, y, steps + stage * 2, stage >= 1)
+    out = ROOT / "assets" / "sprites" / "cracks.png"
+    img.save(out)
+    print("wrote", out, img.size)
+
+
 def build_light():
     size = 128
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -830,6 +859,7 @@ if __name__ == "__main__":
     build_icons()
     build_objects()
     build_light()
+    build_cracks()
     build_player_sheet()
     build_ui_textures()
     build_backgrounds()

@@ -72,6 +72,7 @@ func _boot_loaded(data: Dictionary) -> void:
 	World.time_of_day = float(data.time_of_day)
 	World.placed_blocks = (data.placed_blocks as Dictionary).duplicate(true)
 	World.structure_damage = (data.get("structure_damage", {}) as Dictionary).duplicate()
+	World.damage_rev += 1 # loaded damage: the crack overlay redraws
 	for st in data.objects:
 		var rec := World.add_object_record(st.id, st.cell, bool(st.placed))
 		rec.open = bool(st.get("open", false))

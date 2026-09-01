@@ -59,6 +59,7 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	waterline_row = p_waterline_row
 	placed_blocks.clear()
 	structure_damage.clear()
+	damage_rev += 1
 	object_records.clear()
 	object_cells.clear()
 	pumps.clear()
@@ -447,6 +448,7 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 	if tool_tier < int(def.hardness) or damage <= 0.0:
 		return "too_hard"
 	entry.hp -= damage
+	damage_rev += 1 # crack overlay watches this
 	if entry.hp > 0.0:
 		return "damaged"
 	remove_block(cell, layer_name)
@@ -457,6 +459,7 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 ## the right tool tier (Constants.STRUCTURE_TIER), drops one matching
 ## material, and — like any removal — wakes water, light, and fog.
 var structure_damage: Dictionary = {} # cell -> hp left (partially hit cells)
+var damage_rev: int = 0 # bumped on any block damage; the crack overlay redraws on change
 
 func _damage_structure(cell: Vector2i, damage: float, tool_tier: int) -> String:
 	var mat := grid.structure_at(cell)
@@ -465,6 +468,7 @@ func _damage_structure(cell: Vector2i, damage: float, tool_tier: int) -> String:
 		return "too_hard"
 	var hp: float = structure_damage.get(cell, float(Constants.STRUCTURE_HP.get(mat, 60.0)))
 	hp -= damage
+	damage_rev += 1
 	if hp > 0.0:
 		structure_damage[cell] = hp
 		return "damaged"

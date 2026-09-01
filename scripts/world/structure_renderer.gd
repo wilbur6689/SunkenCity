@@ -27,6 +27,39 @@ func _ready() -> void:
 	climb_layer.tile_set = TILESET
 	climb_layer.collision_enabled = false
 	add_child(climb_layer)
+	add_child(_CrackLayer.new()) # after the tile layers: cracks draw on top
+
+## Damage cracks (WS-22, user request): any damaged block — structure or
+## player-placed — shows progressively larger cracks at 25/50/75% damage,
+## from the 3-stage sheet assets/sprites/cracks.png. Redraws only when
+## World.damage_rev moves.
+class _CrackLayer extends Node2D:
+	const SHEET := preload("res://assets/sprites/cracks.png")
+	var _rev: int = -1
+
+	func _physics_process(_delta: float) -> void:
+		if World.grid != null and World.damage_rev != _rev:
+			_rev = World.damage_rev
+			queue_redraw()
+
+	func _draw() -> void:
+		if World.grid == null:
+			return
+		for cell in World.structure_damage:
+			var full: float = Constants.STRUCTURE_HP.get(World.grid.structure_at(cell), 60.0)
+			_draw_cracks(cell, 1.0 - float(World.structure_damage[cell]) / full)
+		for key in World.placed_blocks:
+			if key is Vector2i: # blocks layer only (back/climb use string keys)
+				var e: Dictionary = World.placed_blocks[key]
+				_draw_cracks(key, 1.0 - float(e.hp) / float(Data.blocks[e.id].hp))
+
+	func _draw_cracks(cell: Vector2i, fraction: float) -> void:
+		var stage := mini(int(fraction * 4.0), 3) # 25/50/75% -> stages 1/2/3
+		if stage < 1:
+			return
+		var s := Constants.BLOCK_SIZE
+		draw_texture_rect_region(SHEET, Rect2(cell.x * s, cell.y * s, s, s),
+			Rect2((stage - 1) * 16, 0, 16, 16))
 
 func _physics_process(_delta: float) -> void:
 	if World.grid == null:

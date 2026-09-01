@@ -75,7 +75,10 @@ const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
 # WorldGrid.M materials; drops are 1 matching material per block. Structure
 # ladders/ropes and back walls keep their own rules.
 const STRUCTURE_TIER := {WorldGrid.M.WOOD: 1, WorldGrid.M.PLASTIC: 1, WorldGrid.M.STONE: 2, WorldGrid.M.METAL: 3}
-const STRUCTURE_HP := {WorldGrid.M.WOOD: 30.0, WorldGrid.M.PLASTIC: 20.0, WorldGrid.M.STONE: 80.0, WorldGrid.M.METAL: 120.0}
+# Demolition is deliberate (user request): at 0.25 s/hit that is ~3 s for a
+# wood block (hammer, 10 dmg), ~10 s for stone (iron tools, 4-5 dmg), ~20 s+
+# for metal (cutting torch, 3 dmg). Cracks appear at 25/50/75% damage.
+const STRUCTURE_HP := {WorldGrid.M.WOOD: 120.0, WorldGrid.M.PLASTIC: 80.0, WorldGrid.M.STONE: 200.0, WorldGrid.M.METAL: 260.0}
 const STRUCTURE_DROP := {WorldGrid.M.WOOD: "wood", WorldGrid.M.PLASTIC: "plastic", WorldGrid.M.STONE: "stone", WorldGrid.M.METAL: "scrap_metal"}
 
 # --- Building (WS-22) ---
