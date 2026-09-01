@@ -44,7 +44,9 @@ var equip_hint: Label
 var recipe_list: VBoxContainer
 var detail_box: VBoxContainer
 var craft_button: Button
-var station_label: Label
+var station_tabs: Dictionary = {} # station id -> tab Button
+var station_name_label: Label
+var selected_station: String = "hand"
 var chest_grid: GridContainer
 var cursor_icon: TextureRect
 var cursor_count: Label
@@ -302,8 +304,34 @@ func _build_crafting_screen() -> void:
 	s.add_child(lp)
 	var lv := VBoxContainer.new()
 	lp.add_child(lv)
-	station_label = UITheme.label("By hand", 8, Color(0.7, 0.78, 0.85))
-	lv.add_child(station_label)
+	# One tab per station (user request): every catalog is browsable
+	# anywhere; the tab lights up when that station is in reach, and CRAFT
+	# is gated on standing at it. The Mod Bench has its own Modify screen.
+	var tab_row := HBoxContainer.new()
+	tab_row.add_theme_constant_override("separation", 2)
+	lv.add_child(tab_row)
+	for st: String in ["hand", "workbench", "forge", "med_station", "dive_station"]:
+		var tb := Button.new()
+		tb.custom_minimum_size = Vector2(22, 20)
+		tb.focus_mode = Control.FOCUS_NONE
+		UITheme.style_steel_slot(tb)
+		var ic := TextureRect.new()
+		ic.texture = Data.icon("hammer") if st == "hand" else Data.icon(st)
+		# expand mode FIRST: station sprites are bigger than a slot icon, and
+		# a TextureRect clamps size to the texture until it may shrink.
+		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ic.position = Vector2(3, 2)
+		ic.size = Vector2(ICON, ICON)
+		ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		tb.add_child(ic)
+		tb.pressed.connect(func():
+			selected_station = st
+			_refresh_crafting(true))
+		tab_row.add_child(tb)
+		station_tabs[st] = tb
+	station_name_label = UITheme.label("By hand", 8, Color(0.7, 0.78, 0.85))
+	lv.add_child(station_name_label)
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -715,6 +743,9 @@ func open_panel(station: String = "") -> void:
 	if station == "mod_bench":
 		show_screen("modify")
 	else:
+		if station != "" and station_tabs.has(station):
+			selected_station = station # a clicked station opens on its own tab
+			selected_recipe = {}
 		show_screen("crafting" if station != "" else "inventory")
 
 func close() -> void:
@@ -830,25 +861,37 @@ func _refresh_grid(ui_slots: Array, inv: Inventory, is_bag: bool) -> void:
 func _stations() -> Array:
 	return World.stations_near(player.global_position, Constants.REACH_BLOCKS * Constants.BLOCK_SIZE * 1.5)
 
+func _station_in_reach(st: String) -> bool:
+	return st == "hand" or _stations().has(st)
+
+## A recipe crafts only with ingredients AND its station in reach; the
+## catalog itself is browsable from anywhere (plan-ahead, user request).
+func _row_craftable(r: Dictionary) -> bool:
+	return player.can_craft(r) and _station_in_reach(r.station)
+
 func _refresh_crafting(force: bool = false) -> void:
 	var stations := _stations()
 	if not force and stations == _last_stations:
 		for b in recipe_list.get_children():
-			_dim_recipe_row(b, player.can_craft(b.get_meta("recipe")))
-		craft_button.disabled = selected_recipe.is_empty() or not player.can_craft(selected_recipe)
+			_dim_recipe_row(b, _row_craftable(b.get_meta("recipe")))
+		craft_button.disabled = selected_recipe.is_empty() or not _row_craftable(selected_recipe)
 		return
 	_last_stations = stations.duplicate()
 	for c in recipe_list.get_children():
 		c.queue_free()
-	var names := []
-	for st in stations:
-		if st != "hand":
-			names.append(Data.objects[st].name if Data.objects.has(st) else st)
-	station_label.text = "By hand" if names.is_empty() else ", ".join(names)
-	var available := []
-	for st in stations:
-		for r in Data.recipes_for_station(st, player.knows_recipe):
-			available.append(r)
+	for st: String in station_tabs:
+		var near := st == "hand" or stations.has(st)
+		var tb: Button = station_tabs[st]
+		if st == selected_station:
+			tb.modulate = Color(1.25, 1.15, 0.8) if near else Color(0.85, 0.8, 0.62)
+		else:
+			tb.modulate = Color.WHITE if near else Color(0.45, 0.48, 0.53)
+	var st_name: String = "By hand" if selected_station == "hand" \
+			else (Data.objects[selected_station].name if Data.objects.has(selected_station) else selected_station)
+	var near_sel := _station_in_reach(selected_station)
+	station_name_label.text = st_name if near_sel else st_name + " — not in reach"
+	station_name_label.add_theme_color_override("font_color", Color(0.7, 0.78, 0.85) if near_sel else Color(0.95, 0.6, 0.55))
+	var available := Data.recipes_for_station(selected_station, player.knows_recipe)
 	if selected_recipe.is_empty() or not available.has(selected_recipe):
 		selected_recipe = available[0] if not available.is_empty() else {}
 	for r in available:
@@ -863,7 +906,7 @@ func _refresh_crafting(force: bool = false) -> void:
 		b.set_meta("recipe", r)
 		# Uncraftable recipes stay CLICKABLE (user request) — dimmed so the
 		# player can inspect what they will need; only CRAFT is gated.
-		_dim_recipe_row(b, player.can_craft(r))
+		_dim_recipe_row(b, _row_craftable(r))
 		b.pressed.connect(_select_recipe.bind(r))
 		recipe_list.add_child(b)
 	_refresh_detail()
@@ -900,6 +943,8 @@ func _refresh_detail() -> void:
 	detail_box.add_child(title)
 	var st_name: String = "By hand" if r.station == "hand" else (Data.objects[r.station].name if Data.objects.has(r.station) else r.station)
 	detail_box.add_child(UITheme.label("%s · tier %d" % [st_name, int(r.tier)], 8, Color(0.7, 0.78, 0.85)))
+	if not _station_in_reach(r.station):
+		detail_box.add_child(UITheme.label("Craft at a %s" % st_name, 8, Color(0.95, 0.6, 0.55)))
 	detail_box.add_child(UITheme.label("Needs:", 8, Color(0.7, 0.78, 0.85)))
 	for inp in r.inputs:
 		var have: int = player.inventory.count(inp.item)
@@ -920,12 +965,12 @@ func _refresh_detail() -> void:
 		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		dl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		detail_box.add_child(dl)
-	craft_button.disabled = not player.can_craft(r)
+	craft_button.disabled = not _row_craftable(r)
 
 # --- Actions ---
 
 func _craft_selected() -> void:
-	if not selected_recipe.is_empty() and player.craft(selected_recipe):
+	if not selected_recipe.is_empty() and _row_craftable(selected_recipe) and player.craft(selected_recipe):
 		player.message.emit("Crafted " + Data.item_name(selected_recipe.output.item))
 		_refresh_crafting(true)
 
