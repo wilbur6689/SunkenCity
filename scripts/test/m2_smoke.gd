@@ -186,6 +186,10 @@ func _run() -> void:
 	World.place_object("standing_lamp", Vector2i(6, 11), true)
 	await ticks(10)
 	check(lm.light_at(Vector2i(6, 10)) >= 10, "placed lamp lights its room (%d -> %d)" % [interior_before, lm.light_at(Vector2i(6, 10))])
+	# Placed lights are fog beacons (user request): their surroundings stay
+	# revealed even with no line of sight from the player (a floor away).
+	check(not World.line_of_sight(player.global_position, Vector2i(6, 10)), "the lamp's room is out of the player's sight")
+	check(World.visibility_at(Vector2i(6, 10), player.global_position) >= 8.0, "…but the placed lamp keeps it revealed (fog beacon)")
 
 	print("== I. building power: breaker + wired lamps (WS-17)")
 	var bkr := World.object_at(Vector2i(25, 11))

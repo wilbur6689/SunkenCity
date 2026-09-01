@@ -105,6 +105,10 @@ const GLOWSTICK_LIGHT: int = 11       # dropped or held glowsticks
 const PLAYER_SIGHT_LIGHT: int = 9     # the player's inherent glow (baseline sight)
 const SIGHT_FULL_BLOCKS: float = 7.0  # full visibility inside this radius
 const SIGHT_FADE_PER_BLOCK: float = 1.5 # visibility lost per block beyond it (0 ≈ 17 blocks)
+# Player-placed lights are fog BEACONS (user request): the area around a
+# placed lamp / dropped glowstick stays revealed with no line of sight from
+# the player (walls still occlude — the beacon raycasts from itself).
+const BEACON_FULL_BLOCKS: float = 5.0
 const POWER_RADIUS_BLOCKS: float = 24.0 # a breaker powers wired lights within this range
 const OBSTACLE_SIGHT_TRANSMISSION: float = 0.45 # sight through a shelf/crate cell (structure = 0)
 

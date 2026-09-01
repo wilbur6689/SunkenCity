@@ -296,16 +296,55 @@ func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
 
 ## Fog of war: applies inside buildings only (back-wall cells, WS-20); in
 ## sight and in range = fully illuminated, scaled by obstacle transmission.
+## Player-placed lights act as beacons (user request): the area around a
+## placed lamp or dropped glowstick stays revealed even with no line of
+## sight from the player — each beacon casts its own sight.
 func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
 	if not has_back_wall_cell(cell):
 		return float(LightMap.MAX_LIGHT)
-	var d := cell_center(cell).distance_to(viewer_pos) / Constants.BLOCK_SIZE
+	var vis := _sight_from(viewer_pos, cell, Constants.SIGHT_FULL_BLOCKS)
+	if vis >= float(LightMap.MAX_LIGHT):
+		return vis
+	for b: Vector2 in light_beacons():
+		vis = maxf(vis, _sight_from(b, cell, Constants.BEACON_FULL_BLOCKS))
+		if vis >= float(LightMap.MAX_LIGHT):
+			break
+	return vis
+
+func _sight_from(from_pos: Vector2, cell: Vector2i, full_blocks: float) -> float:
+	var d := cell_center(cell).distance_to(from_pos) / Constants.BLOCK_SIZE
 	var cap := float(LightMap.MAX_LIGHT)
-	if d > Constants.SIGHT_FULL_BLOCKS:
-		cap = maxf(cap - (d - Constants.SIGHT_FULL_BLOCKS) * Constants.SIGHT_FADE_PER_BLOCK, 0.0)
+	if d > full_blocks:
+		cap = maxf(cap - (d - full_blocks) * Constants.SIGHT_FADE_PER_BLOCK, 0.0)
 	if cap <= 0.0:
-		return 0.0
-	return cap * sight_transmission(viewer_pos, cell)
+		return 0.0 # out of range: no raycast spent
+	return cap * sight_transmission(from_pos, cell)
+
+## Fog-beacon positions, rebuilt at most once per frame: player-PLACED light
+## objects (from records, so far floors count too) + dropped glowsticks.
+var _beacon_cache: Array = []
+var _beacon_frame: int = -1
+
+func light_beacons() -> Array:
+	var f := Engine.get_process_frames()
+	if _beacon_frame == f:
+		return _beacon_cache
+	_beacon_frame = f
+	_beacon_cache = []
+	for rec: Dictionary in object_records:
+		if not rec.placed or rec.def.get("kind", "") != "light":
+			continue
+		if bool(rec.def.get("powered", false)):
+			# live node knows best; streamed-out records carry the last state
+			var on: bool = rec.node.powered_on if rec.node != null else bool(rec.get("powered", false))
+			if not on:
+				continue # a wired lamp with no power reveals nothing
+		_beacon_cache.append(cell_center(rec.cell))
+	if items_root != null:
+		for it in items_root.get_children():
+			if it is WorldItem and it.light != null and not it.is_queued_for_deletion():
+				_beacon_cache.append((it as Node2D).global_position)
+	return _beacon_cache
 
 func _gather_light_sources() -> Array:
 	var out := []

@@ -48,7 +48,8 @@ entries + their sprite PNGs (pixel canvas with TileArt ramps, zone tags, yields 
 Implementation Decisions"); lighting is `scripts/world/light_map.gd` (0–15 tile light, sun +
 BFS point sources) with **fog of war inside buildings only** (back-wall cells, WS-20): raycast
 line of sight (floors/walls occlude) + min(light, sight falloff), drawn by `LightRenderer`;
-exteriors are always revealed;
+exteriors are always revealed; player-placed lights and dropped glowsticks are **fog beacons**
+(`World.light_beacons`): their surroundings stay revealed with no player line of sight;
 breaker objects power wired lights and trip when flooded. `World` owns and ticks water, light,
 pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items off as they land.
 
