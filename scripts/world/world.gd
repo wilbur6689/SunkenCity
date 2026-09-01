@@ -8,6 +8,8 @@ extends Node
 
 const WORLD_ITEM_SCENE := preload("res://scenes/items/world_item.tscn")
 const WORLD_OBJECT_SCENE := preload("res://scenes/objects/world_object.tscn")
+const ENEMY_SCENE := preload("res://scenes/enemies/enemy.tscn")
+const BACKPACK_SCENE := preload("res://scenes/items/backpack.tscn")
 
 var grid: WorldGrid
 var renderer: StructureRenderer
@@ -45,9 +47,25 @@ var object_records: Array = []
 ## Every cell covered by an object -> its record.
 var object_cells: Dictionary = {}
 var _obj_window_center := Vector2i(-99999, -99999)
+## Canonical enemy store (M4) — same windowed pattern as objects: one record
+## per enemy in the city {type, pos, hp, band, stats, night, node}; records
+## near the player run as Enemy nodes, the rest are frozen data. Killing an
+## enemy erases its record — cleared stays cleared (GD-02/03).
+var enemy_records: Array = []
+var enemies_root: Node = null
+var _enemy_window_center := Vector2i(-99999, -99999)
+## Day counter + red moon schedule (CC-14, GL-15): a red moon rises at dusk
+## once day_count reaches next_red_moon_day, waves converge on players all
+## night, and the survivors ("stragglers") persist and re-seed (GD-02).
+var day_count: int = 0
+var next_red_moon_day: int = 7
+var red_moon_active: bool = false
+var _was_night: bool = false
+var _wave_timer: float = 0.0
+var _floater_timer: float = 0.0
 ## Per-system frame costs + counters for the F3 debug overlay.
 var perf: Dictionary = {"water_ms": 0.0, "light_ms": 0.0, "fog_ms": 0.0,
-	"objects_live": 0, "objects_total": 0}
+	"objects_live": 0, "objects_total": 0, "enemies_live": 0, "enemies_total": 0}
 
 func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 		p_objects_root: Node, p_renderer: StructureRenderer, p_waterline_row: int) -> void:
@@ -64,6 +82,17 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	object_cells.clear()
 	pumps.clear()
 	_obj_window_center = Vector2i(-99999, -99999)
+	enemy_records.clear()
+	_enemy_window_center = Vector2i(-99999, -99999)
+	enemies_root = Node2D.new()
+	enemies_root.name = "Enemies"
+	# Under the items root: draws below the fog-of-war layer, so unlit
+	# interiors hide their occupants (WS-20) — a scene-order guarantee.
+	items_root.add_child.call_deferred(enemies_root)
+	day_count = 0
+	next_red_moon_day = randi_range(Constants.RED_MOON_MIN_DAYS, Constants.RED_MOON_MAX_DAYS)
+	red_moon_active = false
+	_wave_timer = 0.0
 	water_sim = WaterSim.new(grid.bounds, is_solid_cell)
 	water_sim.budget_per_tick = Constants.WATER_BUDGET_PER_TICK
 	light_map = LightMap.new()
@@ -80,7 +109,12 @@ func set_spawn(feet_position: Vector2) -> void:
 func _physics_process(delta: float) -> void:
 	if water_sim == null:
 		return
+	var prev_time := time_of_day
 	time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
+	if time_of_day < prev_time:
+		day_count += 1 # midnight wrap
+	_tick_night(delta)
+	_tick_red_moon(delta)
 	_tick_pumps()
 	var t0 := Time.get_ticks_usec()
 	water_sim.tick()
@@ -95,6 +129,7 @@ func _physics_process(delta: float) -> void:
 			var radius: int = p.reveal_radius() if p.has_method("reveal_radius") else Constants.MAP_REVEAL_RADIUS
 			map_reveal.reveal_disc(center, radius)
 			_update_object_window(center)
+			_update_enemy_window(center)
 			var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
 			var window := Rect2i(center - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
 			var sources := _gather_light_sources()
@@ -118,6 +153,10 @@ func _physics_process(delta: float) -> void:
 func sun_strength() -> float:
 	var day := clampf(sin(time_of_day * TAU - PI * 0.5) * 1.6 + 0.5, 0.12, 1.0)
 	return day
+
+## Night (GD-29): the stretch where the sun sits at its clamp floor.
+func is_night() -> bool:
+	return sun_strength() <= 0.14
 
 # --- Coordinate helpers (pure math; tiles are only a render window) ---
 
@@ -634,6 +673,8 @@ func sync_record(rec: Dictionary, obj: WorldObject) -> void:
 func refresh_objects_around(pos: Vector2) -> void:
 	_obj_window_center = Vector2i(-99999, -99999)
 	_update_object_window(cell_at(pos))
+	_enemy_window_center = Vector2i(-99999, -99999)
+	_update_enemy_window(cell_at(pos))
 
 ## Instantiate records near `center`, free the rest. Runs when the player
 ## has moved a few cells; the window is generous so teleport-happy tests
@@ -707,6 +748,188 @@ func _tick_pumps() -> void:
 			if leftover > 0:
 				water_sim.add_water_spread(intake, leftover)
 
+# --- Enemies (M4, GD-01..29) ---
+
+## Register an enemy as data. Stats resolve from the authored band table at
+## the spawn position (GD-23); `hp_mult` scales red-moon waves by day count.
+## Returns {} when the type has no stats anywhere (bad id).
+func add_enemy_record(type_id: String, pos: Vector2, hp_mult: float = 1.0,
+		night_spawn: bool = false) -> Dictionary:
+	var band := band_at(cell_at(pos))
+	var base := Data.enemy_stats(type_id, band)
+	if base.is_empty():
+		return {}
+	var stats := {"hp": float(base.hp) * hp_mult, "damage": float(base.damage) * hp_mult,
+		"speed": float(base.speed), "aggro": float(base.aggro)}
+	var rec := {"type": type_id, "pos": pos, "hp": stats.hp, "band": band,
+		"stats": stats, "mult": hp_mult, "night": night_spawn, "node": null}
+	if Data.enemies[type_id].get("mode", "") == "fish":
+		rec["stock"] = randi_range(Constants.FISH_STOCK_MIN, Constants.FISH_STOCK_MAX)
+	enemy_records.append(rec)
+	return rec
+
+func _instantiate_enemy(rec: Dictionary) -> void:
+	var e: Enemy = ENEMY_SCENE.instantiate()
+	e.setup(rec)
+	enemies_root.add_child(e)
+	rec.node = e
+
+func _despawn_enemy(rec: Dictionary) -> void:
+	var e = rec.node
+	rec.node = null
+	if e != null and is_instance_valid(e):
+		rec.pos = e.global_position # bank the chase position
+		e.queue_free()
+
+## Kill/removal: the record goes with the node — no ambient respawn ever
+## brings it back (GD-02/03).
+func remove_enemy(rec: Dictionary) -> void:
+	enemy_records.erase(rec)
+	var e = rec.node
+	rec.node = null
+	if e != null and is_instance_valid(e):
+		e.queue_free()
+
+## Instantiate records near `center`, freeze the rest (the object-window
+## pattern; enemies outside the window don't think or move).
+func _update_enemy_window(center: Vector2i) -> void:
+	if (_enemy_window_center - center).length_squared() < 36:
+		return
+	_enemy_window_center = center
+	var half: Vector2i = Constants.ENEMY_WINDOW / 2
+	var win := Rect2i(center - half, Constants.ENEMY_WINDOW)
+	var live := 0
+	for rec: Dictionary in enemy_records:
+		var inside := win.has_point(cell_at(rec.pos))
+		if inside != (rec.node != null):
+			if inside:
+				_instantiate_enemy(rec)
+			else:
+				_despawn_enemy(rec)
+		if inside:
+			live += 1
+	perf.enemies_live = live
+	perf.enemies_total = enemy_records.size()
+
+## True if pounding this cell can achieve anything: a player-placed block or
+## a player-placed closed door. Structure is safe from zombies (GD-04; the
+## red-moon rule is the same one).
+func pound_target(cell: Vector2i) -> bool:
+	if placed_blocks.has(cell):
+		return true
+	var rec: Dictionary = object_cells.get(cell, {})
+	return not rec.is_empty() and rec.placed and _record_solid(rec)
+
+## A zombie pound: chews through player-placed blocks (any hardness — mass
+## beats craftsmanship) or a placed door (fixed hp pool on the record).
+func pound(cell: Vector2i, damage: float) -> void:
+	if placed_blocks.has(cell):
+		damage_block(cell, damage, 99)
+		return
+	var rec: Dictionary = object_cells.get(cell, {})
+	if rec.is_empty() or not rec.placed or not _record_solid(rec):
+		return
+	rec["pound_hp"] = float(rec.get("pound_hp", 60.0)) - damage
+	if float(rec.pound_hp) <= 0.0:
+		Audio.play_sfx("wood_break", cell_center(cell), 4)
+		if rec.node != null and is_instance_valid(rec.node):
+			remove_object(rec.node)
+		else:
+			object_records.erase(rec)
+			for c in _record_cells(rec):
+				if object_cells.get(c) == rec:
+					object_cells.erase(c)
+			_light_dirty = true
+
+## Night extras (GD-29): floaters drift in near players after dark — the one
+## ambient-spawn exception — and disperse at dawn.
+func _tick_night(delta: float) -> void:
+	var night := is_night()
+	if _was_night and not night:
+		for i in range(enemy_records.size() - 1, -1, -1):
+			if enemy_records[i].get("night", false):
+				remove_enemy(enemy_records[i])
+	_was_night = night
+	if not night:
+		return
+	_floater_timer -= delta
+	if _floater_timer > 0.0:
+		return
+	_floater_timer = Constants.NIGHT_FLOATER_INTERVAL
+	var live_night := 0
+	for rec in enemy_records:
+		if rec.get("night", false):
+			live_night += 1
+	for p in get_tree().get_nodes_in_group("player"):
+		if live_night >= Constants.NIGHT_FLOATER_MAX:
+			break
+		var cell := _open_surface_near(p.global_position, 20, 45)
+		if cell.x != -99999:
+			add_enemy_record("floater", cell_center(cell), 1.0, true)
+			live_night += 1
+
+## An open-water surface cell a random ring away from `pos` (for floaters
+## drifting in / red-moon spawns over water); sentinel x on failure.
+func _open_surface_near(pos: Vector2, min_blocks: int, max_blocks: int) -> Vector2i:
+	for attempt in 8:
+		var dx := randi_range(min_blocks, max_blocks) * (1 if randi() % 2 == 0 else -1)
+		var cell := Vector2i(cell_at(pos).x + dx, waterline_row)
+		if grid.bounds.has_point(cell) and is_water_cell(cell) \
+				and not is_solid_cell(cell + Vector2i.UP) and not has_back_wall_cell(cell):
+			return cell
+	return Vector2i(-99999, -99999)
+
+# --- Red moons (CC-14, GL-15) ---
+
+func _tick_red_moon(delta: float) -> void:
+	if not red_moon_active:
+		if is_night() and day_count >= next_red_moon_day:
+			red_moon_active = true
+			_wave_timer = 0.0 # first wave lands immediately
+			Audio.play_sfx("red_moon_stinger", spawn_position, 1, 2.0)
+		return
+	if not is_night():
+		# Dawn: the moon sets, spawning stops, stragglers stay (GD-02) and
+		# slowly re-seed whatever the player had cleared.
+		red_moon_active = false
+		next_red_moon_day = day_count + randi_range(Constants.RED_MOON_MIN_DAYS, Constants.RED_MOON_MAX_DAYS)
+		return
+	_wave_timer -= delta
+	if _wave_timer > 0.0:
+		return
+	_wave_timer = Constants.RED_MOON_WAVE_INTERVAL
+	var mult := 1.0 + day_count * Constants.RED_MOON_STAT_PER_DAY
+	for p in get_tree().get_nodes_in_group("player"):
+		var n := Constants.RED_MOON_BASE_WAVE + int(day_count * Constants.RED_MOON_WAVE_PER_DAY)
+		for i in n:
+			_spawn_wave_zombie(p.global_position, mult)
+
+## One wave zombie converging on a player (GD-23 scaling via `mult`): lands
+## on the first roof/floor top in a ring column around them, or bobs in as a
+## floater when the column is open water.
+func _spawn_wave_zombie(pos: Vector2, mult: float) -> void:
+	var dx := randi_range(Constants.RED_MOON_SPAWN_MIN_BLOCKS, Constants.RED_MOON_SPAWN_MAX_BLOCKS) \
+		* (1 if randi() % 2 == 0 else -1)
+	var x := cell_at(pos).x + dx
+	if x <= grid.bounds.position.x + 2 or x >= grid.bounds.end.x - 2:
+		return
+	for y in range(grid.bounds.position.y + 2, waterline_row + 1):
+		var cell := Vector2i(x, y)
+		if is_solid_cell(cell) and not is_solid_cell(cell + Vector2i.UP):
+			var rec := add_enemy_record("walker", cell_center(cell + Vector2i.UP) + Vector2(0, -6), mult)
+			if not rec.is_empty() and _enemy_in_window(rec):
+				_instantiate_enemy(rec)
+			return
+		if is_water_cell(cell): # open water column: a floater drifts in
+			var frec := add_enemy_record("floater", cell_center(Vector2i(x, waterline_row)), mult)
+			if not frec.is_empty() and _enemy_in_window(frec):
+				_instantiate_enemy(frec)
+			return
+
+func _enemy_in_window(rec: Dictionary) -> bool:
+	var half: Vector2i = Constants.ENEMY_WINDOW / 2
+	return Rect2i(_enemy_window_center - half, Constants.ENEMY_WINDOW).has_point(cell_at(rec.pos))
+
 # --- Items ---
 
 func spawn_item(id: String, count: int, pos: Vector2, velocity: Vector2 = Vector2.ZERO) -> WorldItem:
@@ -715,3 +938,12 @@ func spawn_item(id: String, count: int, pos: Vector2, velocity: Vector2 = Vector
 	it.global_position = pos
 	items_root.add_child(it)
 	return it
+
+## Death backpack (CC-07): holds the dropped inventory, floats like any
+## buoyant item, recovered on touch. Lives under items_root so saves see it.
+func spawn_backpack(slots: Array, pos: Vector2) -> Node2D:
+	var pack: Node2D = BACKPACK_SCENE.instantiate()
+	pack.slots = slots
+	pack.global_position = pos
+	items_root.add_child(pack)
+	return pack

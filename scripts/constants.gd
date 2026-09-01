@@ -161,6 +161,47 @@ const COLD_SLOW_FACTOR: float = 0.65
 const COLD_DPS: float = 2.0    # in The Dark without a cold-rated suit
 const CRUSH_DPS: float = 25.0  # in The Crush without a crush-rated suit
 
+# --- Enemies (M4, GD-01..29; stat tables live in data/enemies.json) ---
+const ENEMY_WINDOW: Vector2i = Vector2i(140, 100) # records in this window (cells) run as nodes
+const AGGRO_NIGHT_MULT: float = 1.5      # surface-band aggro radii grow at night (GD-29)
+const ENEMY_TOUCH_COOLDOWN: float = 0.9  # seconds between contact hits on the player
+const ENEMY_KNOCKBACK: float = 7.0 * BLOCK_SIZE  # px/s shove a contact hit gives the player
+const ENEMY_HOP_BLOCKS: float = 2.2      # zombies mount small steps; no real climbing (GD-04)
+const ENEMY_POUND_INTERVAL: float = 1.0  # seconds between pounds on a blocking player block
+const ENEMY_POUND_DAMAGE: float = 12.0   # per pound; player-placed blocks/doors only (GD-04)
+const ENEMY_WANDER_SPEED: float = 0.35   # idle wander as a fraction of chase speed
+const NIGHT_FLOATER_MAX: int = 5         # extra ambient floaters near a player at night (GD-29)
+const NIGHT_FLOATER_INTERVAL: float = 12.0 # seconds between night-floater spawn attempts
+const FISH_STOCK_MIN: int = 3            # hand-grab catches per school (GD-09/28)
+const FISH_STOCK_MAX: int = 6
+const FISH_GRAB_BLOCKS: float = 2.5      # swim this close to grab
+
+# --- Combat (M4, GD-07/08, LT-01/16) ---
+const MELEE_RANGE_BLOCKS: float = 2.5    # melee connects within this range of the player
+const MELEE_AIM_SLOP_BLOCKS: float = 1.8 # and this close to the aim point
+const MELEE_WATER_FACTOR: float = 0.5    # default melee speed factor while in water (GD-08)
+const KNIFE_WATER_FACTOR: float = 0.85   # knives are the least penalized
+const GUN_RANGE_BLOCKS: float = 26.0     # hitscan range; bullets stop at water (LT-01)
+const SPEAR_SPEED: float = 22.0 * BLOCK_SIZE # bolt flight speed
+const SPEAR_RANGE_BLOCKS: float = 20.0   # bolts drop as pickups past this
+const BLEED_DPS: float = 1.5             # bleeding drip (GD-21)
+const BLEED_DURATION: float = 18.0       # untreated bleed length; bandage/medkit cure instantly
+const BLEED_CHANCE: float = 0.35         # per zombie/Drowned hit
+
+# --- Death loop (CC-07): the backpack keeps everything; gear stays worn ---
+const BACKPACK_PICKUP_DELAY: float = 1.5 # seconds before the dropped pack can be recovered
+
+# --- Red moons (CC-14, GL-15, GD-23) ---
+const RED_MOON_MIN_DAYS: int = 5
+const RED_MOON_MAX_DAYS: int = 10
+const RED_MOON_WAVE_INTERVAL: float = 25.0 # seconds between waves through the night
+const RED_MOON_BASE_WAVE: int = 3          # walkers per wave per player...
+const RED_MOON_WAVE_PER_DAY: float = 0.3   # ...plus this many per day survived (GD-23)
+const RED_MOON_STAT_PER_DAY: float = 0.05  # wave hp/damage multiplier growth per day
+const RED_MOON_SPAWN_MIN_BLOCKS: int = 16  # waves spawn this ring around each player
+const RED_MOON_SPAWN_MAX_BLOCKS: int = 30
+const RED_MOON_TINT := Color(1.0, 0.62, 0.58) # full-screen modulate while the moon is up
+
 # --- Skills (CC-18) ---
 const SKILL_XP_PER_LEVEL: float = 20.0
 const SKILL_LEVELS_PER_PLAYER_LEVEL: int = 5

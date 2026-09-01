@@ -13,8 +13,17 @@ The "Key Decisions (Design Canon)" section of `docs/GameOverview.md` records set
 decisions — treat them as canon. Standing MVP priority: the core loop (harvest → craft → build
 base) comes first; do not add other major aspects before it works.
 
-Development has completed **M0–M3 and M5** (next: M4 — Danger; only M5's manual pacing
-feel-check remains open). M5 highlights: gear modifiers (`data/modifiers.json`, per-instance
+Development has completed **M0–M5** (next: M6 — The Drain; still open: the manual pacing
+feel-check GL-27 and an M4 balance/feel pass). M4 highlights: data-driven enemies
+(`data/enemies.json` per-band stat tables; walker/crawler/floater/Drowned/shark + fish schools)
+seeded at gen by `EnemyGen` and streamed as records like objects (`World.enemy_records`,
+cleared-stays-cleared, saved); shared proximity aggro (`scripts/enemies/aggro.gd`, night radii);
+combat through the interaction layer — melee (knives least water-slowed), hitscan firearms
+(dead submerged), speargun with retrievable bolts, ammo recipes; bleeding + bandage/medkit +
+out-of-combat regen; the death-loop backpack (bag transfers, floats/ceiling-pins, recover on
+touch, gear stays worn); red moons on a 5–10 day clock (tint + waves converging on players,
+scaling by day, pounding player-placed blocks only, stragglers persist). Gate:
+`m4_smoke.tscn`. M5 highlights: gear modifiers (`data/modifiers.json`, per-instance
 `mods` on stack dicts, rolled on found loot, rarity-colored titles), the **Modification
 Bench** Modify tab (sacrifice-to-learn / apply-to-clean), the **ability tech tree**
 (`data/abilities.json`, 3 branches × 3 tiers on the Skills tab; unlocks the two reserved
@@ -67,10 +76,12 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   drives the player with `Input.action_press`) and `--headless res://scenes/test/m1_smoke.tscn`
   (the loop; feeds the player's input snapshot directly with `set_multiplayer_authority(2)`). Run
   both after touching the player, World, or data files; extend them when behaviour changes.
-  Further gates: `m2/m3/tower/save/room_editor/furniture_editor_smoke.tscn` — `save_smoke`
+  Further gates: `m2/m3/m4/m5/tower/save/room_editor/furniture_editor_smoke.tscn` — `save_smoke`
   covers the full persistence round trip; run it after touching World state or SaveGame.
+  `m4_smoke` covers enemies/combat/death loop/red moons; run it after touching enemies, combat,
+  or the interaction layer.
 - Regenerate placeholder art: `python tools/gen_placeholder_art.py` (tiles, character, item icons,
-  object sprites, light texture — deterministic).
+  object sprites, enemy sprites, light texture — deterministic).
 - Convert music drops: `python tools/convert_music.py` (WAVs from `docs/Examples/Audio/music`
   → `assets/audio/music/*.ogg`, needs ffmpeg; new tracks also go into `MUSIC_POOLS` in
   `scripts/audio/audio_manager.gd`).

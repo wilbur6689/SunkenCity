@@ -36,6 +36,8 @@ var health: float = Constants.MAX_HEALTH
 var oxygen: float = Constants.BASE_OXYGEN_SECONDS
 var drowning: bool = false
 var fall_start_y: float = 0.0
+var bleed_time: float = 0.0   # bleeding drips health until bandaged (GD-21)
+var combat_timer: float = 999.0 # seconds since last damage; gates regen (GL-21)
 
 # --- Items & progression (M1) ---
 var inventory := Inventory.new(Constants.INVENTORY_SLOTS)
@@ -105,6 +107,7 @@ func _physics_process(delta: float) -> void:
 	_update_swing(delta)
 	_update_move_sfx(delta)
 	_update_oxygen(delta)
+	_update_vitals(delta)
 	_update_environment(delta)
 	_update_camera(delta)
 	interaction.tick(delta)
@@ -283,9 +286,13 @@ func use_item(slot: int) -> void:
 	if use.is_empty():
 		return
 	if use.has("heal"):
-		if health >= Constants.MAX_HEALTH:
+		var cures: bool = use.get("cure_bleed", false) and bleed_time > 0.0
+		if health >= Constants.MAX_HEALTH and not cures:
 			return
 		health = minf(health + float(use.heal), Constants.MAX_HEALTH)
+	if use.get("cure_bleed", false) and bleed_time > 0.0:
+		bleed_time = 0.0
+		message.emit("Bleeding stopped")
 	if use.has("learn_recipe"):
 		known_recipes[use.learn_recipe] = true
 		message.emit("Learned recipe: " + Data.item_name(Data.recipes[use.learn_recipe].output.item))
@@ -701,19 +708,59 @@ func _update_oxygen(delta: float) -> void:
 		oxygen = max_oxygen() # instant refill in air (WS-08); tanks extend it (GL-13)
 		drowning = false
 
+## Bleeding drip + slow out-of-combat regen (GD-21, GL-21). Any damage —
+## enemies, cold, drowning — resets the regen delay via apply_damage.
+func _update_vitals(delta: float) -> void:
+	combat_timer += delta
+	if bleed_time > 0.0:
+		bleed_time = maxf(bleed_time - delta, 0.0)
+		apply_damage(Constants.BLEED_DPS * delta)
+	elif combat_timer > Constants.PASSIVE_REGEN_COMBAT_DELAY and not drowning and health > 0.0:
+		health = minf(health + Constants.PASSIVE_REGEN_PER_SECOND * delta, Constants.MAX_HEALTH)
+
+## A contact hit from an enemy (M4): damage, a shove, and a bleed chance
+## from zombie/Drowned kinds (GD-21).
+func hurt_from_enemy(damage: float, from_pos: Vector2, can_bleed: bool) -> void:
+	var dir := (global_position - from_pos).normalized()
+	velocity += Vector2(dir.x, -0.5).normalized() * Constants.ENEMY_KNOCKBACK
+	apply_damage(damage)
+	if can_bleed and bleed_time <= 0.0 and randf() < Constants.BLEED_CHANCE and health > 0.0:
+		start_bleeding()
+	Audio.play_sfx("footstep_soft", global_position, 8, -4.0)
+
+func start_bleeding() -> void:
+	bleed_time = Constants.BLEED_DURATION
+	message.emit("You are bleeding — bandage it!")
+
 func apply_damage(amount: float) -> void:
+	combat_timer = 0.0
 	health = maxf(health - amount, 0.0)
 	if health <= 0.0:
 		_die()
 
+## Death loop (CC-07): the whole bag transfers to a backpack that floats up
+## from where you fell (or pins under a flooded ceiling); worn gear stays on
+## the body. Respawn at the bed (GL-23), swim back down, touch to recover.
 func _die() -> void:
-	# M1: reset at spawn (bed or world spawn, GL-23). Backpack drop is M4.
+	var dropped: Array = []
+	for i in inventory.slots.size():
+		if inventory.slots[i] != null:
+			dropped.append(inventory.slots[i])
+			inventory.slots[i] = null
+	inventory.changed.emit()
+	if not dropped.is_empty():
+		World.spawn_backpack(dropped, _center_point())
+		message.emit("You died — your backpack is where you fell")
+	else:
+		message.emit("You died")
 	respawn()
 
 func respawn() -> void:
 	health = Constants.MAX_HEALTH
 	oxygen = max_oxygen()
 	drowning = false
+	bleed_time = 0.0
+	combat_timer = 999.0
 	velocity = Vector2.ZERO
 	_set_compact(false)
 	global_position = World.spawn_position - Vector2(0, FEET_Y)

@@ -1,39 +1,727 @@
 {
- "comment": "Container loot (LT-12/13): tables keyed zone x depth band; rolled once at world gen (LT-27 - contents persist in the world save). w = pick weight. Firearms are found-only (LT-18): they never appear in recipes, only here.",
- "tables": {
-  "generic": {
-   "dry":      [{"item": "wood", "min": 1, "max": 3, "w": 4}, {"item": "cloth", "min": 1, "max": 2, "w": 3}, {"item": "food_can", "min": 1, "max": 2, "w": 3}, {"item": "bandage", "min": 1, "max": 1, "w": 2}, {"item": "scrap_metal", "min": 1, "max": 2, "w": 3}],
-   "shallows": [{"item": "scrap_metal", "min": 1, "max": 3, "w": 4}, {"item": "plastic", "min": 1, "max": 3, "w": 3}, {"item": "glowstick", "min": 1, "max": 2, "w": 3}, {"item": "food_can", "min": 1, "max": 1, "w": 2}, {"item": "cloth", "min": 1, "max": 2, "w": 2}],
-   "cold":     [{"item": "iron", "min": 1, "max": 2, "w": 4}, {"item": "scrap_metal", "min": 2, "max": 4, "w": 3}, {"item": "glowstick", "min": 1, "max": 3, "w": 2}, {"item": "tank_scrap", "min": 1, "max": 1, "w": 1}, {"item": "wetsuit", "min": 1, "max": 1, "w": 1}, {"item": "dive_watch", "min": 1, "max": 1, "w": 1}, {"item": "pistol", "min": 1, "max": 1, "w": 1}],
-   "dark":     [{"item": "iron", "min": 2, "max": 4, "w": 4}, {"item": "tank_iron", "min": 1, "max": 1, "w": 2}, {"item": "vault_key", "min": 1, "max": 1, "w": 1}, {"item": "fins", "min": 1, "max": 1, "w": 1}, {"item": "glow_band", "min": 1, "max": 1, "w": 1}, {"item": "schematic_hard_suit", "min": 1, "max": 1, "w": 1}, {"item": "pistol", "min": 1, "max": 1, "w": 1}, {"item": "smg", "min": 1, "max": 1, "w": 1}],
-   "crush":    [{"item": "iron", "min": 3, "max": 5, "w": 3}, {"item": "schematic_rebreather", "min": 1, "max": 1, "w": 2}, {"item": "schematic_hard_suit", "min": 1, "max": 1, "w": 2}, {"item": "vault_key", "min": 1, "max": 1, "w": 2}, {"item": "compass", "min": 1, "max": 1, "w": 1}, {"item": "tool_belt", "min": 1, "max": 1, "w": 1}, {"item": "smg", "min": 1, "max": 1, "w": 1}, {"item": "rifle", "min": 1, "max": 1, "w": 1}]
-  },
-  "residential": {
-   "dry":      [{"item": "food_can", "min": 1, "max": 3, "w": 4}, {"item": "cloth", "min": 1, "max": 3, "w": 4}, {"item": "wood", "min": 1, "max": 3, "w": 2}, {"item": "bandage", "min": 1, "max": 1, "w": 1}],
-   "shallows": [{"item": "food_can", "min": 1, "max": 2, "w": 4}, {"item": "cloth", "min": 2, "max": 4, "w": 3}, {"item": "plastic", "min": 1, "max": 3, "w": 2}, {"item": "glowstick", "min": 1, "max": 1, "w": 1}],
-   "cold":     [{"item": "cloth", "min": 2, "max": 4, "w": 3}, {"item": "food_can", "min": 1, "max": 2, "w": 3}, {"item": "iron", "min": 1, "max": 2, "w": 2}, {"item": "wetsuit", "min": 1, "max": 1, "w": 1}, {"item": "weight_belt", "min": 1, "max": 1, "w": 1}]
-  },
-  "commercial": {
-   "dry":      [{"item": "plastic", "min": 1, "max": 3, "w": 4}, {"item": "food_can", "min": 1, "max": 2, "w": 3}, {"item": "glowstick", "min": 1, "max": 2, "w": 2}, {"item": "cloth", "min": 1, "max": 2, "w": 2}],
-   "shallows": [{"item": "plastic", "min": 2, "max": 4, "w": 4}, {"item": "scrap_metal", "min": 1, "max": 3, "w": 3}, {"item": "glowstick", "min": 1, "max": 3, "w": 2}, {"item": "food_can", "min": 1, "max": 2, "w": 2}],
-   "cold":     [{"item": "scrap_metal", "min": 2, "max": 4, "w": 4}, {"item": "iron", "min": 1, "max": 2, "w": 3}, {"item": "glowstick", "min": 2, "max": 4, "w": 2}, {"item": "dive_watch", "min": 1, "max": 1, "w": 1}, {"item": "compass", "min": 1, "max": 1, "w": 1}]
-  },
-  "industrial": {
-   "dry":      [{"item": "scrap_metal", "min": 3, "max": 5, "w": 4}, {"item": "wood", "min": 1, "max": 3, "w": 2}, {"item": "plastic", "min": 1, "max": 2, "w": 2}],
-   "shallows": [{"item": "scrap_metal", "min": 3, "max": 6, "w": 4}, {"item": "plastic", "min": 1, "max": 3, "w": 2}, {"item": "glowstick", "min": 1, "max": 2, "w": 1}],
-   "cold":     [{"item": "iron", "min": 2, "max": 3, "w": 4}, {"item": "scrap_metal", "min": 3, "max": 5, "w": 3}, {"item": "bolt_cutters", "min": 1, "max": 1, "w": 1}, {"item": "tool_belt", "min": 1, "max": 1, "w": 1}, {"item": "tank_scrap", "min": 1, "max": 1, "w": 1}]
-  },
-  "hospital": {
-   "dry":      [{"item": "bandage", "min": 1, "max": 3, "w": 5}, {"item": "cloth", "min": 1, "max": 3, "w": 3}, {"item": "plastic", "min": 1, "max": 2, "w": 2}],
-   "shallows": [{"item": "bandage", "min": 1, "max": 3, "w": 5}, {"item": "cloth", "min": 2, "max": 4, "w": 2}, {"item": "glowstick", "min": 1, "max": 2, "w": 2}],
-   "cold":     [{"item": "bandage", "min": 2, "max": 4, "w": 4}, {"item": "iron", "min": 1, "max": 2, "w": 2}, {"item": "dive_watch", "min": 1, "max": 1, "w": 1}, {"item": "wetsuit", "min": 1, "max": 1, "w": 1}]
-  },
-  "safe": {
-   "dry":      [{"item": "scrap_metal", "min": 4, "max": 6, "w": 3}, {"item": "dive_watch", "min": 1, "max": 1, "w": 2}, {"item": "glow_band", "min": 1, "max": 1, "w": 2}, {"item": "bandage", "min": 2, "max": 3, "w": 2}],
-   "shallows": [{"item": "wetsuit", "min": 1, "max": 1, "w": 2}, {"item": "fins", "min": 1, "max": 1, "w": 2}, {"item": "tool_belt", "min": 1, "max": 1, "w": 2}, {"item": "tank_scrap", "min": 1, "max": 1, "w": 2}],
-   "cold":     [{"item": "tank_iron", "min": 1, "max": 1, "w": 3}, {"item": "weight_belt", "min": 1, "max": 1, "w": 2}, {"item": "compass", "min": 1, "max": 1, "w": 2}, {"item": "vault_key", "min": 1, "max": 1, "w": 2}, {"item": "schematic_hard_suit", "min": 1, "max": 1, "w": 1}, {"item": "pistol", "min": 1, "max": 1, "w": 2}],
-   "dark":     [{"item": "schematic_hard_suit", "min": 1, "max": 1, "w": 3}, {"item": "vault_key", "min": 1, "max": 1, "w": 3}, {"item": "fins", "min": 1, "max": 1, "w": 2}, {"item": "tank_iron", "min": 1, "max": 1, "w": 2}, {"item": "smg", "min": 1, "max": 1, "w": 2}],
-   "crush":    [{"item": "schematic_rebreather", "min": 1, "max": 1, "w": 4}, {"item": "rebreather", "min": 1, "max": 1, "w": 1}, {"item": "vault_key", "min": 1, "max": 1, "w": 2}, {"item": "compass", "min": 1, "max": 1, "w": 2}, {"item": "rifle", "min": 1, "max": 1, "w": 2}]
+  "comment": "Container loot (LT-12/13): tables keyed zone x depth band; rolled once at world gen (LT-27 - contents persist in the world save). w = pick weight. Firearms are found-only (LT-18): they never appear in recipes, only here.",
+  "tables": {
+    "generic": {
+      "dry": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        }
+      ],
+      "shallows": [
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        }
+      ],
+      "cold": [
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 2,
+          "max": 4,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "tank_scrap",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        }
+      ]
+    },
+    "residential": {
+      "dry": [
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        }
+      ],
+      "shallows": [
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 4
+        },
+        {
+          "item": "cloth",
+          "min": 2,
+          "max": 4,
+          "w": 3
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        }
+      ],
+      "cold": [
+        {
+          "item": "cloth",
+          "min": 2,
+          "max": 4,
+          "w": 3
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "weight_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        }
+      ]
+    },
+    "commercial": {
+      "dry": [
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        }
+      ],
+      "shallows": [
+        {
+          "item": "plastic",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 3,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        }
+      ],
+      "cold": [
+        {
+          "item": "scrap_metal",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 2,
+          "max": 4,
+          "w": 2
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        }
+      ]
+    },
+    "industrial": {
+      "dry": [
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 5,
+          "w": 4
+        },
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        }
+      ],
+      "shallows": [
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 6,
+          "w": 4
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 1
+        }
+      ],
+      "cold": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "bolt_cutters",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tank_scrap",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        }
+      ]
+    },
+    "hospital": {
+      "dry": [
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 3,
+          "w": 5
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 3,
+          "w": 3
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        }
+      ],
+      "shallows": [
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 3,
+          "w": 5
+        },
+        {
+          "item": "cloth",
+          "min": 2,
+          "max": 4,
+          "w": 2
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        }
+      ],
+      "cold": [
+        {
+          "item": "bandage",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        }
+      ]
+    },
+    "safe": {
+      "dry": [
+        {
+          "item": "scrap_metal",
+          "min": 4,
+          "max": 6,
+          "w": 3
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "bandage",
+          "min": 2,
+          "max": 3,
+          "w": 2
+        }
+      ],
+      "shallows": [
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "tank_scrap",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        }
+      ],
+      "cold": [
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 3
+        },
+        {
+          "item": "weight_belt",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 12,
+          "max": 24,
+          "w": 2
+        }
+      ],
+      "dark": [
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 3
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 3
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        }
+      ],
+      "crush": [
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 4
+        },
+        {
+          "item": "rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 12,
+          "max": 24,
+          "w": 2
+        }
+      ]
+    }
   }
- }
 }

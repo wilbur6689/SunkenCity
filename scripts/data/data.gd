@@ -20,6 +20,9 @@ var modifiers: Dictionary = {}      # {"prefixes": [...], "suffixes": [...]} (LT
 var modifier_defs: Dictionary = {}  # mod id -> def
 var abilities: Dictionary = {}      # ability id -> def (CC-18 tech tree)
 var ability_list: Array = []
+var enemies: Dictionary = {}        # enemy type id -> def (M4, GD-01)
+var enemy_bands: Dictionary = {}    # band -> {type id -> {hp, damage, speed, aggro}} (GD-23)
+var enemy_seeding: Dictionary = {}  # density tuning (GD-27)
 
 var _icon_cache: Dictionary = {}
 
@@ -60,6 +63,11 @@ func _load_all() -> void:
 	for a in _load_json("res://data/abilities.json").get("abilities", []):
 		abilities[a.id] = a
 		ability_list.append(a)
+	var edata := _load_json("res://data/enemies.json")
+	for e in edata.get("types", []):
+		enemies[e.id] = e
+	enemy_bands = edata.get("bands", {})
+	enemy_seeding = edata.get("seeding", {})
 	_validate()
 
 func _load_json(path: String) -> Dictionary:
@@ -88,6 +96,12 @@ func _validate() -> void:
 	for a in ability_list:
 		var req: String = a.get("requires", "")
 		assert(req == "" or abilities.has(req), "ability %s: unknown requirement %s" % [a.id, req])
+	for e in enemies.values():
+		for drop in e.get("drops", []):
+			assert(items.has(drop.item), "enemy %s: unknown drop %s" % [e.id, drop.item])
+	for band in enemy_bands:
+		for tid in enemy_bands[band]:
+			assert(enemies.has(tid), "enemy band %s: unknown type %s" % [band, tid])
 	print("Data: %d items, %d blocks, %d objects, %d recipes" % [items.size(), blocks.size(), objects.size(), recipe_list.size()])
 
 # --- Accessors ---
@@ -106,6 +120,24 @@ func stack_size(id: String) -> int:
 
 func weight(id: String) -> float:
 	return float(items.get(id, {}).get("weight", 0.0))
+
+## Per-band authored stats for an enemy type (GD-23). Bands an enemy has no
+## row for fall back toward the surface, so a red-moon walker spawned on a
+## dry rooftop and a straggler wandering deep both resolve to something.
+func enemy_stats(type_id: String, band: String) -> Dictionary:
+	var order := ["dry", "shallows", "cold", "dark", "crush"]
+	var i := order.find(band)
+	if i < 0:
+		i = 0
+	while i >= 0:
+		var row: Dictionary = enemy_bands.get(order[i], {})
+		if row.has(type_id):
+			return row[type_id]
+		i -= 1
+	for b in order: # deeper-only types (the Drowned) queried above their range
+		if enemy_bands.get(b, {}).has(type_id):
+			return enemy_bands[b][type_id]
+	return {}
 
 func tool_of(id: String) -> Dictionary:
 	return items.get(id, {}).get("tool", {})

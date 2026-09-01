@@ -371,6 +371,11 @@ ICONS = {
     (4, 5): ("heavy", None),
     # row 6: firearms (found-only pool, LT-18)
     (0, 6): ("gun", "pistol"), (1, 6): ("gun", "smg"), (2, 6): ("gun", "rifle"),
+    # row 7: M4 combat — melee tiers, speargun + bolt, pistol rounds
+    (0, 7): ("sword", "scrap"), (1, 7): ("sword", "iron"), (2, 7): ("axe", None),
+    (3, 7): ("speargun", None), (4, 7): ("bolt", None), (5, 7): ("rounds", "pistol"),
+    # row 8: rifle rounds, medkit, fish meat
+    (0, 8): ("rounds", "rifle"), (1, 8): ("medkit", None), (2, 8): ("fish", None),
 }
 
 
@@ -491,10 +496,44 @@ def _draw_icon(d, kind, arg, ox, oy, rng):
             d.line([ox + 1, oy + 9, ox + 14, oy + 5], fill=steel, width=2)
             d.rectangle([ox + 1, oy + 8, ox + 5, oy + 12], fill=grip, outline=OUT)
             d.line([ox + 8, oy + 8, ox + 9, oy + 11], fill=grip, width=2)
+    elif kind == "sword":
+        blade = (200, 205, 215) if arg == "scrap" else (170, 190, 215)
+        d.line([ox + 4, oy + 12, ox + 12, oy + 3], fill=blade, width=2)
+        d.line([ox + 12, oy + 3, ox + 13, oy + 4], fill=blade)
+        d.line([ox + 3, oy + 10, ox + 6, oy + 13], fill=(200, 170, 60))  # guard
+        d.rectangle([ox + 2, oy + 12, ox + 4, oy + 14], fill=(110, 76, 48), outline=OUT)
+    elif kind == "axe":
+        d.line([ox + 4, oy + 13, ox + 11, oy + 4], fill=(140, 100, 60), width=2)  # haft
+        d.polygon([(ox + 8, oy + 2), (ox + 13, oy + 4), (ox + 12, oy + 8), (ox + 8, oy + 6)],
+                  fill=RED, outline=OUT)  # fire-axe head
+        d.line([ox + 9, oy + 4, ox + 11, oy + 5], fill=(230, 120, 100))
+    elif kind == "speargun":
+        d.line([ox + 2, oy + 8, ox + 13, oy + 8], fill=(60, 140, 150), width=2)  # rail
+        d.line([ox + 3, oy + 6, ox + 14, oy + 6], fill=(170, 180, 190))          # loaded bolt
+        d.rectangle([ox + 4, oy + 9, ox + 6, oy + 13], fill=(70, 52, 36), outline=OUT)  # grip
+    elif kind == "bolt":
+        d.line([ox + 3, oy + 12, ox + 12, oy + 3], fill=(170, 180, 190), width=2)
+        d.polygon([(ox + 11, oy + 2), (ox + 14, oy + 5), (ox + 12, oy + 4)], fill=(120, 130, 140))
+    elif kind == "rounds":
+        col = (200, 170, 60) if arg == "pistol" else (170, 120, 50)
+        n = 3 if arg == "pistol" else 2
+        for i in range(n):
+            x = ox + 4 + i * 4
+            d.rectangle([x, oy + 6, x + 2, oy + 12], fill=col, outline=OUT)
+            d.rectangle([x, oy + 4, x + 2, oy + 6], fill=(120, 130, 140))
+    elif kind == "medkit":
+        d.rounded_rectangle([ox + 2, oy + 4, ox + 13, oy + 12], radius=2, fill=WHITE, outline=OUT)
+        d.rectangle([ox + 7, oy + 6, ox + 8, oy + 10], fill=RED)
+        d.rectangle([ox + 5, oy + 7, ox + 10, oy + 9], fill=RED)
+    elif kind == "fish":
+        d.polygon([(ox + 3, oy + 8), (ox + 8, oy + 5), (ox + 11, oy + 8), (ox + 8, oy + 11)],
+                  fill=(140, 170, 190), outline=OUT)
+        d.polygon([(ox + 11, oy + 8), (ox + 14, oy + 5), (ox + 14, oy + 11)], fill=(110, 140, 160), outline=OUT)
+        d.point((ox + 5, oy + 7), fill=OUT)
 
 
 def build_icons():
-    img = Image.new("RGBA", (6 * T, 7 * T), (0, 0, 0, 0))
+    img = Image.new("RGBA", (6 * T, 9 * T), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     for (c, r), (kind, arg) in ICONS.items():
         _draw_icon(d, kind, arg, c * T, r * T, random.Random(c * 7 + r * 13))
@@ -642,6 +681,65 @@ def build_objects():
         _draw_object(ImageDraw.Draw(img), oid, W, H)
         img.save(out_dir / f"{oid}.png")
     print("wrote", len(OBJECTS), "object sprites to", out_dir)
+
+
+ENEMIES = {  # id: (w, h) px — must cover data/enemies.json sizes
+    "walker": (16, 24), "crawler": (16, 12), "floater": (16, 16),
+    "drowned": (16, 24), "shark": (40, 16), "fish_school": (24, 12),
+}
+
+
+def _draw_enemy(d, eid, W, H, rng):
+    zomb = (96, 130, 88)     # rotten green
+    zomb_d = (66, 94, 62)
+    if eid in ("walker", "drowned"):
+        col = zomb if eid == "walker" else (70, 110, 128)   # the Drowned go abyssal blue
+        dk = zomb_d if eid == "walker" else (48, 78, 94)
+        d.rectangle([W // 2 - 3, 8, W // 2 + 2, H - 1], fill=col, outline=OUT)   # body
+        d.rectangle([W // 2 - 3, 1, W // 2 + 2, 7], fill=col, outline=OUT)       # head
+        d.point((W // 2 - 1, 3), fill=(220, 60, 50)); d.point((W // 2 + 1, 3), fill=(220, 60, 50))
+        d.rectangle([W // 2 + 3, 9, W // 2 + 5, 11], fill=dk)                    # reaching arm
+        d.line([W // 2 - 2, H - 1, W // 2 - 2, H - 4], fill=dk)
+        if eid == "drowned":
+            d.line([W // 2 - 5, 10, W // 2 - 4, 14], fill=dk)                    # fin ridge
+    elif eid == "crawler":
+        d.rectangle([1, H - 7, W - 4, H - 1], fill=zomb, outline=OUT)            # dragging torso
+        d.rectangle([W - 6, H - 9, W - 1, H - 3], fill=zomb, outline=OUT)        # head
+        d.point((W - 3, H - 7), fill=(220, 60, 50))
+        d.line([2, H - 2, 5, H - 2], fill=zomb_d)
+    elif eid == "floater":
+        d.ellipse([1, 3, W - 2, H - 2], fill=(120, 140, 96), outline=OUT)        # bloated
+        d.ellipse([4, 6, 7, 9], fill=(90, 108, 74))
+        d.point((W - 6, 6), fill=(220, 60, 50))
+    elif eid == "shark":
+        d.polygon([(1, H // 2), (W // 3, 2), (W - 6, 5), (W - 1, 1), (W - 2, H // 2),
+                   (W - 1, H - 2), (W - 6, H - 5), (W // 3, H - 2)], fill=(110, 120, 135), outline=OUT)
+        d.polygon([(W // 2 - 2, 2), (W // 2 + 4, 2), (W // 2 + 2, 6)], fill=(90, 100, 115))  # dorsal
+        d.point((6, H // 2 - 2), fill=OUT)                                                    # eye
+        d.line([3, H // 2 + 2, 8, H // 2 + 2], fill=(60, 66, 78))                             # gills
+    elif eid == "fish_school":
+        for i in range(5):
+            x, y = 2 + rng.randint(0, W - 8), 2 + rng.randint(0, H - 6)
+            d.polygon([(x, y + 1), (x + 3, y), (x + 5, y + 1), (x + 3, y + 3)], fill=(150, 175, 195))
+            d.point((x + 5, y), fill=(120, 145, 165))
+
+
+def build_enemies():
+    out_dir = ROOT / "assets" / "sprites" / "enemies"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for eid, (w, h) in ENEMIES.items():
+        img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        _draw_enemy(ImageDraw.Draw(img), eid, w, h, random.Random(hash(eid) & 0xFFFF))
+        img.save(out_dir / f"{eid}.png")
+    print("wrote", len(ENEMIES), "enemy sprites to", out_dir)
+    # The death backpack (CC-07)
+    img = Image.new("RGBA", (12, 12), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([1, 2, 10, 11], radius=2, fill=(110, 76, 48), outline=OUT)
+    d.rectangle([3, 4, 8, 6], fill=(140, 100, 60))
+    d.line([5, 1, 6, 1], fill=OUT)  # handle
+    img.save(ROOT / "assets" / "sprites" / "backpack.png")
+    print("wrote backpack.png")
 
 
 def build_cracks():
@@ -858,6 +956,7 @@ if __name__ == "__main__":
     build_character()
     build_icons()
     build_objects()
+    build_enemies()
     build_light()
     build_cracks()
     build_player_sheet()

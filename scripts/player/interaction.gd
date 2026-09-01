@@ -25,6 +25,7 @@ var press_time: float = 0.0
 var press_consumed: bool = false
 var press_lock: bool = false # a press that began on an object suppresses held-item actions
 var hit_cooldown: float = 0.0
+var attack_cooldown: float = 0.0 # weapon rate limit (melee swings, shots)
 var _scrap_sfx_timer: float = 0.0
 var message: String = ""
 var message_timer: float = 0.0
@@ -54,6 +55,7 @@ func _ready() -> void:
 
 func tick(delta: float) -> void:
 	hit_cooldown = maxf(hit_cooldown - delta, 0.0)
+	attack_cooldown = maxf(attack_cooldown - delta, 0.0)
 	message_timer = maxf(message_timer - delta, 0.0)
 	if message_timer <= 0.0:
 		message = ""
@@ -130,6 +132,12 @@ func _interact() -> void:
 		var msg := obj.interact(player)
 		if msg != "":
 			say(msg)
+		return
+	# Hand-grab fishing (GD-09): swim close to a school and interact.
+	for f in get_tree().get_nodes_in_group("fish_schools"):
+		if f.catch_fish(player):
+			say("Caught a fish")
+			return
 
 ## Pump outlet targeting (GL-16): E on a pump, then click a cell to aim its hose.
 func begin_pump_targeting(pump: WorldObject) -> void:
@@ -172,9 +180,28 @@ func _primary() -> void:
 		"consumable", "schematic":
 			if not _used_last_tick:
 				player.use_item(player.selected_slot)
+		"weapon":
+			var w: Dictionary = it.weapon
+			if w.get("melee", false):
+				_melee(float(w.damage), float(w.speed), float(w.get("knockback", 4.0)),
+					float(w.get("water_factor", Constants.MELEE_WATER_FACTOR)))
+			elif w.has("projectile"):
+				_fire_spear(w)
+			else:
+				_fire_gun(w)
 		_:
+			var tool := Data.tool_of(held)
 			if Data.is_tool(held, "hammer"):
-				_hammer(Data.tool_of(held))
+				# The hammer doubles as a club when something is in swing range.
+				if _enemy_near_aim() != null:
+					_melee(float(tool.get("damage", 3)), 1.2, 8.0, Constants.MELEE_WATER_FACTOR)
+				else:
+					_hammer(tool)
+			elif tool.get("type", "") == "knife":
+				# Knives fight on LMB (RMB stays scrapping) — quick, and the
+				# least slowed underwater (GD-08).
+				_melee(float(tool.get("damage", 2)), 1.0 + float(tool.get("speed", 1.0)), 3.0,
+					Constants.KNIFE_WATER_FACTOR)
 
 ## RMB: hold-to-scrap furniture (any non-tool or knife); walls with a wall
 ## item or the hammer.
@@ -234,6 +261,100 @@ func _hammer(tool: Dictionary) -> void:
 			Audio.play_sfx("wood_hit", World.cell_center(target_cell), 2)
 		_:
 			pass
+
+# --- Combat (M4, GD-07/08) ---
+
+## The enemy a melee swing would connect with: in range of the player AND
+## near the aim point (so you hit the one you're pointing at).
+func _enemy_near_aim() -> Enemy:
+	var best: Enemy = null
+	var best_d := Constants.MELEE_AIM_SLOP_BLOCKS * Constants.BLOCK_SIZE
+	for e: Enemy in get_tree().get_nodes_in_group("enemies"):
+		if e.global_position.distance_to(player.global_position) > \
+				Constants.MELEE_RANGE_BLOCKS * Constants.BLOCK_SIZE + e.half.length():
+			continue
+		var d := e.global_position.distance_to(player.aim_position) - e.half.length()
+		if d < best_d:
+			best_d = d
+			best = e
+	return best
+
+## One melee swing: `aps` attacks/sec, slowed by `water_factor` in water
+## (knives least, GD-08). Swings land whether or not something is there.
+func _melee(damage: float, aps: float, knockback: float, water_factor: float) -> void:
+	if attack_cooldown > 0.0:
+		return
+	var rate := aps * (water_factor if player.in_water else 1.0)
+	attack_cooldown = 1.0 / maxf(rate, 0.1)
+	player.play_swing()
+	var enemy := _enemy_near_aim()
+	if enemy != null:
+		enemy.hurt(damage, player.global_position, knockback)
+		Audio.play_sfx("wood_hit", enemy.global_position, 2, -6.0)
+
+## Firearms (LT-01): hitscan, loud, and dead weight submerged. Bullets stop
+## at solids and at the water surface — lead above, spears below.
+func _fire_gun(w: Dictionary) -> void:
+	if attack_cooldown > 0.0:
+		return
+	if player.submerged:
+		if not _used_last_tick:
+			say("It won't fire submerged")
+		return
+	var ammo: String = w.get("ammo", "")
+	if ammo != "" and not player.inventory.has(ammo):
+		if not _used_last_tick:
+			say("Out of " + Data.item_name(ammo))
+		return
+	attack_cooldown = 1.0 / maxf(float(w.get("speed", 1.0)), 0.1)
+	if ammo != "":
+		player.inventory.remove(ammo, 1)
+	var dir := (player.aim_position - player.global_position).normalized()
+	if dir == Vector2.ZERO:
+		dir = Vector2(player.facing, 0)
+	var origin := player.global_position + dir * 6.0
+	var max_px := float(w.get("range_blocks", Constants.GUN_RANGE_BLOCKS)) * Constants.BLOCK_SIZE
+	# Wall/water clip first, then the nearest enemy inside that distance.
+	var d := 4.0
+	while d < max_px:
+		var pos := origin + dir * d
+		if World.is_solid(pos) or World.is_water(pos):
+			max_px = d
+			break
+		d += 4.0
+	var best: Enemy = null
+	var best_t := max_px
+	for e: Enemy in get_tree().get_nodes_in_group("enemies"):
+		var to := e.global_position - origin
+		var t := to.dot(dir)
+		if t > 0.0 and t < best_t and absf(to.cross(dir)) < e.half.length() + 3.0:
+			best_t = t
+			best = e
+	if best != null:
+		best.hurt(float(w.damage), player.global_position, 3.0)
+	Audio.play_sfx("gunshot", origin, 1, 0.0)
+	player.play_swing()
+
+## Speargun (GD-08, LT-16): a silent bolt that flies, sticks, and is picked
+## back up. The underwater ranged weapon; works above water too.
+func _fire_spear(w: Dictionary) -> void:
+	if attack_cooldown > 0.0:
+		return
+	var bolt_id: String = w.projectile
+	if not player.inventory.has(bolt_id):
+		if not _used_last_tick:
+			say("Out of " + Data.item_name(bolt_id))
+		return
+	attack_cooldown = 1.0 / maxf(float(w.get("speed", 1.0)), 0.1)
+	player.inventory.remove(bolt_id, 1)
+	var dir := (player.aim_position - player.global_position).normalized()
+	if dir == Vector2.ZERO:
+		dir = Vector2(player.facing, 0)
+	var bolt := SpearBolt.new()
+	bolt.setup(bolt_id, dir * Constants.SPEAR_SPEED, float(w.damage))
+	World.items_root.add_child(bolt)
+	bolt.global_position = player.global_position + dir * 8.0
+	Audio.play_sfx("splash", player.global_position, 5, -14.0)
 
 func _scrap(delta: float, tool: Dictionary) -> void:
 	var obj := World.object_at(target_cell) if target_in_reach else null

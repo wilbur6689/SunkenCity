@@ -238,6 +238,9 @@ func _refresh_debug() -> void:
 		"objects: %d live / %d total · items %d · placed blocks %d" % [
 			World.perf.objects_live, World.perf.objects_total,
 			World.items_root.get_child_count(), World.placed_blocks.size()],
+		"enemies: %d live / %d total · day %d · red moon %s (next day %d)" % [
+			World.perf.enemies_live, World.perf.enemies_total, World.day_count,
+			"UP" if World.red_moon_active else "down", World.next_red_moon_day],
 		"map revealed %d cells · clock %.2f · sun %.2f" % [
 			World.map_reveal.revealed_count(), World.time_of_day, World.sun_strength()],
 		"music: %s" % Audio.debug_status(),
@@ -300,6 +303,8 @@ func _process(delta: float) -> void:
 		player.message.connect(show_message)
 	health_bar.max_value = Constants.MAX_HEALTH
 	health_bar.value = player.health
+	# Bleeding (GD-21): the health bar pulses red until bandaged.
+	health_bar.modulate = Color(1.0, 0.4, 0.4) if player.bleed_time > 0.0 		and int(Time.get_ticks_msec() / 300) % 2 == 0 else Color.WHITE
 	oxygen_bar.max_value = player.max_oxygen()
 	oxygen_bar.value = player.oxygen
 	oxygen_bar.visible = player.submerged or player.oxygen < player.max_oxygen()

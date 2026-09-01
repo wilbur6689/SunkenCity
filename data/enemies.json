@@ -1,0 +1,47 @@
+{
+  "comment": "M4 enemy roster (GD-01..29). types = behaviour identity; bands = AUTHORED per-band stat tables (GD-23, no formulas): hp / damage per hit / speed in blocks-per-sec / aggro radius in blocks. An enemy only seeds in bands it has a row for. drops are the light kind (GD-24): cloth and scrap bits from zombies, meat from fish.",
+  "types": [
+    {"id": "walker", "name": "Walker", "mode": "ground", "size": [12, 22], "bleeds": true,
+     "drops": [{"item": "cloth", "min": 0, "max": 2, "chance": 0.8}, {"item": "scrap_metal", "min": 1, "max": 1, "chance": 0.35}]},
+    {"id": "crawler", "name": "Crawler", "mode": "ground", "size": [12, 10], "bleeds": true,
+     "drops": [{"item": "cloth", "min": 1, "max": 2, "chance": 0.7}]},
+    {"id": "floater", "name": "Floater", "mode": "surface", "size": [14, 14], "bleeds": true,
+     "drops": [{"item": "cloth", "min": 1, "max": 2, "chance": 0.8}]},
+    {"id": "drowned", "name": "The Drowned", "mode": "swim", "size": [12, 22], "bleeds": true, "water_only": true,
+     "drops": [{"item": "cloth", "min": 1, "max": 2, "chance": 0.8}, {"item": "scrap_metal", "min": 1, "max": 2, "chance": 0.5}]},
+    {"id": "shark", "name": "Shark", "mode": "swim", "size": [36, 14], "water_only": true, "open_water": true,
+     "drops": [{"item": "fish_meat", "min": 2, "max": 4, "chance": 1.0}]},
+    {"id": "fish_school", "name": "Fish School", "mode": "fish", "size": [20, 10], "passive": true, "drops": []}
+  ],
+  "bands": {
+    "dry":      {"walker": {"hp": 30, "damage": 8,  "speed": 2.2, "aggro": 10},
+                 "crawler": {"hp": 20, "damage": 6,  "speed": 2.6, "aggro": 8}},
+    "shallows": {"walker": {"hp": 40, "damage": 10, "speed": 2.2, "aggro": 10},
+                 "crawler": {"hp": 26, "damage": 8,  "speed": 2.6, "aggro": 8},
+                 "floater": {"hp": 24, "damage": 8,  "speed": 1.2, "aggro": 9},
+                 "fish_school": {"hp": 1, "damage": 0, "speed": 2.0, "aggro": 0}},
+    "cold":     {"walker": {"hp": 55, "damage": 13, "speed": 2.4, "aggro": 11},
+                 "crawler": {"hp": 34, "damage": 10, "speed": 2.8, "aggro": 9},
+                 "shark": {"hp": 90, "damage": 18, "speed": 5.5, "aggro": 14},
+                 "fish_school": {"hp": 1, "damage": 0, "speed": 2.0, "aggro": 0}},
+    "dark":     {"walker": {"hp": 70, "damage": 16, "speed": 2.4, "aggro": 11},
+                 "crawler": {"hp": 45, "damage": 13, "speed": 2.8, "aggro": 9},
+                 "drowned": {"hp": 80, "damage": 18, "speed": 6.5, "aggro": 12},
+                 "shark": {"hp": 110, "damage": 22, "speed": 5.5, "aggro": 14},
+                 "fish_school": {"hp": 1, "damage": 0, "speed": 2.0, "aggro": 0}},
+    "crush":    {"walker": {"hp": 90, "damage": 20, "speed": 2.6, "aggro": 12},
+                 "crawler": {"hp": 60, "damage": 16, "speed": 3.0, "aggro": 10},
+                 "drowned": {"hp": 110, "damage": 24, "speed": 7.0, "aggro": 13},
+                 "shark": {"hp": 140, "damage": 28, "speed": 6.0, "aggro": 15},
+                 "fish_school": {"hp": 1, "damage": 0, "speed": 2.0, "aggro": 0}}
+  },
+  "seeding": {
+    "comment": "Uniform density everywhere (GD-27) - per-band strength does the scaling. Spacings are block ranges between open-water spawns.",
+    "wing_zombie_weights": [0.35, 0.45, 0.2],
+    "wing_crawler_chance": 0.3,
+    "wing_drowned_chance": 0.4,
+    "floater_spacing": [50, 120],
+    "shark_spacing": [80, 160],
+    "fish_spacing": [40, 90]
+  }
+}

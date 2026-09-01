@@ -179,36 +179,39 @@ object/storage/door state, character inventory/skills/position, map reveal. **M3
 ## M4 — Danger
 
 ### Enemies
-- [ ] Enemy framework: per-band stat tables (data files), uniform density seeding at gen (GD-23/27)
-- [ ] Walker: chase, fall, squeeze, pound player-placed blocks (GD-04)
-- [ ] Crawler: 2-block spaces and vents
-- [ ] Floater: surface drift; night extras that disperse at dawn (GD-29)
-- [ ] The Drowned: fast swimmer, flooded-interior native, Dark/Crush bands (GD-13/14)
-- [ ] Shark: open-water patrol, Cold band down, proximity aggro, ignores boats (GD-11/12)
-- [ ] Proximity aggro component (single shared system, GD-06)
-- [ ] Cleared-stays-cleared: no ambient respawn (GD-02/03)
-- [ ] Small fish: schools, hand-grab catch (GD-09/28)
+- [x] Enemy framework: `data/enemies.json` — authored per-band stat tables (hp/damage/speed/aggro, GD-23), uniform-density seeding at gen (`EnemyGen`, ~575/city; the starting medical room stays clear), one data-driven `Enemy` scene (`scripts/enemies/enemy.gd`); records stream through the object-window pattern (`World.enemy_records`, frozen outside `ENEMY_WINDOW`) and persist in the world save (GD-23/27)
+- [x] Walker: chase, fall (falling *is* the pathfinding), squeeze what the hitbox fits, small-step hop, pound player-placed blocks (GD-04)
+- [x] Crawler: 12×10 body fits 1-block gaps and vents; same ground brain
+- [x] Floater: bobs at the surface, drifts, chases along it; night extras spawn near players and disperse at dawn — the one ambient-spawn exception (GD-29)
+- [x] The Drowned: fast swimmer (out-swims the player), never leaves water, flooded interiors of Dark/Crush (GD-13/14)
+- [x] Shark: open-water patrol (refuses back-walled interior cells), seeded Cold band down, proximity aggro; boats don't exist yet to be ignored (GD-11/12)
+- [x] Proximity aggro: the single shared sense (`scripts/enemies/aggro.gd`) — activation radius only, ×1.5 in surface bands at night (GD-06/29)
+- [x] Cleared-stays-cleared: killing erases the record; no ambient respawn (GD-02/03)
+- [x] Small fish: schools in open water, swim close + interact grabs one (3–6 per school) (GD-09/28)
 
 ### Combat
-- [ ] Melee: knife/sword/axe per tier — damage, speed, knockback; slowed underwater, knives least (GD-08)
-- [ ] Firearms: pistol, semi-auto, rifle (loot-only); disabled submerged (LT-01)
-- [ ] Speargun + retrievable bolts (GD-08, LT-16)
-- [ ] Ammo crafting: pistol rounds, rifle rounds, bolts (LT-16)
-- [ ] Enemy light drops: cloth/scrap bits, fish meat (GD-24)
-- [ ] Bleeding status + bandage cure; slow out-of-combat regen; medkits (GD-21, GL-21)
+- [x] Melee: knives (LMB, least water penalty ×0.85) + scrap/iron swords + fire axe (new recipes; damage/speed/knockback in items.json); underwater swings slowed ×0.5 (GD-08); hammer doubles as a club
+- [x] Firearms: pistol/SMG/rifle hitscan — loud, ammo-fed, refuse to fire submerged, bullets stop at solids and at water (LT-01)
+- [x] Speargun + retrievable bolts: craftable, silent, bolts fly true underwater and drop as pickups where they land (GD-08, LT-16)
+- [x] Ammo crafting: pistol rounds (forge), rifle rounds (forge), bolts (workbench); found rounds seeded into cold/dark/crush + safe loot (LT-16)
+- [x] Enemy light drops: cloth/scrap bits from zombies, fish meat from sharks (GD-24)
+- [x] Bleeding (35% per zombie/Drowned hit, drips 1.5/s) + bandage/medkit cure; slow out-of-combat regen (1/s after 8 s calm); medkit recipe at the med station; health bar pulses red while bleeding (GD-21, GL-21)
 
 ### Death loop (CC-07)
-- [ ] Backpack entity on death: inventory transfers, floats up, ceiling-pins (M2 buoyancy)
-- [ ] Equipped gear kept; recover-on-touch; respawn at bed
-- [ ] Unobstructed packs surface and bob
+- [x] Backpack entity on death: whole bag transfers (mods intact), floats up, ceiling-pins (M2 buoyancy); persists in the world save
+- [x] Equipped gear kept; recover-on-touch (leftovers stay in the pack); respawn at bed
+- [x] Unobstructed packs surface and bob
 
 ### Red moons (CC-14, GL-15)
-- [ ] Random 5–10 day timer, red moon visuals + stinger
-- [ ] Wave spawner converging on player locations; scaling by day count (GD-23)
-- [ ] Zombies damage player-placed blocks/doors only; stragglers persist and re-seed (GD-02)
+- [x] Random 5–10 day timer (day counter + schedule persisted); blood-red CanvasModulate tint + warning line while it's up; stinger hook plays `red_moon_stinger` (no audio asset dropped in yet)
+- [x] Wave spawner: every 25 s a ring of walkers/floaters lands around each player, 3 + 0.3/day each, hp/damage ×(1 + 0.05·day) (GD-23)
+- [x] Zombies pound player-placed blocks/doors only (structure is safe); stragglers persist after dawn and re-seed cleared areas (GD-02)
 
 **GATE:** a red moon can kill you; your backpack floats to a ceiling; you dive back and recover
-it.
+it. ✔ `m4_smoke.tscn` (58 checks): framework/stat tables, aggro + night radii, chase/contact/
+pound, melee/firearm/speargun kills, bleeding/regen, underwater death → ceiling-pinned pack →
+recovery, red moon trigger/waves/dawn, fish grab, save round trip. Manual balance/feel pass
+(enemy density, wave pressure, weapon tuning) still open — fold into the GL-27 pacing check.
 
 ---
 

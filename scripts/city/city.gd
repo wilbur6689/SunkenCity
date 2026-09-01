@@ -52,8 +52,11 @@ func _boot_generated() -> void:
 	for dc in gen.doors:
 		World.add_object_record(dc.id, dc.cell, false)
 	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value)
+	for e in EnemyGen.seed_city(gen, seed_value): # M4: seeded once, no respawn (GD-02)
+		World.add_enemy_record(e.type, e.pos)
 	CityGen.flood(World) # after doors exist: sealing is solidity (WS-20)
-	print("City seed %d: %d towers, generated in %d ms" % [seed_value, gen.towers, Time.get_ticks_msec() - t0])
+	print("City seed %d: %d towers, %d enemies, generated in %d ms" % [seed_value, gen.towers,
+		World.enemy_records.size(), Time.get_ticks_msec() - t0])
 	_setup_visuals()
 	player.respawn()
 	player.inventory.add("bandage", 2) # LT-30 starting kit
@@ -85,6 +88,17 @@ func _boot_loaded(data: Dictionary) -> void:
 			rec.storage.slots = slots
 	for it in data.items:
 		World.spawn_item(it.id, int(it.count), it.pos)
+	for bp in data.get("backpacks", []):
+		World.spawn_backpack((bp.slots as Array).duplicate(true), bp.pos)
+	for en in data.get("enemies", []):
+		var erec := World.add_enemy_record(en.type, en.pos, float(en.get("mult", 1.0)))
+		if not erec.is_empty():
+			erec.hp = float(en.hp)
+			if en.has("stock"):
+				erec.stock = int(en.stock)
+	World.day_count = int(data.get("day_count", 0))
+	World.next_red_moon_day = int(data.get("next_red_moon_day", World.next_red_moon_day))
+	World.red_moon_active = bool(data.get("red_moon_active", false))
 	# Water restores exactly as saved; nothing is awake until disturbed.
 	World.water_sim.levels = (data.water as PackedByteArray).decompress(
 		grid.bounds.size.x * grid.bounds.size.y, FileAccess.COMPRESSION_ZSTD)
@@ -98,6 +112,22 @@ func _boot_loaded(data: Dictionary) -> void:
 func _setup_visuals() -> void:
 	water_renderer.setup(World.waterline_row * Constants.BLOCK_SIZE)
 	$Backdrop.setup(World.waterline_row * Constants.BLOCK_SIZE, -900.0)
+
+## Red moon dressing (CC-14): a blood tint while the moon is up, a warning
+## line when it rises. The World runs the actual waves.
+var _red_tint: CanvasModulate = null
+var _red_moon_seen := false
+
+func _process(_delta: float) -> void:
+	if not World.is_ready() or World.red_moon_active == _red_moon_seen:
+		return
+	_red_moon_seen = World.red_moon_active
+	if _red_tint == null:
+		_red_tint = CanvasModulate.new()
+		add_child(_red_tint)
+	_red_tint.color = Constants.RED_MOON_TINT if _red_moon_seen else Color.WHITE
+	player.message.emit("The moon rises red — they are coming"
+		if _red_moon_seen else "Dawn breaks; the red moon sets")
 
 ## Write both save files for the current run.
 func save_now() -> void:

@@ -58,9 +58,22 @@ static func save_world(world_name: String, seed_value: int) -> void:
 			st["storage"] = rec.storage.slots.duplicate(true)
 		objs.append(st)
 	var items: Array = []
+	var packs: Array = []
 	for it in World.items_root.get_children():
 		if it is WorldItem and not it.is_queued_for_deletion():
 			items.append({"id": it.id, "count": it.count, "pos": it.global_position})
+		elif it is Backpack and not it.is_queued_for_deletion():
+			packs.append({"pos": it.global_position, "slots": it.slots.duplicate(true)})
+	# Enemies (M4): live positions/hp are already banked on the records.
+	# Night floaters are skipped — they disperse at dawn anyway (GD-29).
+	var enemies: Array = []
+	for rec: Dictionary in World.enemy_records:
+		if rec.get("night", false):
+			continue
+		var st := {"type": rec.type, "pos": rec.pos, "hp": rec.hp, "mult": rec.get("mult", 1.0)}
+		if rec.has("stock"):
+			st["stock"] = rec.stock
+		enemies.append(st)
 	var data := {
 		"version": VERSION, "name": world_name, "seed": seed_value,
 		"waterline_row": World.waterline_row, "time_of_day": World.time_of_day,
@@ -71,7 +84,9 @@ static func save_world(world_name: String, seed_value: int) -> void:
 		"water": World.water_sim.levels.compress(FileAccess.COMPRESSION_ZSTD),
 		"placed_blocks": World.placed_blocks.duplicate(true),
 		"structure_damage": World.structure_damage.duplicate(),
-		"objects": objs, "items": items,
+		"objects": objs, "items": items, "backpacks": packs, "enemies": enemies,
+		"day_count": World.day_count, "next_red_moon_day": World.next_red_moon_day,
+		"red_moon_active": World.red_moon_active,
 	}
 	DirAccess.make_dir_recursive_absolute(WORLD_DIR)
 	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.WRITE)
