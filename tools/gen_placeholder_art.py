@@ -24,7 +24,7 @@ RAMPS = {
     "metal":   ((22, 28, 36), [(60, 70, 82), (80, 92, 106), (100, 114, 130), (120, 136, 152)], (154, 170, 186)),
     "plastic": ((20, 44, 32), [(54, 100, 74), (70, 126, 92), (90, 150, 110), (112, 172, 130)], (142, 196, 156)),
 }
-ROWS = ["stone", "wood", "metal", "plastic", "water", "ladder", "rope", "void"]
+ROWS = ["stone", "wood", "metal", "plastic", "water", "ladder", "rope", "void", "woodwall"]
 
 
 class Tile:
@@ -201,6 +201,31 @@ def rope(rng, o, t, h):
     return tile
 
 
+def woodwall(rng, o, t, h):
+    """Interior panelling for player-built wood WALLS (user request 2026-09-01):
+    dark vertical boards with deep seams, unmistakable next to the horizontal
+    wood-block planks even under the back-layer tint."""
+    tile = Tile()
+    layouts = [[4, 4, 4, 4], [3, 5, 4, 4], [5, 4, 3, 4], [4, 3, 5, 4], [4, 4, 3, 5]]
+    widths = layouts[rng.randint(0, len(layouts) - 1)]
+    x = 0
+    for i, wd in enumerate(widths):
+        for y in range(T):
+            tile.set(x, y, o)                 # vertical seam
+            tile.set(x + 1, y, t[1])          # dim lit edge
+            for xx in range(x + 2, x + wd):
+                tile.set(xx, y, t[0])         # dark board body
+        for _ in range(rng.randint(2, 4)):    # sparse vertical grain
+            gy = rng.randint(0, T - 3)
+            gx = rng.randint(x + 2, x + wd - 1) if wd > 2 else x + 1
+            for k in range(rng.randint(1, 3)):
+                tile.set(gx, gy + k, o)
+        ey = (i * 5 + rng.randint(0, 3)) % T  # board end notch
+        tile.set(x + 1, ey, h)
+        x += wd
+    return tile
+
+
 def void(rng, _o, _t, _h):
     """The nothing around interior pockets: flat near-black, a faint speckle so it isn't a hole."""
     tile = Tile((6, 6, 9, 255))
@@ -210,7 +235,8 @@ def void(rng, _o, _t, _h):
 
 
 RECIPES = {"stone": stone, "wood": wood, "metal": metal, "plastic": plastic,
-           "water": water, "ladder": ladder, "rope": rope, "void": void}
+           "water": water, "ladder": ladder, "rope": rope, "void": void,
+           "woodwall": woodwall}
 
 
 def build_atlas():
@@ -365,6 +391,7 @@ ICONS = {
     (3, 0): ("cloth", None), (4, 0): ("blob", "stone"), (5, 0): ("ingot", None),
     # row 1: tools
     (0, 1): ("pry", None), (1, 1): ("knife", "scrap"), (2, 1): ("hammer", None), (3, 1): ("knife", "iron"),
+    (4, 1): ("axe", "wood"),
     # row 2: consumables / schematic
     (0, 2): ("bandage", None), (1, 2): ("can", None), (2, 2): ("glowstick", None), (3, 2): ("paper", None),
     (4, 2): ("shirt", None),
@@ -513,7 +540,7 @@ def _draw_icon(d, kind, arg, ox, oy, rng):
     elif kind == "axe":
         d.line([ox + 4, oy + 13, ox + 11, oy + 4], fill=(140, 100, 60), width=2)  # haft
         d.polygon([(ox + 8, oy + 2), (ox + 13, oy + 4), (ox + 12, oy + 8), (ox + 8, oy + 6)],
-                  fill=RED, outline=OUT)  # fire-axe head
+                  fill=(150, 158, 166) if arg == "wood" else RED, outline=OUT)  # head
         d.line([ox + 9, oy + 4, ox + 11, oy + 5], fill=(230, 120, 100))
     elif kind == "speargun":
         d.line([ox + 2, oy + 8, ox + 13, oy + 8], fill=(60, 140, 150), width=2)  # rail
@@ -777,6 +804,8 @@ def build_enemies():
     out_dir = ROOT / "assets" / "sprites" / "enemies"
     out_dir.mkdir(parents=True, exist_ok=True)
     for eid, (w, h) in ENEMIES.items():
+        if eid in ("walker", "floater"):
+            continue  # hand-made art (tools/convert_monsters.py) - never stomp
         img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         _draw_enemy(ImageDraw.Draw(img), eid, w, h, random.Random(hash(eid) & 0xFFFF))
         img.save(out_dir / f"{eid}.png")

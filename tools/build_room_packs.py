@@ -64,7 +64,7 @@ def entry_for(item, module_name, rect):
     }
     if item.get("kind"):
         e["kind"] = item["kind"]  # decals and other non-scrap pack items
-    for k in ("no_item", "desc", "grows_into", "grow_chance", "fixed", "lock_tier", "key"):
+    for k in ("no_item", "desc", "grows_into", "grow_chance", "fixed", "lock_tier", "key", "flora_weight", "requires_tool"):
         if k in item:
             e[k] = item[k]
     if item.get("storage_slots"):

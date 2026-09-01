@@ -53,6 +53,13 @@ func setup(p_id: String, p_cell: Vector2i, p_placed: bool) -> void:
 
 func _ready() -> void:
 	add_to_group("world_objects")
+	# Room draw planes (user request 2026-09-01): back wall (tiles, z -3)
+	# -> decals (-2) -> wall-mounted pieces and doorways (-1) -> furniture
+	# (0) -> player (tree order above the object roots).
+	if def.kind == "decal":
+		z_index = -2
+	elif def.get("wall_mounted", false) or def.kind == "portal":
+		z_index = -1
 	sprite.texture = Data.object_texture(id)
 	sprite.centered = false
 	# Node origin = bottom-left cell's top-left corner; sprite is size*16 px.

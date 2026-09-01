@@ -5,7 +5,7 @@ extends RefCounted
 ## collision are windowed around the camera by StructureRenderer; every
 ## gameplay query reads these arrays directly.
 
-enum M { AIR = 0, STONE = 1, WOOD = 2, METAL = 3, PLASTIC = 4, VOID = 8 } # = atlas row + 1
+enum M { AIR = 0, STONE = 1, WOOD = 2, METAL = 3, PLASTIC = 4, VOID = 8, WOODWALL = 9 } # = atlas row + 1
 ## VOID (atlas row 7, solid black): the nothing around interior pockets —
 ## solid to physics, water, and sight; unbreakable (no STRUCTURE_TIER entry).
 enum C { NONE = 0, LADDER = 1, ROPE = 2 }

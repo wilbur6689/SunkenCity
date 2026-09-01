@@ -41,9 +41,22 @@ func _ready() -> void:
 	half = Vector2(def.size[0], def.size[1]) * 0.5
 	body.size = Vector2(def.size[0], def.size[1])
 	shape.shape = body
-	var path := SPRITE_DIR + String(rec.type) + ".png"
+	# Hand-made sheets (user request 2026-09-01): types with `frames` load a
+	# horizontal walk strip; `sprite_variants` picks a look per individual
+	# (deterministic from the record's seed position, so it survives
+	# streaming). Variant files are <type>_b.png, _c.png...
+	var variant := ""
+	var vcount := int(def.get("sprite_variants", 1))
+	if vcount > 1:
+		var pick := absi(int(rec.pos.x) + int(rec.pos.y)) % vcount
+		if pick > 0:
+			variant = "_" + char(97 + pick) # _b, _c...
+	var path := SPRITE_DIR + String(rec.type) + variant + ".png"
+	if not ResourceLoader.exists(path):
+		path = SPRITE_DIR + String(rec.type) + ".png"
 	if ResourceLoader.exists(path):
 		sprite.texture = load(path)
+		sprite.hframes = maxi(int(def.get("frames", 1)), 1)
 	# Enemies never body-block players (contact damage is a check, not a
 	# collision); they still collide with the world tiles.
 	for p in get_tree().get_nodes_in_group("player"):
@@ -69,9 +82,24 @@ func _physics_process(delta: float) -> void:
 	if absf(velocity.x) > 1.0:
 		facing = 1 if velocity.x > 0.0 else -1
 	sprite.flip_h = facing < 0
+	_tick_anim(delta)
 	# Bank live position so streaming out / saving mid-chase loses nothing
 	# (hp banks in hurt()).
 	rec.pos = global_position
+
+## Walk-strip animation: frames advance with actual movement speed and
+## rest on frame 0 while standing (types without a strip no-op).
+var _anim_t := 0.0
+
+func _tick_anim(delta: float) -> void:
+	if sprite.hframes <= 1:
+		return
+	var moving := velocity.length() > 6.0
+	if moving:
+		_anim_t += delta * clampf(velocity.length() / Constants.BLOCK_SIZE * 2.0, 3.0, 10.0)
+		sprite.frame = int(_anim_t) % sprite.hframes
+	else:
+		sprite.frame = 0
 
 # --- Targeting (single shared sense, GD-06) ---
 
@@ -234,12 +262,22 @@ func catch_fish(player) -> bool:
 
 # --- Contact damage ---
 
+## Contact bite + a forward swipe (user request 2026-09-01): overlap-only
+## contact read as "same square" - the bite now also lands up to
+## ENEMY_ATTACK_REACH_BLOCKS in front of the facing direction, but never
+## through a solid cell (a closed door still shields).
 func _try_touch() -> void:
 	if attack_cd > 0.0:
 		return
+	var reach := Constants.ENEMY_ATTACK_REACH_BLOCKS * Constants.BLOCK_SIZE
 	for p in get_tree().get_nodes_in_group("player"):
-		var d: Vector2 = (p.global_position - global_position).abs()
-		if d.x < half.x + 7.0 and d.y < half.y + 12.0:
+		var to: Vector2 = p.global_position - global_position
+		var d := to.abs()
+		if d.y >= half.y + 12.0:
+			continue
+		var touching: bool = d.x < half.x + 7.0
+		var in_front: bool = signf(to.x) == float(facing) and d.x < half.x + reach 				and not World.is_solid(global_position + Vector2(facing * (half.x + Constants.BLOCK_SIZE * 0.5), 0.0))
+		if touching or in_front:
 			attack_cd = Constants.ENEMY_TOUCH_COOLDOWN
 			p.hurt_from_enemy(float(stats.damage), global_position, def.get("bleeds", false))
 			return

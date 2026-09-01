@@ -49,6 +49,24 @@ func _ready() -> void:
 		stone_ok = stone_ok and got
 	check(stone_ok, "statues and plants pay out stone")
 
+	# Early-game economy (user request): hand crafting is wood-tier only -
+	# scrap tools live behind the workbench, and the workbench is a project.
+	for rid: String in ["pry_bar", "scrap_knife", "hammer"]:
+		check(Data.recipes[rid].station == "workbench", rid + " is workbench-gated")
+	for rid: String in ["wood_axe", "chest", "rope", "ladder", "wood_block", "wood_wall", "workbench"]:
+		check(Data.recipes[rid].station == "hand", rid + " is hand-craftable (wood tier)")
+	var wb_wood := 0
+	for inp in Data.recipes.workbench.inputs:
+		if inp.item == "wood":
+			wb_wood = int(inp.count)
+	check(wb_wood >= 25, "the workbench takes multiple resource runs (%d wood)" % wb_wood)
+	check(int(Data.recipes.pry_bar.inputs[0].count) >= 20, "tool costs run 5x (pry bar: %d scrap)" % int(Data.recipes.pry_bar.inputs[0].count))
+	check(Data.tool_of("wood_axe").get("type", "") == "axe", "the wooden axe is an axe-type tool")
+	check(Data.objects.tree_young.get("requires_tool", "") == "axe" 			and Data.objects.tree_mature.get("requires_tool", "") == "axe" 			and not Data.objects.tree_sapling.has("requires_tool"),
+			"grown trees need the axe; saplings hand-pluck (no wood deadlock)")
+	check(float(Data.objects.tree_mature.scrap_time) > float(Data.objects.tree_young.scrap_time) 			and float(Data.objects.tree_young.scrap_time) > float(Data.objects.tree_sapling.scrap_time),
+			"bigger trees take longer to fell")
+	check(Data.blocks.wood_wall.atlas_row == 8, "the wood wall has its own dark plank tile row")
 	print("== B. generation")
 	var r := CityGen.generate(101, 800)
 	var r2 := CityGen.generate(101, 800)
@@ -128,6 +146,33 @@ func _ready() -> void:
 		if int(t2.top) - 1 < CityGen.WATERLINE:
 			dry_towers += 1
 	check(dry_towers == 0 or trees >= dry_towers, "trees on every dry roof on average (%d trees, %d dry towers)" % [trees, dry_towers])
+	# Side-breach vents (user request): every wear breach carries a grate.
+	var vent_def: Dictionary = Data.objects.side_vent
+	check(vent_def.kind == "door" and vent_def.get("fixed", false) and int(vent_def.get("lock_tier", 0)) == 1,
+			"the wall vent grate is a fixed, padlocked door (pry tier 1)")
+	var vents := 0
+	var vent_sealed := true
+	for o in r.objects:
+		if o.id == "side_vent":
+			vents += 1
+			for dy in 2: # the grate exactly fills its 2x2 breach
+				for dx in 2:
+					if r.grid.structure_at(Vector2i(o.cell.x + dx, o.cell.y - dy)) != WorldGrid.M.AIR:
+						vent_sealed = false
+	check(vents >= 20, "%d side breaches wear vent grates" % vents)
+	check(vent_sealed, "every grate sits in a fully carved 2x2 breach")
+	# Central 20%: towers crowd to <= 5 blocks apart (user request).
+	var tight_pairs := 0
+	var tight_ok := true
+	for i in range(r.tower_list.size() - 1):
+		var a: Dictionary = r.tower_list[i]
+		var cfa := 1.0 - absf((float(a.x0 + a.x1) * 0.5) - 400.0) / 400.0
+		if cfa > 0.8:
+			var gap: int = int(r.tower_list[i + 1].x0) - int(a.x1) - 1
+			tight_pairs += 1
+			if gap > 5:
+				tight_ok = false
+	check(tight_pairs >= 1 and tight_ok, "central towers sit <= 5 blocks apart (%d tight gaps)" % tight_pairs)
 	var hatch_def: Dictionary = Data.objects.roof_hatch
 	check(hatch_def.kind == "door" and hatch_def.get("fixed", false) and hatch_def.get("no_item", false) 			and int(hatch_def.get("lock_tier", 0)) == 1, "the roof hatch is a fixed, padlocked door (pry tier 1)")
 	var hatch_cells := {}
@@ -176,6 +221,18 @@ func _ready() -> void:
 	for i in 60:
 		World._grow_trees()
 	check(World.object_record_at(Vector2i(10, 29)).get("id", "") == "tree_sapling", "a drowned tree never grows")
+	# Room draw planes (user request 2026-09-01): decals under wall pieces
+	# under furniture (the player wins by tree order).
+	for y2 in range(24, 30):
+		g.set_back(Vector2i(30, y2), WorldGrid.M.STONE)
+		g.set_back(Vector2i(31, y2), WorldGrid.M.STONE)
+	var deco := World.place_object("decal_broken_wall_a", Vector2i(30, 29), false)
+	var vent2 := World.place_object("int_wall_vent", Vector2i(30, 27), false)
+	var desk2 := World.place_object("roof_comm_cabinet", Vector2i(33, 29), false)
+	check(deco.z_index == -2 and vent2.z_index == -1 and desk2.z_index == 0,
+			"draw planes: decal (-2) < wall piece (-1) < furniture (0)")
+	check(Data.enemies.walker.get("frames", 0) == 8 and Data.enemies.walker.get("sprite_variants", 0) == 7,
+			"walkers carry the 8-frame walk strips (7 variants incl. 2 fat)")
 	# A streamed-in tree swaps its node on growth.
 	World.refresh_objects_around(Vector2(30 * B, 29 * B))
 	var mature_node := World.object_at(Vector2i(20, 29))

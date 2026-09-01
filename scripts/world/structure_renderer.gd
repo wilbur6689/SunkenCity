@@ -19,6 +19,7 @@ func _ready() -> void:
 	back_layer.tile_set = TILESET
 	back_layer.collision_enabled = false
 	back_layer.modulate = Color(0.42, 0.45, 0.52)
+	back_layer.z_index = -3 # under the decal/wall-object planes (room layers)
 	add_child(back_layer)
 	blocks_layer = TileMapLayer.new()
 	blocks_layer.tile_set = TILESET

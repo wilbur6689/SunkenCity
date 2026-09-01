@@ -16,6 +16,7 @@
 script = ExtResource("1_tower")
 
 [node name="Background" type="ColorRect" parent="."]
+z_index = -11
 offset_left = -700.0
 offset_top = -500.0
 offset_right = 1400.0
@@ -24,6 +25,7 @@ mouse_filter = 2
 color = Color(0.07, 0.09, 0.13, 1)
 
 [node name="Backdrop" type="Parallax2D" parent="."]
+z_index = -10
 script = ExtResource("6_backdrop")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]

@@ -154,13 +154,15 @@ func _ready() -> void:
 	World.place_object("forge", sc + Vector2i(6, -1), true)
 	World.place_object("dive_station", sc + Vector2i(13, -1), true)
 	player.inventory.slots.fill(null)
-	player.inventory.add("iron", 20)
-	player.inventory.add("stone", 6)
-	player.inventory.add("scrap_metal", 20)
-	player.inventory.add("plastic", 20)
+	# Stocked for the 5x tool economy (2026-09-01): the torch alone eats
+	# 10 steel, the cutters 15 iron.
+	player.inventory.add("iron", 60)
+	player.inventory.add("stone", 20)
+	player.inventory.add("scrap_metal", 30)
+	player.inventory.add("plastic", 25)
 	player.inventory.add("cloth", 20)
-	player.inventory.add("wood", 6)
-	for i in 6:
+	player.inventory.add("wood", 16)
+	for i in 16:
 		player.craft(Data.recipes["steel"])
 	check(player.inventory.count("steel") >= 6, "forge turns iron into steel (%d)" % player.inventory.count("steel"))
 	check(player.craft(Data.recipes["bolt_cutters"]), "bolt cutters forged")

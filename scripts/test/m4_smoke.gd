@@ -127,6 +127,24 @@ func _run() -> void:
 	check(await until(func(): return player.health < hp0, 600), "contact does damage")
 	check(player.combat_timer < 1.0, "taking damage resets the regen delay (GL-21)")
 	await clear_enemies()
+	# Forward swipe (user request 2026-09-01): a bite lands up to
+	# ENEMY_ATTACK_REACH_BLOCKS in FRONT of the facing, not just on overlap.
+	player.health = Constants.MAX_HEALTH
+	var wf := spawn("walker", 19, row) # one block to the player's right
+	await ticks(2)
+	var wfn: Enemy = wf.node
+	wfn.set_physics_process(false) # frozen: reach itself must land the hit
+	wfn.facing = -1
+	wfn.attack_cd = 0.0
+	var hpf := player.health
+	wfn._try_touch()
+	check(player.health < hpf, "a bite lands one block in front (reach, not same-square)")
+	player.health = Constants.MAX_HEALTH
+	wfn.facing = 1
+	wfn.attack_cd = 0.0
+	wfn._try_touch()
+	check(player.health == Constants.MAX_HEALTH, "nothing lands behind the facing")
+	await clear_enemies()
 
 	print("== D. pound player-placed blocks only (GD-04)")
 	player.health = Constants.MAX_HEALTH

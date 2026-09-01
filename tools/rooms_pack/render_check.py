@@ -14,9 +14,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from PIL import Image, ImageDraw  # noqa: E402
 
 VALID_YIELD_ITEMS = {"wood", "scrap_metal", "plastic", "cloth", "stone", "iron"}
-VALID_CATEGORIES = {"furniture", "clutter", "wall_art", "wall_detail", "statement", "roof", "tree"}
+VALID_CATEGORIES = {"furniture", "clutter", "wall_art", "wall_detail", "statement", "roof", "tree", "flora"}
 # Per-category size caps (w, h); default is ordinary furniture.
-SIZE_CAPS = {"roof": (8, 16), "tree": (8, 16), "wall_detail": (4, 4), "statement": (4, 4)}
+SIZE_CAPS = {"roof": (8, 16), "tree": (8, 16), "flora": (8, 16), "wall_detail": (4, 4), "statement": (4, 4)}
 REQUIRED = ["id", "name", "category", "size", "zones", "room_type", "weight",
             "tool_tier", "skill", "scrap_time", "xp", "yields", "draw"]
 
@@ -44,7 +44,7 @@ def check(module_name: str) -> int:
         for y in it.get("yields", []):
             if y.get("item") not in VALID_YIELD_ITEMS:
                 errors.append(f"{label}: bad yield item {y.get('item')}")
-            cap = 60 if it.get("category") in ("roof", "tree") else 30
+            cap = 60 if it.get("category") in ("roof", "tree", "flora") else 30
             if not (0 <= y.get("min", -1) <= y.get("max", -1) <= cap):
                 errors.append(f"{label}: bad yield range")
         try:

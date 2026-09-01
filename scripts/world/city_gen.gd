@@ -101,7 +101,12 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 		result.tower_list.append(tower)
 		if floors > tallest.floors:
 			tallest = tower
-		x += w + int(lerpf(34.0, 8.0, center_f)) + rng.randi_range(0, 14)
+		# Central 20% of the map (user request 2026-09-01): towers crowd
+		# roof-hoppably close - at most 5 blocks apart.
+		if center_f > 0.8:
+			x += w + rng.randi_range(2, 5)
+		else:
+			x += w + int(lerpf(34.0, 8.0, center_f)) + rng.randi_range(0, 14)
 	# Authored start (CT-20): the tallest tower's top floor is the hospital
 	# medical room — clear it and furnish deliberately, with a real bed.
 	_author_medical_room(grid, tallest, objects, result)
@@ -294,9 +299,13 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 		var depth_f := clampf(float(sr - WATERLINE) / 200.0, 0.0, 1.0)
 		if rng.randf() < 0.2 + depth_f * 0.5:
 			var side := x0 if rng.randf() < 0.5 else x1 - 1
-			for by in range(sr - rng.randi_range(1, 2), sr + 1):
+			for by in range(sr - 1, sr + 1):
 				grid.set_structure(Vector2i(side, by), WorldGrid.M.AIR)
 				grid.set_structure(Vector2i(side + 1, by), WorldGrid.M.AIR)
+			# Side openings are vent-gated like the roof (user request
+			# 2026-09-01): a fixed, padlocked grate fills the breach - pry it
+			# to get in (and it seals water until someone does).
+			objects.append({"id": "side_vent", "cell": Vector2i(side, sr)})
 		if f > 0 and rng.randf() < 0.10:
 			var cy := top + f * FLOOR_H
 			var hole_x := rng.randi_range(x0 + 6, x1 - 10)
@@ -478,16 +487,30 @@ static func _stamp_roofs(grid: WorldGrid, rng: RandomNumberGenerator, pool: Arra
 			if rng.randf() < 0.3 and Data.objects.has(oid + "_vined"):
 				oid += "_vined" # a coat of vines (user request: overgrown roofs)
 			_roof_drop(rng, objects, taken, zx, zend, roofr, oid)
-		# trees claim free spots on every dry roof (mixed growth stages)
-		if depth <= -1:
-			for i in rng.randi_range(1, 3):
-				var stage: String = ["tree_sapling", "tree_sapling", "tree_young", "tree_mature"][rng.randi_range(0, 3)]
-				_roof_drop(rng, objects, taken, zx, zend, roofr, stage)
+		# flora claims free spots on every dry roof: anything of category
+		# "flora" tagged for the roof zone (trees, bushes, grass - authored
+		# in the Flora Editor), picked by each def's flora_weight.
+		var flora := _zone_details("roof", "flora")
+		if depth <= -1 and not flora.is_empty():
+			for i in rng.randi_range(2, 4):
+				_roof_drop(rng, objects, taken, zx, zend, roofr, _weighted_flora(rng, flora))
 		# non-harvest junk dressing: hammer-cleared, yields nothing
 		for i in rng.randi_range(1, 3):
 			_roof_drop(rng, objects, taken, zx, zend, roofr, _ROOF_JUNK[rng.randi_range(0, _ROOF_JUNK.size() - 1)])
 
 const _ROOF_JUNK: Array = ["roof_junk_pile", "roof_fallen_mast", "roof_tarp_crates"]
+
+## One flora id from the pool, weighted by each def's flora_weight (>= 1).
+static func _weighted_flora(rng: RandomNumberGenerator, pool: Array) -> String:
+	var total := 0
+	for id in pool:
+		total += maxi(int(Data.objects[id].get("flora_weight", 1)), 1)
+	var roll := rng.randi_range(1, maxi(total, 1))
+	for id in pool:
+		roll -= maxi(int(Data.objects[id].get("flora_weight", 1)), 1)
+		if roll <= 0:
+			return id
+	return pool[0]
 
 ## Place one object at a free random spot on the wing's roof row (give up
 ## quietly when the wing is crowded - abandonment tolerates gaps).

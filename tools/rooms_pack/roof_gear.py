@@ -346,38 +346,127 @@ def draw_roof_hatch(d, W, H):
 
 
 # ------------------------------------------------------------------ trees
+# Detailed Terraria-style trees (user request 2026-09-01): lumpy canopies
+# built from overlapping ellipses filled with clumped multi-tone leaf
+# texture (deterministic hash, no random), dark silhouette outline, bark
+# streaks and knots on tapered trunks, branch stubs with leaf tufts, and
+# flared roots.
+
+from PIL import Image as _Image, ImageDraw as _ImageDraw  # noqa: E402
+
+
+def _lhash(x, y):
+    return ((x * 73856093) ^ (y * 19349663)) & 0x7FFFFFFF
+
+
+def _leafy(d, ellipses, W, H, seed=0):
+    """Fill the union of `ellipses` with clumped leaf texture, outlined."""
+    o, tones, hl = LEAF
+    mask = _Image.new("1", (W, H), 0)
+    md = _ImageDraw.Draw(mask)
+    for e in ellipses:
+        md.ellipse(e, fill=1)
+    px = mask.load()
+
+    def inside(x, y):
+        return 0 <= x < W and 0 <= y < H and px[x, y]
+
+    xs = [e[0] for e in ellipses] + [e[2] for e in ellipses]
+    ys = [e[1] for e in ellipses] + [e[3] for e in ellipses]
+    bx0, bx1, by0, by1 = min(xs), max(xs), min(ys), max(ys)
+    for y in range(max(by0, 0), min(by1 + 1, H)):
+        for x in range(max(bx0, 0), min(bx1 + 1, W)):
+            if not inside(x, y):
+                continue
+            if not (inside(x - 1, y) and inside(x + 1, y) and inside(x, y - 1) and inside(x, y + 1)):
+                d.point((x, y), fill=o)
+                continue
+            shade = ((x - bx0) / max(bx1 - bx0, 1)) * 0.35 + ((y - by0) / max(by1 - by0, 1)) * 0.65
+            t = 3 - int(round(shade * 3))
+            h = _lhash((x // 2) + seed, y // 2)      # 2x2 leaf clumps
+            t = max(0, min(3, t + (h % 3) - 1))
+            c = tones[t]
+            if h % 19 == 0 and t >= 2:
+                c = hl                                # sunlit sparkle
+            d.point((x, y), fill=c)
+
+
+def _trunk(d, x0, y0, x1, y1, taper=0):
+    """Tapered trunk with bark streaks: lit left edge, shaded right."""
+    o, t, hl = RAMPS["wood"]
+    d.polygon([(x0 + taper, y0), (x1 - taper, y0), (x1, y1), (x0, y1)], fill=t[1], outline=o)
+    d.line([x0 + taper + 1, y0 + 1, x0 + 1, y1 - 1], fill=t[3])
+    d.line([x1 - taper - 1, y0 + 1, x1 - 1, y1 - 1], fill=t[0])
+    for i, sx in enumerate(range(x0 + 2, x1 - 2, 3)):
+        col = t[0] if i % 2 else t[2]
+        y = y0 + 2 + (i * 5) % 6
+        while y < y1 - 2:                                # dashed bark streaks
+            dash = 3 + (sx * 7 + y) % 3
+            d.line([sx + ((y // 9) % 2), y, sx + ((y // 9) % 2), min(y + dash, y1 - 2)], fill=col)
+            y += dash + 2 + (sx + y) % 3
+
+
+def _knot(d, x, y):
+    o, t, hl = RAMPS["wood"]
+    d.rectangle([x, y, x + 2, y + 1], fill=t[0], outline=o)
+    d.point((x + 1, y), fill=t[2])
 
 
 def draw_tree_sapling(d, W, H):
     wd = RAMPS["wood"]
-    d.rectangle([W // 2 - 1, H - 10, W // 2, H - 1], fill=wd[1][1], outline=wd[0])  # stem
-    _blob(d, 2, 2, W - 3, H - 12)
+    d.rectangle([W // 2 - 1, H - 12, W // 2, H - 1], fill=wd[1][1], outline=wd[0])  # stem
+    d.point((W // 2 - 1, H - 8), fill=wd[1][3])
+    d.point((W // 2, H - 5), fill=wd[1][0])
+    _leafy(d, [(1, 2, 14, 15), (0, 6, 11, 18), (5, 5, 15, 17), (3, 0, 13, 9)], W, H, seed=5)
     d.rectangle([W // 2 - 4, H - 3, W // 2 + 3, H - 1], fill=(90, 70, 50))  # soil mound
+    d.point((W // 2 - 3, H - 3), fill=(120, 96, 66))
 
 
 def draw_tree_young(d, W, H):
+    # Lanky adolescent (user reference): a thin trunk most of the height,
+    # separate leaf clumps at the branch points, a small crown on top.
     wd = RAMPS["wood"]
-    d.rectangle([W // 2 - 2, H - 40, W // 2 + 1, H - 1], fill=wd[1][1], outline=wd[0])  # trunk
-    d.line([W // 2 - 1, H - 38, W // 2 - 1, H - 2], fill=wd[1][2])
-    d.line([W // 2 - 6, H - 30, W // 2 - 2, H - 36], fill=wd[1][1])  # branches
-    d.line([W // 2 + 5, H - 34, W // 2 + 1, H - 40], fill=wd[1][1])
-    _blob(d, 4, 26, W - 5, H - 44)                                # lower canopy
-    _blob(d, 8, 2, W - 9, 36)                                     # crown
+    cx = W // 2
+    _trunk(d, cx - 2, 16, cx + 2, H - 1, taper=1)
+    d.polygon([(cx - 5, H - 1), (cx - 2, H - 7), (cx - 1, H - 1)], fill=wd[1][1], outline=wd[0])  # root flare
+    d.polygon([(cx + 1, H - 1), (cx + 2, H - 7), (cx + 5, H - 1)], fill=wd[1][0], outline=wd[0])
+    _knot(d, cx - 1, H - 40)
+    # short branches, alternating sides, each ending in its own clump
+    d.line([cx - 2, 44, cx - 10, 36], fill=wd[1][1])
+    d.line([cx - 2, 45, cx - 10, 37], fill=wd[1][0])
+    d.line([cx + 2, 66, cx + 11, 57], fill=wd[1][1])
+    d.line([cx + 2, 67, cx + 11, 58], fill=wd[1][0])
+    d.line([cx - 2, 88, cx - 11, 80], fill=wd[1][1])
+    d.line([cx - 2, 89, cx - 11, 81], fill=wd[1][0])
+    _leafy(d, [(1, 24, 19, 40), (4, 30, 16, 44)], W, H, seed=9)            # clump 1
+    _leafy(d, [(W - 20, 46, W - 2, 62), (W - 16, 52, W - 4, 66)], W, H, seed=13)  # clump 2
+    _leafy(d, [(2, 70, 18, 85), (5, 76, 15, 89)], W, H, seed=17)           # clump 3
+    _leafy(d, [(cx - 9, 0, cx + 9, 20), (cx - 6, 8, cx + 11, 26)], W, H, seed=2)  # crown
 
 
 def draw_tree_mature(d, W, H):
     wd = RAMPS["wood"]
-    tx = W // 2
-    d.polygon([(tx - 5, H - 1), (tx - 3, H - 90), (tx + 2, H - 90), (tx + 4, H - 1)],
-              fill=wd[1][1], outline=wd[0])                       # tapered trunk
-    d.line([tx - 2, H - 88, tx - 2, H - 4], fill=wd[1][2])
-    d.line([tx - 14, H - 70, tx - 3, H - 84], fill=wd[1][1])      # limbs
-    d.line([tx + 12, H - 78, tx + 1, H - 90], fill=wd[1][1])
-    d.line([tx - 12, H - 96, tx - 2, H - 88], fill=wd[1][1])
-    _blob(d, 2, H - 130, W - 3, H - 74)                           # lower canopy
-    _blob(d, 6, H - 176, W - 7, H - 116)                          # mid canopy
-    _blob(d, 12, 4, W - 13, H - 164)                              # crown
-    d.rectangle([tx - 7, H - 2, tx + 6, H - 1], fill=(90, 70, 50))  # root soil
+    cx = W // 2
+    _trunk(d, cx - 6, 100, cx + 6, H - 1, taper=2)
+    # flared roots
+    d.polygon([(cx - 14, H - 1), (cx - 6, H - 14), (cx - 4, H - 1)], fill=wd[1][1], outline=wd[0])
+    d.polygon([(cx + 4, H - 1), (cx + 6, H - 14), (cx + 14, H - 1)], fill=wd[1][0], outline=wd[0])
+    d.line([cx - 12, H - 2, cx - 6, H - 12], fill=wd[1][3])
+    _knot(d, cx - 3, H - 60)
+    _knot(d, cx + 1, H - 96)
+    # branch stubs, Terraria-style: short diagonals ending in leaf tufts
+    d.line([cx - 6, H - 84, cx - 17, H - 95], fill=wd[1][1])
+    d.line([cx - 6, H - 83, cx - 17, H - 94], fill=wd[1][0])
+    d.line([cx + 6, H - 116, cx + 18, H - 127], fill=wd[1][1])
+    d.line([cx + 6, H - 115, cx + 18, H - 126], fill=wd[1][0])
+    _leafy(d, [(2, H - 112, 26, H - 88)], W, H, seed=21)        # left tuft
+    _leafy(d, [(W - 26, H - 144, W - 2, H - 120)], W, H, seed=27)  # right tuft
+    # the crown: a big lumpy union reaching just past the trunk top
+    _leafy(d, [(8, 8, W - 8, 116), (0, 34, 44, 108), (W - 44, 28, W, 104),
+               (18, 0, W - 14, 56), (2, 14, 38, 68), (W - 40, 4, W - 2, 70),
+               (14, 40, W - 10, 122)], W, H, seed=3)
+    d.rectangle([cx - 8, H - 2, cx + 7, H - 1], fill=(90, 70, 50))  # root soil
+    d.point((cx - 6, H - 2), fill=(120, 96, 66))
 
 
 def _y(i, mn, mx):
@@ -514,26 +603,61 @@ ITEMS = [
      "desc": "Bolted over the shaft. A pry bar or better forces it - the way inside.",
      "draw": draw_roof_hatch},
     # Trees (user request): a growth-stage roll each midnight; wood on harvest.
-    {"id": "tree_sapling", "name": "Tree Sapling", "category": "tree",
+    {"id": "tree_sapling", "name": "Tree Sapling", "category": "flora", "flora_weight": 3,
      "size": [1, 2], "zones": ["roof"], "room_type": "roof",
      "weight": 2, "tool_tier": 0, "skill": 0, "scrap_time": 1.0, "xp": 2,
      "yields": [_y("wood", 1, 2)],
      "grows_into": "tree_young", "grow_chance": 0.5,
      "desc": "Plant it on a sunny roof; it grows a little every night.",
      "draw": draw_tree_sapling},
-    {"id": "tree_young", "name": "Young Tree", "category": "tree",
+    {"id": "tree_young", "name": "Young Tree", "category": "flora", "flora_weight": 1,
      "size": [3, 8], "zones": ["roof"], "room_type": "roof",
-     "weight": 30, "tool_tier": 1, "skill": 0, "scrap_time": 4.0, "xp": 6,
+     "weight": 30, "tool_tier": 1, "skill": 0, "scrap_time": 6.0, "xp": 6,
+     "requires_tool": "axe",
      "yields": [_y("wood", 8, 14)],
      "grows_into": "tree_mature", "grow_chance": 0.35, "no_item": True,
      "draw": draw_tree_young},
-    {"id": "tree_mature", "name": "Mature Tree", "category": "tree",
+    {"id": "tree_mature", "name": "Mature Tree", "category": "flora", "flora_weight": 1,
      "size": [5, 15], "zones": ["roof"], "room_type": "roof",
-     "weight": 90, "tool_tier": 1, "skill": 1, "scrap_time": 8.0, "xp": 12,
+     "weight": 90, "tool_tier": 1, "skill": 1, "scrap_time": 14.0, "xp": 12,
+     "requires_tool": "axe",
      "yields": [_y("wood", 25, 40)],
      "no_item": True,
      "draw": draw_tree_mature},
 ]
+
+
+def draw_side_vent(d, W, H):
+    mt = RAMPS["metal"]
+    box(d, 0, 0, W - 1, H - 1, mt, bevel=False)                   # frame
+    d.line([1, 1, W - 2, 1], fill=mt[2])
+    for vy in range(4, H - 3, 4):                                 # louvers
+        d.rectangle([3, vy, W - 4, vy + 1], fill=mt[1][0])
+        d.line([3, vy, W - 4, vy], fill=(20, 24, 30))
+    for c in ((1, 1), (W - 2, 1), (1, H - 2), (W - 2, H - 2)):    # corner bolts
+        d.point(c, fill=mt[1][3])
+    d.rectangle([W // 2 - 2, H - 6, W // 2 + 2, H - 4], fill=YELLOW, outline=OUT)  # latch
+    d.point((W // 2, H - 5), fill=OUT)                            # padlock eye
+
+
+def draw_roof_bush(d, W, H):
+    wd = RAMPS["wood"]
+    d.rectangle([W // 2 - 1, H - 6, W // 2, H - 1], fill=wd[1][1], outline=wd[0])  # stub stems
+    d.line([W // 2 - 4, H - 2, W // 2 - 2, H - 6], fill=wd[1][0])
+    _leafy(d, [(1, 4, W - 2, H - 4), (0, 9, W // 2 + 3, H - 2), (W // 2 - 4, 1, W - 1, H - 8)], W, H, seed=31)
+
+
+def draw_roof_grass(d, W, H):
+    o, tones, hl = LEAF
+    for i, x in enumerate(range(1, W - 1, 2)):                    # blades
+        top = 3 + ((x * 11) % 7)
+        c = tones[1 + ((x + i) % 3)]
+        d.line([x, H - 2, x + (1 if i % 2 else -1), top], fill=c)
+        if i % 3 == 0:
+            d.point((x, top - 1), fill=hl)
+    d.rectangle([0, H - 2, W - 1, H - 1], fill=(90, 70, 50))      # soil line
+    d.point((2, H - 2), fill=tones[0])
+    d.point((W - 3, H - 2), fill=tones[0])
 
 
 # ------------------------------------------- overgrowth + abandonment pass
@@ -605,6 +729,26 @@ def draw_tarp_crates(d, W, H):
     d.line([W - 4, 10, W - 1, H - 4], fill=nv[1][1])              # loose corner
 
 
+ITEMS.extend([
+    {"id": "side_vent", "name": "Wall Vent Grate", "category": "roof",
+     "size": [2, 2], "zones": ["roof"], "room_type": "roof",
+     "weight": 12, "tool_tier": 1, "skill": 0, "scrap_time": 2.0, "xp": 0,
+     "yields": [],
+     "kind": "door", "fixed": True, "no_item": True, "lock_tier": 1,
+     "desc": "A padlocked grate over a breach in the wall. A pry bar or better forces it.",
+     "draw": draw_side_vent},
+    {"id": "roof_bush", "name": "Rooftop Bush", "category": "flora", "flora_weight": 2,
+     "size": [2, 2], "zones": ["roof"], "room_type": "bush",
+     "weight": 6, "tool_tier": 0, "skill": 0, "scrap_time": 1.5, "xp": 2,
+     "yields": [{"item": "wood", "min": 1, "max": 2}],
+     "draw": draw_roof_bush},
+    {"id": "roof_grass", "name": "Grass Tuft", "category": "flora", "flora_weight": 3,
+     "size": [1, 1], "zones": ["roof"], "room_type": "grass",
+     "weight": 1, "tool_tier": 0, "skill": 0, "scrap_time": 0.5, "xp": 1,
+     "yields": [],
+     "draw": draw_roof_grass},
+])
+
 _JUNK = [
     {"id": "roof_junk_pile", "name": "Debris Pile", "size": [3, 1], "draw": draw_junk_pile},
     {"id": "roof_fallen_mast", "name": "Fallen Mast", "size": [4, 1], "draw": draw_fallen_mast},
@@ -617,10 +761,10 @@ for _j in _JUNK:
 ITEMS.extend(_JUNK)
 
 # Vined twins for the gear (same stats and yields; CityGen swaps ~30% in).
-_VINE_SKIP = {"roof_hatch", "roof_anchor", "tree_sapling", "tree_young", "tree_mature"}
+_VINE_SKIP = {"roof_hatch", "roof_anchor", "side_vent"}
 _vined_items = []
 for _it in list(ITEMS):
-    if _it["id"] in _VINE_SKIP or _it.get("kind") == "decal":
+    if _it["id"] in _VINE_SKIP or _it.get("kind") in ("decal", "door")             or _it.get("category") == "flora":
         continue
     _v = dict(_it)
     _v["id"] = _it["id"] + "_vined"

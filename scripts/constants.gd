@@ -179,6 +179,9 @@ const CRUSH_DPS: float = 25.0  # in The Crush without a crush-rated suit
 const ENEMY_WINDOW: Vector2i = Vector2i(140, 100) # records in this window (cells) run as nodes
 const AGGRO_NIGHT_MULT: float = 1.5      # surface-band aggro radii grow at night (GD-29)
 const ENEMY_TOUCH_COOLDOWN: float = 0.9  # seconds between contact hits on the player
+const ENEMY_ATTACK_REACH_BLOCKS: float = 1.25 # a bite also lands this far IN FRONT of the
+                                              # facing direction (user request 2026-09-01:
+                                              # overlap-only contact felt like same-square attacks)
 const ENEMY_KNOCKBACK: float = 7.0 * BLOCK_SIZE  # px/s shove a contact hit gives the player
 const ENEMY_HOP_BLOCKS: float = 2.2      # zombies mount small steps; no real climbing (GD-04)
 # Edge sense (user request 2026-08-31, amends GD-04): ground enemies never

@@ -1,789 +1,808 @@
 {
-  "_comment": "Recipes (GL-04/05/06, LT-11). station: hand | workbench | forge | med_station | dive_station | mod_bench. tier: 1 wood, 2 scrap, 3 iron, 4 steel. known: true = available from the start; otherwise learned from a schematic item whose use.learn_recipe names this id.",
-  "recipes": [
+ "_comment": "Recipes (GL-04/05/06, LT-11). station: hand | workbench | forge | med_station | dive_station | mod_bench. tier: 1 wood, 2 scrap, 3 iron, 4 steel. known: true = available from the start; otherwise learned from a schematic item whose use.learn_recipe names this id.",
+ "recipes": [
+  {
+   "id": "wood_axe",
+   "station": "hand",
+   "known": true,
+   "inputs": [
     {
-      "id": "pry_bar",
-      "station": "hand",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "pry_bar",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 4
-        }
-      ]
+     "item": "wood",
+     "count": 8
     },
     {
-      "id": "scrap_knife",
-      "station": "hand",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "scrap_knife",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        },
-        {
-          "item": "cloth",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "hammer",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "hammer",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 2
-        },
-        {
-          "item": "scrap_metal",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "rope",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "rope",
-        "count": 4
-      },
-      "inputs": [
-        {
-          "item": "cloth",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "ladder",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "ladder",
-        "count": 3
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 3
-        }
-      ]
-    },
-    {
-      "id": "glowstick",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "glowstick",
-        "count": 2
-      },
-      "inputs": [
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "bandage",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "bandage",
-        "count": 2
-      },
-      "inputs": [
-        {
-          "item": "cloth",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "standing_lamp",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "standing_lamp",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 2
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        },
-        {
-          "item": "scrap_metal",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "wood_block",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "wood_block",
-        "count": 2
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "wood_wall",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "wood_wall",
-        "count": 4
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "workbench",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "workbench",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 8
-        },
-        {
-          "item": "scrap_metal",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "scrap_block",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "scrap_block",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "stone_block",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "stone_block",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "stone",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "wood_door",
-      "station": "workbench",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "wood_door",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "id": "chest",
-      "station": "workbench",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "chest",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 6
-        },
-        {
-          "item": "scrap_metal",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "bed",
-      "station": "workbench",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "bed",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 6
-        },
-        {
-          "item": "cloth",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "id": "forge",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "forge",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "stone",
-          "count": 10
-        },
-        {
-          "item": "scrap_metal",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "id": "med_station",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "med_station",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 4
-        },
-        {
-          "item": "plastic",
-          "count": 4
-        },
-        {
-          "item": "cloth",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "dive_station",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "dive_station",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 6
-        },
-        {
-          "item": "plastic",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "id": "mod_bench",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "mod_bench",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 6
-        },
-        {
-          "item": "wood",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "id": "medkit_bandages",
-      "station": "med_station",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "bandage",
-        "count": 6
-      },
-      "inputs": [
-        {
-          "item": "cloth",
-          "count": 3
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "iron_knife",
-      "station": "forge",
-      "tier": 3,
-      "known": false,
-      "output": {
-        "item": "iron_knife",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "iron",
-          "count": 3
-        },
-        {
-          "item": "wood",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "pump",
-      "station": "dive_station",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "pump",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 6
-        },
-        {
-          "item": "plastic",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "steel",
-      "station": "forge",
-      "tier": 1,
-      "known": true,
-      "inputs": [
-        {
-          "item": "iron",
-          "count": 2
-        },
-        {
-          "item": "stone",
-          "count": 1
-        }
-      ],
-      "output": {
-        "item": "steel",
-        "count": 1
-      }
-    },
-    {
-      "id": "bolt_cutters",
-      "station": "forge",
-      "tier": 1,
-      "known": true,
-      "inputs": [
-        {
-          "item": "iron",
-          "count": 3
-        },
-        {
-          "item": "wood",
-          "count": 1
-        }
-      ],
-      "output": {
-        "item": "bolt_cutters",
-        "count": 1
-      }
-    },
-    {
-      "id": "cutting_torch",
-      "station": "forge",
-      "tier": 2,
-      "known": true,
-      "inputs": [
-        {
-          "item": "steel",
-          "count": 2
-        },
-        {
-          "item": "scrap_metal",
-          "count": 3
-        },
-        {
-          "item": "plastic",
-          "count": 2
-        }
-      ],
-      "output": {
-        "item": "cutting_torch",
-        "count": 1
-      }
-    },
-    {
-      "id": "wetsuit",
-      "station": "dive_station",
-      "tier": 1,
-      "known": true,
-      "inputs": [
-        {
-          "item": "cloth",
-          "count": 4
-        },
-        {
-          "item": "plastic",
-          "count": 3
-        }
-      ],
-      "output": {
-        "item": "wetsuit",
-        "count": 1
-      }
-    },
-    {
-      "id": "hard_suit",
-      "station": "dive_station",
-      "tier": 2,
-      "known": false,
-      "inputs": [
-        {
-          "item": "steel",
-          "count": 4
-        },
-        {
-          "item": "cloth",
-          "count": 3
-        },
-        {
-          "item": "plastic",
-          "count": 2
-        }
-      ],
-      "output": {
-        "item": "hard_suit",
-        "count": 1
-      }
-    },
-    {
-      "id": "tank_scrap",
-      "station": "dive_station",
-      "tier": 1,
-      "known": true,
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 4
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ],
-      "output": {
-        "item": "tank_scrap",
-        "count": 1
-      }
-    },
-    {
-      "id": "tank_iron",
-      "station": "dive_station",
-      "tier": 1,
-      "known": true,
-      "inputs": [
-        {
-          "item": "iron",
-          "count": 4
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ],
-      "output": {
-        "item": "tank_iron",
-        "count": 1
-      }
-    },
-    {
-      "id": "rebreather",
-      "station": "dive_station",
-      "tier": 2,
-      "known": false,
-      "inputs": [
-        {
-          "item": "steel",
-          "count": 3
-        },
-        {
-          "item": "plastic",
-          "count": 3
-        },
-        {
-          "item": "cloth",
-          "count": 1
-        }
-      ],
-      "output": {
-        "item": "rebreather",
-        "count": 1
-      }
-    },
-    {
-      "id": "helmet_lamp",
-      "station": "workbench",
-      "tier": 1,
-      "known": true,
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        },
-        {
-          "item": "plastic",
-          "count": 2
-        }
-      ],
-      "output": {
-        "item": "helmet_lamp",
-        "count": 1
-      }
-    },
-    {
-      "id": "scrap_sword",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "scrap_sword",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 3
-        },
-        {
-          "item": "wood",
-          "count": 1
-        },
-        {
-          "item": "cloth",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "fire_axe",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "fire_axe",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 3
-        },
-        {
-          "item": "wood",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "iron_sword",
-      "station": "forge",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "iron_sword",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "iron",
-          "count": 3
-        },
-        {
-          "item": "cloth",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "speargun",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "speargun",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 3
-        },
-        {
-          "item": "plastic",
-          "count": 2
-        },
-        {
-          "item": "cloth",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "speargun_bolt",
-      "station": "workbench",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "speargun_bolt",
-        "count": 4
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "pistol_rounds",
-      "station": "forge",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "pistol_rounds",
-        "count": 12
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "rifle_rounds",
-      "station": "forge",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "rifle_rounds",
-        "count": 8
-      },
-      "inputs": [
-        {
-          "item": "iron",
-          "count": 1
-        },
-        {
-          "item": "scrap_metal",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "medkit",
-      "station": "med_station",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "medkit",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "bandage",
-          "count": 2
-        },
-        {
-          "item": "cloth",
-          "count": 3
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ]
+     "item": "scrap_metal",
+     "count": 1
     }
-  ]
+   ],
+   "output": {
+    "item": "wood_axe",
+    "count": 1
+   }
+  },
+  {
+   "id": "pry_bar",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "pry_bar",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 20
+    }
+   ]
+  },
+  {
+   "id": "scrap_knife",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "scrap_knife",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 10
+    },
+    {
+     "item": "cloth",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "id": "hammer",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "hammer",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 10
+    },
+    {
+     "item": "scrap_metal",
+     "count": 10
+    }
+   ]
+  },
+  {
+   "id": "rope",
+   "station": "hand",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "rope",
+    "count": 4
+   },
+   "inputs": [
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "ladder",
+   "station": "hand",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "ladder",
+    "count": 3
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "id": "glowstick",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "glowstick",
+    "count": 2
+   },
+   "inputs": [
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "bandage",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "bandage",
+    "count": 2
+   },
+   "inputs": [
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "standing_lamp",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "standing_lamp",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 2
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    },
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "wood_block",
+   "station": "hand",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "wood_block",
+    "count": 2
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "wood_wall",
+   "station": "hand",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "wood_wall",
+    "count": 4
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "workbench",
+   "station": "hand",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "workbench",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 30
+    },
+    {
+     "item": "scrap_metal",
+     "count": 15
+    }
+   ]
+  },
+  {
+   "id": "scrap_block",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "scrap_block",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "stone_block",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "stone_block",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "stone",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "wood_door",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "wood_door",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "id": "chest",
+   "station": "hand",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "chest",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 6
+    },
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "bed",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "bed",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "wood",
+     "count": 6
+    },
+    {
+     "item": "cloth",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "id": "forge",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "forge",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "stone",
+     "count": 10
+    },
+    {
+     "item": "scrap_metal",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "id": "med_station",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "med_station",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 4
+    },
+    {
+     "item": "plastic",
+     "count": 4
+    },
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "dive_station",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "dive_station",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 6
+    },
+    {
+     "item": "plastic",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "id": "mod_bench",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "mod_bench",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 6
+    },
+    {
+     "item": "wood",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "id": "medkit_bandages",
+   "station": "med_station",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "bandage",
+    "count": 6
+   },
+   "inputs": [
+    {
+     "item": "cloth",
+     "count": 3
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "iron_knife",
+   "station": "forge",
+   "tier": 3,
+   "known": false,
+   "output": {
+    "item": "iron_knife",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "iron",
+     "count": 15
+    },
+    {
+     "item": "wood",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "id": "pump",
+   "station": "dive_station",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "pump",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 6
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "steel",
+   "station": "forge",
+   "tier": 1,
+   "known": true,
+   "inputs": [
+    {
+     "item": "iron",
+     "count": 2
+    },
+    {
+     "item": "stone",
+     "count": 1
+    }
+   ],
+   "output": {
+    "item": "steel",
+    "count": 1
+   }
+  },
+  {
+   "id": "bolt_cutters",
+   "station": "forge",
+   "tier": 1,
+   "known": true,
+   "inputs": [
+    {
+     "item": "iron",
+     "count": 15
+    },
+    {
+     "item": "wood",
+     "count": 5
+    }
+   ],
+   "output": {
+    "item": "bolt_cutters",
+    "count": 1
+   }
+  },
+  {
+   "id": "cutting_torch",
+   "station": "forge",
+   "tier": 2,
+   "known": true,
+   "inputs": [
+    {
+     "item": "steel",
+     "count": 10
+    },
+    {
+     "item": "scrap_metal",
+     "count": 15
+    },
+    {
+     "item": "plastic",
+     "count": 10
+    }
+   ],
+   "output": {
+    "item": "cutting_torch",
+    "count": 1
+   }
+  },
+  {
+   "id": "wetsuit",
+   "station": "dive_station",
+   "tier": 1,
+   "known": true,
+   "inputs": [
+    {
+     "item": "cloth",
+     "count": 4
+    },
+    {
+     "item": "plastic",
+     "count": 3
+    }
+   ],
+   "output": {
+    "item": "wetsuit",
+    "count": 1
+   }
+  },
+  {
+   "id": "hard_suit",
+   "station": "dive_station",
+   "tier": 2,
+   "known": false,
+   "inputs": [
+    {
+     "item": "steel",
+     "count": 4
+    },
+    {
+     "item": "cloth",
+     "count": 3
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ],
+   "output": {
+    "item": "hard_suit",
+    "count": 1
+   }
+  },
+  {
+   "id": "tank_scrap",
+   "station": "dive_station",
+   "tier": 1,
+   "known": true,
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 4
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ],
+   "output": {
+    "item": "tank_scrap",
+    "count": 1
+   }
+  },
+  {
+   "id": "tank_iron",
+   "station": "dive_station",
+   "tier": 1,
+   "known": true,
+   "inputs": [
+    {
+     "item": "iron",
+     "count": 4
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ],
+   "output": {
+    "item": "tank_iron",
+    "count": 1
+   }
+  },
+  {
+   "id": "rebreather",
+   "station": "dive_station",
+   "tier": 2,
+   "known": false,
+   "inputs": [
+    {
+     "item": "steel",
+     "count": 3
+    },
+    {
+     "item": "plastic",
+     "count": 3
+    },
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ],
+   "output": {
+    "item": "rebreather",
+    "count": 1
+   }
+  },
+  {
+   "id": "helmet_lamp",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ],
+   "output": {
+    "item": "helmet_lamp",
+    "count": 1
+   }
+  },
+  {
+   "id": "scrap_sword",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "scrap_sword",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    },
+    {
+     "item": "wood",
+     "count": 1
+    },
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "fire_axe",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "fire_axe",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    },
+    {
+     "item": "wood",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "iron_sword",
+   "station": "forge",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "iron_sword",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "iron",
+     "count": 3
+    },
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "speargun",
+   "station": "workbench",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "speargun",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    },
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "speargun_bolt",
+   "station": "workbench",
+   "tier": 1,
+   "known": true,
+   "output": {
+    "item": "speargun_bolt",
+    "count": 4
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "pistol_rounds",
+   "station": "forge",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "pistol_rounds",
+    "count": 12
+   },
+   "inputs": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "rifle_rounds",
+   "station": "forge",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "rifle_rounds",
+    "count": 8
+   },
+   "inputs": [
+    {
+     "item": "iron",
+     "count": 1
+    },
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "medkit",
+   "station": "med_station",
+   "tier": 2,
+   "known": true,
+   "output": {
+    "item": "medkit",
+    "count": 1
+   },
+   "inputs": [
+    {
+     "item": "bandage",
+     "count": 2
+    },
+    {
+     "item": "cloth",
+     "count": 3
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  }
+ ]
 }

@@ -1,948 +1,977 @@
 {
-  "_comment": "Item definitions (LT-11: data, not code). Blocks (blocks.json) and objects (objects.json) also register items with their own id. category: material | tool | consumable | schematic. stack defaults: material 999, everything else 1. icon = [col,row] in assets/sprites/items.png.",
-  "items": [
+ "_comment": "Item definitions (LT-11: data, not code). Blocks (blocks.json) and objects (objects.json) also register items with their own id. category: material | tool | consumable | schematic. stack defaults: material 999, everything else 1. icon = [col,row] in assets/sprites/items.png.",
+ "items": [
+  {
+   "id": "wood",
+   "name": "Wood",
+   "category": "material",
+   "weight": 0.5,
+   "icon": [
+    0,
+    0
+   ],
+   "desc": "Salvaged lumber \u00e2\u20ac\u201d burns, builds, and braces."
+  },
+  {
+   "id": "scrap_metal",
+   "name": "Scrap Metal",
+   "category": "material",
+   "weight": 1.0,
+   "icon": [
+    1,
+    0
+   ],
+   "desc": "Salvage metal \u00e2\u20ac\u201d the city's most versatile material."
+  },
+  {
+   "id": "plastic",
+   "name": "Plastic",
+   "category": "material",
+   "weight": 0.3,
+   "icon": [
+    2,
+    0
+   ],
+   "desc": "Molded scrap \u00e2\u20ac\u201d light parts and cheap fittings."
+  },
+  {
+   "id": "cloth",
+   "name": "Cloth",
+   "category": "material",
+   "weight": 0.2,
+   "icon": [
+    3,
+    0
+   ],
+   "desc": "Torn fabric \u00e2\u20ac\u201d bandages, beds, and gear."
+  },
+  {
+   "id": "stone",
+   "name": "Stone",
+   "category": "material",
+   "weight": 1.5,
+   "icon": [
+    4,
+    0
+   ],
+   "desc": "Concrete rubble \u00e2\u20ac\u201d heavy, solid construction."
+  },
+  {
+   "id": "iron",
+   "name": "Iron Ingot",
+   "category": "material",
+   "weight": 2.0,
+   "icon": [
+    5,
+    0
+   ],
+   "desc": "Refined metal for serious tools."
+  },
+  {
+   "id": "pry_bar",
+   "name": "Pry Bar",
+   "category": "tool",
+   "weight": 3.0,
+   "icon": [
+    0,
+    1
+   ],
+   "tool": {
+    "type": "pry",
+    "tier": 1,
+    "speed": 1.0,
+    "damage": 4
+   },
+   "scrap": [
     {
-      "id": "wood",
-      "name": "Wood",
-      "category": "material",
-      "weight": 0.5,
-      "icon": [
-        0,
-        0
-      ],
-      "desc": "Salvaged lumber — burns, builds, and braces."
-    },
-    {
-      "id": "scrap_metal",
-      "name": "Scrap Metal",
-      "category": "material",
-      "weight": 1.0,
-      "icon": [
-        1,
-        0
-      ],
-      "desc": "Salvage metal — the city's most versatile material."
-    },
-    {
-      "id": "plastic",
-      "name": "Plastic",
-      "category": "material",
-      "weight": 0.3,
-      "icon": [
-        2,
-        0
-      ],
-      "desc": "Molded scrap — light parts and cheap fittings."
-    },
-    {
-      "id": "cloth",
-      "name": "Cloth",
-      "category": "material",
-      "weight": 0.2,
-      "icon": [
-        3,
-        0
-      ],
-      "desc": "Torn fabric — bandages, beds, and gear."
-    },
-    {
-      "id": "stone",
-      "name": "Stone",
-      "category": "material",
-      "weight": 1.5,
-      "icon": [
-        4,
-        0
-      ],
-      "desc": "Concrete rubble — heavy, solid construction."
-    },
-    {
-      "id": "iron",
-      "name": "Iron Ingot",
-      "category": "material",
-      "weight": 2.0,
-      "icon": [
-        5,
-        0
-      ],
-      "desc": "Refined metal for serious tools."
-    },
-    {
-      "id": "pry_bar",
-      "name": "Pry Bar",
-      "category": "tool",
-      "weight": 3.0,
-      "icon": [
-        0,
-        1
-      ],
-      "tool": {
-        "type": "pry",
-        "tier": 1,
-        "speed": 1.0,
-        "damage": 4
-      },
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 3
-        }
-      ],
-      "desc": "Opens stuck doors and scraps furniture faster; a serviceable early weapon."
-    },
-    {
-      "id": "scrap_knife",
-      "name": "Scrap Knife",
-      "category": "tool",
-      "weight": 1.0,
-      "icon": [
-        1,
-        1
-      ],
-      "tool": {
-        "type": "knife",
-        "tier": 1,
-        "speed": 1.0,
-        "damage": 2
-      },
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 1
-        },
-        {
-          "item": "cloth",
-          "count": 1
-        }
-      ],
-      "desc": "A quick, light blade — the least slowed weapon underwater."
-    },
-    {
-      "id": "hammer",
-      "name": "Hammer",
-      "category": "tool",
-      "weight": 2.0,
-      "icon": [
-        2,
-        1
-      ],
-      "tool": {
-        "type": "hammer",
-        "tier": 1,
-        "speed": 1.0,
-        "damage": 10
-      },
-      "scrap": [
-        {
-          "item": "wood",
-          "count": 1
-        },
-        {
-          "item": "scrap_metal",
-          "count": 1
-        }
-      ],
-      "desc": "Builds and breaks: places structures, knocks out blocks and back walls."
-    },
-    {
-      "id": "iron_knife",
-      "name": "Iron Knife",
-      "category": "tool",
-      "weight": 1.2,
-      "icon": [
-        3,
-        1
-      ],
-      "tool": {
-        "type": "knife",
-        "tier": 2,
-        "speed": 1.5,
-        "damage": 4
-      },
-      "scrap": [
-        {
-          "item": "iron",
-          "count": 2
-        }
-      ],
-      "desc": "A proper blade: faster and harder-hitting than scrap."
-    },
-    {
-      "id": "bandage",
-      "name": "Bandage",
-      "category": "consumable",
-      "weight": 0.1,
-      "stack": 20,
-      "icon": [
-        0,
-        2
-      ],
-      "use": {
-        "heal": 25,
-        "cure_bleed": true
-      },
-      "desc": "Stops bleeding and restores a little health."
-    },
-    {
-      "id": "food_can",
-      "name": "Canned Food",
-      "category": "consumable",
-      "weight": 0.5,
-      "stack": 10,
-      "icon": [
-        1,
-        2
-      ],
-      "use": {
-        "heal": 40
-      },
-      "desc": "Preserved food — restores hunger anywhere."
-    },
-    {
-      "id": "glowstick",
-      "name": "Glowstick",
-      "category": "consumable",
-      "weight": 0.1,
-      "stack": 50,
-      "icon": [
-        2,
-        2
-      ],
-      "sinks": true,
-      "use": {
-        "drop_light": {
-          "radius_blocks": 4,
-          "color": [
-            0.5,
-            1.0,
-            0.6
-          ]
-        }
-      },
-      "desc": "Chemical light. Sinks when dropped — mark flooded rooms and routes."
-    },
-    {
-      "id": "clothes",
-      "name": "Plain Clothes",
-      "category": "gear",
-      "slot": "suit",
-      "weight": 1.0,
-      "icon": [
-        4,
-        2
-      ],
-      "stats": {
-        "defense": 0,
-        "cold": 0,
-        "crush": 0,
-        "swim_penalty": 0.0
-      },
-      "scrap": [
-        {
-          "item": "cloth",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "schematic_iron_knife",
-      "name": "Schematic: Iron Knife",
-      "category": "schematic",
-      "weight": 0.1,
-      "icon": [
-        3,
-        2
-      ],
-      "use": {
-        "learn_recipe": "iron_knife"
-      }
-    },
-    {
-      "id": "steel",
-      "name": "Steel",
-      "category": "material",
-      "weight": 1.5,
-      "stack": 99,
-      "icon": [
-        3,
-        5
-      ],
-      "desc": "Forged from iron - the hard-suit and rebreather metal."
-    },
-    {
-      "id": "bolt_cutters",
-      "name": "Bolt Cutters",
-      "category": "tool",
-      "weight": 4.0,
-      "stack": 1,
-      "icon": [
-        0,
-        3
-      ],
-      "tool": {
-        "type": "pry",
-        "tier": 2,
-        "speed": 1.2,
-        "damage": 5
-      },
-      "desc": "Tier-2 pry tool - shears the chained metal doors.",
-      "scrap": [
-        {
-          "item": "iron",
-          "count": 2
-        },
-        {
-          "item": "scrap_metal",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "cutting_torch",
-      "name": "Cutting Torch",
-      "category": "tool",
-      "weight": 5.0,
-      "stack": 1,
-      "icon": [
-        1,
-        3
-      ],
-      "tool": {
-        "type": "pry",
-        "tier": 3,
-        "speed": 1.4,
-        "damage": 3
-      },
-      "desc": "Tier-3 - burns through vault doors and anything chained.",
-      "scrap": [
-        {
-          "item": "steel",
-          "count": 2
-        },
-        {
-          "item": "scrap_metal",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "wetsuit",
-      "name": "Wetsuit",
-      "category": "gear",
-      "slot": "suit",
-      "weight": 2.0,
-      "stack": 1,
-      "icon": [
-        2,
-        3
-      ],
-      "stats": {
-        "defense": 1,
-        "cold": 1,
-        "crush": 0,
-        "swim_penalty": 0.0
-      },
-      "desc": "Keeps The Cold out; The Dark still bites.",
-      "scrap": [
-        {
-          "item": "cloth",
-          "count": 3
-        },
-        {
-          "item": "plastic",
-          "count": 2
-        }
-      ],
-      "tint": [
-        0.6,
-        0.78,
-        0.95
-      ]
-    },
-    {
-      "id": "hard_suit",
-      "name": "Hard Suit",
-      "category": "gear",
-      "slot": "suit",
-      "weight": 8.0,
-      "stack": 1,
-      "icon": [
-        3,
-        3
-      ],
-      "stats": {
-        "defense": 3,
-        "cold": 2,
-        "crush": 1,
-        "swim_penalty": 0.25
-      },
-      "desc": "Armored dive shell - survives The Dark and The Crush, swims like a brick.",
-      "scrap": [
-        {
-          "item": "steel",
-          "count": 3
-        },
-        {
-          "item": "cloth",
-          "count": 2
-        }
-      ],
-      "tint": [
-        1.0,
-        0.78,
-        0.45
-      ]
-    },
-    {
-      "id": "helmet_lamp",
-      "name": "Helmet Lamp",
-      "category": "gear",
-      "slot": "head",
-      "weight": 1.0,
-      "stack": 1,
-      "icon": [
-        4,
-        3
-      ],
-      "stats": {
-        "light": 9
-      },
-      "desc": "Hands-free light wherever you look.",
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "tank_scrap",
-      "name": "Scrap Air Tank",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 3.0,
-      "stack": 1,
-      "icon": [
-        5,
-        3
-      ],
-      "stats": {
-        "oxygen": 30
-      },
-      "desc": "+30s of air. Crude, welded, works.",
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 3
-        }
-      ]
-    },
-    {
-      "id": "tank_iron",
-      "name": "Iron Air Tank",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 4.0,
-      "stack": 1,
-      "icon": [
-        0,
-        4
-      ],
-      "stats": {
-        "oxygen": 60
-      },
-      "desc": "+60s of air in a proper pressure vessel.",
-      "scrap": [
-        {
-          "item": "iron",
-          "count": 3
-        }
-      ]
-    },
-    {
-      "id": "rebreather",
-      "name": "Steel Rebreather",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 3.0,
-      "stack": 1,
-      "icon": [
-        1,
-        4
-      ],
-      "stats": {
-        "oxygen": 150
-      },
-      "desc": "Recycles your breath - minutes underwater.",
-      "scrap": [
-        {
-          "item": "steel",
-          "count": 2
-        },
-        {
-          "item": "plastic",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "fins",
-      "name": "Diver Fins",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 1.0,
-      "stack": 1,
-      "icon": [
-        2,
-        4
-      ],
-      "stats": {
-        "swim": 0.2
-      },
-      "found_only": true,
-      "desc": "Found gear: +20% swim speed.",
-      "scrap": [
-        {
-          "item": "plastic",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "tool_belt",
-      "name": "Tool Belt",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 1.5,
-      "stack": 1,
-      "icon": [
-        3,
-        4
-      ],
-      "stats": {
-        "scrap_speed": 0.25
-      },
-      "found_only": true,
-      "desc": "Found gear: scrap 25% faster.",
-      "scrap": [
-        {
-          "item": "cloth",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "weight_belt",
-      "name": "Weight Belt",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 2.0,
-      "stack": 1,
-      "icon": [
-        4,
-        4
-      ],
-      "stats": {
-        "carry": 40
-      },
-      "found_only": true,
-      "desc": "Found gear: carry 40 more weight before it slows your swim.",
-      "scrap": [
-        {
-          "item": "iron",
-          "count": 1
-        },
-        {
-          "item": "cloth",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "compass",
-      "name": "Sonar Compass",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 1.0,
-      "stack": 1,
-      "icon": [
-        5,
-        4
-      ],
-      "stats": {
-        "reveal": 8
-      },
-      "found_only": true,
-      "desc": "Found gear: maps a much wider area as you move.",
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 1
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "glow_band",
-      "name": "Glow Band",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 0.5,
-      "stack": 1,
-      "icon": [
-        0,
-        5
-      ],
-      "stats": {
-        "light": 6
-      },
-      "found_only": true,
-      "desc": "Found gear: a soft chemical glow around you.",
-      "scrap": [
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "dive_watch",
-      "name": "Dive Watch",
-      "category": "gear",
-      "slot": "accessory",
-      "weight": 0.5,
-      "stack": 1,
-      "icon": [
-        1,
-        5
-      ],
-      "stats": {
-        "oxygen": 10
-      },
-      "found_only": true,
-      "desc": "Found gear: pace your breath - +10s of air.",
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "vault_key",
-      "name": "Vault Key",
-      "category": "key",
-      "weight": 0.2,
-      "stack": 5,
-      "icon": [
-        2,
-        5
-      ],
-      "desc": "Opens one of the vault doors below."
-    },
-    {
-      "id": "schematic_rebreather",
-      "name": "Rebreather Schematic",
-      "category": "schematic",
-      "weight": 0.2,
-      "stack": 1,
-      "icon": [
-        3,
-        2
-      ],
-      "use": {
-        "learn_recipe": "rebreather"
-      },
-      "desc": "Teaches the steel rebreather at the Dive Station."
-    },
-    {
-      "id": "schematic_hard_suit",
-      "name": "Hard Suit Schematic",
-      "category": "schematic",
-      "weight": 0.2,
-      "stack": 1,
-      "icon": [
-        3,
-        2
-      ],
-      "use": {
-        "learn_recipe": "hard_suit"
-      },
-      "desc": "Teaches the hard suit at the Dive Station."
-    },
-    {
-      "id": "pistol",
-      "name": "Pistol",
-      "category": "weapon",
-      "weight": 2.0,
-      "stack": 1,
-      "icon": [
-        0,
-        6
-      ],
-      "weapon": {
-        "damage": 8,
-        "speed": 2.0,
-        "reload": 1.0,
-        "ammo": "pistol_rounds"
-      },
-      "found_only": true,
-      "desc": "Found only. Quick and loud - and dead weight underwater.",
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        },
-        {
-          "item": "iron",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "id": "smg",
-      "name": "Sub-Machine Gun",
-      "category": "weapon",
-      "weight": 3.5,
-      "stack": 1,
-      "icon": [
-        1,
-        6
-      ],
-      "weapon": {
-        "damage": 6,
-        "speed": 5.0,
-        "reload": 1.8,
-        "ammo": "pistol_rounds"
-      },
-      "found_only": true,
-      "desc": "Found only. A semi-auto scrounger's dream; useless submerged.",
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 3
-        },
-        {
-          "item": "iron",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "rifle",
-      "name": "Rifle",
-      "category": "weapon",
-      "weight": 4.0,
-      "stack": 1,
-      "icon": [
-        2,
-        6
-      ],
-      "weapon": {
-        "damage": 18,
-        "speed": 0.8,
-        "reload": 2.2,
-        "ammo": "rifle_rounds"
-      },
-      "found_only": true,
-      "desc": "Found only. One heavy answer per trigger pull; useless submerged.",
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 3
-        },
-        {
-          "item": "iron",
-          "count": 3
-        }
-      ]
-    },
-    {
-      "id": "scrap_sword",
-      "name": "Scrap Sword",
-      "category": "weapon",
-      "weight": 2.0,
-      "stack": 1,
-      "icon": [
-        0,
-        7
-      ],
-      "weapon": {
-        "melee": true,
-        "damage": 5,
-        "speed": 1.6,
-        "knockback": 6.0,
-        "water_factor": 0.5
-      },
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        },
-        {
-          "item": "wood",
-          "count": 1
-        }
-      ],
-      "desc": "A sharpened slab of scrap. Swings slow underwater."
-    },
-    {
-      "id": "iron_sword",
-      "name": "Iron Sword",
-      "category": "weapon",
-      "weight": 2.5,
-      "stack": 1,
-      "icon": [
-        1,
-        7
-      ],
-      "weapon": {
-        "melee": true,
-        "damage": 9,
-        "speed": 1.6,
-        "knockback": 7.0,
-        "water_factor": 0.5
-      },
-      "scrap": [
-        {
-          "item": "iron",
-          "count": 2
-        }
-      ],
-      "desc": "A proper forged blade. Swings slow underwater."
-    },
-    {
-      "id": "fire_axe",
-      "name": "Fire Axe",
-      "category": "weapon",
-      "weight": 3.5,
-      "stack": 1,
-      "icon": [
-        2,
-        7
-      ],
-      "weapon": {
-        "melee": true,
-        "damage": 8,
-        "speed": 1.0,
-        "knockback": 10.0,
-        "water_factor": 0.45
-      },
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        },
-        {
-          "item": "wood",
-          "count": 2
-        }
-      ],
-      "desc": "Slow, heavy, and sends things flying. Worst weapon underwater."
-    },
-    {
-      "id": "speargun",
-      "name": "Speargun",
-      "category": "weapon",
-      "weight": 2.5,
-      "stack": 1,
-      "icon": [
-        3,
-        7
-      ],
-      "weapon": {
-        "projectile": "speargun_bolt",
-        "damage": 12,
-        "speed": 0.8
-      },
-      "scrap": [
-        {
-          "item": "scrap_metal",
-          "count": 2
-        },
-        {
-          "item": "plastic",
-          "count": 1
-        }
-      ],
-      "desc": "The underwater ranged weapon. Silent; bolts can be picked back up."
-    },
-    {
-      "id": "speargun_bolt",
-      "name": "Speargun Bolt",
-      "category": "material",
-      "weight": 0.2,
-      "stack": 60,
-      "icon": [
-        4,
-        7
-      ],
-      "sinks": true,
-      "desc": "Ammunition for the speargun. Retrievable after the shot."
-    },
-    {
-      "id": "pistol_rounds",
-      "name": "Pistol Rounds",
-      "category": "material",
-      "weight": 0.05,
-      "stack": 120,
-      "icon": [
-        5,
-        7
-      ],
-      "sinks": true,
-      "desc": "Ammunition for pistols and SMGs."
-    },
-    {
-      "id": "rifle_rounds",
-      "name": "Rifle Rounds",
-      "category": "material",
-      "weight": 0.08,
-      "stack": 120,
-      "icon": [
-        0,
-        8
-      ],
-      "sinks": true,
-      "desc": "Heavy ammunition for rifles."
-    },
-    {
-      "id": "medkit",
-      "name": "Medkit",
-      "category": "consumable",
-      "weight": 1.0,
-      "stack": 10,
-      "icon": [
-        1,
-        8
-      ],
-      "use": {
-        "heal": 60,
-        "cure_bleed": true
-      },
-      "desc": "Stops bleeding and restores a lot of health."
-    },
-    {
-      "id": "fish_meat",
-      "name": "Fish Meat",
-      "category": "consumable",
-      "weight": 0.3,
-      "stack": 40,
-      "icon": [
-        2,
-        8
-      ],
-      "use": {
-        "heal": 8
-      },
-      "desc": "Fresh from the flood. Restores a little health."
+     "item": "scrap_metal",
+     "count": 3
     }
-  ]
+   ],
+   "desc": "Opens stuck doors and scraps furniture faster; a serviceable early weapon."
+  },
+  {
+   "id": "scrap_knife",
+   "name": "Scrap Knife",
+   "category": "tool",
+   "weight": 1.0,
+   "icon": [
+    1,
+    1
+   ],
+   "tool": {
+    "type": "knife",
+    "tier": 1,
+    "speed": 1.0,
+    "damage": 2
+   },
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 1
+    },
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ],
+   "desc": "A quick, light blade \u00e2\u20ac\u201d the least slowed weapon underwater."
+  },
+  {
+   "id": "hammer",
+   "name": "Hammer",
+   "category": "tool",
+   "weight": 2.0,
+   "icon": [
+    2,
+    1
+   ],
+   "tool": {
+    "type": "hammer",
+    "tier": 1,
+    "speed": 1.0,
+    "damage": 10
+   },
+   "scrap": [
+    {
+     "item": "wood",
+     "count": 1
+    },
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ],
+   "desc": "Builds and breaks: places structures, knocks out blocks and back walls."
+  },
+  {
+   "id": "iron_knife",
+   "name": "Iron Knife",
+   "category": "tool",
+   "weight": 1.2,
+   "icon": [
+    3,
+    1
+   ],
+   "tool": {
+    "type": "knife",
+    "tier": 2,
+    "speed": 1.5,
+    "damage": 4
+   },
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 2
+    }
+   ],
+   "desc": "A proper blade: faster and harder-hitting than scrap."
+  },
+  {
+   "id": "bandage",
+   "name": "Bandage",
+   "category": "consumable",
+   "weight": 0.1,
+   "stack": 20,
+   "icon": [
+    0,
+    2
+   ],
+   "use": {
+    "heal": 25,
+    "cure_bleed": true
+   },
+   "desc": "Stops bleeding and restores a little health."
+  },
+  {
+   "id": "food_can",
+   "name": "Canned Food",
+   "category": "consumable",
+   "weight": 0.5,
+   "stack": 10,
+   "icon": [
+    1,
+    2
+   ],
+   "use": {
+    "heal": 40
+   },
+   "desc": "Preserved food \u00e2\u20ac\u201d restores hunger anywhere."
+  },
+  {
+   "id": "glowstick",
+   "name": "Glowstick",
+   "category": "consumable",
+   "weight": 0.1,
+   "stack": 50,
+   "icon": [
+    2,
+    2
+   ],
+   "sinks": true,
+   "use": {
+    "drop_light": {
+     "radius_blocks": 4,
+     "color": [
+      0.5,
+      1.0,
+      0.6
+     ]
+    }
+   },
+   "desc": "Chemical light. Sinks when dropped \u00e2\u20ac\u201d mark flooded rooms and routes."
+  },
+  {
+   "id": "clothes",
+   "name": "Plain Clothes",
+   "category": "gear",
+   "slot": "suit",
+   "weight": 1.0,
+   "icon": [
+    4,
+    2
+   ],
+   "stats": {
+    "defense": 0,
+    "cold": 0,
+    "crush": 0,
+    "swim_penalty": 0.0
+   },
+   "scrap": [
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "schematic_iron_knife",
+   "name": "Schematic: Iron Knife",
+   "category": "schematic",
+   "weight": 0.1,
+   "icon": [
+    3,
+    2
+   ],
+   "use": {
+    "learn_recipe": "iron_knife"
+   }
+  },
+  {
+   "id": "steel",
+   "name": "Steel",
+   "category": "material",
+   "weight": 1.5,
+   "stack": 99,
+   "icon": [
+    3,
+    5
+   ],
+   "desc": "Forged from iron - the hard-suit and rebreather metal."
+  },
+  {
+   "id": "bolt_cutters",
+   "name": "Bolt Cutters",
+   "category": "tool",
+   "weight": 4.0,
+   "stack": 1,
+   "icon": [
+    0,
+    3
+   ],
+   "tool": {
+    "type": "pry",
+    "tier": 2,
+    "speed": 1.2,
+    "damage": 5
+   },
+   "desc": "Tier-2 pry tool - shears the chained metal doors.",
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 2
+    },
+    {
+     "item": "scrap_metal",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "cutting_torch",
+   "name": "Cutting Torch",
+   "category": "tool",
+   "weight": 5.0,
+   "stack": 1,
+   "icon": [
+    1,
+    3
+   ],
+   "tool": {
+    "type": "pry",
+    "tier": 3,
+    "speed": 1.4,
+    "damage": 3
+   },
+   "desc": "Tier-3 - burns through vault doors and anything chained.",
+   "scrap": [
+    {
+     "item": "steel",
+     "count": 2
+    },
+    {
+     "item": "scrap_metal",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "wetsuit",
+   "name": "Wetsuit",
+   "category": "gear",
+   "slot": "suit",
+   "weight": 2.0,
+   "stack": 1,
+   "icon": [
+    2,
+    3
+   ],
+   "stats": {
+    "defense": 1,
+    "cold": 1,
+    "crush": 0,
+    "swim_penalty": 0.0
+   },
+   "desc": "Keeps The Cold out; The Dark still bites.",
+   "scrap": [
+    {
+     "item": "cloth",
+     "count": 3
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ],
+   "tint": [
+    0.6,
+    0.78,
+    0.95
+   ]
+  },
+  {
+   "id": "hard_suit",
+   "name": "Hard Suit",
+   "category": "gear",
+   "slot": "suit",
+   "weight": 8.0,
+   "stack": 1,
+   "icon": [
+    3,
+    3
+   ],
+   "stats": {
+    "defense": 3,
+    "cold": 2,
+    "crush": 1,
+    "swim_penalty": 0.25
+   },
+   "desc": "Armored dive shell - survives The Dark and The Crush, swims like a brick.",
+   "scrap": [
+    {
+     "item": "steel",
+     "count": 3
+    },
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ],
+   "tint": [
+    1.0,
+    0.78,
+    0.45
+   ]
+  },
+  {
+   "id": "helmet_lamp",
+   "name": "Helmet Lamp",
+   "category": "gear",
+   "slot": "head",
+   "weight": 1.0,
+   "stack": 1,
+   "icon": [
+    4,
+    3
+   ],
+   "stats": {
+    "light": 9
+   },
+   "desc": "Hands-free light wherever you look.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "tank_scrap",
+   "name": "Scrap Air Tank",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 3.0,
+   "stack": 1,
+   "icon": [
+    5,
+    3
+   ],
+   "stats": {
+    "oxygen": 30
+   },
+   "desc": "+30s of air. Crude, welded, works.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "id": "tank_iron",
+   "name": "Iron Air Tank",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 4.0,
+   "stack": 1,
+   "icon": [
+    0,
+    4
+   ],
+   "stats": {
+    "oxygen": 60
+   },
+   "desc": "+60s of air in a proper pressure vessel.",
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "id": "rebreather",
+   "name": "Steel Rebreather",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 3.0,
+   "stack": 1,
+   "icon": [
+    1,
+    4
+   ],
+   "stats": {
+    "oxygen": 150
+   },
+   "desc": "Recycles your breath - minutes underwater.",
+   "scrap": [
+    {
+     "item": "steel",
+     "count": 2
+    },
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "fins",
+   "name": "Diver Fins",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 1.0,
+   "stack": 1,
+   "icon": [
+    2,
+    4
+   ],
+   "stats": {
+    "swim": 0.2
+   },
+   "found_only": true,
+   "desc": "Found gear: +20% swim speed.",
+   "scrap": [
+    {
+     "item": "plastic",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "tool_belt",
+   "name": "Tool Belt",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 1.5,
+   "stack": 1,
+   "icon": [
+    3,
+    4
+   ],
+   "stats": {
+    "scrap_speed": 0.25
+   },
+   "found_only": true,
+   "desc": "Found gear: scrap 25% faster.",
+   "scrap": [
+    {
+     "item": "cloth",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "weight_belt",
+   "name": "Weight Belt",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 2.0,
+   "stack": 1,
+   "icon": [
+    4,
+    4
+   ],
+   "stats": {
+    "carry": 40
+   },
+   "found_only": true,
+   "desc": "Found gear: carry 40 more weight before it slows your swim.",
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 1
+    },
+    {
+     "item": "cloth",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "compass",
+   "name": "Sonar Compass",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 1.0,
+   "stack": 1,
+   "icon": [
+    5,
+    4
+   ],
+   "stats": {
+    "reveal": 8
+   },
+   "found_only": true,
+   "desc": "Found gear: maps a much wider area as you move.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 1
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "glow_band",
+   "name": "Glow Band",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 0.5,
+   "stack": 1,
+   "icon": [
+    0,
+    5
+   ],
+   "stats": {
+    "light": 6
+   },
+   "found_only": true,
+   "desc": "Found gear: a soft chemical glow around you.",
+   "scrap": [
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "dive_watch",
+   "name": "Dive Watch",
+   "category": "gear",
+   "slot": "accessory",
+   "weight": 0.5,
+   "stack": 1,
+   "icon": [
+    1,
+    5
+   ],
+   "stats": {
+    "oxygen": 10
+   },
+   "found_only": true,
+   "desc": "Found gear: pace your breath - +10s of air.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "vault_key",
+   "name": "Vault Key",
+   "category": "key",
+   "weight": 0.2,
+   "stack": 5,
+   "icon": [
+    2,
+    5
+   ],
+   "desc": "Opens one of the vault doors below."
+  },
+  {
+   "id": "schematic_rebreather",
+   "name": "Rebreather Schematic",
+   "category": "schematic",
+   "weight": 0.2,
+   "stack": 1,
+   "icon": [
+    3,
+    2
+   ],
+   "use": {
+    "learn_recipe": "rebreather"
+   },
+   "desc": "Teaches the steel rebreather at the Dive Station."
+  },
+  {
+   "id": "schematic_hard_suit",
+   "name": "Hard Suit Schematic",
+   "category": "schematic",
+   "weight": 0.2,
+   "stack": 1,
+   "icon": [
+    3,
+    2
+   ],
+   "use": {
+    "learn_recipe": "hard_suit"
+   },
+   "desc": "Teaches the hard suit at the Dive Station."
+  },
+  {
+   "id": "pistol",
+   "name": "Pistol",
+   "category": "weapon",
+   "weight": 2.0,
+   "stack": 1,
+   "icon": [
+    0,
+    6
+   ],
+   "weapon": {
+    "damage": 8,
+    "speed": 2.0,
+    "reload": 1.0,
+    "ammo": "pistol_rounds"
+   },
+   "found_only": true,
+   "desc": "Found only. Quick and loud - and dead weight underwater.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "iron",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "id": "smg",
+   "name": "Sub-Machine Gun",
+   "category": "weapon",
+   "weight": 3.5,
+   "stack": 1,
+   "icon": [
+    1,
+    6
+   ],
+   "weapon": {
+    "damage": 6,
+    "speed": 5.0,
+    "reload": 1.8,
+    "ammo": "pistol_rounds"
+   },
+   "found_only": true,
+   "desc": "Found only. A semi-auto scrounger's dream; useless submerged.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    },
+    {
+     "item": "iron",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "id": "rifle",
+   "name": "Rifle",
+   "category": "weapon",
+   "weight": 4.0,
+   "stack": 1,
+   "icon": [
+    2,
+    6
+   ],
+   "weapon": {
+    "damage": 18,
+    "speed": 0.8,
+    "reload": 2.2,
+    "ammo": "rifle_rounds"
+   },
+   "found_only": true,
+   "desc": "Found only. One heavy answer per trigger pull; useless submerged.",
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 3
+    },
+    {
+     "item": "iron",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "id": "scrap_sword",
+   "name": "Scrap Sword",
+   "category": "weapon",
+   "weight": 2.0,
+   "stack": 1,
+   "icon": [
+    0,
+    7
+   ],
+   "weapon": {
+    "melee": true,
+    "damage": 5,
+    "speed": 1.6,
+    "knockback": 6.0,
+    "water_factor": 0.5
+   },
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "wood",
+     "count": 1
+    }
+   ],
+   "desc": "A sharpened slab of scrap. Swings slow underwater."
+  },
+  {
+   "id": "iron_sword",
+   "name": "Iron Sword",
+   "category": "weapon",
+   "weight": 2.5,
+   "stack": 1,
+   "icon": [
+    1,
+    7
+   ],
+   "weapon": {
+    "melee": true,
+    "damage": 9,
+    "speed": 1.6,
+    "knockback": 7.0,
+    "water_factor": 0.5
+   },
+   "scrap": [
+    {
+     "item": "iron",
+     "count": 2
+    }
+   ],
+   "desc": "A proper forged blade. Swings slow underwater."
+  },
+  {
+   "id": "fire_axe",
+   "name": "Fire Axe",
+   "category": "weapon",
+   "weight": 3.5,
+   "stack": 1,
+   "icon": [
+    2,
+    7
+   ],
+   "weapon": {
+    "melee": true,
+    "damage": 8,
+    "speed": 1.0,
+    "knockback": 10.0,
+    "water_factor": 0.45
+   },
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "wood",
+     "count": 2
+    }
+   ],
+   "desc": "Slow, heavy, and sends things flying. Worst weapon underwater; a fine tree-feller.",
+   "tool": {
+    "type": "axe",
+    "tier": 1,
+    "speed": 1.6,
+    "damage": 5
+   }
+  },
+  {
+   "id": "speargun",
+   "name": "Speargun",
+   "category": "weapon",
+   "weight": 2.5,
+   "stack": 1,
+   "icon": [
+    3,
+    7
+   ],
+   "weapon": {
+    "projectile": "speargun_bolt",
+    "damage": 12,
+    "speed": 0.8
+   },
+   "scrap": [
+    {
+     "item": "scrap_metal",
+     "count": 2
+    },
+    {
+     "item": "plastic",
+     "count": 1
+    }
+   ],
+   "desc": "The underwater ranged weapon. Silent; bolts can be picked back up."
+  },
+  {
+   "id": "speargun_bolt",
+   "name": "Speargun Bolt",
+   "category": "material",
+   "weight": 0.2,
+   "stack": 60,
+   "icon": [
+    4,
+    7
+   ],
+   "sinks": true,
+   "desc": "Ammunition for the speargun. Retrievable after the shot."
+  },
+  {
+   "id": "pistol_rounds",
+   "name": "Pistol Rounds",
+   "category": "material",
+   "weight": 0.05,
+   "stack": 120,
+   "icon": [
+    5,
+    7
+   ],
+   "sinks": true,
+   "desc": "Ammunition for pistols and SMGs."
+  },
+  {
+   "id": "rifle_rounds",
+   "name": "Rifle Rounds",
+   "category": "material",
+   "weight": 0.08,
+   "stack": 120,
+   "icon": [
+    0,
+    8
+   ],
+   "sinks": true,
+   "desc": "Heavy ammunition for rifles."
+  },
+  {
+   "id": "medkit",
+   "name": "Medkit",
+   "category": "consumable",
+   "weight": 1.0,
+   "stack": 10,
+   "icon": [
+    1,
+    8
+   ],
+   "use": {
+    "heal": 60,
+    "cure_bleed": true
+   },
+   "desc": "Stops bleeding and restores a lot of health."
+  },
+  {
+   "id": "fish_meat",
+   "name": "Fish Meat",
+   "category": "consumable",
+   "weight": 0.3,
+   "stack": 40,
+   "icon": [
+    2,
+    8
+   ],
+   "use": {
+    "heal": 8
+   },
+   "desc": "Fresh from the flood. Restores a little health."
+  },
+  {
+   "id": "wood_axe",
+   "name": "Wooden Axe",
+   "category": "tool",
+   "weight": 3.0,
+   "icon": [
+    4,
+    1
+   ],
+   "tool": {
+    "type": "axe",
+    "tier": 1,
+    "speed": 1.2,
+    "damage": 4
+   },
+   "scrap": [
+    {
+     "item": "wood",
+     "count": 3
+    }
+   ],
+   "desc": "Mostly wood, a little scrap. Fells rooftop trees - the bigger, the longer."
+  }
+ ]
 }

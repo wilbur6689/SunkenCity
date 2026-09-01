@@ -53,7 +53,7 @@
    "id": "wood_wall",
    "name": "Wood Wall",
    "layer": "back",
-   "atlas_row": 1,
+   "atlas_row": 8,
    "hp": 5,
    "hardness": 1,
    "weight": 0.1,
@@ -63,7 +63,7 @@
      "count": 1
     }
    ],
-   "desc": "Back wall \u2014 seals a room's interior so it can be pumped dry."
+   "desc": "Back wall of dark vertical planks - seals a room's interior so it can be pumped dry."
   },
   {
    "id": "rope",

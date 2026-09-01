@@ -79,7 +79,34 @@ commercial/industrial) and rare `statement` statues (-> stone, residential/comme
 plants also pay out stone. Zones now include **roof** in both editors. Gate: `roof_smoke.tscn`.
 Fixes: `_stamp_room` mirrored blocks no longer spill left of a cropped template (stomped pocket
 doorways); `World.remove_object` falls back to identity search and `object_at` validates
-instances (freed-node hover crash when overlapping objects were scrapped). Towers are
+instances (freed-node hover crash when overlapping objects were scrapped). **Roof-era economy +
+flora tools** (2026-09-01, later same day): hand crafting is wood-tier only — axe (`wood_axe`,
+the tree tool: `requires_tool: "axe"` on grown trees, felling time scales with size), wood
+block/wall, chest, rope, ladder, and the workbench (now 30 wood + 15 scrap — a multi-run
+project); scrap tools (pry bar/knife/hammer) plus glowstick/bandage/lamp moved behind the
+workbench, and all tool recipe costs run **5x** (fire axe doubles as an axe tool). Wear-pass
+side breaches are standardized 2x2 and sealed by `side_vent` grates (fixed, pry tier 1 — same
+lock as the roof hatch, and they seal water); the central 20% of the map packs towers <= 5
+blocks apart for roof-hopping. The wood wall got its own dark vertical-plank tile
+(atlas row 8, `WorldGrid.M.WOODWALL`; tres + `gen_placeholder_art.py` updated). The **Flora
+Editor** (`res://scenes/tools/flora_editor.tscn`) authors category-`flora` objects (type, growth
+chain `grows_into`/`grow_chance`, `flora_weight` spawn bias, no-item flag, up to 8x16-block
+canvas); `CityGen._stamp_roofs` sprinkles all roof-zone flora by weight, so a saved plant
+appears in the next generated world. Gate: `flora_editor_smoke.tscn`. **Room draw planes +
+zombie sheets** (2026-09-01): rooms layer back wall (tile layer z -3) -> decals (z -2) ->
+wall-mounted pieces/doorways (z -1) -> furniture (z 0) -> player (tree order); backdrop planes
+sit at z -10/-11 in both game scenes. The hand-made monster sheets in `docs/Examples/Monsters`
+are sliced by `python tools/convert_monsters.py` (chroma-key, label crop, feet-aligned 8-frame
+strips) into `assets/sprites/enemies/walker*.png` (7 looks: 5 procedural recolour/bulge
+variants incl. 2 fat) and rebuilds the **floater** as a prone bloated body wearing the real
+walker head (2026-09-01); walkers animate via
+`frames`/`sprite_variants` in `data/enemies.json` (variant picked deterministically per record;
+`gen_placeholder_art.py` never overwrites hand-made strips). The **Monster Editor**
+(`res://scenes/tools/monster_editor.tscn`) loads every enemy type (grouped by movement mode) and
+edits `data/enemies.json` in place: identity/hitbox/flags/frames/variants, the drops table
+(drop items validated against the item registry), and the authored per-band stat grid — enabling
+a band row is what lets the type seed there (GD-23); an animated sprite preview cycles variants
+with a hitbox overlay. Gate: `monster_editor_smoke.tscn`. Towers are
 **double-wide twin-wing blocks** (2026-08-31): ladder stairwells on BOTH sides (ladders hug the
 room-side wall — 2026-09-01, so enemies chase through wing doorways onto them), an elevator
 shaft down the centre, rooms in each wing; the skyline is uniformly high-rise (CT-01 amended
@@ -127,7 +154,7 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   drives the player with `Input.action_press`) and `--headless res://scenes/test/m1_smoke.tscn`
   (the loop; feeds the player's input snapshot directly with `set_multiplayer_authority(2)`). Run
   both after touching the player, World, or data files; extend them when behaviour changes.
-  Further gates: `m2/m3/m4/m5/tower/save/pocket/roof/room_editor/furniture_editor_smoke.tscn` — `save_smoke`
+  Further gates: `m2/m3/m4/m5/tower/save/pocket/roof/room_editor/furniture_editor/flora_editor/monster_editor_smoke.tscn` — `save_smoke`
   covers the full persistence round trip; run it after touching World state or SaveGame.
   `m4_smoke` covers enemies/combat/death loop/red moons; run it after touching enemies, combat,
   or the interaction layer.

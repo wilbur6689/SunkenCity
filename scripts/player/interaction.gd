@@ -372,6 +372,11 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 	if obj == null or obj.def.kind != "scrap":
 		_stop_scrapping()
 		return
+	var need_tool: String = obj.def.get("requires_tool", "")
+	if need_tool != "" and tool.get("type", "") != need_tool:
+		say("Needs an %s to cut down" % need_tool if need_tool == "axe" else "Needs a %s" % need_tool)
+		_stop_scrapping()
+		return
 	var tier: int = int(tool.get("tier", Constants.HAND_TOOL_TIER))
 	if tier < int(obj.def.get("tool_tier", 0)):
 		say("Needs a tool (tier %d)" % obj.def.tool_tier)
