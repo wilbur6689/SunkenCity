@@ -36,6 +36,8 @@ var amb_outside: AudioStreamPlayer
 ## objects otherwise show up as leaked instances at exit.
 var _headless := DisplayServer.get_name() == "headless"
 var _silence_left := 0.0     # countdown between tracks
+var _play_left := 0.0        # remaining looped play time for the current track
+var _time_up := false        # fading because the play stretch ended (not a pool switch)
 var _amb_active := true      # ambient duty cycle (user request: long quiet spells)
 var _amb_cycle := 0.0
 var _current_pool := ""
@@ -126,7 +128,8 @@ func save_settings() -> void:
 func debug_status() -> String:
 	if music != null and music.playing:
 		var title := _last_track.get_file().get_basename()
-		return "%s (%s)%s" % [title, _current_pool, " · fading out" if _fading_out else ""]
+		return "%s (%s)%s" % [title, _current_pool,
+			" · fading out" if _fading_out else " · %ds left" % int(ceil(maxf(_play_left, 0.0)))]
 	return "silent · next track in %ds (%s)" % [int(ceil(maxf(_silence_left, 0.0))), desired_pool()]
 
 const SFX_DIR := "res://assets/audio/sfx/"
@@ -190,16 +193,25 @@ func _fade(p: AudioStreamPlayer, target_db: float, delta: float, rate: float = 4
 func _update_music(delta: float) -> void:
 	var want := desired_pool()
 	if music.playing:
+		# A track loops for a 3-5 minute stretch (user request), then fades
+		# into the ~2 minute quiet spell.
+		if not _fading_out:
+			_play_left -= delta
+			if _play_left <= 0.0:
+				_fading_out = true
+				_time_up = true
 		if _fading_out or want != _current_pool:
-			# The situation changed (or a stop is underway): fade the track
-			# out, then let the normal silence-then-next cycle bring in the
-			# right pool.
+			# The play stretch ended, or the situation changed: fade out,
+			# then let the silence-then-next cycle bring in the right pool.
 			_fading_out = true
 			_fade(music, SILENT_DB, delta, 12.0)
 			if music.volume_db <= SILENT_DB + 1.0:
 				music.stop()
 				_fading_out = false
-				_silence_left = randf_range(2.0, 5.0)
+				# A pool switch re-scores quickly; time-up rests properly.
+				_silence_left = randf_range(Constants.MUSIC_SILENCE_MIN, Constants.MUSIC_SILENCE_MAX) \
+						if _time_up else randf_range(2.0, 5.0)
+				_time_up = false
 		else:
 			_fade(music, 0.0, delta, 8.0) # gentle fade-in at track start
 		return
@@ -215,14 +227,18 @@ func _play_from(pool_name: String) -> void:
 	var track: String = picks[randi() % picks.size()]
 	_last_track = track
 	_current_pool = pool_name
+	_play_left = randf_range(Constants.MUSIC_PLAY_MIN, Constants.MUSIC_PLAY_MAX)
+	_time_up = false
 	if _headless:
 		_silence_left = 3600.0
 		return
-	music.stream = load(track)
+	var stream: AudioStreamOggVorbis = load(track)
+	stream.loop = true # the play stretch outlasts the file; loop until time is up
+	music.stream = stream
 	music.volume_db = -14.0 # ramps to 0 in _update_music
 	music.play()
 
 func _on_track_finished() -> void:
-	# The quiet period between tracks (user request): the world plays
-	# unscored for a while before the next tune.
+	# Looping tracks normally never finish; if one does (loop flag lost),
+	# fall back to the quiet period between tracks.
 	_silence_left = randf_range(Constants.MUSIC_SILENCE_MIN, Constants.MUSIC_SILENCE_MAX)

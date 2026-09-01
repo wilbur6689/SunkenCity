@@ -133,8 +133,12 @@ const SCRAP_SFX_INTERVAL: float = 0.4     # seconds between scrapping creaks
 # Audio
 const MUSIC_VOLUME_DB: float = -8.0
 const AMBIENT_VOLUME_DB: float = -6.0
-const MUSIC_SILENCE_MIN: float = 90.0   # quiet stretch between tracks (s)
-const MUSIC_SILENCE_MAX: float = 240.0
+# Music cadence (user request 2026-08-31): a track LOOPS for a 3-5 minute
+# stretch, then ~2 minutes of silence before the next tune.
+const MUSIC_PLAY_MIN: float = 180.0
+const MUSIC_PLAY_MAX: float = 300.0
+const MUSIC_SILENCE_MIN: float = 110.0  # quiet stretch between tracks (s)
+const MUSIC_SILENCE_MAX: float = 130.0
 const AMBIENT_ON_MIN: float = 60.0      # ambient beds breathe: on a while,
 const AMBIENT_ON_MAX: float = 150.0     # then a long quiet stretch
 const AMBIENT_OFF_MIN: float = 45.0
