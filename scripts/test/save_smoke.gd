@@ -59,6 +59,12 @@ func _ready() -> void:
 	await ticks(8) # let reveal + water run a moment
 	var revealed := World.map_reveal.revealed_count()
 	check(revealed > 100, "map reveal tracked %d cells (CC-25)" % revealed)
+	var pockets_before := World.pockets.size()
+	var links_before := 0
+	for rec in World.object_records:
+		if rec.has("link"):
+			links_before += 1
+	check(pockets_before > 0 and links_before == pockets_before * 2, "interior pockets present (%d, %d doorways)" % [pockets_before, links_before])
 
 	print("== B. save")
 	var t0 := Time.get_ticks_msec()
@@ -111,6 +117,11 @@ func _ready() -> void:
 	check(int(player2.known_mods.get("of_the_deep", 0)) == 3, "learned modifiers restored (LT-09)")
 	check(player2.skills.has_ability("field_strip"), "tech-tree abilities restored (CC-18)")
 	check(World.map_reveal.revealed_count() == revealed, "map reveal restored per character+world")
+	var links_after := 0
+	for rec in World.object_records:
+		if rec.has("link"):
+			links_after += 1
+	check(World.pockets.size() == pockets_before and links_after == links_before 			and World.city_bounds.size.x == CityGen.WORLD_W, "interior pockets, doorway links and city width restored")
 	check(player2.global_position.distance_to(pos) < 8.0, "character position restored in this world")
 	await ticks(5)
 	check(player2.state == Player.State.GROUNDED or player2.state == Player.State.AIRBORNE, "loaded game keeps running")

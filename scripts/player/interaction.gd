@@ -242,6 +242,9 @@ func _hammer(tool: Dictionary) -> void:
 		if obj.storage != null and not obj.storage.is_empty():
 			say("Empty the chest first")
 			return
+		if obj.def.get("fixed", false) or Data.item(obj.id).is_empty():
+			say("It is wired into the building") # breakers, interior doorways
+			return
 		if player.inventory.can_add(obj.id, 1):
 			World.remove_object(obj)
 			player.inventory.add(obj.id, 1)

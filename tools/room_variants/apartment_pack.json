@@ -1,0 +1,103 @@
+{"rooms": [
+{"id": "apartment_v01", "zone": "residential", "type": "apartment", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "bed_frame", "x": 0}, {"id": "res_wall_painting", "x": 0, "dy": 3},
+  {"id": "res_nightstand", "x": 3}, {"id": "res_table_lamp", "x": 3, "dy": 1},
+  {"id": "res_curtains", "x": 4, "dy": 2},
+  {"id": "res_dresser", "x": 5}, {"id": "res_candles", "x": 5, "dy": 2}, {"id": "res_family_photos", "x": 6, "dy": 2},
+  {"id": "res_wall_mirror", "x": 5, "dy": 3},
+  {"id": "res_sofa", "x": 8}, {"id": "res_modern_clock", "x": 9, "dy": 3},
+  {"id": "res_side_table", "x": 11}, {"id": "res_book_stack", "x": 11, "dy": 1}
+ ], "blocks": []},
+{"id": "apartment_v02", "zone": "residential", "type": "apartment", "width": 13, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "fridge", "x": 0},
+  {"id": "res_kitchen_counter", "x": 2}, {"id": "res_microwave", "x": 2, "dy": 1}, {"id": "res_dish_stack", "x": 3, "dy": 1}, {"id": "res_toaster", "x": 4, "dy": 1},
+  {"id": "res_wall_clock", "x": 3, "dy": 3}, {"id": "res_spice_rack", "x": 4, "dy": 2},
+  {"id": "res_stove", "x": 5}, {"id": "res_range_hood", "x": 5, "dy": 3},
+  {"id": "res_wall_sconce", "x": 7, "dy": 3},
+  {"id": "res_sofa", "x": 8}, {"id": "res_wall_painting", "x": 9, "dy": 3},
+  {"id": "res_side_table", "x": 12}, {"id": "res_candles", "x": 12, "dy": 1}, {"id": "res_curtains", "x": 12, "dy": 2}
+ ], "blocks": []},
+{"id": "apartment_v03", "zone": "residential", "type": "apartment", "width": 11, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_bookshelf", "x": 0}, {"id": "res_bookshelf", "x": 2},
+  {"id": "res_photo_shelf", "x": 0, "dy": 3}, {"id": "res_wall_clock", "x": 3, "dy": 3}, {"id": "res_family_photos", "x": 2, "dy": 4},
+  {"id": "res_armchair", "x": 5}, {"id": "res_pendant_lamp", "x": 5, "dy": 3},
+  {"id": "res_side_table", "x": 6}, {"id": "res_book_stack", "x": 6, "dy": 1},
+  {"id": "res_coffee_table", "x": 8}, {"id": "res_candles", "x": 8, "dy": 1}, {"id": "res_wall_painting", "x": 8, "dy": 3},
+  {"id": "res_tall_plant", "x": 10}, {"id": "res_curtains", "x": 10, "dy": 2}
+ ], "blocks": []},
+{"id": "apartment_v04", "zone": "residential", "type": "apartment", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_crib", "x": 0}, {"id": "res_wall_painting", "x": 0, "dy": 3},
+  {"id": "res_dresser", "x": 3}, {"id": "res_table_lamp", "x": 3, "dy": 2},
+  {"id": "res_family_photos", "x": 3, "dy": 3}, {"id": "res_family_photos", "x": 4, "dy": 4},
+  {"id": "res_laundry_basket", "x": 5},
+  {"id": "res_bean_bag", "x": 7}, {"id": "res_modern_clock", "x": 7, "dy": 2},
+  {"id": "res_tv_stand", "x": 8}, {"id": "res_book_stack", "x": 10},
+  {"id": "res_side_table", "x": 11}, {"id": "res_lava_lamp", "x": 11, "dy": 1}, {"id": "res_curtains", "x": 11, "dy": 2},
+  {"id": "res_wall_sconce", "x": 6, "dy": 3}
+ ], "blocks": [{"mat": 2, "x": 8, "dy": 3}, {"mat": 2, "x": 9, "dy": 3}]},
+{"id": "apartment_v05", "zone": "residential", "type": "apartment", "width": 13, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_stereo", "x": 0}, {"id": "res_wall_painting", "x": 0, "dy": 2},
+  {"id": "res_sofa", "x": 3}, {"id": "res_pendant_lamp", "x": 4, "dy": 3},
+  {"id": "res_coffee_table", "x": 6}, {"id": "res_dish_stack", "x": 6, "dy": 1}, {"id": "res_lava_lamp", "x": 7, "dy": 1},
+  {"id": "res_trash_can", "x": 8}, {"id": "res_wall_sconce", "x": 8, "dy": 3},
+  {"id": "res_tv_stand", "x": 9}, {"id": "res_wall_clock", "x": 10, "dy": 3},
+  {"id": "res_suitcase", "x": 12}, {"id": "res_curtains", "x": 12, "dy": 1}
+ ], "blocks": []},
+{"id": "apartment_v06", "zone": "residential", "type": "apartment", "width": 14, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_grandfather_clock", "x": 0},
+  {"id": "res_radiator", "x": 1}, {"id": "res_wall_painting", "x": 1, "dy": 2},
+  {"id": "res_armchair", "x": 4}, {"id": "res_side_table", "x": 5}, {"id": "res_candles", "x": 5, "dy": 1}, {"id": "res_armchair", "x": 6},
+  {"id": "res_family_photos", "x": 5, "dy": 3}, {"id": "res_wall_clock", "x": 5, "dy": 4},
+  {"id": "res_wall_sconce", "x": 7, "dy": 3},
+  {"id": "res_dining_table", "x": 8}, {"id": "res_dish_stack", "x": 9, "dy": 1}, {"id": "res_potted_plant", "x": 10, "dy": 1},
+  {"id": "res_pendant_lamp", "x": 9, "dy": 3},
+  {"id": "chair", "x": 11},
+  {"id": "res_tall_plant", "x": 13}, {"id": "res_curtains", "x": 13, "dy": 2}
+ ], "blocks": []},
+{"id": "apartment_v07", "zone": "residential", "type": "apartment", "width": 13, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_stereo", "x": 0}, {"id": "res_wall_painting", "x": 0, "dy": 2},
+  {"id": "res_bar_stool", "x": 2},
+  {"id": "res_kitchen_counter", "x": 3}, {"id": "res_dish_stack", "x": 3, "dy": 1}, {"id": "res_dish_stack", "x": 4, "dy": 1}, {"id": "res_lava_lamp", "x": 5, "dy": 1},
+  {"id": "res_pendant_lamp", "x": 4, "dy": 3},
+  {"id": "res_trash_can", "x": 7}, {"id": "res_wall_sconce", "x": 7, "dy": 2},
+  {"id": "res_sofa", "x": 8}, {"id": "res_wall_clock", "x": 9, "dy": 3},
+  {"id": "res_side_table", "x": 12}, {"id": "res_candles", "x": 12, "dy": 1}, {"id": "res_curtains", "x": 12, "dy": 2}
+ ], "blocks": []},
+{"id": "apartment_v08", "zone": "residential", "type": "apartment", "width": 11, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "desk", "x": 0}, {"id": "res_desk_lamp", "x": 0, "dy": 2}, {"id": "res_lava_lamp", "x": 1, "dy": 2}, {"id": "res_desk_clock", "x": 2, "dy": 2},
+  {"id": "res_wall_clock", "x": 1, "dy": 4},
+  {"id": "chair", "x": 3},
+  {"id": "res_bookshelf", "x": 4}, {"id": "res_photo_shelf", "x": 4, "dy": 3},
+  {"id": "res_wall_sconce", "x": 6, "dy": 1}, {"id": "res_family_photos", "x": 6, "dy": 3},
+  {"id": "res_sofa", "x": 7}, {"id": "res_wall_painting", "x": 7, "dy": 2},
+  {"id": "res_curtains", "x": 10, "dy": 1}
+ ], "blocks": []},
+{"id": "apartment_v09", "zone": "residential", "type": "apartment", "width": 14, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "fridge", "x": 0},
+  {"id": "res_kitchen_cabinet", "x": 2}, {"id": "res_toaster", "x": 2, "dy": 1}, {"id": "res_microwave", "x": 3, "dy": 1},
+  {"id": "res_spice_rack", "x": 2, "dy": 4}, {"id": "res_modern_clock", "x": 3, "dy": 4},
+  {"id": "chair", "x": 4},
+  {"id": "res_dining_table", "x": 5}, {"id": "res_dish_stack", "x": 5, "dy": 1}, {"id": "res_candles", "x": 7, "dy": 1},
+  {"id": "res_pendant_lamp", "x": 6, "dy": 3},
+  {"id": "res_sofa", "x": 9}, {"id": "res_wall_painting", "x": 9, "dy": 2},
+  {"id": "res_side_table", "x": 12}, {"id": "res_lava_lamp", "x": 12, "dy": 1},
+  {"id": "res_curtains", "x": 13, "dy": 1}, {"id": "res_family_photos", "x": 13, "dy": 4}
+ ], "blocks": [{"mat": 2, "x": 2, "dy": 3}, {"mat": 2, "x": 3, "dy": 3}]},
+{"id": "apartment_v10", "zone": "residential", "type": "apartment", "width": 10, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_wardrobe", "x": 0}, {"id": "res_wall_sconce", "x": 2, "dy": 2},
+  {"id": "res_suitcase", "x": 3}, {"id": "res_wall_clock", "x": 3, "dy": 3},
+  {"id": "res_sofa", "x": 5}, {"id": "res_wall_painting", "x": 5, "dy": 3},
+  {"id": "res_side_table", "x": 8}, {"id": "res_candles", "x": 8, "dy": 1},
+  {"id": "res_trash_can", "x": 9}, {"id": "res_curtains", "x": 9, "dy": 2}
+ ], "blocks": []}
+]}

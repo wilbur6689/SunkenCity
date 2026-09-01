@@ -1,0 +1,709 @@
+{
+ "rooms": [
+  {
+   "id": "ward_v01",
+   "zone": "civil",
+   "type": "ward",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_gurney",
+     "x": 0
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "hos_iv_stand",
+     "x": 3
+    },
+    {
+     "id": "hos_privacy_screen",
+     "x": 4
+    },
+    {
+     "id": "hos_gurney",
+     "x": 6
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_vitals_monitor",
+     "x": 9
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_linen_hamper",
+     "x": 11
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 13,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 13,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v02",
+   "zone": "civil",
+   "type": "ward",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_exam_table",
+     "x": 0
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "med_cart",
+     "x": 4
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "chair",
+     "x": 6
+    },
+    {
+     "id": "hos_scale",
+     "x": 7
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "hos_med_cabinet",
+     "x": 9
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 10,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v03",
+   "zone": "civil",
+   "type": "ward",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_nurse_station",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_station_clock",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 3
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 5
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "hos_waiting_chairs",
+     "x": 8
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "hos_crutches",
+     "x": 11
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 11,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v04",
+   "zone": "civil",
+   "type": "ward",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_waiting_chairs",
+     "x": 0
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "id": "hos_waiting_chairs",
+     "x": 3
+    },
+    {
+     "id": "com_station_clock",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 6,
+     "dy": 1
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "desk",
+     "x": 8
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 11
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 12
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 13,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v05",
+   "zone": "civil",
+   "type": "ward",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_supply_shelving",
+     "x": 0
+    },
+    {
+     "id": "hos_supply_shelving",
+     "x": 2
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "hos_med_cabinet",
+     "x": 5
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 7
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 8,
+     "dy": 4
+    },
+    {
+     "id": "locker",
+     "x": 9
+    },
+    {
+     "id": "hos_oxygen_tank",
+     "x": 10
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_crutches",
+     "x": 11
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 3,
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "mat": 3,
+     "x": 8,
+     "dy": 2
+    }
+   ]
+  },
+  {
+   "id": "ward_v06",
+   "zone": "civil",
+   "type": "ward",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_iv_stand",
+     "x": 0
+    },
+    {
+     "id": "hos_gurney",
+     "x": 1
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "med_cart",
+     "x": 5
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 8
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_oxygen_tank",
+     "x": 11
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 12
+    },
+    {
+     "id": "com_station_clock",
+     "x": 11,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v07",
+   "zone": "civil",
+   "type": "ward",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "bed_frame",
+     "x": 0
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "hos_vitals_monitor",
+     "x": 3
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "hos_iv_stand",
+     "x": 4
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 5
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "hos_privacy_screen",
+     "x": 7
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 9,
+     "dy": 4
+    },
+    {
+     "id": "locker",
+     "x": 10
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v08",
+   "zone": "civil",
+   "type": "ward",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_exam_table",
+     "x": 0
+    },
+    {
+     "id": "hos_oxygen_tank",
+     "x": 0,
+     "dy": 1
+    },
+    {
+     "id": "hos_crutches",
+     "x": 3
+    },
+    {
+     "id": "hos_crutches",
+     "x": 4
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "hos_scale",
+     "x": 6
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 8
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "com_station_clock",
+     "x": 10,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 11
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v09",
+   "zone": "civil",
+   "type": "ward",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "desk",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "hos_microscope",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 3
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_med_cabinet",
+     "x": 5
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 5,
+     "dy": 4
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 6,
+     "dy": 4
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "hos_gurney",
+     "x": 8
+    },
+    {
+     "id": "hos_iv_stand",
+     "x": 11
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 12
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 12,
+     "dy": 3
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 3,
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "mat": 3,
+     "x": 6,
+     "dy": 3
+    }
+   ]
+  },
+  {
+   "id": "ward_v10",
+   "zone": "civil",
+   "type": "ward",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "bed_frame",
+     "x": 0
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "med_cart",
+     "x": 3
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "bed_frame",
+     "x": 5
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 8,
+     "dy": 1
+    },
+    {
+     "id": "hos_scale",
+     "x": 9
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "hos_linen_hamper",
+     "x": 11
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 13,
+     "dy": 1
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 13,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  }
+ ]
+}

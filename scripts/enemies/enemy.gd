@@ -107,12 +107,29 @@ func _move_ground(delta: float) -> void:
 	else:
 		dir = wander_x
 		speed *= Constants.ENEMY_WANDER_SPEED
+	# Edge sense (amends GD-04, user request 2026-08-31): never walk off a
+	# ledge — a chaser holds the edge, a wanderer turns around. (Gap jumping
+	# was tried and dropped for now, same request.)
+	if dir != 0.0 and is_on_floor() and _edge_ahead(dir):
+		if target == null:
+			wander_x = -wander_x
+		dir = 0.0
 	velocity.x = move_toward(velocity.x, dir * speed, 30.0 * Constants.BLOCK_SIZE * delta)
 	velocity.y = minf(velocity.y + Constants.gravity * (0.3 if in_water else 1.0) * delta,
 		Constants.MAX_FALL_SPEED)
 	move_and_slide()
 	if dir != 0.0 and is_on_wall():
 		_handle_block(dir)
+
+## True when the floor ends just ahead: nothing solid within a step-down
+## (2 cells) below the cell in front of the leading foot.
+func _edge_ahead(dir: float) -> bool:
+	var front := global_position.x + dir * (half.x + 3.0)
+	var feet_y := global_position.y + half.y
+	for drop in 2:
+		if World.is_solid_cell(World.cell_at(Vector2(front, feet_y + 2.0 + drop * Constants.BLOCK_SIZE))):
+			return false
+	return true
 
 ## Blocked mid-walk: pound the obstacle if a player placed it (blocks and
 ## closed doors only — building structure is safe from zombies), otherwise
@@ -227,17 +244,35 @@ func _try_touch() -> void:
 			p.hurt_from_enemy(float(stats.damage), global_position, def.get("bleeds", false))
 			return
 
+# --- Health bar (shows only once hurt) ---
+
+const BAR_H := 2.0
+
+## A sliver of a bar above the head while below full health — damage you've
+## dealt stays readable across a fight (and across streaming, via rec.hp).
+func _draw() -> void:
+	var frac := clampf(float(rec.hp) / float(stats.hp), 0.0, 1.0)
+	if frac >= 1.0:
+		return
+	var w := maxf(half.x * 2.0, 14.0)
+	var top := Vector2(-w * 0.5, -half.y - 6.0)
+	draw_rect(Rect2(top + Vector2(-1, -1), Vector2(w + 2, BAR_H + 2)), Color(0.05, 0.04, 0.04, 0.85))
+	draw_rect(Rect2(top, Vector2(w * frac, BAR_H)),
+		Color(0.85, 0.25, 0.2).lerp(Color(0.35, 0.8, 0.3), frac))
+
 # --- Damage in ---
 
 func hurt(damage: float, from_pos: Vector2, knockback: float = 0.0) -> void:
 	rec.hp = float(rec.hp) - damage
+	queue_redraw()
 	_flash = 0.12
-	sprite.modulate = Color(1, 0.4, 0.4)
+	if sprite != null: # hurt can land the same frame the node spawns
+		sprite.modulate = Color(1, 0.4, 0.4)
 	if knockback > 0.0:
 		var dir := (global_position - from_pos).normalized()
 		velocity += Vector2(dir.x, minf(dir.y, 0.0) - 0.4).normalized() * knockback * Constants.BLOCK_SIZE
 	# Pain overrides the radius: whoever is closest gets the attention.
-	if target == null and not def.get("passive", false):
+	if target == null and not def.get("passive", false) and is_inside_tree():
 		target = Aggro.acquire(get_tree(), global_position, float(stats.aggro) * 3.0)
 	if rec.hp <= 0.0:
 		_die()

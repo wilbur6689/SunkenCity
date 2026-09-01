@@ -1,0 +1,106 @@
+{"rooms": [
+{"id": "office_v01", "zone": "commercial", "type": "office", "width": 14, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "com_cubicle_wall", "x": 0}, {"id": "desk", "x": 2}, {"id": "com_office_chair", "x": 5},
+  {"id": "com_cubicle_wall", "x": 6}, {"id": "desk", "x": 8}, {"id": "com_office_chair", "x": 11},
+  {"id": "com_coffee_maker", "x": 0, "dy": 2},
+  {"id": "com_paper_stack", "x": 2, "dy": 2}, {"id": "com_monitor", "x": 3, "dy": 2}, {"id": "com_desk_phone", "x": 4, "dy": 2},
+  {"id": "com_paper_stack", "x": 8, "dy": 2}, {"id": "com_monitor", "x": 9, "dy": 2},
+  {"id": "res_pendant_lamp", "x": 3, "dy": 3}, {"id": "com_motivation_poster", "x": 5, "dy": 3},
+  {"id": "com_digital_clock", "x": 6, "dy": 4}, {"id": "com_cork_board", "x": 8, "dy": 4},
+  {"id": "com_whiteboard", "x": 12, "dy": 2}, {"id": "com_fire_extinguisher", "x": 12, "dy": 4}
+ ], "blocks": []},
+{"id": "office_v02", "zone": "commercial", "type": "office", "width": 11, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "com_office_bookcase", "x": 0}, {"id": "desk", "x": 3}, {"id": "com_office_chair", "x": 6},
+  {"id": "res_tall_plant", "x": 8}, {"id": "com_filing_cabinet", "x": 10},
+  {"id": "res_desk_lamp", "x": 3, "dy": 2}, {"id": "com_paper_stack", "x": 4, "dy": 2}, {"id": "com_desk_phone", "x": 5, "dy": 2},
+  {"id": "com_coffee_maker", "x": 1, "dy": 3}, {"id": "com_paper_stack", "x": 10, "dy": 2},
+  {"id": "com_fire_extinguisher", "x": 2, "dy": 1}, {"id": "com_whiteboard", "x": 0, "dy": 4},
+  {"id": "com_logo_sign", "x": 4, "dy": 3}, {"id": "com_motivation_poster", "x": 7, "dy": 3},
+  {"id": "com_station_clock", "x": 8, "dy": 3}
+ ], "blocks": []},
+{"id": "office_v03", "zone": "commercial", "type": "office", "width": 10, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "com_server_rack", "x": 0}, {"id": "com_server_rack", "x": 1}, {"id": "com_server_rack", "x": 2},
+  {"id": "com_server_rack", "x": 4}, {"id": "ind_work_light", "x": 6}, {"id": "desk", "x": 7},
+  {"id": "com_monitor", "x": 7, "dy": 2}, {"id": "com_monitor", "x": 8, "dy": 2}, {"id": "com_paper_stack", "x": 9, "dy": 2},
+  {"id": "com_coffee_maker", "x": 4, "dy": 3},
+  {"id": "res_wall_sconce", "x": 1, "dy": 4}, {"id": "com_digital_clock", "x": 3, "dy": 4},
+  {"id": "com_fire_extinguisher", "x": 5, "dy": 1}, {"id": "com_whiteboard", "x": 5, "dy": 3},
+  {"id": "com_cork_board", "x": 8, "dy": 4}
+ ], "blocks": []},
+{"id": "office_v04", "zone": "commercial", "type": "office", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "fridge", "x": 0}, {"id": "com_water_cooler", "x": 3}, {"id": "com_office_chair", "x": 4},
+  {"id": "com_conference_table", "x": 5}, {"id": "com_office_chair", "x": 9}, {"id": "com_trash_bin", "x": 11},
+  {"id": "com_coffee_maker", "x": 5, "dy": 1}, {"id": "com_paper_stack", "x": 7, "dy": 1},
+  {"id": "com_paper_stack", "x": 0, "dy": 3},
+  {"id": "com_fire_extinguisher", "x": 2, "dy": 1}, {"id": "com_cork_board", "x": 5, "dy": 3},
+  {"id": "res_pendant_lamp", "x": 7, "dy": 3}, {"id": "com_motivation_poster", "x": 8, "dy": 3},
+  {"id": "com_station_clock", "x": 10, "dy": 3}
+ ], "blocks": []},
+{"id": "office_v05", "zone": "commercial", "type": "office", "width": 13, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_tall_plant", "x": 0}, {"id": "com_reception_desk", "x": 2}, {"id": "com_office_chair", "x": 5},
+  {"id": "com_shredder", "x": 6}, {"id": "com_water_cooler", "x": 7}, {"id": "com_coat_rack", "x": 8},
+  {"id": "com_office_chair", "x": 10}, {"id": "com_office_chair", "x": 11},
+  {"id": "com_desk_phone", "x": 2, "dy": 2}, {"id": "com_monitor", "x": 3, "dy": 2}, {"id": "com_paper_stack", "x": 4, "dy": 2},
+  {"id": "com_fire_extinguisher", "x": 0, "dy": 3}, {"id": "res_wall_sconce", "x": 1, "dy": 3},
+  {"id": "com_logo_sign", "x": 3, "dy": 4}, {"id": "com_digital_clock", "x": 6, "dy": 3},
+  {"id": "com_cork_board", "x": 7, "dy": 4}, {"id": "com_motivation_poster", "x": 9, "dy": 2},
+  {"id": "com_station_clock", "x": 11, "dy": 3}
+ ], "blocks": []},
+{"id": "office_v06", "zone": "commercial", "type": "office", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "com_office_chair", "x": 0}, {"id": "com_conference_table", "x": 1}, {"id": "com_office_chair", "x": 5},
+  {"id": "com_trash_bin", "x": 7}, {"id": "com_copier", "x": 8}, {"id": "com_water_cooler", "x": 11},
+  {"id": "com_paper_stack", "x": 1, "dy": 1}, {"id": "com_desk_phone", "x": 2, "dy": 1},
+  {"id": "com_monitor", "x": 3, "dy": 1}, {"id": "com_coffee_maker", "x": 4, "dy": 1},
+  {"id": "com_fire_extinguisher", "x": 0, "dy": 3}, {"id": "com_whiteboard", "x": 1, "dy": 3},
+  {"id": "res_pendant_lamp", "x": 4, "dy": 3}, {"id": "com_cork_board", "x": 6, "dy": 1},
+  {"id": "com_projector_screen", "x": 8, "dy": 3}, {"id": "com_digital_clock", "x": 11, "dy": 3}
+ ], "blocks": []},
+{"id": "office_v07", "zone": "commercial", "type": "office", "width": 14, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "desk", "x": 0}, {"id": "com_office_chair", "x": 3}, {"id": "desk", "x": 4},
+  {"id": "desk", "x": 8}, {"id": "com_office_chair", "x": 11}, {"id": "com_trash_bin", "x": 12},
+  {"id": "com_monitor", "x": 0, "dy": 2}, {"id": "com_paper_stack", "x": 1, "dy": 2}, {"id": "com_paper_stack", "x": 2, "dy": 2},
+  {"id": "com_monitor", "x": 5, "dy": 2}, {"id": "com_coffee_maker", "x": 6, "dy": 2},
+  {"id": "com_paper_stack", "x": 8, "dy": 2}, {"id": "com_monitor", "x": 9, "dy": 2}, {"id": "com_desk_phone", "x": 10, "dy": 2},
+  {"id": "res_wall_sconce", "x": 0, "dy": 4}, {"id": "com_motivation_poster", "x": 3, "dy": 3},
+  {"id": "com_cork_board", "x": 6, "dy": 4}, {"id": "com_whiteboard", "x": 9, "dy": 4},
+  {"id": "com_digital_clock", "x": 12, "dy": 3}, {"id": "com_fire_extinguisher", "x": 13, "dy": 1}
+ ], "blocks": []},
+{"id": "office_v08", "zone": "commercial", "type": "office", "width": 10, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "com_supply_cabinet", "x": 0}, {"id": "com_copier", "x": 3}, {"id": "com_shredder", "x": 5},
+  {"id": "com_trash_bin", "x": 6}, {"id": "com_filing_cabinet", "x": 7}, {"id": "com_filing_cabinet", "x": 8},
+  {"id": "com_paper_stack", "x": 1, "dy": 3},
+  {"id": "com_paper_stack", "x": 3, "dy": 2}, {"id": "com_paper_stack", "x": 4, "dy": 2},
+  {"id": "com_coffee_maker", "x": 7, "dy": 2}, {"id": "com_paper_stack", "x": 8, "dy": 2},
+  {"id": "com_fire_extinguisher", "x": 2, "dy": 1}, {"id": "res_wall_sconce", "x": 3, "dy": 4},
+  {"id": "com_cork_board", "x": 5, "dy": 3}, {"id": "com_whiteboard", "x": 7, "dy": 4},
+  {"id": "ind_punch_clock", "x": 9, "dy": 2}
+ ], "blocks": []},
+{"id": "office_v09", "zone": "commercial", "type": "office", "width": 13, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "res_tall_plant", "x": 0}, {"id": "com_office_chair", "x": 2}, {"id": "com_conference_table", "x": 3},
+  {"id": "com_office_chair", "x": 7}, {"id": "com_office_bookcase", "x": 10},
+  {"id": "com_desk_phone", "x": 4, "dy": 1}, {"id": "com_paper_stack", "x": 5, "dy": 1},
+  {"id": "res_desk_lamp", "x": 10, "dy": 3},
+  {"id": "com_logo_sign", "x": 0, "dy": 3}, {"id": "com_projector_screen", "x": 3, "dy": 3},
+  {"id": "com_station_clock", "x": 7, "dy": 3}, {"id": "res_pendant_lamp", "x": 9, "dy": 3},
+  {"id": "com_fire_extinguisher", "x": 12, "dy": 1}, {"id": "com_motivation_poster", "x": 12, "dy": 3}
+ ], "blocks": []},
+{"id": "office_v10", "zone": "commercial", "type": "office", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "com_filing_cabinet", "x": 0}, {"id": "desk", "x": 1}, {"id": "com_office_chair", "x": 4},
+  {"id": "com_server_rack", "x": 6}, {"id": "com_copier", "x": 8}, {"id": "locker", "x": 11},
+  {"id": "com_paper_stack", "x": 0, "dy": 3}, {"id": "com_coffee_maker", "x": 2, "dy": 3}, {"id": "res_desk_lamp", "x": 3, "dy": 3},
+  {"id": "com_paper_stack", "x": 9, "dy": 2},
+  {"id": "com_whiteboard", "x": 5, "dy": 3}, {"id": "com_digital_clock", "x": 7, "dy": 4},
+  {"id": "com_logo_sign", "x": 8, "dy": 4}, {"id": "com_fire_extinguisher", "x": 10, "dy": 2},
+  {"id": "res_wall_sconce", "x": 11, "dy": 4}
+ ], "blocks": [{"mat": 2, "x": 0, "dy": 2}, {"mat": 2, "x": 1, "dy": 2}, {"mat": 2, "x": 2, "dy": 2}, {"mat": 2, "x": 3, "dy": 2}]}
+]}

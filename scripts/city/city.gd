@@ -37,7 +37,13 @@ func _ready() -> void:
 	if not loaded:
 		world_name = "world_%d" % seed_value
 		_boot_generated()
-	# Dev aid: --shot=path[:zoom_steps] saves a screenshot and quits.
+	# Dev aids: --at=col,row puts the player's feet on that cell (e.g. inside
+	# an interior pocket); --shot=path[:zoom_steps] saves a screenshot and quits.
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--at="):
+			var xy := a.substr(5).split(",")
+			if xy.size() == 2:
+				player.travel_to(Vector2((int(xy[0]) + 0.5) * Constants.BLOCK_SIZE, (int(xy[1]) + 1) * Constants.BLOCK_SIZE))
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--shot="):
 			_take_shot(a.substr(7))
@@ -45,16 +51,26 @@ func _ready() -> void:
 func _boot_generated() -> void:
 	var t0 := Time.get_ticks_msec()
 	gen = CityGen.generate(seed_value)
-	World.register(gen.grid, gen.spawn_feet, items_root, objects_root, structure_renderer, gen.waterline_row)
+	World.register(gen.grid, gen.spawn_feet, items_root, objects_root, structure_renderer,
+		gen.waterline_row, int(gen.get("city_w", -1)))
 	# Data-only records: the object window instantiates the ones near spawn.
 	for o in gen.objects:
-		World.add_object_record(o.id, o.cell, false)
+		var rec := World.add_object_record(o.id, o.cell, false)
+		if o.has("link"): # interior doorway: its twin's cell + shared open state
+			rec["link"] = o.link
+			rec.open = bool(o.get("open", false))
 	for dc in gen.doors:
 		World.add_object_record(dc.id, dc.cell, false)
+	for p in gen.get("pockets", []):
+		World.pockets.append({"rect": p.rect, "exit": p.exit, "entry": p.entry})
 	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value)
 	for e in EnemyGen.seed_city(gen, seed_value): # M4: seeded once, no respawn (GD-02)
 		World.add_enemy_record(e.type, e.pos)
 	CityGen.flood(World) # after doors exist: sealing is solidity (WS-20)
+	# Pockets touch no ocean: the generator decided which ones drowned.
+	for p in gen.get("pockets", []):
+		if p.flooded:
+			World.water_sim.fill_rect(p.rect, WaterSim.MAX_LEVEL)
 	print("City seed %d: %d towers, %d enemies, generated in %d ms" % [seed_value, gen.towers,
 		World.enemy_records.size(), Time.get_ticks_msec() - t0])
 	_setup_visuals()
@@ -71,7 +87,10 @@ func _boot_loaded(data: Dictionary) -> void:
 	var t0 := Time.get_ticks_msec()
 	seed_value = int(data.seed)
 	var grid := SaveGame.build_grid(data)
-	World.register(grid, data.spawn, items_root, objects_root, structure_renderer, int(data.waterline_row))
+	World.register(grid, data.spawn, items_root, objects_root, structure_renderer, int(data.waterline_row),
+		int(data.get("city_w", -1)))
+	for p in data.get("pockets", []):
+		World.pockets.append((p as Dictionary).duplicate())
 	World.time_of_day = float(data.time_of_day)
 	World.placed_blocks = (data.placed_blocks as Dictionary).duplicate(true)
 	World.structure_damage = (data.get("structure_damage", {}) as Dictionary).duplicate()
@@ -82,6 +101,8 @@ func _boot_loaded(data: Dictionary) -> void:
 		rec.powered = bool(st.get("powered", false))
 		rec.unlocked = bool(st.get("unlocked", false))
 		rec.outlet = st.get("outlet", WorldObject.NO_OUTLET)
+		if st.has("link"):
+			rec["link"] = st.link
 		if rec.storage != null and st.has("storage"):
 			var slots: Array = (st.storage as Array).duplicate(true)
 			slots.resize(rec.storage.slots.size())

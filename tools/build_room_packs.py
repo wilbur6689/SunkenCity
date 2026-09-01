@@ -66,6 +66,8 @@ def entry_for(item, module_name, rect):
         e["storage_slots"] = int(item["storage_slots"])
     if item.get("wall_mounted"):
         e["wall_mounted"] = True
+    if item.get("surface"):
+        e["surface"] = True  # top plane in row 0: things placed at dy = height rest on it
     return e
 
 

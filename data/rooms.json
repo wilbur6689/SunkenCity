@@ -3,8 +3,12 @@
  "rooms": [
   {
    "id": "residential_a",
+   "zone": "residential",
    "type": "residential",
    "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "cabinet",
@@ -17,34 +21,67 @@
     {
      "id": "bed_frame",
      "x": 9
+    },
+    {
+     "dy": 3,
+     "id": "res_wall_mirror",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_photo_shelf",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "res_wall_sconce",
+     "x": 10
+    },
+    {
+     "id": "res_nightstand",
+     "x": 2
+    },
+    {
+     "id": "res_laundry_basket",
+     "x": 3
+    },
+    {
+     "dy": 1,
+     "id": "res_table_lamp",
+     "x": 2
+    },
+    {
+     "dy": 4,
+     "id": "res_modern_clock",
+     "x": 1
     }
    ],
    "blocks": [
     {
+     "dy": 2,
      "mat": 2,
-     "x": 1,
-     "dy": 2
+     "x": 1
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 2,
-     "dy": 2
+     "x": 2
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 3,
-     "dy": 2
+     "x": 3
     }
-   ],
-   "zone": "residential",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   ]
   },
   {
    "id": "residential_b",
+   "zone": "residential",
    "type": "residential",
    "width": 8,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "locker",
@@ -57,18 +94,51 @@
     {
      "id": "bed_frame",
      "x": 5
+    },
+    {
+     "dy": 3,
+     "id": "res_wall_mirror",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_photo_shelf",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "res_wall_sconce",
+     "x": 2
+    },
+    {
+     "id": "res_nightstand",
+     "x": 1
+    },
+    {
+     "id": "res_laundry_basket",
+     "x": 2
+    },
+    {
+     "dy": 1,
+     "id": "res_table_lamp",
+     "x": 1
+    },
+    {
+     "dy": 4,
+     "id": "res_modern_clock",
+     "x": 1
     }
    ],
-   "blocks": [],
-   "zone": "residential",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   "blocks": []
   },
   {
    "id": "residential_c",
+   "zone": "residential",
    "type": "residential",
    "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "bed_frame",
@@ -85,34 +155,67 @@
     {
      "id": "bed_frame",
      "x": 8
+    },
+    {
+     "dy": 3,
+     "id": "res_wall_mirror",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_photo_shelf",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "res_wall_sconce",
+     "x": 10
+    },
+    {
+     "id": "res_nightstand",
+     "x": 0
+    },
+    {
+     "id": "res_laundry_basket",
+     "x": 4
+    },
+    {
+     "dy": 1,
+     "id": "res_table_lamp",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_modern_clock",
+     "x": 1
     }
    ],
    "blocks": [
     {
+     "dy": 2,
      "mat": 2,
-     "x": 2,
-     "dy": 2
+     "x": 2
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 3,
-     "dy": 2
+     "x": 3
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 4,
-     "dy": 2
+     "x": 4
     }
-   ],
-   "zone": "residential",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   ]
   },
   {
    "id": "residential_d",
+   "zone": "residential",
    "type": "residential",
    "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "fridge",
@@ -121,29 +224,65 @@
     {
      "id": "chair",
      "x": 12
+    },
+    {
+     "id": "res_grandfather_clock",
+     "x": 0
+    },
+    {
+     "id": "res_armchair",
+     "x": 1
+    },
+    {
+     "id": "res_side_table",
+     "x": 2
+    },
+    {
+     "id": "res_radiator",
+     "x": 3
+    },
+    {
+     "dy": 1,
+     "id": "res_lava_lamp",
+     "x": 2
+    },
+    {
+     "dy": 4,
+     "id": "res_wall_sconce",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_family_photos",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "res_modern_clock",
+     "x": 10
     }
    ],
    "blocks": [
     {
+     "dy": 2,
      "mat": 2,
-     "x": 7,
-     "dy": 2
+     "x": 7
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 8,
-     "dy": 2
+     "x": 8
     }
-   ],
-   "zone": "residential",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   ]
   },
   {
    "id": "office_a",
+   "zone": "commercial",
    "type": "office",
    "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "locker",
@@ -164,34 +303,76 @@
     {
      "id": "locker",
      "x": 10
+    },
+    {
+     "id": "com_coat_rack",
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "id": "res_desk_lamp",
+     "x": 3
+    },
+    {
+     "dy": 4,
+     "id": "com_cork_board",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "com_fire_extinguisher",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 10
+    },
+    {
+     "id": "com_server_rack",
+     "x": 2
+    },
+    {
+     "id": "com_shredder",
+     "x": 6
+    },
+    {
+     "dy": 4,
+     "id": "com_projector_screen",
+     "x": 2
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 6
     }
    ],
    "blocks": [
     {
+     "dy": 2,
      "mat": 2,
-     "x": 6,
-     "dy": 2
+     "x": 6
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 7,
-     "dy": 2
+     "x": 7
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 8,
-     "dy": 2
+     "x": 8
     }
-   ],
-   "zone": "commercial",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   ]
   },
   {
    "id": "office_b",
+   "zone": "commercial",
    "type": "office",
    "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "desk",
@@ -208,34 +389,76 @@
     {
      "id": "desk",
      "x": 11
+    },
+    {
+     "dy": 2,
+     "id": "res_desk_lamp",
+     "x": 11
+    },
+    {
+     "dy": 4,
+     "id": "com_cork_board",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "com_fire_extinguisher",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 10
+    },
+    {
+     "id": "com_coat_rack",
+     "x": 0
+    },
+    {
+     "id": "com_server_rack",
+     "x": 1
+    },
+    {
+     "id": "com_shredder",
+     "x": 2
+    },
+    {
+     "dy": 4,
+     "id": "com_projector_screen",
+     "x": 2
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 6
     }
    ],
    "blocks": [
     {
+     "dy": 2,
      "mat": 2,
-     "x": 3,
-     "dy": 2
+     "x": 3
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 4,
-     "dy": 2
+     "x": 4
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 5,
-     "dy": 2
+     "x": 5
     }
-   ],
-   "zone": "commercial",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   ]
   },
   {
    "id": "office_c",
+   "zone": "commercial",
    "type": "office",
    "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "locker",
@@ -256,18 +479,52 @@
     {
      "id": "desk",
      "x": 9
+    },
+    {
+     "dy": 2,
+     "id": "res_desk_lamp",
+     "x": 4
+    },
+    {
+     "dy": 4,
+     "id": "com_cork_board",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "com_fire_extinguisher",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 10
+    },
+    {
+     "id": "com_coat_rack",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "com_projector_screen",
+     "x": 2
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 6
     }
    ],
-   "blocks": [],
-   "zone": "commercial",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   "blocks": []
   },
   {
    "id": "office_d",
+   "zone": "commercial",
    "type": "office",
    "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "cabinet",
@@ -280,18 +537,60 @@
     {
      "id": "cabinet",
      "x": 9
+    },
+    {
+     "id": "com_reception_desk",
+     "x": 5
+    },
+    {
+     "dy": 2,
+     "id": "com_coffee_maker",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_cork_board",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "com_fire_extinguisher",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 10
+    },
+    {
+     "id": "com_coat_rack",
+     "x": 2
+    },
+    {
+     "id": "res_tall_plant",
+     "x": 3
+    },
+    {
+     "dy": 4,
+     "id": "com_projector_screen",
+     "x": 2
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 6
     }
    ],
-   "blocks": [],
-   "zone": "commercial",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   "blocks": []
   },
   {
    "id": "hospital_a",
+   "zone": "civil",
    "type": "hospital",
    "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "med_cart",
@@ -304,34 +603,71 @@
     {
      "id": "med_cart",
      "x": 8
+    },
+    {
+     "id": "hos_scale",
+     "x": 0
+    },
+    {
+     "id": "hos_crutches",
+     "x": 6
+    },
+    {
+     "dy": 2,
+     "id": "hos_microscope",
+     "x": 1
+    },
+    {
+     "dy": 4,
+     "id": "hos_defibrillator",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "hos_anatomy_poster",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 10
+    },
+    {
+     "id": "hos_supply_shelving",
+     "x": 10
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 1
     }
    ],
    "blocks": [
     {
+     "dy": 2,
      "mat": 2,
-     "x": 4,
-     "dy": 2
+     "x": 4
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 5,
-     "dy": 2
+     "x": 5
     },
     {
+     "dy": 2,
      "mat": 2,
-     "x": 6,
-     "dy": 2
+     "x": 6
     }
-   ],
-   "zone": "hospital",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   ]
   },
   {
    "id": "hospital_b",
+   "zone": "civil",
    "type": "hospital",
    "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "chair",
@@ -344,18 +680,51 @@
     {
      "id": "med_cart",
      "x": 8
+    },
+    {
+     "id": "hos_scale",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "hos_microscope",
+     "x": 8
+    },
+    {
+     "dy": 4,
+     "id": "hos_defibrillator",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "hos_anatomy_poster",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 1
+    },
+    {
+     "id": "hos_crutches",
+     "x": 2
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 2
     }
    ],
-   "blocks": [],
-   "zone": "hospital",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   "blocks": []
   },
   {
    "id": "hospital_c",
+   "zone": "civil",
    "type": "hospital",
    "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "med_cart",
@@ -368,18 +737,51 @@
     {
      "id": "chair",
      "x": 7
+    },
+    {
+     "id": "hos_scale",
+     "x": 0
+    },
+    {
+     "id": "hos_crutches",
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "id": "hos_microscope",
+     "x": 2
+    },
+    {
+     "dy": 4,
+     "id": "hos_defibrillator",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "hos_anatomy_poster",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 1
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 2
     }
    ],
-   "blocks": [],
-   "zone": "hospital",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   "blocks": []
   },
   {
    "id": "hospital_d",
+   "zone": "civil",
    "type": "hospital",
    "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
    "objects": [
     {
      "id": "locker",
@@ -388,18 +790,46 @@
     {
      "id": "bed_frame",
      "x": 4
+    },
+    {
+     "id": "hos_exam_table",
+     "x": 7
+    },
+    {
+     "dy": 4,
+     "id": "hos_defibrillator",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "hos_anatomy_poster",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 1
+    },
+    {
+     "id": "hos_crutches",
+     "x": 0
+    },
+    {
+     "id": "hos_scale",
+     "x": 2
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 2
     }
    ],
-   "blocks": [],
-   "zone": "hospital",
-   "height": 5,
-   "depth_min": -9999,
-   "depth_max": 9999
+   "blocks": []
   },
   {
    "id": "apartment_pack",
-   "type": "apartment",
    "zone": "residential",
+   "type": "apartment",
    "width": 13,
    "height": 5,
    "depth_min": -9999,
@@ -422,22 +852,55 @@
      "x": 10
     },
     {
+     "dy": 3,
      "id": "res_wall_clock",
-     "x": 5,
-     "dy": 3
+     "x": 5
     },
     {
+     "dy": 3,
      "id": "res_wall_painting",
-     "x": 1,
-     "dy": 3
+     "x": 1
+    },
+    {
+     "dy": 1,
+     "id": "res_candles",
+     "x": 4
+    },
+    {
+     "dy": 2,
+     "id": "res_curtains",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_family_photos",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "res_wall_sconce",
+     "x": 10
+    },
+    {
+     "id": "res_armchair",
+     "x": 3
+    },
+    {
+     "id": "res_side_table",
+     "x": 6
+    },
+    {
+     "dy": 1,
+     "id": "res_lava_lamp",
+     "x": 6
     }
    ],
    "blocks": []
   },
   {
    "id": "office_pack",
-   "type": "office",
    "zone": "commercial",
+   "type": "office",
    "width": 12,
    "height": 5,
    "depth_min": -9999,
@@ -460,22 +923,50 @@
      "x": 9
     },
     {
+     "dy": 3,
      "id": "com_whiteboard",
-     "x": 1,
-     "dy": 3
+     "x": 1
     },
     {
+     "dy": 3,
      "id": "com_motivation_poster",
-     "x": 6,
-     "dy": 3
+     "x": 6
+    },
+    {
+     "dy": 1,
+     "id": "com_coffee_maker",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "com_cork_board",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "com_fire_extinguisher",
+     "x": 5
+    },
+    {
+     "dy": 3,
+     "id": "com_station_clock",
+     "x": 10
+    },
+    {
+     "id": "com_server_rack",
+     "x": 4
+    },
+    {
+     "id": "com_shredder",
+     "x": 6
     }
    ],
    "blocks": []
   },
   {
    "id": "utility_pack",
-   "type": "utility",
    "zone": "industrial",
+   "type": "utility",
    "width": 13,
    "height": 5,
    "depth_min": 40,
@@ -498,22 +989,50 @@
      "x": 10
     },
     {
+     "dy": 3,
      "id": "ind_hazard_sign",
-     "x": 5,
-     "dy": 3
+     "x": 5
     },
     {
+     "dy": 3,
      "id": "ind_pipe_diagram",
-     "x": 1,
-     "dy": 3
+     "x": 1
+    },
+    {
+     "dy": 3,
+     "id": "ind_fuse_box",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "ind_fire_hose_cabinet",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "ind_punch_clock",
+     "x": 10
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 3
+    },
+    {
+     "id": "ind_mop_bucket",
+     "x": 6
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 1
     }
    ],
    "blocks": []
   },
   {
    "id": "ward_pack",
+   "zone": "civil",
    "type": "ward",
-   "zone": "hospital",
    "width": 12,
    "height": 5,
    "depth_min": -9999,
@@ -536,22 +1055,45 @@
      "x": 9
     },
     {
+     "dy": 3,
      "id": "hos_eye_chart",
-     "x": 4,
-     "dy": 3
+     "x": 4
     },
     {
+     "dy": 3,
      "id": "hos_xray_lightbox",
-     "x": 0,
-     "dy": 3
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "hos_defibrillator",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "hos_anatomy_poster",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 10
+    },
+    {
+     "id": "hos_scale",
+     "x": 3
+    },
+    {
+     "id": "hos_crutches",
+     "x": 5
     }
    ],
    "blocks": []
   },
   {
    "id": "retail_pack",
-   "type": "retail",
    "zone": "commercial",
+   "type": "retail",
    "width": 12,
    "height": 5,
    "depth_min": -9999,
@@ -574,13 +1116,4630 @@
      "x": 10
     },
     {
+     "dy": 3,
+     "id": "ret_open_sign",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "ret_menu_board",
+     "x": 4
+    },
+    {
+     "dy": 2,
+     "id": "ret_cash_register",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "ret_security_camera",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "ret_aisle_sign",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 10
+    },
+    {
+     "id": "ret_mannequin",
+     "x": 3
+    },
+    {
+     "id": "ret_magazine_rack",
+     "x": 6
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "bedroom01",
+   "zone": "residential",
+   "type": "bedroom",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "bed_frame",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "res_wall_painting",
+     "x": 2
+    },
+    {
+     "id": "desk",
+     "x": 9
+    },
+    {
+     "id": "res_bookshelf",
+     "x": 7
+    },
+    {
+     "dy": 2,
+     "id": "res_desk_lamp",
+     "x": 9
+    },
+    {
+     "dy": 3,
+     "id": "res_wall_mirror",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_photo_shelf",
+     "x": 7
+    },
+    {
+     "id": "res_nightstand",
+     "x": 3
+    },
+    {
+     "id": "res_laundry_basket",
+     "x": 4
+    },
+    {
+     "dy": 1,
+     "id": "res_desk_clock",
+     "x": 3
+    }
+   ],
+   "blocks": [
+    {
+     "dy": 4,
+     "mat": 2,
+     "x": 6
+    },
+    {
+     "dy": 3,
+     "mat": 2,
+     "x": 6
+    }
+   ]
+  },
+  {
+   "id": "Kitchen",
+   "zone": "residential",
+   "type": "room",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "Lamp",
+     "x": 10
+    },
+    {
+     "id": "fridge",
+     "x": 8
+    },
+    {
+     "dy": 3,
+     "id": "res_book_stack",
+     "x": 9
+    },
+    {
+     "id": "cabinet",
+     "x": 0
+    },
+    {
+     "id": "chair",
+     "x": 2
+    },
+    {
+     "id": "res_kitchen_counter",
+     "x": 5
+    },
+    {
+     "dy": 1,
+     "id": "res_microwave",
+     "x": 5
+    },
+    {
+     "dy": 1,
+     "id": "res_toaster",
+     "x": 6
+    },
+    {
+     "dy": 4,
+     "id": "res_spice_rack",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "res_pendant_lamp",
+     "x": 5
+    },
+    {
+     "dy": 4,
+     "id": "res_modern_clock",
+     "x": 10
+    },
+    {
+     "id": "res_trash_can",
+     "x": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "livingroom01",
+   "zone": "residential",
+   "type": "room",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_coffee_table",
+     "x": 7
+    },
+    {
+     "id": "res_microwave",
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "id": "res_wall_clock",
+     "x": 5
+    },
+    {
+     "id": "res_armchair",
+     "x": 0
+    },
+    {
+     "id": "res_aquarium",
+     "x": 4
+    },
+    {
+     "id": "res_stereo",
+     "x": 10
+    },
+    {
+     "dy": 1,
+     "id": "res_candles",
+     "x": 7
+    },
+    {
+     "dy": 2,
+     "id": "res_curtains",
+     "x": 0
+    },
+    {
+     "dy": 4,
+     "id": "res_family_photos",
+     "x": 5
+    },
+    {
+     "dy": 3,
+     "id": "res_pendant_lamp",
+     "x": 10
+    }
+   ],
+   "blocks": [
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 1
+    },
+    {
+     "dy": 1,
+     "mat": 2,
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "mat": 2,
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "mat": 2,
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "mat": 2,
+     "x": 3
+    },
+    {
+     "dy": 1,
+     "mat": 2,
+     "x": 3
+    },
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 3
+    },
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 6
+    },
+    {
+     "dy": 1,
+     "mat": 2,
+     "x": 6
+    },
+    {
+     "dy": 2,
+     "mat": 2,
+     "x": 6
+    },
+    {
+     "dy": 2,
+     "mat": 2,
+     "x": 7
+    },
+    {
+     "dy": 2,
+     "mat": 2,
+     "x": 8
+    },
+    {
+     "dy": 2,
+     "mat": 2,
+     "x": 9
+    },
+    {
+     "dy": 1,
+     "mat": 2,
+     "x": 9
+    },
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 9
+    }
+   ]
+  },
+  {
+   "id": "utilityCloset01",
+   "zone": "industrial",
+   "type": "room",
+   "width": 19,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "cabinet",
+     "x": 4
+    },
+    {
+     "id": "ind_barrel_rack",
+     "x": 7
+    },
+    {
+     "dy": 3,
+     "id": "ind_gas_cylinder",
+     "x": 5
+    },
+    {
+     "dy": 1,
+     "id": "ind_hazard_sign",
+     "x": 15
+    },
+    {
+     "id": "ind_parts_shelf",
+     "x": 16
+    },
+    {
+     "id": "locker",
+     "x": 11
+    },
+    {
+     "id": "locker",
+     "x": 13
+    },
+    {
+     "id": "locker",
+     "x": 12
+    }
+   ],
+   "blocks": [
+    {
+     "dy": 0,
+     "mat": 4,
+     "x": 2
+    },
+    {
+     "dy": 1,
+     "mat": 4,
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "mat": 4,
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "mat": 4,
+     "x": 3
+    },
+    {
+     "dy": 1,
+     "mat": 4,
+     "x": 3
+    },
+    {
+     "dy": 0,
+     "mat": 4,
+     "x": 3
+    }
+   ]
+  },
+  {
+   "id": "utilityCloset02",
+   "zone": "industrial",
+   "type": "room",
+   "width": 19,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "dy": 3,
+     "id": "ind_gas_cylinder",
+     "x": 5
+    },
+    {
+     "dy": 3,
+     "id": "ind_oil_can",
+     "x": 3
+    },
+    {
+     "dy": 3,
+     "id": "ind_oil_can",
+     "x": 2
+    },
+    {
+     "id": "ind_boiler",
+     "x": 7
+    },
+    {
+     "id": "med_cart",
+     "x": 4
+    },
+    {
+     "id": "ind_bucket",
+     "x": 9
+    },
+    {
+     "dy": 2,
+     "id": "ind_generator",
+     "x": 13
+    },
+    {
+     "dy": 2,
+     "id": "ind_hose_coil",
+     "x": 12
+    }
+   ],
+   "blocks": [
+    {
+     "dy": 0,
+     "mat": 4,
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "mat": 4,
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "mat": 4,
+     "x": 3
+    },
+    {
+     "dy": 0,
+     "mat": 4,
+     "x": 3
+    },
+    {
+     "dy": 2,
+     "mat": 3,
+     "x": 4
+    },
+    {
+     "dy": 2,
+     "mat": 3,
+     "x": 5
+    },
+    {
+     "dy": 2,
+     "mat": 3,
+     "x": 6
+    },
+    {
+     "dy": 1,
+     "mat": 3,
+     "x": 6
+    },
+    {
+     "dy": 0,
+     "mat": 3,
+     "x": 6
+    },
+    {
+     "dy": 2,
+     "mat": 3,
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "mat": 3,
+     "x": 0
+    },
+    {
+     "dy": 1,
+     "mat": 3,
+     "x": 0
+    },
+    {
+     "dy": 0,
+     "mat": 3,
+     "x": 0
+    },
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 11
+    },
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 15
+    },
+    {
+     "dy": 1,
+     "mat": 4,
+     "x": 11
+    },
+    {
+     "dy": 1,
+     "mat": 4,
+     "x": 12
+    },
+    {
+     "dy": 1,
+     "mat": 4,
+     "x": 13
+    },
+    {
+     "dy": 1,
+     "mat": 4,
+     "x": 14
+    },
+    {
+     "dy": 1,
+     "mat": 4,
+     "x": 15
+    }
+   ]
+  },
+  {
+   "id": "Store01",
+   "zone": "commercial",
+   "type": "room",
+   "width": 12,
+   "height": 7,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "dy": 1,
+     "id": "com_paper_stack",
+     "x": 1
+    },
+    {
+     "dy": 3,
+     "id": "ret_menu_board",
+     "x": 10
+    },
+    {
+     "dy": 3,
+     "id": "ret_menu_board",
+     "x": 6
+    },
+    {
+     "dy": 3,
+     "id": "ret_poster",
+     "x": 1
+    },
+    {
+     "id": "ret_vending",
+     "x": 6
+    },
+    {
+     "id": "ret_vending",
+     "x": 10
+    },
+    {
+     "id": "com_water_cooler",
+     "x": 9
+    },
+    {
+     "id": "com_office_chair",
+     "x": 0
+    }
+   ],
+   "blocks": [
+    {
+     "dy": 0,
+     "mat": 1,
+     "x": 1
+    },
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 2
+    },
+    {
+     "dy": 0,
+     "mat": 2,
+     "x": 3
+    },
+    {
+     "dy": 0,
+     "mat": 1,
+     "x": 4
+    }
+   ]
+  },
+  {
+   "id": "law_office",
+   "zone": "business",
+   "type": "law office",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "desk",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "id": "com_office_chair",
+     "x": 3
+    },
+    {
+     "id": "com_office_bookcase",
+     "x": 5
+    },
+    {
+     "id": "com_filing_cabinet",
+     "x": 7
+    },
+    {
+     "id": "com_coat_rack",
+     "x": 9
+    },
+    {
+     "id": "res_tall_plant",
+     "x": 10
+    },
+    {
+     "id": "com_logo_sign",
+     "x": 0,
+     "dy": 4
+    },
+    {
+     "id": "com_cork_board",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 10,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "consultancy",
+   "zone": "business",
+   "type": "consultancy",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_reception_desk",
+     "x": 0
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "com_office_chair",
+     "x": 4
+    },
+    {
+     "id": "desk",
+     "x": 5
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "com_office_chair",
+     "x": 8
+    },
+    {
+     "id": "com_filing_cabinet",
+     "x": 9
+    },
+    {
+     "id": "com_water_cooler",
+     "x": 10
+    },
+    {
+     "id": "com_station_clock",
+     "x": 2,
+     "dy": 3
+    },
+    {
+     "id": "com_projector_screen",
+     "x": 5,
+     "dy": 4
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 9,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "agency_front",
+   "zone": "business",
+   "type": "agency",
+   "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_reception_desk",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "hos_waiting_chairs",
+     "x": 4
+    },
+    {
+     "id": "res_tall_plant",
+     "x": 7
+    },
+    {
+     "id": "com_supply_cabinet",
+     "x": 8
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 0,
+     "dy": 4
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 3,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v01",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "bed_frame",
+     "x": 0
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "res_nightstand",
+     "x": 3
+    },
+    {
+     "id": "res_table_lamp",
+     "x": 3,
+     "dy": 1
+    },
+    {
+     "id": "res_curtains",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "res_dresser",
+     "x": 5
+    },
+    {
+     "id": "res_candles",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "res_family_photos",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "res_wall_mirror",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_sofa",
+     "x": 8
+    },
+    {
+     "id": "res_modern_clock",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "res_side_table",
+     "x": 11
+    },
+    {
+     "id": "res_book_stack",
+     "x": 11,
+     "dy": 1
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v02",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "fridge",
+     "x": 0
+    },
+    {
+     "id": "res_kitchen_counter",
+     "x": 2
+    },
+    {
+     "id": "res_microwave",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "res_dish_stack",
+     "x": 3,
+     "dy": 1
+    },
+    {
+     "id": "res_toaster",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "res_spice_rack",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "res_stove",
+     "x": 5
+    },
+    {
+     "id": "res_range_hood",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "res_sofa",
+     "x": 8
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "res_side_table",
+     "x": 12
+    },
+    {
+     "id": "res_candles",
+     "x": 12,
+     "dy": 1
+    },
+    {
+     "id": "res_curtains",
+     "x": 12,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v03",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_bookshelf",
+     "x": 0
+    },
+    {
+     "id": "res_bookshelf",
+     "x": 2
+    },
+    {
+     "id": "res_photo_shelf",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "res_family_photos",
+     "x": 2,
+     "dy": 4
+    },
+    {
+     "id": "res_armchair",
+     "x": 5
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_side_table",
+     "x": 6
+    },
+    {
+     "id": "res_book_stack",
+     "x": 6,
+     "dy": 1
+    },
+    {
+     "id": "res_coffee_table",
+     "x": 8
+    },
+    {
+     "id": "res_candles",
+     "x": 8,
+     "dy": 1
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "res_tall_plant",
+     "x": 10
+    },
+    {
+     "id": "res_curtains",
+     "x": 10,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v04",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_crib",
+     "x": 0
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "res_dresser",
+     "x": 3
+    },
+    {
+     "id": "res_table_lamp",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "res_family_photos",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "res_family_photos",
+     "x": 4,
+     "dy": 4
+    },
+    {
+     "id": "res_laundry_basket",
+     "x": 5
+    },
+    {
+     "id": "res_bean_bag",
+     "x": 7
+    },
+    {
+     "id": "res_modern_clock",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "res_tv_stand",
+     "x": 8
+    },
+    {
+     "id": "res_book_stack",
+     "x": 10
+    },
+    {
+     "id": "res_side_table",
+     "x": 11
+    },
+    {
+     "id": "res_lava_lamp",
+     "x": 11,
+     "dy": 1
+    },
+    {
+     "id": "res_curtains",
+     "x": 11,
+     "dy": 2
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 6,
+     "dy": 3
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 2,
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "mat": 2,
+     "x": 9,
+     "dy": 3
+    }
+   ]
+  },
+  {
+   "id": "apartment_v05",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_stereo",
+     "x": 0
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "res_sofa",
+     "x": 3
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "res_coffee_table",
+     "x": 6
+    },
+    {
+     "id": "res_dish_stack",
+     "x": 6,
+     "dy": 1
+    },
+    {
+     "id": "res_lava_lamp",
+     "x": 7,
+     "dy": 1
+    },
+    {
+     "id": "res_trash_can",
+     "x": 8
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "res_tv_stand",
+     "x": 9
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 10,
+     "dy": 3
+    },
+    {
+     "id": "res_suitcase",
+     "x": 12
+    },
+    {
+     "id": "res_curtains",
+     "x": 12,
+     "dy": 1
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v06",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_grandfather_clock",
+     "x": 0
+    },
+    {
+     "id": "res_radiator",
+     "x": 1
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "id": "res_armchair",
+     "x": 4
+    },
+    {
+     "id": "res_side_table",
+     "x": 5
+    },
+    {
+     "id": "res_candles",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "res_armchair",
+     "x": 6
+    },
+    {
+     "id": "res_family_photos",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 5,
+     "dy": 4
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "res_dining_table",
+     "x": 8
+    },
+    {
+     "id": "res_dish_stack",
+     "x": 9,
+     "dy": 1
+    },
+    {
+     "id": "res_potted_plant",
+     "x": 10,
+     "dy": 1
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 11
+    },
+    {
+     "id": "res_tall_plant",
+     "x": 13
+    },
+    {
+     "id": "res_curtains",
+     "x": 13,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v07",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_stereo",
+     "x": 0
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "res_bar_stool",
+     "x": 2
+    },
+    {
+     "id": "res_kitchen_counter",
+     "x": 3
+    },
+    {
+     "id": "res_dish_stack",
+     "x": 3,
+     "dy": 1
+    },
+    {
+     "id": "res_dish_stack",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "res_lava_lamp",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "res_trash_can",
+     "x": 7
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "res_sofa",
+     "x": 8
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "res_side_table",
+     "x": 12
+    },
+    {
+     "id": "res_candles",
+     "x": 12,
+     "dy": 1
+    },
+    {
+     "id": "res_curtains",
+     "x": 12,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v08",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "desk",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "res_lava_lamp",
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "id": "res_desk_clock",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 1,
+     "dy": 4
+    },
+    {
+     "id": "chair",
+     "x": 3
+    },
+    {
+     "id": "res_bookshelf",
+     "x": 4
+    },
+    {
+     "id": "res_photo_shelf",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 6,
+     "dy": 1
+    },
+    {
+     "id": "res_family_photos",
+     "x": 6,
+     "dy": 3
+    },
+    {
+     "id": "res_sofa",
+     "x": 7
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "res_curtains",
+     "x": 10,
+     "dy": 1
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "apartment_v09",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "fridge",
+     "x": 0
+    },
+    {
+     "id": "res_kitchen_cabinet",
+     "x": 2
+    },
+    {
+     "id": "res_toaster",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "res_microwave",
+     "x": 3,
+     "dy": 1
+    },
+    {
+     "id": "res_spice_rack",
+     "x": 2,
+     "dy": 4
+    },
+    {
+     "id": "res_modern_clock",
+     "x": 3,
+     "dy": 4
+    },
+    {
+     "id": "chair",
+     "x": 4
+    },
+    {
+     "id": "res_dining_table",
+     "x": 5
+    },
+    {
+     "id": "res_dish_stack",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "res_candles",
+     "x": 7,
+     "dy": 1
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 6,
+     "dy": 3
+    },
+    {
+     "id": "res_sofa",
+     "x": 9
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "res_side_table",
+     "x": 12
+    },
+    {
+     "id": "res_lava_lamp",
+     "x": 12,
+     "dy": 1
+    },
+    {
+     "id": "res_curtains",
+     "x": 13,
+     "dy": 1
+    },
+    {
+     "id": "res_family_photos",
+     "x": 13,
+     "dy": 4
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 2,
+     "x": 2,
+     "dy": 3
+    },
+    {
+     "mat": 2,
+     "x": 3,
+     "dy": 3
+    }
+   ]
+  },
+  {
+   "id": "apartment_v10",
+   "zone": "residential",
+   "type": "apartment",
+   "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_wardrobe",
+     "x": 0
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "res_suitcase",
+     "x": 3
+    },
+    {
+     "id": "res_wall_clock",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "res_sofa",
+     "x": 5
+    },
+    {
+     "id": "res_wall_painting",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_side_table",
+     "x": 8
+    },
+    {
+     "id": "res_candles",
+     "x": 8,
+     "dy": 1
+    },
+    {
+     "id": "res_trash_can",
+     "x": 9
+    },
+    {
+     "id": "res_curtains",
+     "x": 9,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v01",
+   "zone": "commercial",
+   "type": "office",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_cubicle_wall",
+     "x": 0
+    },
+    {
+     "id": "desk",
+     "x": 2
+    },
+    {
+     "id": "com_office_chair",
+     "x": 5
+    },
+    {
+     "id": "com_cubicle_wall",
+     "x": 6
+    },
+    {
+     "id": "desk",
+     "x": 8
+    },
+    {
+     "id": "com_office_chair",
+     "x": 11
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "com_desk_phone",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 6,
+     "dy": 4
+    },
+    {
+     "id": "com_cork_board",
+     "x": 8,
+     "dy": 4
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 12,
+     "dy": 2
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 12,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v02",
+   "zone": "commercial",
+   "type": "office",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_office_bookcase",
+     "x": 0
+    },
+    {
+     "id": "desk",
+     "x": 3
+    },
+    {
+     "id": "com_office_chair",
+     "x": 6
+    },
+    {
+     "id": "res_tall_plant",
+     "x": 8
+    },
+    {
+     "id": "com_filing_cabinet",
+     "x": 10
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "com_desk_phone",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 0,
+     "dy": 4
+    },
+    {
+     "id": "com_logo_sign",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "com_station_clock",
+     "x": 8,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v03",
+   "zone": "commercial",
+   "type": "office",
+   "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_server_rack",
+     "x": 0
+    },
+    {
+     "id": "com_server_rack",
+     "x": 1
+    },
+    {
+     "id": "com_server_rack",
+     "x": 2
+    },
+    {
+     "id": "com_server_rack",
+     "x": 4
+    },
+    {
+     "id": "ind_work_light",
+     "x": 6
+    },
+    {
+     "id": "desk",
+     "x": 7
+    },
+    {
+     "id": "com_monitor",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 1,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 3,
+     "dy": 4
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "com_cork_board",
+     "x": 8,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v04",
+   "zone": "commercial",
+   "type": "office",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "fridge",
+     "x": 0
+    },
+    {
+     "id": "com_water_cooler",
+     "x": 3
+    },
+    {
+     "id": "com_office_chair",
+     "x": 4
+    },
+    {
+     "id": "com_conference_table",
+     "x": 5
+    },
+    {
+     "id": "com_office_chair",
+     "x": 9
+    },
+    {
+     "id": "com_trash_bin",
+     "x": 11
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 7,
+     "dy": 1
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "com_cork_board",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "com_station_clock",
+     "x": 10,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v05",
+   "zone": "commercial",
+   "type": "office",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_tall_plant",
+     "x": 0
+    },
+    {
+     "id": "com_reception_desk",
+     "x": 2
+    },
+    {
+     "id": "com_office_chair",
+     "x": 5
+    },
+    {
+     "id": "com_shredder",
+     "x": 6
+    },
+    {
+     "id": "com_water_cooler",
+     "x": 7
+    },
+    {
+     "id": "com_coat_rack",
+     "x": 8
+    },
+    {
+     "id": "com_office_chair",
+     "x": 10
+    },
+    {
+     "id": "com_office_chair",
+     "x": 11
+    },
+    {
+     "id": "com_desk_phone",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "com_logo_sign",
+     "x": 3,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 6,
+     "dy": 3
+    },
+    {
+     "id": "com_cork_board",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "com_station_clock",
+     "x": 11,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v06",
+   "zone": "commercial",
+   "type": "office",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_office_chair",
+     "x": 0
+    },
+    {
+     "id": "com_conference_table",
+     "x": 1
+    },
+    {
+     "id": "com_office_chair",
+     "x": 5
+    },
+    {
+     "id": "com_trash_bin",
+     "x": 7
+    },
+    {
+     "id": "com_copier",
+     "x": 8
+    },
+    {
+     "id": "com_water_cooler",
+     "x": 11
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 1,
+     "dy": 1
+    },
+    {
+     "id": "com_desk_phone",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "com_monitor",
+     "x": 3,
+     "dy": 1
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "com_cork_board",
+     "x": 6,
+     "dy": 1
+    },
+    {
+     "id": "com_projector_screen",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 11,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v07",
+   "zone": "commercial",
+   "type": "office",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "desk",
+     "x": 0
+    },
+    {
+     "id": "com_office_chair",
+     "x": 3
+    },
+    {
+     "id": "desk",
+     "x": 4
+    },
+    {
+     "id": "desk",
+     "x": 8
+    },
+    {
+     "id": "com_office_chair",
+     "x": 11
+    },
+    {
+     "id": "com_trash_bin",
+     "x": 12
+    },
+    {
+     "id": "com_monitor",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "com_desk_phone",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 0,
+     "dy": 4
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "com_cork_board",
+     "x": 6,
+     "dy": 4
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 9,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 12,
+     "dy": 3
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 13,
+     "dy": 1
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v08",
+   "zone": "commercial",
+   "type": "office",
+   "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_supply_cabinet",
+     "x": 0
+    },
+    {
+     "id": "com_copier",
+     "x": 3
+    },
+    {
+     "id": "com_shredder",
+     "x": 5
+    },
+    {
+     "id": "com_trash_bin",
+     "x": 6
+    },
+    {
+     "id": "com_filing_cabinet",
+     "x": 7
+    },
+    {
+     "id": "com_filing_cabinet",
+     "x": 8
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 3,
+     "dy": 4
+    },
+    {
+     "id": "com_cork_board",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "ind_punch_clock",
+     "x": 9,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v09",
+   "zone": "commercial",
+   "type": "office",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "res_tall_plant",
+     "x": 0
+    },
+    {
+     "id": "com_office_chair",
+     "x": 2
+    },
+    {
+     "id": "com_conference_table",
+     "x": 3
+    },
+    {
+     "id": "com_office_chair",
+     "x": 7
+    },
+    {
+     "id": "com_office_bookcase",
+     "x": 10
+    },
+    {
+     "id": "com_desk_phone",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 10,
+     "dy": 3
+    },
+    {
+     "id": "com_logo_sign",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "com_projector_screen",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "com_station_clock",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 12,
+     "dy": 1
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 12,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "office_v10",
+   "zone": "commercial",
+   "type": "office",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_filing_cabinet",
+     "x": 0
+    },
+    {
+     "id": "desk",
+     "x": 1
+    },
+    {
+     "id": "com_office_chair",
+     "x": 4
+    },
+    {
+     "id": "com_server_rack",
+     "x": 6
+    },
+    {
+     "id": "com_copier",
+     "x": 8
+    },
+    {
+     "id": "locker",
+     "x": 11
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 2,
+     "dy": 3
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "com_paper_stack",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "com_logo_sign",
+     "x": 8,
+     "dy": 4
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 11,
+     "dy": 4
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 2,
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "mat": 2,
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "mat": 2,
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "mat": 2,
+     "x": 3,
+     "dy": 2
+    }
+   ]
+  },
+  {
+   "id": "retail_v01",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_counter",
+     "x": 0
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "ret_cans",
+     "x": 2,
+     "dy": 2
+    },
+    {
      "id": "ret_open_sign",
      "x": 0,
      "dy": 3
     },
     {
+     "id": "ret_security_camera",
+     "x": 2,
+     "dy": 4
+    },
+    {
+     "id": "ret_chest_freezer",
+     "x": 4
+    },
+    {
+     "id": "ret_box",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "ret_poster",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "ret_vending",
+     "x": 7
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "ret_shopping_cart",
+     "x": 10
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v02",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_mannequin",
+     "x": 0
+    },
+    {
+     "id": "ret_clothes_rack",
+     "x": 2
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "ret_clothes_rack",
+     "x": 5
+    },
+    {
+     "id": "ret_poster",
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "res_modern_clock",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "ret_mannequin",
+     "x": 8
+    },
+    {
+     "id": "res_tall_plant",
+     "x": 9
+    },
+    {
+     "id": "ret_counter",
+     "x": 10
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "ret_basket",
+     "x": 12,
+     "dy": 2
+    },
+    {
+     "id": "ret_open_sign",
+     "x": 11,
+     "dy": 3
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 10,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v03",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_booth",
+     "x": 0
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "id": "ret_counter",
+     "x": 4
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "ret_cans",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "com_coffee_maker",
+     "x": 6,
+     "dy": 2
+    },
+    {
      "id": "ret_menu_board",
      "x": 4,
+     "dy": 4
+    },
+    {
+     "id": "ret_open_sign",
+     "x": 6,
+     "dy": 4
+    },
+    {
+     "id": "com_station_clock",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "ret_booth",
+     "x": 8
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "ret_basket",
+     "x": 11
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 11,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v04",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_display_case",
+     "x": 0
+    },
+    {
+     "id": "com_monitor",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_logo_sign",
+     "x": 0,
+     "dy": 4
+    },
+    {
+     "id": "ret_counter",
+     "x": 4
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "com_monitor",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "ret_aisle_sign",
+     "x": 4,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "ret_gondola",
+     "x": 8
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 8,
+     "dy": 4
+    },
+    {
+     "id": "com_server_rack",
+     "x": 11
+    },
+    {
+     "id": "ret_box",
+     "x": 12
+    },
+    {
+     "id": "ret_atm",
+     "x": 13
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 13,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v05",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_stock_shelf",
+     "x": 0
+    },
+    {
+     "id": "ret_box",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "ret_box",
+     "x": 2,
+     "dy": 3
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 1,
+     "dy": 4
+    },
+    {
+     "id": "ret_pallet_goods",
+     "x": 4
+    },
+    {
+     "id": "ret_box",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "ret_basket",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "com_fire_extinguisher",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "ind_punch_clock",
+     "x": 6,
+     "dy": 3
+    },
+    {
+     "id": "ret_undercounter",
+     "x": 7
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 7,
+     "dy": 1
+    },
+    {
+     "id": "com_cork_board",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "ind_work_light",
+     "x": 9
+    },
+    {
+     "id": "ret_gondola",
+     "x": 10
+    },
+    {
+     "id": "ret_aisle_sign",
+     "x": 10,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v06",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "com_water_cooler",
+     "x": 0
+    },
+    {
+     "id": "ret_poster",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 2
+    },
+    {
+     "id": "chair",
+     "x": 3
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "ret_counter",
+     "x": 5
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "ret_basket",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "ret_menu_board",
+     "x": 5,
+     "dy": 4
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 7,
+     "dy": 4
+    },
+    {
+     "id": "ret_stock_shelf",
+     "x": 9
+    },
+    {
+     "id": "ret_box",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "ret_cans",
+     "x": 11,
+     "dy": 3
+    },
+    {
+     "id": "com_whiteboard",
+     "x": 9,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 12,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v07",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_shopping_cart",
+     "x": 0
+    },
+    {
+     "id": "ret_open_sign",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "ret_basket",
+     "x": 2
+    },
+    {
+     "id": "ret_box",
+     "x": 3
+    },
+    {
+     "id": "ret_cans",
+     "x": 3,
+     "dy": 1
+    },
+    {
+     "id": "ret_chest_freezer",
+     "x": 4
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "ret_cans",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "ret_poster",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "ret_gondola",
+     "x": 7
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 8,
+     "dy": 4
+    },
+    {
+     "id": "ret_poster",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "ret_magazine_rack",
+     "x": 10
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v08",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_display_case",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 2,
+     "dy": 3
+    },
+    {
+     "id": "ret_open_sign",
+     "x": 0,
+     "dy": 4
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 2,
+     "dy": 4
+    },
+    {
+     "id": "ret_counter",
+     "x": 4
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 5,
+     "dy": 4
+    },
+    {
+     "id": "ret_poster",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "ret_display_case",
+     "x": 8
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "res_wall_sconce",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 10,
+     "dy": 4
+    },
+    {
+     "id": "ret_mannequin",
+     "x": 11
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "retail_v09",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_magazine_rack",
+     "x": 0
+    },
+    {
+     "id": "ret_poster",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "ret_counter",
+     "x": 2
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "ret_cans",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "ret_menu_board",
+     "x": 2,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 4,
+     "dy": 4
+    },
+    {
+     "id": "res_pendant_lamp",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "ret_gondola",
+     "x": 6
+    },
+    {
+     "id": "ret_atm",
+     "x": 9
+    },
+    {
+     "id": "ret_box",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "ret_cans",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "ret_poster",
+     "x": 8,
+     "dy": 4
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 3,
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "mat": 3,
+     "x": 9,
+     "dy": 2
+    }
+   ]
+  },
+  {
+   "id": "retail_v10",
+   "zone": "commercial",
+   "type": "retail",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ret_vending",
+     "x": 0
+    },
+    {
+     "id": "ret_open_sign",
+     "x": 0,
+     "dy": 4
+    },
+    {
+     "id": "ret_counter",
+     "x": 3
+    },
+    {
+     "id": "ret_cash_register",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 3,
+     "dy": 4
+    },
+    {
+     "id": "ret_security_camera",
+     "x": 5,
+     "dy": 4
+    },
+    {
+     "id": "com_cubicle_wall",
+     "x": 7
+    },
+    {
+     "id": "com_motivation_poster",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "com_office_chair",
+     "x": 9
+    },
+    {
+     "id": "desk",
+     "x": 10
+    },
+    {
+     "id": "com_monitor",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "com_desk_phone",
+     "x": 12,
+     "dy": 2
+    },
+    {
+     "id": "com_cork_board",
+     "x": 10,
+     "dy": 3
+    },
+    {
+     "id": "com_trash_bin",
+     "x": 13
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v01",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 12,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_boiler",
+     "x": 0
+    },
+    {
+     "id": "ind_boiler",
+     "x": 2
+    },
+    {
+     "id": "ind_pipe_manifold",
+     "x": 5
+    },
+    {
+     "id": "ind_hose_coil",
+     "x": 7
+    },
+    {
+     "id": "ind_water_heater",
+     "x": 8
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 10
+    },
+    {
+     "id": "ind_bucket",
+     "x": 11
+    },
+    {
+     "dy": 3,
+     "id": "ind_pipe_diagram",
+     "x": 5
+    },
+    {
+     "dy": 1,
+     "id": "ind_fire_hose_cabinet",
+     "x": 7
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 9
+    },
+    {
+     "dy": 2,
+     "id": "ind_fuse_box",
+     "x": 11
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 0
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v02",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 13,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "pump",
+     "x": 0
+    },
+    {
+     "id": "pump",
+     "x": 1
+    },
+    {
+     "id": "ind_pipe_manifold",
+     "x": 3
+    },
+    {
+     "id": "ind_generator",
+     "x": 6
+    },
+    {
+     "id": "ind_work_light",
+     "x": 9
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 10
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 11
+    },
+    {
+     "id": "ind_oil_can",
+     "x": 12
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 2
+    },
+    {
+     "dy": 3,
+     "id": "ind_punch_clock",
+     "x": 9
+    },
+    {
+     "dy": 2,
+     "id": "ind_fire_hose_cabinet",
+     "x": 12
+    },
+    {
+     "dy": 3,
+     "id": "ind_pipe_diagram",
+     "x": 0
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v03",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 10,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_cable_spool",
+     "x": 0
+    },
+    {
+     "id": "ind_cable_spool",
+     "x": 2
+    },
+    {
+     "id": "locker",
+     "x": 5
+    },
+    {
+     "id": "ind_tool_chest",
+     "x": 7
+    },
+    {
+     "id": "ind_work_light",
+     "x": 9
+    },
+    {
+     "dy": 2,
+     "id": "ind_fuse_box",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "ind_fuse_box",
+     "x": 1
+    },
+    {
+     "dy": 3,
+     "id": "ind_hazard_sign",
+     "x": 2
+    },
+    {
+     "dy": 1,
+     "id": "ind_fire_hose_cabinet",
+     "x": 4
+    },
+    {
+     "dy": 3,
+     "id": "ind_pipe_diagram",
+     "x": 7
+    },
+    {
+     "dy": 3,
+     "id": "com_digital_clock",
+     "x": 9
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v04",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 11,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "cabinet",
+     "x": 0
+    },
+    {
+     "id": "ind_mop_bucket",
+     "x": 2
+    },
+    {
+     "id": "ind_mop_bucket",
+     "x": 3
+    },
+    {
+     "id": "med_cart",
+     "x": 5
+    },
+    {
+     "id": "ind_water_heater",
+     "x": 8
+    },
+    {
+     "id": "ind_bucket",
+     "x": 9
+    },
+    {
+     "id": "ind_hose_coil",
+     "x": 10
+    },
+    {
+     "dy": 2,
+     "id": "ind_bucket",
+     "x": 5
+    },
+    {
+     "dy": 2,
+     "id": "ind_oil_can",
+     "x": 6
+    },
+    {
+     "dy": 2,
+     "id": "ind_fire_hose_cabinet",
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 3
+    },
+    {
+     "dy": 3,
+     "id": "ind_punch_clock",
+     "x": 4
+    },
+    {
+     "dy": 4,
+     "id": "com_digital_clock",
+     "x": 7
+    },
+    {
+     "dy": 3,
+     "id": "ind_pipe_diagram",
+     "x": 9
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v05",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 14,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_welding_cart",
+     "x": 0
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 2
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 3
+    },
+    {
+     "id": "ind_tool_table",
+     "x": 5
+    },
+    {
+     "id": "ind_air_compressor",
+     "x": 9
+    },
+    {
+     "id": "ind_work_light",
+     "x": 12
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 13
+    },
+    {
+     "dy": 2,
+     "id": "ind_oil_can",
+     "x": 5
+    },
+    {
+     "dy": 2,
+     "id": "ind_hose_coil",
+     "x": 7
+    },
+    {
+     "dy": 2,
+     "id": "ind_fuse_box",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 2
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 3
+    },
+    {
+     "dy": 3,
+     "id": "ind_pipe_diagram",
+     "x": 9
+    },
+    {
+     "dy": 1,
+     "id": "ind_fire_hose_cabinet",
+     "x": 11
+    },
+    {
+     "dy": 3,
+     "id": "ind_punch_clock",
+     "x": 13
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v06",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 13,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_pallet_jack",
+     "x": 0
+    },
+    {
+     "id": "ind_barrel_rack",
+     "x": 3
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 5
+    },
+    {
+     "id": "ind_cable_spool",
+     "x": 7
+    },
+    {
+     "id": "ind_bucket",
+     "x": 9
+    },
+    {
+     "id": "ind_parts_shelf",
+     "x": 10
+    },
+    {
+     "id": "ind_oil_can",
+     "x": 12
+    },
+    {
+     "dy": 2,
+     "id": "ind_punch_clock",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "com_digital_clock",
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 6
+    },
+    {
+     "dy": 3,
+     "id": "ind_hazard_sign",
+     "x": 8
+    },
+    {
+     "dy": 2,
+     "id": "ind_fire_hose_cabinet",
+     "x": 12
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v07",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 14,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_generator",
+     "x": 0
+    },
+    {
+     "id": "ind_bucket",
+     "x": 3
+    },
+    {
+     "id": "ind_generator",
+     "x": 4
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 8
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 9
+    },
+    {
+     "id": "ind_work_light",
+     "x": 10
+    },
+    {
+     "id": "ind_vent_unit",
+     "x": 11
+    },
+    {
+     "dy": 2,
+     "id": "ind_fuse_box",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "ind_fuse_box",
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 3
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 7
+    },
+    {
+     "dy": 3,
+     "id": "ind_punch_clock",
+     "x": 7
+    },
+    {
+     "dy": 3,
+     "id": "com_digital_clock",
+     "x": 13
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v08",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 12,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_tool_table",
+     "x": 0
+    },
+    {
+     "id": "ind_tool_chest",
+     "x": 4
+    },
+    {
+     "id": "ind_oil_can",
+     "x": 6
+    },
+    {
+     "id": "ind_parts_shelf",
+     "x": 7
+    },
+    {
+     "id": "ind_air_compressor",
+     "x": 10
+    },
+    {
+     "dy": 2,
+     "id": "ind_bucket",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "ind_hose_coil",
+     "x": 1
+    },
+    {
+     "dy": 2,
+     "id": "ind_gas_cylinder",
+     "x": 2
+    },
+    {
+     "dy": 4,
+     "id": "ind_pipe_diagram",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "ind_hazard_sign",
+     "x": 4
+    },
+    {
+     "dy": 1,
+     "id": "ind_fuse_box",
+     "x": 9
+    },
+    {
+     "dy": 3,
+     "id": "com_digital_clock",
+     "x": 10
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "utility_v09",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 11,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_vent_unit",
+     "x": 0
+    },
+    {
+     "id": "ind_vent_unit",
+     "x": 2
+    },
+    {
+     "id": "ind_air_compressor",
+     "x": 5
+    },
+    {
+     "id": "pump",
+     "x": 8
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 9
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 10
+    },
+    {
+     "dy": 3,
+     "id": "ind_hazard_sign",
+     "x": 0
+    },
+    {
+     "dy": 3,
+     "id": "ind_pipe_diagram",
+     "x": 2
+    },
+    {
+     "dy": 1,
+     "id": "ind_fuse_box",
+     "x": 7
+    },
+    {
+     "dy": 2,
+     "id": "ind_fire_hose_cabinet",
+     "x": 9
+    },
+    {
+     "dy": 2,
+     "id": "ind_punch_clock",
+     "x": 10
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 3,
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "mat": 3,
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "mat": 3,
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "mat": 3,
+     "x": 3,
+     "dy": 2
+    }
+   ]
+  },
+  {
+   "id": "utility_v10",
+   "zone": "industrial",
+   "type": "utility",
+   "width": 12,
+   "height": 5,
+   "depth_min": 40,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_barrel_rack",
+     "x": 0
+    },
+    {
+     "id": "ind_barrel_rack",
+     "x": 2
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 5
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 6
+    },
+    {
+     "id": "ind_oil_can",
+     "x": 7
+    },
+    {
+     "id": "ind_pallet_jack",
+     "x": 9
+    },
+    {
+     "id": "ind_work_light",
+     "x": 11
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 0
+    },
+    {
+     "dy": 2,
+     "id": "ind_hazard_sign",
+     "x": 2
+    },
+    {
+     "dy": 1,
+     "id": "ind_fire_hose_cabinet",
+     "x": 4
+    },
+    {
+     "dy": 2,
+     "id": "ind_fuse_box",
+     "x": 8
+    },
+    {
+     "dy": 3,
+     "id": "ind_pipe_diagram",
+     "x": 9
+    },
+    {
+     "dy": 3,
+     "id": "com_digital_clock",
+     "x": 11
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v01",
+   "zone": "civil",
+   "type": "ward",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_gurney",
+     "x": 0
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "hos_iv_stand",
+     "x": 3
+    },
+    {
+     "id": "hos_privacy_screen",
+     "x": 4
+    },
+    {
+     "id": "hos_gurney",
+     "x": 6
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_vitals_monitor",
+     "x": 9
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_linen_hamper",
+     "x": 11
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 13,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 13,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v02",
+   "zone": "civil",
+   "type": "ward",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_exam_table",
+     "x": 0
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 2,
+     "dy": 1
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 0,
+     "dy": 3
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "med_cart",
+     "x": 4
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "chair",
+     "x": 6
+    },
+    {
+     "id": "hos_scale",
+     "x": 7
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "hos_med_cabinet",
+     "x": 9
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 10,
+     "dy": 4
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v03",
+   "zone": "civil",
+   "type": "ward",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_nurse_station",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_station_clock",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 3
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 5
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "hos_waiting_chairs",
+     "x": 8
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "hos_crutches",
+     "x": 11
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 11,
+     "dy": 2
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v04",
+   "zone": "civil",
+   "type": "ward",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_waiting_chairs",
+     "x": 0
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 1,
+     "dy": 2
+    },
+    {
+     "id": "hos_waiting_chairs",
+     "x": 3
+    },
+    {
+     "id": "com_station_clock",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 6,
+     "dy": 1
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "desk",
+     "x": 8
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 8,
+     "dy": 2
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 11
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 12
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 13,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v05",
+   "zone": "civil",
+   "type": "ward",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_supply_shelving",
+     "x": 0
+    },
+    {
+     "id": "hos_supply_shelving",
+     "x": 2
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 4,
+     "dy": 3
+    },
+    {
+     "id": "hos_med_cabinet",
+     "x": 5
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 7
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 8,
+     "dy": 4
+    },
+    {
+     "id": "locker",
+     "x": 9
+    },
+    {
+     "id": "hos_oxygen_tank",
+     "x": 10
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_crutches",
+     "x": 11
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 3,
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "mat": 3,
+     "x": 8,
+     "dy": 2
+    }
+   ]
+  },
+  {
+   "id": "ward_v06",
+   "zone": "civil",
+   "type": "ward",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_iv_stand",
+     "x": 0
+    },
+    {
+     "id": "hos_gurney",
+     "x": 1
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 4,
+     "dy": 1
+    },
+    {
+     "id": "med_cart",
+     "x": 5
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 8
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 8,
+     "dy": 3
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "hos_oxygen_tank",
+     "x": 11
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 12
+    },
+    {
+     "id": "com_station_clock",
+     "x": 11,
+     "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v07",
+   "zone": "civil",
+   "type": "ward",
+   "width": 11,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "bed_frame",
+     "x": 0
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "hos_vitals_monitor",
+     "x": 3
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 3,
+     "dy": 3
+    },
+    {
+     "id": "hos_iv_stand",
+     "x": 4
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 5
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 5,
+     "dy": 2
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "hos_privacy_screen",
+     "x": 7
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 9,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 9,
+     "dy": 4
+    },
+    {
+     "id": "locker",
+     "x": 10
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v08",
+   "zone": "civil",
+   "type": "ward",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "hos_exam_table",
+     "x": 0
+    },
+    {
+     "id": "hos_oxygen_tank",
+     "x": 0,
+     "dy": 1
+    },
+    {
+     "id": "hos_crutches",
+     "x": 3
+    },
+    {
+     "id": "hos_crutches",
+     "x": 4
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 5,
+     "dy": 1
+    },
+    {
+     "id": "hos_scale",
+     "x": 6
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 7,
+     "dy": 3
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 8
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 10,
+     "dy": 2
+    },
+    {
+     "id": "com_station_clock",
+     "x": 10,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 11
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ward_v09",
+   "zone": "civil",
+   "type": "ward",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "desk",
+     "x": 0
+    },
+    {
+     "id": "res_desk_lamp",
+     "x": 0,
+     "dy": 2
+    },
+    {
+     "id": "hos_microscope",
+     "x": 2,
+     "dy": 2
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "chair",
+     "x": 3
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "hos_med_cabinet",
+     "x": 5
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 5,
+     "dy": 4
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 6,
+     "dy": 4
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 7,
+     "dy": 2
+    },
+    {
+     "id": "hos_gurney",
+     "x": 8
+    },
+    {
+     "id": "hos_iv_stand",
+     "x": 11
+    },
+    {
+     "id": "hos_biohazard_bin",
+     "x": 12
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 12,
+     "dy": 3
+    }
+   ],
+   "blocks": [
+    {
+     "mat": 3,
+     "x": 5,
+     "dy": 3
+    },
+    {
+     "mat": 3,
+     "x": 6,
+     "dy": 3
+    }
+   ]
+  },
+  {
+   "id": "ward_v10",
+   "zone": "civil",
+   "type": "ward",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "bed_frame",
+     "x": 0
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 1,
+     "dy": 3
+    },
+    {
+     "id": "med_cart",
+     "x": 3
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 3,
+     "dy": 2
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 4,
+     "dy": 2
+    },
+    {
+     "id": "bed_frame",
+     "x": 5
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 6,
+     "dy": 2
+    },
+    {
+     "id": "hos_defibrillator",
+     "x": 8,
+     "dy": 1
+    },
+    {
+     "id": "hos_scale",
+     "x": 9
+    },
+    {
+     "id": "hos_xray_lightbox",
+     "x": 9,
+     "dy": 3
+    },
+    {
+     "id": "hos_linen_hamper",
+     "x": 11
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 13,
+     "dy": 1
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 13,
      "dy": 3
     }
    ],

@@ -69,21 +69,18 @@ def draw_tv_stand(d, W, H):
     d.point((W - 5, H - 14), fill=RED)             # standby led
 
 
+
 def draw_kitchen_counter(d, W, H):
     wd, mt, ce = RAMPS["wood"], RAMPS["metal"], RAMPS["ceramic"]
-    box(d, 0, 5, W - 1, H - 1, wd)                 # cabinet body
+    box(d, 0, 3, W - 1, H - 1, wd)                 # cabinet body
     for x in (3, 19, 35):                          # door panels
-        d.rectangle([x, 8, x + 10, H - 3], outline=wd[1][0])
-        d.point((x + 9, 11), fill=mt[1][3])        # knob
-    d.rectangle([0, 3, W - 1, 5], fill=ce[1][2], outline=ce[0])  # countertop
-    d.line([1, 4, W - 2, 4], fill=ce[2])
-    d.rectangle([23, 2, 37, 6], fill=mt[1][1], outline=mt[0])    # sink basin
-    d.rectangle([25, 3, 35, 5], fill=mt[1][0])     # basin well
-    d.line([25, 3, 35, 3], fill=mt[1][2])
-    d.rectangle([29, 0, 30, 2], fill=mt[2])        # faucet riser
-    d.rectangle([31, 0, 33, 0], fill=mt[2])        # spout
-    d.point((33, 1), fill=mt[1][3])
-    d.point((28, 0), fill=mt[0])                   # tap shadow side
+        d.rectangle([x, 6, x + 10, H - 3], outline=wd[1][0])
+        d.point((x + 9, 9), fill=mt[1][3])         # knob
+    d.rectangle([0, 0, W - 1, 3], fill=ce[1][2], outline=ce[0])  # countertop flush with the block top
+    d.line([1, 1, W - 2, 1], fill=ce[2])
+    d.rectangle([23, 0, 37, 3], fill=mt[1][1], outline=mt[0])    # inset sink basin
+    d.rectangle([25, 1, 35, 2], fill=mt[1][0])
+    d.point((30, 1), fill=mt[2])                   # drain glint
 
 
 def draw_wardrobe(d, W, H):
@@ -105,16 +102,14 @@ def draw_wardrobe(d, W, H):
     d.rectangle([W - 5, H - 3, W - 3, H - 3], fill=o)
 
 
+
 def draw_coffee_table(d, W, H):
-    wd, ce = RAMPS["wood"], RAMPS["ceramic"]
-    box(d, 0, 7, W - 1, 10, wd)                    # tabletop
-    d.rectangle([2, 11, 4, H - 1], fill=wd[1][1], outline=wd[0])  # legs
-    d.rectangle([W - 5, 11, W - 3, H - 1], fill=wd[1][1], outline=wd[0])
-    d.rectangle([4, 4, 11, 6], fill=BROWN_PAPER, outline=OUT)     # magazine
-    d.line([5, 5, 10, 5], fill=_dark(BROWN_PAPER, 30))
-    d.rectangle([W - 10, 3, W - 6, 6], fill=ce[1][3], outline=OUT)  # mug
-    d.point((W - 9, 4), fill=ce[2])
-    d.line([W - 5, 4, W - 5, 5], fill=OUT)         # mug handle
+    wd = RAMPS["wood"]
+    box(d, 0, 0, W - 1, 3, wd)                     # tabletop flush with the block top (things sit on it)
+    d.line([1, 1, W - 2, 1], fill=wd[2])
+    d.rectangle([2, 4, 4, H - 1], fill=wd[1][1], outline=wd[0])  # legs
+    d.rectangle([W - 5, 4, W - 3, H - 1], fill=wd[1][1], outline=wd[0])
+    d.rectangle([5, H - 4, W - 6, H - 3], fill=wd[1][1], outline=wd[0])  # stretcher
 
 
 # ------------------------------------------------------------------ storage
@@ -267,7 +262,7 @@ ITEMS = [
         "draw": draw_tv_stand,
     },
     {
-        "id": "res_kitchen_counter", "name": "Kitchen Counter", "category": "furniture",
+        "id": "res_kitchen_counter", "name": "Kitchen Counter", "category": "furniture", "surface": True, "surface": True, "surface": True,
         "size": [3, 1], "zones": ["residential"], "room_type": "apartment",
         "weight": 16, "tool_tier": 1, "skill": 0, "scrap_time": 3.0, "xp": 6,
         "yields": [{"item": "wood", "min": 3, "max": 5},
@@ -284,14 +279,14 @@ ITEMS = [
         "draw": draw_wardrobe,
     },
     {
-        "id": "res_coffee_table", "name": "Coffee Table", "category": "furniture",
+        "id": "res_coffee_table", "name": "Coffee Table", "category": "furniture", "surface": True, "surface": True, "surface": True,
         "size": [2, 1], "zones": ["residential"], "room_type": "apartment",
         "weight": 8, "tool_tier": 0, "skill": 0, "scrap_time": 1.5, "xp": 3,
         "yields": [{"item": "wood", "min": 4, "max": 6}],
         "draw": draw_coffee_table,
     },
     {
-        "id": "res_dresser", "name": "Dresser", "category": "furniture",
+        "id": "res_dresser", "name": "Dresser", "category": "furniture", "surface": True, "surface": True, "surface": True,
         "size": [2, 2], "zones": ["residential"], "room_type": "apartment",
         "weight": 16, "tool_tier": 0, "skill": 0, "scrap_time": 2.5, "xp": 6,
         "storage_slots": 8,
@@ -300,7 +295,7 @@ ITEMS = [
         "draw": draw_dresser,
     },
     {
-        "id": "res_kitchen_cabinet", "name": "Kitchen Cabinet", "category": "furniture",
+        "id": "res_kitchen_cabinet", "name": "Kitchen Cabinet", "category": "furniture", "surface": True, "surface": True, "surface": True,
         "size": [2, 1], "zones": ["residential"], "room_type": "apartment",
         "weight": 10, "tool_tier": 0, "skill": 0, "scrap_time": 2.0, "xp": 4,
         "storage_slots": 6,

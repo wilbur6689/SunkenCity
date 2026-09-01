@@ -14,6 +14,15 @@ func _ready() -> void:
 	add_child(ed)
 	await get_tree().process_frame
 	check(ed.image.get_width() == 32 and ed.image.get_height() == 32, "default canvas is 2x2 blocks (32px)")
+	# Esc menu (user request): the in-game pause menu mounted with editor bindings.
+	var pm = ed.get_tree().get_first_node_in_group("pause_menu")
+	check(pm != null and not pm.open, "pause menu mounted, closed at start")
+	pm.open_menu()
+	check(pm.open and pm.quit_button.text == "QUIT TO TITLE", "Esc menu opens with QUIT TO TITLE")
+	pm._show_controls(true)
+	check(pm.controls_box.visible and pm.controls_box.get_child_count() > 3, "CONTROLS page lists editor bindings")
+	pm.close()
+	check(not pm.open, "Esc menu closes")
 	check(ed.image.get_pixel(3, 3).a > 0.9, "box prefill painted the hull")
 	ed.id_edit.text = "smoke_shelf"
 	ed.name_edit.text = "Smoke Shelf"

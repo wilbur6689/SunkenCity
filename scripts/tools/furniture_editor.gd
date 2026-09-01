@@ -8,7 +8,7 @@ extends Control
 ## fill / box prefill. Right: the TileArt material palette.
 ## Save writes data/objects.json AND assets/sprites/objects/<id>.png.
 
-const ZONES := ["residential", "commercial", "industrial", "hospital"]
+const ZONES := ["residential", "business", "commercial", "industrial", "civil"]
 const KINDS := ["scrap", "chest", "bed", "light", "door", "pump", "breaker", "station"]
 const YIELD_ITEMS := ["wood", "scrap_metal", "plastic", "cloth", "stone", "iron"]
 const PX := 5 # canvas zoom
@@ -58,6 +58,7 @@ func _ready() -> void:
 	def = _default_def()
 	_new_image()
 	_build_ui()
+	_mount_pause_menu()
 	_refresh_load_list()
 	_sync_to_ui()
 	_prefill_box()
@@ -73,6 +74,27 @@ func _new_image() -> void:
 
 # --- UI ---
 
+## Esc menu — the in-game pause menu (sound sliders, a CONTROLS page) with
+## editor bindings and QUIT TO TITLE in place of Save & Quit.
+func _mount_pause_menu() -> void:
+	var pm: CanvasLayer = load("res://scripts/ui/pause_menu.gd").new()
+	pm.custom_controls = [
+		["Paint pixel", "LMB (drag) · Pencil tool"],
+		["Erase pixel", "RMB · or the Eraser tool"],
+		["Fill", "Fill tool · LMB on a region"],
+		["Pick colour", "Swatches · Custom… opens a picker"],
+		["Sprite size", "Width / Height spinners (blocks)"],
+		["Save", "SAVE / EXPORT → data/objects.json + PNG"],
+		["Menu", "Esc"],
+	]
+	pm.hint_text = "Unsaved furniture is lost on quit — SAVE / EXPORT first"
+	pm.quit_text = "QUIT TO TITLE"
+	pm.quit_callable = _quit_to_title
+	add_child(pm)
+
+func _quit_to_title() -> void:
+	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
+
 func _build_ui() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color(0.10, 0.12, 0.16)
@@ -82,14 +104,30 @@ func _build_ui() -> void:
 	title.position = Vector2(8, 4)
 	add_child(title)
 
+	# Three columns in an HBox so the panels can never paint over the canvas
+	# (they grow with their contents; fixed x positions did not follow). Both
+	# side panels scroll — settings for long yield lists, palette for swatches.
+	var root := HBoxContainer.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.offset_left = 8
+	root.offset_top = 18
+	root.offset_right = -8
+	root.offset_bottom = -8
+	root.add_theme_constant_override("separation", 8)
+	add_child(root)
+
 	var sp := PanelContainer.new()
 	sp.add_theme_stylebox_override("panel", UITheme.steel_panel())
-	sp.position = Vector2(8, 18)
-	sp.custom_minimum_size = Vector2(168, 336)
-	add_child(sp)
+	sp.custom_minimum_size = Vector2(168, 0)
+	root.add_child(sp)
+	var sscroll := ScrollContainer.new()
+	sscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sp.add_child(sscroll)
 	var sv := VBoxContainer.new()
 	sv.add_theme_constant_override("separation", 2)
-	sp.add_child(sv)
+	sv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sscroll.add_child(sv)
 	sv.add_child(UITheme.label("SETTINGS", 8, Color(0.56, 0.75, 0.81)))
 	var row1 := HBoxContainer.new()
 	id_edit = _edit("id")
@@ -162,26 +200,33 @@ func _build_ui() -> void:
 	status_label = UITheme.label("", 8, Color(0.75, 0.95, 0.75))
 	sv.add_child(status_label)
 
+	var mid := VBoxContainer.new()
+	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mid.add_theme_constant_override("separation", 4)
+	root.add_child(mid)
 	tool_label = UITheme.label("Tool: pencil  (LMB paint · RMB erase)", 8, Color(0.7, 0.78, 0.85))
-	tool_label.position = Vector2(190, 22)
-	add_child(tool_label)
+	tool_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mid.add_child(tool_label)
 	canvas = Control.new()
-	canvas.position = Vector2(190, 40)
 	canvas.custom_minimum_size = Vector2(MAX_BLOCKS * 16 * PX, MAX_BLOCKS * 16 * PX)
-	canvas.size = canvas.custom_minimum_size
+	canvas.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	canvas.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	canvas.draw.connect(_draw_canvas)
 	canvas.gui_input.connect(_canvas_input)
-	add_child(canvas)
+	mid.add_child(canvas)
 
 	var pp := PanelContainer.new()
 	pp.add_theme_stylebox_override("panel", UITheme.steel_panel())
-	pp.position = Vector2(522, 18)
-	pp.custom_minimum_size = Vector2(0, 336)
-	add_child(pp)
+	root.add_child(pp) # fills the column height; the palette inside scrolls
+	var pscroll := ScrollContainer.new()
+	pscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	pscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pp.add_child(pscroll)
 	var pv := VBoxContainer.new()
 	pv.add_theme_constant_override("separation", 2)
-	pp.add_child(pv)
+	pv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pscroll.add_child(pv)
 	pv.add_child(UITheme.label("TOOLS", 8, Color(0.56, 0.75, 0.81)))
 	pv.add_child(_button("Pencil", func(): _set_tool("pencil")))
 	pv.add_child(_button("Eraser", func(): _set_tool("eraser")))
@@ -252,7 +297,9 @@ func _spin(minv: float, maxv: float, val: float, _tip: String) -> SpinBox:
 	s.max_value = maxv
 	s.step = 0.5 if maxv <= 20 and minv >= 1 else 1
 	s.value = val
-	s.add_theme_font_size_override("font_size", 8)
+	# The override must land on the inner LineEdit — SpinBox's own theme
+	# overrides do not propagate to it, so it would render at the default 16px.
+	s.get_line_edit().add_theme_font_size_override("font_size", 8)
 	s.custom_minimum_size = Vector2(52, 0)
 	return s
 

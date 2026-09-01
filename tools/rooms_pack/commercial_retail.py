@@ -73,28 +73,20 @@ def _neon_N(d, x, y, c):
 
 # ---- furniture -----------------------------------------------------------
 
+
 def draw_counter(d, W, H):
-    wood, metal = RAMPS["wood"], RAMPS["metal"]
+    wood = RAMPS["wood"]
     # cabinet body + kickplate
-    box(d, 1, 15, W - 2, H - 1, wood)
+    box(d, 1, 4, W - 2, H - 1, wood)
     d.line([2, H - 3, W - 3, H - 3], fill=wood[1][0])
     for x in (16, 32):                                   # front panel seams
-        d.line([x, 17, x, H - 4], fill=wood[1][0])
-        d.line([x + 1, 17, x + 1, H - 4], fill=wood[1][3])
-    # countertop slab
-    box(d, 0, 11, W - 1, 14, wood)
-    d.line([1, 12, W - 2, 12], fill=wood[2])
-    # cash register (metal, on the right of the top)
-    box(d, 30, 1, 44, 11, metal)
-    panel(d, 31, 2, 36, 6, (26, 38, 32))                 # screen
-    d.line([32, 4, 35, 4], fill=GREEN)                   # readout
-    for ky in (8, 10):                                    # key rows
-        for kx in (38, 40, 42):
-            d.point((kx, ky), fill=metal[2])
-    d.line([31, 9, 36, 9], fill=metal[1][0])             # drawer seam
-    # small basket of goods on the left of the counter
-    _product(d, 4, 6, 6, 5, ORANGE)
-    _product(d, 11, 8, 5, 3, BLUE)
+        d.line([x, 6, x, H - 4], fill=wood[1][0])
+        d.line([x + 1, 6, x + 1, H - 4], fill=wood[1][3])
+    # countertop slab flush with the block top (register / clutter sit on it)
+    box(d, 0, 0, W - 1, 3, wood)
+    d.line([1, 1, W - 2, 1], fill=wood[2])
+    d.rectangle([4, 12, 20, 20], fill=wood[1][0], outline=wood[0])   # recessed bag shelf
+    d.line([5, 13, 19, 13], fill=wood[1][1])
 
 
 def draw_gondola(d, W, H):
@@ -150,8 +142,8 @@ def draw_display_case(d, W, H):
     box(d, 1, 20, W - 2, H - 1, wood)                              # wood base
     d.line([2, H - 3, W - 3, H - 3], fill=wood[1][0])
     # glass hood
-    d.rectangle([2, 3, W - 3, 20], fill=GLASS_FILL, outline=GLASS_EDGE)
-    d.line([3, 4, W - 4, 4], fill=GLASS_SHINE)                     # top shine
+    d.rectangle([2, 0, W - 3, 20], fill=GLASS_FILL, outline=GLASS_EDGE)   # hood top flush with the block top
+    d.line([3, 1, W - 4, 1], fill=GLASS_SHINE)                     # top shine
     d.line([8, 11, 13, 6], fill=GLASS_SHINE)                       # diagonal
     d.rectangle([3, 13, W - 4, 14], fill=wood[1][2], outline=wood[0])  # shelf
     # prized goods: rings, gem, watch
@@ -232,7 +224,7 @@ def draw_stock_shelf(d, W, H):
 
 def draw_undercounter(d, W, H):
     wood, metal = RAMPS["wood"], RAMPS["metal"]
-    box(d, 0, 1, W - 1, H - 1, wood)
+    box(d, 0, 0, W - 1, H - 1, wood)                                # top flush with the block top
     d.line([W // 2, 3, W // 2, H - 3], fill=wood[1][0])            # door seam
     d.line([W // 2 + 1, 3, W // 2 + 1, H - 3], fill=wood[1][3])
     d.rectangle([W // 2 - 4, 7, W // 2 - 3, 9], fill=metal[1][3])  # handles
@@ -309,7 +301,7 @@ def draw_poster(d, W, H):
 
 ITEMS = [
     {
-        "id": "ret_counter", "name": "Checkout Counter", "category": "furniture",
+        "id": "ret_counter", "surface": True, "name": "Checkout Counter", "category": "furniture",
         "size": [3, 2], "zones": ["commercial"], "room_type": "retail",
         "weight": 20, "tool_tier": 0, "skill": 0, "scrap_time": 3.0, "xp": 6,
         "yields": [{"item": "wood", "min": 4, "max": 6}, {"item": "scrap_metal", "min": 1, "max": 3},
@@ -332,7 +324,7 @@ ITEMS = [
         "draw": draw_vending,
     },
     {
-        "id": "ret_display_case", "name": "Display Case", "category": "furniture",
+        "id": "ret_display_case", "surface": True, "name": "Display Case", "category": "furniture",
         "size": [3, 2], "zones": ["commercial"], "room_type": "retail",
         "weight": 18, "tool_tier": 0, "skill": 1, "scrap_time": 3.0, "xp": 8,
         "yields": [{"item": "wood", "min": 3, "max": 5}, {"item": "scrap_metal", "min": 2, "max": 3},
@@ -364,7 +356,7 @@ ITEMS = [
         "draw": draw_stock_shelf,
     },
     {
-        "id": "ret_undercounter", "name": "Under-Counter Storage", "category": "furniture",
+        "id": "ret_undercounter", "surface": True, "name": "Under-Counter Storage", "category": "furniture",
         "size": [2, 1], "zones": ["commercial"], "room_type": "retail",
         "weight": 8, "tool_tier": 0, "skill": 0, "scrap_time": 1.5, "xp": 3,
         "yields": [{"item": "wood", "min": 3, "max": 5}, {"item": "scrap_metal", "min": 0, "max": 1}],

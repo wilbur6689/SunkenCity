@@ -8,6 +8,13 @@ extends CanvasLayer
 const BUSES := ["Music", "SFX", "Ambient"]
 
 var open: bool = false
+## Host configuration (set before add_child). The editors mount this same
+## menu: their own control rows, hint line, and a quit action that returns
+## to the title instead of saving a run.
+var custom_controls: Array = []          # [] = the in-game CONTROL_ROWS
+var hint_text: String = "F5 saves any time"
+var quit_text: String = ""               # "" = decided per scene in open_menu()
+var quit_callable: Callable = Callable() # invalid = default save_and_exit / quit
 var root: Control
 var quit_button: Button
 var main_box: VBoxContainer
@@ -93,8 +100,10 @@ func _ready() -> void:
 	quit_button.pressed.connect(_quit)
 	main_box.add_child(quit_button)
 
-	var hint := UITheme.label("F5 saves any time", 8, Color(0.55, 0.6, 0.68))
+	var hint := UITheme.label(hint_text, 8, Color(0.55, 0.6, 0.68))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size = Vector2(170, 0)
 	main_box.add_child(hint)
 
 	# Controls page (user request): every binding, read live from the
@@ -106,7 +115,8 @@ func _ready() -> void:
 	var ct := UITheme.label("CONTROLS", 10, Color(0.56, 0.75, 0.81))
 	ct.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	controls_box.add_child(ct)
-	for row in CONTROL_ROWS:
+	var rows: Array = custom_controls if not custom_controls.is_empty() else CONTROL_ROWS
+	for row in rows:
 		var hb := HBoxContainer.new()
 		hb.add_theme_constant_override("separation", 6)
 		var name_l := UITheme.label(String(row[0]), 8, Color(0.7, 0.78, 0.85))
@@ -184,8 +194,11 @@ func open_menu() -> void:
 	for bus_name in BUSES:
 		_sliders[bus_name].set_value_no_signal(Audio.volume(bus_name) * 100.0)
 		_pct_labels[bus_name].text = "%d%%" % int(Audio.volume(bus_name) * 100.0)
-	var scene := get_tree().current_scene
-	quit_button.text = "SAVE & QUIT" if scene != null and scene.has_method("save_and_exit_to_title") else "QUIT"
+	if quit_text != "":
+		quit_button.text = quit_text
+	else:
+		var scene := get_tree().current_scene
+		quit_button.text = "SAVE & QUIT" if scene != null and scene.has_method("save_and_exit_to_title") else "QUIT"
 	var player = get_tree().get_first_node_in_group("player")
 	if player != null:
 		player.ui_blocks_mouse = true
@@ -200,6 +213,9 @@ func close() -> void:
 
 func _quit() -> void:
 	Audio.save_settings()
+	if quit_callable.is_valid():
+		quit_callable.call()
+		return
 	var scene := get_tree().current_scene
 	if scene != null and scene.has_method("save_and_exit_to_title"):
 		scene.save_and_exit_to_title()

@@ -16,18 +16,14 @@ NAVY = RAMPS["navy"]
 
 # ---------------------------------------------------------------- furniture
 
+
 def draw_conference_table(d, W, H):
-    # long lacquered tabletop, bottom-anchored, sturdy end legs
-    box(d, 3, 10, 6, H - 1, WOOD)                       # left leg
-    box(d, W - 7, 10, W - 4, H - 1, WOOD)               # right leg
-    box(d, 0, 5, W - 1, 9, WOOD)                        # top slab
-    d.line([1, 6, W - 2, 6], fill=WOOD[2])              # polished highlight
-    # abandoned meeting: papers + a shut laptop
-    d.rectangle([8, 2, 15, 4], fill=WHITE, outline=OUT)
-    d.line([9, 3, 13, 3], fill=NAVY[1][2])
-    d.rectangle([W - 22, 1, W - 12, 4], fill=NAVY[1][1], outline=OUT)   # laptop lid
-    d.line([W - 21, 2, W - 13, 2], fill=NAVY[1][3])
-    d.line([W - 23, 4, W - 11, 4], fill=NAVY[1][0])     # keyboard deck on the slab
+    # long lacquered tabletop flush with the block top (things sit on it), sturdy end legs
+    box(d, 3, 5, 6, H - 1, WOOD)                        # left leg
+    box(d, W - 7, 5, W - 4, H - 1, WOOD)                # right leg
+    box(d, 0, 0, W - 1, 4, WOOD)                        # top slab
+    d.line([1, 1, W - 2, 1], fill=WOOD[2])              # polished highlight
+    d.rectangle([7, 5, W - 8, 6], fill=WOOD[1][0])      # apron shadow
 
 
 def draw_office_chair(d, W, H):
@@ -214,8 +210,8 @@ def draw_logo_sign(d, W, H):
 
 ITEMS = [
     {
-        "id": "com_conference_table", "name": "Conference Table",
-        "category": "furniture", "size": [4, 1], "zones": ["commercial"],
+        "id": "com_conference_table", "surface": True, "name": "Conference Table",
+        "category": "furniture", "size": [4, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 20, "tool_tier": 0, "skill": 0,
         "scrap_time": 3.0, "xp": 6,
         "yields": [{"item": "wood", "min": 6, "max": 10},
@@ -224,7 +220,7 @@ ITEMS = [
     },
     {
         "id": "com_office_chair", "name": "Office Chair",
-        "category": "furniture", "size": [1, 2], "zones": ["commercial"],
+        "category": "furniture", "size": [1, 2], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 8, "tool_tier": 0, "skill": 0,
         "scrap_time": 2.0, "xp": 4,
         "yields": [{"item": "plastic", "min": 2, "max": 4},
@@ -234,7 +230,7 @@ ITEMS = [
     },
     {
         "id": "com_cubicle_wall", "name": "Cubicle Divider",
-        "category": "furniture", "size": [2, 2], "zones": ["commercial"],
+        "category": "furniture", "size": [2, 2], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 12, "tool_tier": 0, "skill": 0,
         "scrap_time": 2.5, "xp": 5,
         "yields": [{"item": "cloth", "min": 2, "max": 4},
@@ -244,7 +240,7 @@ ITEMS = [
     },
     {
         "id": "com_water_cooler", "name": "Water Cooler",
-        "category": "furniture", "size": [1, 2], "zones": ["commercial"],
+        "category": "furniture", "size": [1, 2], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 10, "tool_tier": 0, "skill": 0,
         "scrap_time": 2.0, "xp": 4,
         "yields": [{"item": "plastic", "min": 4, "max": 6},
@@ -253,7 +249,7 @@ ITEMS = [
     },
     {
         "id": "com_copier", "name": "Office Copier",
-        "category": "furniture", "size": [2, 2], "zones": ["commercial"],
+        "category": "furniture", "size": [2, 2], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 22, "tool_tier": 1, "skill": 1,
         "scrap_time": 4.0, "xp": 8,
         "yields": [{"item": "scrap_metal", "min": 4, "max": 6},
@@ -263,7 +259,7 @@ ITEMS = [
     },
     {
         "id": "com_filing_cabinet", "name": "Filing Cabinet",
-        "category": "furniture", "size": [1, 2], "zones": ["commercial"],
+        "category": "furniture", "size": [1, 2], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 14, "tool_tier": 1, "skill": 0,
         "scrap_time": 2.5, "xp": 5, "storage_slots": 6,
         "yields": [{"item": "scrap_metal", "min": 4, "max": 7},
@@ -272,7 +268,7 @@ ITEMS = [
     },
     {
         "id": "com_supply_cabinet", "name": "Supply Cabinet",
-        "category": "furniture", "size": [2, 3], "zones": ["commercial"],
+        "category": "furniture", "size": [2, 3], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 18, "tool_tier": 1, "skill": 0,
         "scrap_time": 3.0, "xp": 6, "storage_slots": 10,
         "yields": [{"item": "scrap_metal", "min": 5, "max": 8},
@@ -281,7 +277,7 @@ ITEMS = [
     },
     {
         "id": "com_monitor", "name": "Desktop Monitor",
-        "category": "clutter", "size": [1, 1], "zones": ["commercial"],
+        "category": "clutter", "size": [1, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 3, "tool_tier": 0, "skill": 0,
         "scrap_time": 1.5, "xp": 3,
         "yields": [{"item": "plastic", "min": 1, "max": 2},
@@ -290,7 +286,7 @@ ITEMS = [
     },
     {
         "id": "com_desk_phone", "name": "Desk Phone",
-        "category": "clutter", "size": [1, 1], "zones": ["commercial"],
+        "category": "clutter", "size": [1, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 1, "tool_tier": 0, "skill": 0,
         "scrap_time": 1.0, "xp": 2,
         "yields": [{"item": "plastic", "min": 1, "max": 2}],
@@ -298,7 +294,7 @@ ITEMS = [
     },
     {
         "id": "com_paper_stack", "name": "Stack of Reports",
-        "category": "clutter", "size": [1, 1], "zones": ["commercial"],
+        "category": "clutter", "size": [1, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 1, "tool_tier": 0, "skill": 0,
         "scrap_time": 1.0, "xp": 2,
         "yields": [{"item": "wood", "min": 1, "max": 2}],
@@ -306,7 +302,7 @@ ITEMS = [
     },
     {
         "id": "com_trash_bin", "name": "Waste Bin",
-        "category": "clutter", "size": [1, 1], "zones": ["commercial"],
+        "category": "clutter", "size": [1, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 2, "tool_tier": 0, "skill": 0,
         "scrap_time": 1.0, "xp": 2,
         "yields": [{"item": "scrap_metal", "min": 1, "max": 2}],
@@ -314,7 +310,7 @@ ITEMS = [
     },
     {
         "id": "com_motivation_poster", "name": "Motivational Poster",
-        "category": "wall_art", "size": [1, 1], "zones": ["commercial"],
+        "category": "wall_art", "size": [1, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 1, "tool_tier": 0, "skill": 0,
         "scrap_time": 1.0, "xp": 2, "wall_mounted": True,
         "yields": [{"item": "cloth", "min": 1, "max": 2}],
@@ -322,7 +318,7 @@ ITEMS = [
     },
     {
         "id": "com_whiteboard", "name": "Whiteboard",
-        "category": "wall_art", "size": [2, 1], "zones": ["commercial"],
+        "category": "wall_art", "size": [2, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 5, "tool_tier": 0, "skill": 0,
         "scrap_time": 1.5, "xp": 3, "wall_mounted": True,
         "yields": [{"item": "plastic", "min": 2, "max": 3},
@@ -331,7 +327,7 @@ ITEMS = [
     },
     {
         "id": "com_logo_sign", "name": "Corporate Logo Sign",
-        "category": "wall_art", "size": [2, 1], "zones": ["commercial"],
+        "category": "wall_art", "size": [2, 1], "zones": ["commercial", "business"],
         "room_type": "office", "weight": 6, "tool_tier": 1, "skill": 0,
         "scrap_time": 1.5, "xp": 4, "wall_mounted": True,
         "yields": [{"item": "scrap_metal", "min": 2, "max": 3},

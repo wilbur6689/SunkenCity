@@ -53,6 +53,13 @@ def check(module_name: str) -> int:
                 bw, bh = bbox[2] - bbox[0], bbox[3] - bbox[1]
                 if bw < w * 16 * 0.5 or bh < h * 16 * 0.4:
                     errors.append(f"{label}: art fills only {bw}x{bh} of {w*16}x{h*16} — shrink size or draw bigger")
+                if it.get("surface"):
+                    # Surface furniture must present its top plane in row 0 so stacked
+                    # clutter rests on it instead of floating (2026-09-01).
+                    px = img.load()
+                    opaque = sum(1 for x in range(w * 16) if px[x, 0][3] > 0)
+                    if opaque < w * 16 * 0.6:
+                        errors.append(f"{label}: surface item but row 0 is only {opaque}/{w*16} px opaque — extend the top to the block top")
             renders.append((label, img))
         except Exception as e:  # noqa: BLE001
             errors.append(f"{label}: draw crashed: {e!r}")

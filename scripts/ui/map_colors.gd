@@ -8,6 +8,7 @@ const MAT := {
 	WorldGrid.M.WOOD: Color(0.55, 0.4, 0.24),
 	WorldGrid.M.METAL: Color(0.45, 0.52, 0.6),
 	WorldGrid.M.PLASTIC: Color(0.75, 0.72, 0.66),
+	WorldGrid.M.VOID: Color(0.03, 0.03, 0.05), # the nothing around interior pockets
 }
 const UNREVEALED := Color(0.03, 0.03, 0.05)
 const SKY := Color(0.22, 0.55, 0.64)

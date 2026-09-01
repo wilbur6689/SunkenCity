@@ -7,8 +7,10 @@ in [GameOverview.md](GameOverview.md).
 ## What the MVP Is
 
 **Roadmap step 1: a complete, playable, local single-player game** — a player can start in the
-medical room, learn the loop, dive through all five depth bands, restore the relay network, and
-drain the city. Built lean, but built *whole*: every stage of the game loop exists in simple form.
+medical room, learn the loop, and dive through all five depth bands to the city floor in a hard
+suit. Built lean, but built *whole*: every stage of the game loop exists in simple form. (Restoring
+the relay network and draining the city — the story's end goal — is the post-Steam-release
+endgame, not MVP scope.)
 
 **Standing rule:** the core loop — **harvest → craft → build base** — comes first. No other major
 aspect is started until that loop works end-to-end.
@@ -36,7 +38,8 @@ water sim) so roadmap step 2 (LAN) is an unlock, not a rewrite.
 - Room-template generation — with the authoring workflow: **proc-gen rooms → curate keepers →
   assemble from the curated library**, then wear (breaches ↑ with depth), flooding by pure
   connectivity.
-- Three building types (residential, office, hospital), **mixed-use per floor**; elevator-shaft
+- Five room zones (residential, business, commercial, industrial, civil — hospital renamed
+  2026-09-01), **mixed-use per floor**; elevator-shaft
   highways; authored starting hospital + relay stations; bare concrete roads at ground level;
   invisible wall edges; light surface debris.
 - Block palette: concrete, steel, brick, wood, glass. **Structure unbreakable**; breakable =
@@ -131,15 +134,18 @@ set bonuses · working elevators · cosmetic surface fauna.
 - **M5 — The Long Game:** loot tables + modifiers + Modification Bench; schematics; skills +
   player level + tech tree; gear ladder (tanks, suits, tools); depletion pressure.
   *Done when: progression from scrap knife to hard suit works purely through play.*
-- **M6 — The Drain:** relay stations + central station, band-by-band waterline drops, ending +
-  freeplay.
-  *Done when: one player, one seed, zero debug commands — medical room to drained city.*
+- **M6 — Release Readiness:** full-run integrity pass, performance pass, LAN smoke test.
+  *Done when: one player, one seed, zero debug commands — medical room to a hard suit on the
+  floor of The Crush.*
+- **Post-release — The Drain** *(deferred 2026-09-01)***:** relay stations + central station,
+  band-by-band waterline drops, ending + freeplay. Still the story's end goal; ships as the late
+  endgame after the Steam release, not in the MVP.
 
 ## Definition of Done (MVP complete)
 
-The MVP is complete when **a new player on a fresh seed can play from the medical room to the
-city-drained credits entirely through the systems above** — no debug tools, no missing-content
-walls — and:
+The MVP is complete when **a new player on a fresh seed can play from the medical room to a hard
+suit on the floor of The Crush entirely through the systems above** — no debug tools, no
+missing-content walls — and:
 
 1. Every M0–M6 gate has been demonstrated in a single build.
 2. A full playthrough is possible at the target pacing order (surface → shallows → cold → dark →

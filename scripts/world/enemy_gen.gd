@@ -44,12 +44,15 @@ static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 					if rng.randf() < float(cfg.get("wing_drowned_chance", 0.4)):
 						_stand(out, rng, grid, "drowned", zx0, zx1, sr)
 	# --- Open water ---
+	# Only the city proper: the gap + VOID annex east of it (interior pockets)
+	# is dry air and blackness, not ocean.
+	var city_end: int = int(gen.get("city_w", grid.bounds.end.x))
 	_scatter(out, rng, grid, "floater", cfg.get("floater_spacing", [50, 120]),
-		waterline, waterline, waterline)
+		waterline, waterline, waterline, city_end)
 	_scatter(out, rng, grid, "shark", cfg.get("shark_spacing", [80, 160]),
-		waterline + Constants.BAND_COLD_DEPTH + 4, grid.bounds.end.y - 12, waterline)
+		waterline + Constants.BAND_COLD_DEPTH + 4, grid.bounds.end.y - 12, waterline, city_end)
 	_scatter(out, rng, grid, "fish_school", cfg.get("fish_spacing", [40, 90]),
-		waterline + 4, grid.bounds.end.y - 8, waterline)
+		waterline + 4, grid.bounds.end.y - 8, waterline, city_end)
 	return out
 
 static func _band(depth: int) -> String:
@@ -84,13 +87,15 @@ static func _stand(out: Array, rng: RandomNumberGenerator, grid: WorldGrid,
 ## Open-water spawns marching across the world at a random spacing:
 ## structure-free, outside buildings (no back wall), below the waterline.
 static func _scatter(out: Array, rng: RandomNumberGenerator, grid: WorldGrid,
-		tid: String, spacing: Array, y0: int, y1: int, waterline: int) -> void:
+		tid: String, spacing: Array, y0: int, y1: int, waterline: int, x_end: int) -> void:
 	if y0 > y1:
 		return
 	var h := float(Data.enemies[tid].size[1])
 	var x := 30
-	while x < grid.bounds.end.x - 30:
+	while x < x_end - 30:
 		x += rng.randi_range(int(spacing[0]), int(spacing[1]))
+		if x >= x_end - 30:
+			break # the last stride must not overshoot into the open gap east of the city
 		var y := rng.randi_range(y0, y1)
 		var ok := y >= waterline # the spawn row itself must be flooded
 		for dy in range(-1, 2):

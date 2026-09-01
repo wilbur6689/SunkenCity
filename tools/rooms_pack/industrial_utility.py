@@ -97,29 +97,19 @@ def draw_pipe_manifold(d, W, H):  # 32x32
     d.point((10, 3), fill=RED)
 
 
+
 def draw_tool_table(d, W, H):  # 48x32
-    # steel worktop
-    box(d, 0, 12, W - 1, 17, METAL)
+    # steel worktop flush with the block top (tools / clutter sit on it)
+    box(d, 0, 0, W - 1, 5, METAL)
+    d.line([1, 1, W - 2, 1], fill=METAL[2])
     # angle-iron legs + lower shelf
-    d.rectangle([2, 18, 4, H - 1], fill=METAL[1][1], outline=METAL[0])
-    d.rectangle([W - 5, 18, W - 3, H - 1], fill=METAL[1][1], outline=METAL[0])
-    d.rectangle([4, 24, W - 5, 26], fill=METAL[1][0], outline=METAL[0])
-    d.rectangle([8, 21, 16, 24], fill=NAVY[1][1], outline=NAVY[0])  # crate on shelf
-    # bench vice on the right
-    box(d, W - 13, 6, W - 4, 12, METAL)
-    d.line([W - 14, 8, W - 16, 10], fill=METAL[1][3])  # vice handle
-    d.point((W - 8, 8), fill=METAL[2])
-    # red toolbox on the left of the top
-    box(d, 3, 6, 14, 11, RED_STEEL)
-    d.rectangle([7, 4, 10, 6], fill=RED_STEEL[1][0], outline=RED_STEEL[0])
-    # wrench lying on the top
-    d.line([19, 10, 27, 10], fill=METAL[1][3])
-    d.line([19, 11, 27, 11], fill=METAL[1][1])
-    d.rectangle([17, 9, 18, 12], fill=METAL[1][3], outline=None)  # open jaw
-    d.point((18, 10), fill=METAL[1][0])
-    d.ellipse([27, 9, 29, 11], fill=METAL[1][3])  # ring end
-    # spanner head highlight
-    d.point((17, 9), fill=METAL[2])
+    d.rectangle([2, 6, 4, H - 1], fill=METAL[1][1], outline=METAL[0])
+    d.rectangle([W - 5, 6, W - 3, H - 1], fill=METAL[1][1], outline=METAL[0])
+    d.rectangle([4, 20, W - 5, 22], fill=METAL[1][0], outline=METAL[0])
+    d.rectangle([8, 15, 16, 20], fill=NAVY[1][1], outline=NAVY[0])  # crate on the shelf
+    # red toolbox on the floor under the shelf
+    box(d, 20, 25, 31, H - 1, RED_STEEL)
+    d.rectangle([24, 23, 27, 25], fill=RED_STEEL[1][0], outline=RED_STEEL[0])
 
 
 def draw_vent_unit(d, W, H):  # 32x32
@@ -313,7 +303,7 @@ ITEMS = [
         "draw": draw_pipe_manifold,
     },
     {
-        "id": "ind_tool_table", "name": "Machinist's Table", "category": "furniture",
+        "id": "ind_tool_table", "surface": True, "name": "Machinist's Table", "category": "furniture",
         "size": [3, 2], "zones": ["industrial"], "room_type": "utility",
         "weight": 16, "tool_tier": 0, "skill": 0, "scrap_time": 3.0, "xp": 6,
         "yields": [

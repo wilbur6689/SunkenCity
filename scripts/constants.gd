@@ -152,6 +152,20 @@ const MAP_REVEAL_RADIUS: int = 14        # blocks revealed around the player
 const MINIMAP_WINDOW: Vector2i = Vector2i(96, 56) # cells shown on the minimap
 const MINIMAP_REFRESH_SECONDS: float = 0.25
 const DAY_LENGTH_SECONDS: float = 600.0          # full day/night cycle
+# --- Interior pockets (user request 2026-09-01; a 3-4 floor countdown was
+# tried and reverted the same day - independent rolls clump and drought,
+# which plays better): each floor rolls POCKET_CHANCE for an apartment
+# doorway (random wing); it leads to a room of its own, carved in the VOID
+# annex east of the city at the same rows (so depth/band stay true). Doors
+# follow the GL-09 material ladder: wood through The Shallows (sometimes
+# standing open, sometimes deadbolted - pry bar), chained metal below
+# (bolt cutters or better).
+const POCKET_CHANCE: float = 0.30        # a floor gets an interior doorway
+const POCKET_OPEN_CHANCE: float = 0.40   # wood door found standing open (else one click opens it)
+const POCKET_LOCK_CHANCE: float = 0.20   # wood door deadbolted (room_door_locked)
+const POCKET_LOCK_TIER: int = 1          # pry bar or better forces a deadbolt
+const POCKET_SEAL_CHANCE: float = 0.40   # submerged pocket kept its air (user: 40% dry)
+
 const BAND_SHALLOWS_DEPTH: int = 40  # rows below the waterline where each band ends
 const BAND_COLD_DEPTH: int = 120
 const BAND_DARK_DEPTH: int = 220
@@ -167,6 +181,9 @@ const AGGRO_NIGHT_MULT: float = 1.5      # surface-band aggro radii grow at nigh
 const ENEMY_TOUCH_COOLDOWN: float = 0.9  # seconds between contact hits on the player
 const ENEMY_KNOCKBACK: float = 7.0 * BLOCK_SIZE  # px/s shove a contact hit gives the player
 const ENEMY_HOP_BLOCKS: float = 2.2      # zombies mount small steps; no real climbing (GD-04)
+# Edge sense (user request 2026-08-31, amends GD-04): ground enemies never
+# walk off a ledge — chasers hold the edge, wanderers turn around. (Gap
+# jumping was tried and dropped for now, same request.)
 const ENEMY_POUND_INTERVAL: float = 1.0  # seconds between pounds on a blocking player block
 const ENEMY_POUND_DAMAGE: float = 12.0   # per pound; player-placed blocks/doors only (GD-04)
 const ENEMY_WANDER_SPEED: float = 0.35   # idle wander as a fraction of chase speed

@@ -1,7 +1,7 @@
 """Generate SunkenCity placeholder art in the Terraria-style spec (docs/technical/TileArt.md).
 
 Outputs:
-  assets/tiles/placeholder_blocks.png   80x112 atlas: rows = materials, columns = 5 pattern variants
+  assets/tiles/placeholder_blocks.png   80x128 atlas: rows = materials, columns = 5 pattern variants
   assets/sprites/player_placeholder.png 48x24 sheet: frame 0 standing (24px), frame 1 prone (compact)
 
 Run from the repo root:  python tools/gen_placeholder_art.py
@@ -24,7 +24,7 @@ RAMPS = {
     "metal":   ((22, 28, 36), [(60, 70, 82), (80, 92, 106), (100, 114, 130), (120, 136, 152)], (154, 170, 186)),
     "plastic": ((20, 44, 32), [(54, 100, 74), (70, 126, 92), (90, 150, 110), (112, 172, 130)], (142, 196, 156)),
 }
-ROWS = ["stone", "wood", "metal", "plastic", "water", "ladder", "rope"]
+ROWS = ["stone", "wood", "metal", "plastic", "water", "ladder", "rope", "void"]
 
 
 class Tile:
@@ -201,8 +201,16 @@ def rope(rng, o, t, h):
     return tile
 
 
+def void(rng, _o, _t, _h):
+    """The nothing around interior pockets: flat near-black, a faint speckle so it isn't a hole."""
+    tile = Tile((6, 6, 9, 255))
+    for _ in range(3):
+        tile.set(rng.randrange(T), rng.randrange(T), (12, 12, 16, 255))
+    return tile
+
+
 RECIPES = {"stone": stone, "wood": wood, "metal": metal, "plastic": plastic,
-           "water": water, "ladder": ladder, "rope": rope}
+           "water": water, "ladder": ladder, "rope": rope, "void": void}
 
 
 def build_atlas():
@@ -550,6 +558,11 @@ OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
     "wood_door": (1, 3),
     "metal_door": (1, 3),
     "vault_door": (1, 3),
+    "room_door": (1, 3),        # interior pocket doorway (closed), on the back wall
+    "room_door_open": (1, 3),   # its open frame: dark gap into the room beyond
+    "room_door_locked": (1, 3), # deadbolted variant (pry bar or better)
+    "room_door_metal": (1, 3),  # chained metal variant below the Shallows (bolt cutters)
+    "room_door_metal_open": (1, 3),
     "safe": (1, 1),
     "broken_ladder": (1, 1),
 }
@@ -569,10 +582,11 @@ def _draw_object(d, oid, W, H):
         d.point((W // 2 - 2, H // 2), fill=metal[2]); d.point((W // 2 + 2, H // 2), fill=metal[2])
         d.line([2, H // 2 + 6, W - 3, H // 2 + 6], fill=wood[1][1])
     elif oid == "desk":
-        _box(d, 0, 10, W - 1, 14, wood)
-        d.rectangle([1, 15, 3, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 4, 15, W - 2, H - 1], fill=wood[1][1], outline=OUT)
-        _box(d, W - 16, 15, W - 5, H - 3, wood); d.point((W - 10, H - 8), fill=metal[2])
-        d.rectangle([3, 6, 9, 10], fill=(200, 200, 200), outline=OUT)                   # papers
+        # Surface furniture: the top plane sits in row 0 so stacked clutter rests on it (2026-09-01).
+        _box(d, 0, 0, W - 1, 4, wood)
+        d.rectangle([1, 5, 3, H - 1], fill=wood[1][1], outline=OUT); d.rectangle([W - 4, 5, W - 2, H - 1], fill=wood[1][1], outline=OUT)
+        _box(d, W - 16, 5, W - 5, H - 3, wood); d.point((W - 10, 11), fill=metal[2]); d.point((W - 10, 21), fill=metal[2])
+        d.line([W - 15, 16, W - 6, 16], fill=wood[1][0])                                 # drawer seam
     elif oid == "chair":
         _box(d, 2, 7, W - 3, 15, wood); d.rectangle([4, 9, W - 5, 13], fill=wood[1][1])
         _box(d, 1, 16, W - 2, 20, wood)
@@ -587,10 +601,11 @@ def _draw_object(d, oid, W, H):
         d.line([2, 14, W - 3, 14], fill=OUT)
         d.rectangle([W - 6, 5, W - 5, 11], fill=(120, 120, 125)); d.rectangle([W - 6, 18, W - 5, 30], fill=(120, 120, 125))
     elif oid == "med_cart":
-        _box(d, 1, 8, W - 2, H - 5, white)
-        d.rectangle([W // 2 - 1, 12, W // 2, 19], fill=RED); d.rectangle([W // 2 - 4, 15, W // 2 + 3, 16], fill=RED)
+        d.rectangle([1, 0, W - 2, 3], fill=(160, 160, 165), outline=OUT)                 # tray top flush with the block top
+        d.line([2, 1, W - 3, 1], fill=(200, 200, 205))
+        _box(d, 1, 4, W - 2, H - 5, white)
+        d.rectangle([W // 2 - 1, 10, W // 2, 17], fill=RED); d.rectangle([W // 2 - 4, 13, W // 2 + 3, 14], fill=RED)
         d.ellipse([2, H - 5, 6, H - 1], fill=OUT); d.ellipse([W - 7, H - 5, W - 3, H - 1], fill=OUT)
-        d.rectangle([3, 5, W - 4, 8], fill=(160, 160, 165), outline=OUT)
     elif oid == "pump":
         _box(d, 2, 10, W - 3, H - 1, metal)                                       # body
         d.ellipse([4, 13, 11, 20], outline=metal[1][3]); d.point((7, 16), fill=metal[2])  # impeller
@@ -648,6 +663,36 @@ def _draw_object(d, oid, W, H):
         for y in range(5, H - 4, 10):
             d.line([4, y, W - 5, y], fill=metal[1][1])
         d.rectangle([W - 8, H // 2 - 2, W - 5, H // 2 + 2], fill=ORANGE, outline=OUT)
+    elif oid in ("room_door", "room_door_locked"):
+        # Apartment door in its frame: painted wood panels, brass knob; the
+        # locked variant wears a deadbolt plate.
+        frame = (OUT, [(52, 40, 30), (70, 54, 40), (88, 68, 50), (104, 82, 60)], (124, 100, 74))
+        d.rectangle([0, 0, W - 1, H - 1], fill=frame[1][1], outline=OUT)
+        _box(d, 2, 2, W - 3, H - 1, wood)
+        for y in range(6, H - 8, 12):
+            d.rectangle([4, y, W - 5, y + 7], fill=wood[1][3], outline=wood[1][1])
+        d.rectangle([W - 6, H // 2 - 1, W - 5, H // 2], fill=(210, 180, 90))
+        if oid == "room_door_locked":
+            d.rectangle([W - 8, H // 2 - 6, W - 4, H // 2 - 3], fill=metal[1][2], outline=OUT)
+    elif oid == "room_door_open":
+        frame = (OUT, [(52, 40, 30), (70, 54, 40), (88, 68, 50), (104, 82, 60)], (124, 100, 74))
+        d.rectangle([0, 0, W - 1, H - 1], fill=frame[1][1], outline=OUT)
+        d.rectangle([2, 2, W - 3, H - 1], fill=(8, 8, 12))            # the dark room beyond
+        d.rectangle([2, 2, 5, H - 1], fill=wood[1][1], outline=wood[1][0])  # door swung inward
+        d.point((5, H // 2), fill=(210, 180, 90))
+    elif oid == "room_door_metal":
+        # The deep variant: a riveted metal leaf in a steel frame, chain plate.
+        frame = (OUT, [(40, 46, 54), (56, 64, 74), (72, 82, 94), (88, 100, 112)], (120, 134, 148))
+        d.rectangle([0, 0, W - 1, H - 1], fill=frame[1][1], outline=OUT)
+        _box(d, 2, 2, W - 3, H - 1, metal)
+        for y in range(7, H - 6, 12):
+            d.line([4, y, W - 5, y], fill=metal[1][1])
+        d.rectangle([W - 8, H // 2 - 2, W - 4, H // 2 + 2], fill=ORANGE, outline=OUT)
+    elif oid == "room_door_metal_open":
+        frame = (OUT, [(40, 46, 54), (56, 64, 74), (72, 82, 94), (88, 100, 112)], (120, 134, 148))
+        d.rectangle([0, 0, W - 1, H - 1], fill=frame[1][1], outline=OUT)
+        d.rectangle([2, 2, W - 3, H - 1], fill=(8, 8, 12))            # the dark room beyond
+        d.rectangle([2, 2, 5, H - 1], fill=metal[1][1], outline=metal[1][0])  # leaf swung inward
     elif oid == "broken_ladder":
         for x in (3, 11):
             d.line([x, 0, x, H - 1], fill=wood[1][1])
@@ -672,10 +717,14 @@ def _draw_object(d, oid, W, H):
                 d.point((xx, yy), fill=(60, 64, 74))
 
 
-def build_objects():
+def build_objects(only=None):
+    """only: an iterable of ids to (re)write — the default rewrites every placeholder sprite,
+    which clobbers any hand-edited PNGs under assets/sprites/objects (Furniture Editor work)."""
     out_dir = ROOT / "assets" / "sprites" / "objects"
     out_dir.mkdir(parents=True, exist_ok=True)
     for oid, (w, h) in OBJECTS.items():
+        if only is not None and oid not in only:
+            continue
         W, H = w * T, h * T
         img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         _draw_object(ImageDraw.Draw(img), oid, W, H)

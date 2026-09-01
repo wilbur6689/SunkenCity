@@ -1,9 +1,12 @@
 class_name WorldObject
 extends Node2D
-## A multi-tile world object (furniture, station, chest, bed, lamp, door)
-## defined in data/objects.json. Anchored at its bottom-left cell; World
-## registers every covered cell so aiming/placement can look it up. Objects
-## are non-solid except closed doors.
+## A multi-tile world object (furniture, station, chest, bed, lamp, door,
+## portal) defined in data/objects.json. Anchored at its bottom-left cell;
+## World registers every covered cell so aiming/placement can look it up.
+## Objects are non-solid except closed doors. A portal (interior doorway)
+## hangs on the back wall: one click opens it, the next steps through to its
+## linked twin (World.portal_target) — the pocket rooms of user request
+## 2026-09-01.
 
 var id: String = ""
 var def: Dictionary = {}
@@ -65,6 +68,8 @@ func _ready() -> void:
 			_shape.position = sprite.position + px * 0.5
 			_body.add_child(_shape)
 			add_child(_body)
+		"portal":
+			set_open_look(open)
 		"light":
 			_light = PointLight2D.new()
 			_light.texture = load("res://assets/sprites/light.png")
@@ -85,6 +90,8 @@ func restore_state(st: Dictionary) -> void:
 		open = true
 		_shape.disabled = true
 		sprite.modulate.a = 0.45
+	if def.kind == "portal":
+		set_open_look(bool(st.get("open", false)))
 	if def.kind == "breaker":
 		powered_on = st.get("powered", false)
 	outlet_cell = st.get("outlet", NO_OUTLET)
@@ -115,25 +122,61 @@ func bottom_center() -> Vector2:
 func center() -> Vector2:
 	return global_position + Vector2(size.x * Constants.BLOCK_SIZE * 0.5, -(size.y - 1) * Constants.BLOCK_SIZE * 0.5 + Constants.BLOCK_SIZE * 0.5)
 
+## Portal look: the closed door, or the open frame (def.open_sprite) with
+## the dark room beyond. Also the record's truth via World.notify.
+func set_open_look(v: bool) -> void:
+	open = v
+	if sprite == null:
+		return
+	var tex: Texture2D = null
+	if v:
+		tex = Data.object_texture(def.get("open_sprite", id + "_open"))
+	sprite.texture = tex if tex != null else Data.object_texture(id)
+	sprite.modulate.a = 1.0
+
+## Locked doors (GL-09 ladder): a matching key unlocks for good, or a pry
+## tool at the lock's tier forces it. "" once unlocked, else the reason.
+func _try_unlock(player) -> String:
+	if unlocked or int(def.get("lock_tier", 0)) <= 0:
+		return ""
+	var kid: String = def.get("key", "")
+	var tool: Dictionary = player.held_tool()
+	if kid != "" and player.inventory.has(kid):
+		player.inventory.remove(kid, 1)
+	elif tool.get("type", "") == "pry" and int(tool.get("tier", 0)) >= int(def.lock_tier):
+		pass
+	else:
+		var need := "a vault key or a cutting torch" if kid != "" else "bolt cutters or better"
+		if kid == "" and int(def.lock_tier) <= 1:
+			need = "a pry bar or better"
+		return "Locked — needs " + need
+	unlocked = true
+	Audio.play_sfx("door_latch", center())
+	return ""
+
 ## E-key interaction. Returns a short HUD message ("" for none).
 func interact(player) -> String:
 	match def.kind:
+		"portal":
+			if not open:
+				var why := _try_unlock(player)
+				if why != "":
+					return why
+				set_open_look(true)
+				World.notify_object_changed(self)
+				Audio.play_sfx("door_open", center())
+				return "The door swings open"
+			var feet := World.portal_target(cell)
+			if feet == Vector2.INF:
+				return "The doorway is bricked up"
+			Audio.play_sfx("door_creak_1", center())
+			player.travel_to(feet)
+			return "You step through the doorway"
 		"door":
-			# Locked doors (GL-09 ladder): a matching key unlocks for good,
-			# or a pry tool at the door's tier cuts it open.
-			if not open and not unlocked and int(def.get("lock_tier", 0)) > 0:
-				var kid: String = def.get("key", "")
-				var tool: Dictionary = player.held_tool()
-				if kid != "" and player.inventory.has(kid):
-					player.inventory.remove(kid, 1)
-					unlocked = true
-					Audio.play_sfx("door_latch", center())
-				elif tool.get("type", "") == "pry" and int(tool.get("tier", 0)) >= int(def.lock_tier):
-					unlocked = true
-					Audio.play_sfx("door_latch", center())
-				else:
-					return "Locked — needs " + ("a vault key or a cutting torch" if kid != ""
-						else "bolt cutters or better")
+			if not open:
+				var why := _try_unlock(player)
+				if why != "":
+					return why
 			open = not open
 			_shape.disabled = open
 			sprite.modulate.a = 0.45 if open else 1.0

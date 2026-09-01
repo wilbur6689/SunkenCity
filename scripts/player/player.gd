@@ -74,7 +74,9 @@ func _ready() -> void:
 func _clamp_to_world_bounds() -> void:
 	if not World.is_ready():
 		return
-	var b: Rect2i = World.grid.bounds
+	if World.in_annex(World.cell_at(global_position)):
+		return # inside an interior pocket: its VOID shell is the wall
+	var b: Rect2i = World.city_bounds
 	var half_w := 6.0 # half the standing hitbox
 	var min_x := b.position.x * Constants.BLOCK_SIZE + half_w
 	var max_x := b.end.x * Constants.BLOCK_SIZE - half_w
@@ -768,6 +770,20 @@ func respawn() -> void:
 	fall_start_y = global_position.y
 	camera.offset = Vector2.ZERO
 	camera.reset_smoothing()
+
+## Step through an interior doorway (or any authored portal): land with the
+## feet at `feet`, no momentum, camera snapped — the far side can be a whole
+## city away, so the streaming windows refill before the next frame.
+func travel_to(feet: Vector2) -> void:
+	velocity = Vector2.ZERO
+	_set_compact(false)
+	global_position = feet - Vector2(0, FEET_Y)
+	state = State.AIRBORNE
+	fall_start_y = global_position.y
+	camera.offset = Vector2.ZERO
+	camera.reset_smoothing()
+	World.refresh_objects_around(global_position)
+	unstick()
 
 # --- Camera (WS-18) ---
 

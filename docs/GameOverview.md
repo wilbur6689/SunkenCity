@@ -57,7 +57,8 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
 - **End goal:** Reach ground level and **drain the entire city** by restoring its mega-pump
   infrastructure — a central ground-level station plus relay stations at depth intervals, each
   restored relay lowering the waterline in stages like a massive bathtub drain. Afterward:
-  credits + freeplay in the drained world.
+  credits + freeplay in the drained world. *Scheduling (2026-09-01): the Drain ships as the late
+  endgame after the Steam release; the MVP/demo ends at a hard suit on the city floor.*
 
 ## Key Decisions (Design Canon)
 
@@ -220,24 +221,37 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 ## The City
 
-- **Dimensions:** ~40 towers; center towers ~50 floors (~300 blocks ≈ 600 ft deep to ground),
-  tapering to 5–10 floor submerged buildings at the edges; world ≈ 2,500 × 400 blocks.
+- **Dimensions:** ~26 double-wide towers; the central 80 % of the map is uniformly high-rise —
+  a ~50-floor base with variance (~39–56 floors, ~300 blocks ≈ 600 ft to ground), so the whole
+  city reads as one skyline with the starting tower merely its tallest point; only the edge 20 %
+  is all shorter (4–34 floors, tapering out). World ≈ 2,500 × 400 blocks.
+  *(2026-09-01: replaced the centre-out bell curve, which left mid-city at half the crown.)*
 - **Generation:** curated room templates, procedurally assembled — rooms are proc-generated
   during development, the keepers saved as templates, and the game stitches templates into
   floors and towers before applying wear (breaches, collapse, flooding). Worlds are seed-based
   and shareable.
-- **Building types:** residential, office, hospital in MVP — **mixed-use per floor**, driving
-  template pools and scrap flavor. Every tower has an elevator shaft as a vertical highway.
+- **Building types (room zones):** residential · business (small service firms — lawyers,
+  accountants, agencies) · commercial (retail, office) · industrial · civil (hospital, police, city
+  admin, post office) — **mixed-use per floor**, driving template pools and scrap flavor.
+  *(2026-09-01: business added; "hospital" renamed civil.)* Every tower has an elevator shaft as a vertical highway.
 - **Flooding is connectivity:** breaches are placed at gen (more with depth); the water sim runs
   to equilibrium, so whatever connects to the ocean floods and sealed rooms keep their air —
   air pockets emerge, never authored.
 - **Palette:** concrete, steel, brick, wood, glass (no drywall); glass is a fragile transparent
   block; furniture is scrappable multi-tile objects, never blocks.
-- **City profile:** tallest towers at the center; shorter, sparser, mostly submerged buildings
-  toward the edges; open water (and an invisible wall) at the map borders; light floating debris
-  on the surface. Ground level is bare concrete roads — The Crush's floor — with nothing below
+- **City profile:** a uniform high-rise skyline with the crown at the centre; only the edge
+  fifth is shorter, sparser, fully submerged buildings; open water (and an invisible wall) at
+  the map borders; light floating debris on the surface. Stairwell ladders hug the room-side
+  wall so enemies can chase through wing doorways onto them (2026-09-01). Ground level is bare concrete roads — The Crush's floor — with nothing below
   it in MVP.
 - **Landmarks:** the starting hospital tower and the pump relay stations only.
+- **Interior pockets (2026-09-01):** ~30 % of floors have an apartment door on the back
+  wall beside the stairwell (one per floor, random wing) — wood through The Shallows (found open, closed, or deadbolted —
+  pry bar), chained metal below (bolt cutters; the GL-09 tool ladder). It leads to a room of its
+  own, shown alone in blackness, with the matching door inside leading back to the exact spot
+  you left. Pockets sit at their doorway's depth (bands, loot, pressure unchanged); 40 % of the
+  submerged ones kept their air, the rest drowned. This is a doorway between two spaces, not
+  fast travel — the no-teleportation rule (Travel) still stands.
 - **Depth scaling:** the farther below the surface, the harder the enemies and the better the
   loot; the depth color grade differentiates the five bands visually in MVP.
 - **Tech model:** the whole ~1M-tile world lives in RAM on the host; chunks only schedule
@@ -248,7 +262,10 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 ## Document Map
 
-MVP scope and completion criteria: [MVP-overview.md](MVP-overview.md).
+MVP scope and completion criteria: [MVP-overview.md](MVP-overview.md). Per-stage breakdowns of
+the Main Game Loop (band, entry/exit gates, recipes, loot, dangers, pacing) live in
+`MainGameLoop/` — [Stage1-SurfaceSurvival.md](MainGameLoop/Stage1-SurfaceSurvival.md) through
+[Stage5-TheLongDescent.md](MainGameLoop/Stage5-TheLongDescent.md).
 
 Deeper design and implementation details live in the `technical/` folder. Open design questions
 are tracked in [OpenQuestions.md](OpenQuestions.md) — **all six sections reviewed ✅**

@@ -21,10 +21,11 @@ OBJ_W = {"bed_frame": 3, "cabinet": 2, "desk": 3, "chair": 1, "locker": 1,
 POOLS = {
     "residential": [("bed_frame", 3), ("cabinet", 2), ("chair", 3), ("fridge", 2), ("desk", 1), ("locker", 1)],
     "office": [("desk", 4), ("chair", 4), ("cabinet", 2), ("locker", 2)],
+    "business": [("desk", 4), ("chair", 3), ("cabinet", 2), ("locker", 1)],
     "hospital": [("med_cart", 3), ("bed_frame", 3), ("cabinet", 2), ("locker", 2), ("chair", 2)],
 }
 # Chance of a wood counter/shelf blocks strip per room, by type.
-SHELF_CHANCE = {"residential": 0.35, "office": 0.3, "hospital": 0.25}
+SHELF_CHANCE = {"residential": 0.35, "office": 0.3, "business": 0.3, "hospital": 0.25}
 
 
 def make_room(rng, rtype, width, idx):
@@ -46,7 +47,7 @@ def make_room(rng, rtype, width, idx):
         sx = rng.randint(1, max(1, width - 5))
         for k in range(rng.randint(2, 3)):
             blocks.append({"mat": 2, "x": sx + k, "dy": 2})  # wood shelf above the floor
-    zone = {"residential": "residential", "office": "commercial", "hospital": "hospital"}[rtype]
+    zone = {"residential": "residential", "office": "commercial", "business": "business", "hospital": "civil"}[rtype]
     return {"id": "%s_%c" % (rtype, ord('a') + idx), "type": rtype, "zone": zone, "width": width,
             "height": 5, "depth_min": -9999, "depth_max": 9999,
             "objects": objects, "blocks": blocks}

@@ -145,9 +145,9 @@ func _ready() -> void:
 	# Twin-wing towers: ladders on both sides, shaft down the middle, and
 	# submerged ladder runs broken into repairable gaps (user request).
 	var tw0: Dictionary = gen.tower_list[gen.tower_list.size() / 2]
-	check(World.is_climbable_cell(Vector2i(int(tw0.x0) + 3, int(tw0.top) + 2)) \
-			and World.is_climbable_cell(Vector2i(int(tw0.x1) - 3, int(tw0.top) + 2)),
-			"ladders run on both sides of a tower")
+	check(World.is_climbable_cell(Vector2i(int(tw0.x0) + 4, int(tw0.top) + 2)) \
+			and World.is_climbable_cell(Vector2i(int(tw0.x1) - 4, int(tw0.top) + 2)),
+			"ladders run on both sides of a tower (hugging the room-side wall)")
 	check(not World.has_block_cell(Vector2i(int(tw0.mid), int(tw0.top) + CityGen.FLOOR_H)),
 			"the central elevator shaft is open through the slabs")
 	var broken := 0

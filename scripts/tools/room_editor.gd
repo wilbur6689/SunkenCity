@@ -4,16 +4,22 @@ extends Control
 ##   godot --path . res://scenes/tools/room_editor.tscn
 ##
 ## Left: room settings (id, zone, room type, spawn depth range, size).
-## Center: the room canvas — paint blocks, place/move furniture.
+## Center: the room canvas — paint blocks, place/move furniture anywhere in the
+## room (an object's `dy` = rows its bottom sits above the standing row; 0 = on
+## the floor, omitted when 0). The generator honours dy for every object.
 ## Right: block picker + zone-filtered furniture palette.
 ## Save writes into data/rooms.json (the curated library, hand-editable).
 
-const ZONES := ["residential", "commercial", "industrial", "hospital"]
+## Room zones (user decision 2026-09-01): residential · business (small service
+## firms — lawyers, accountants, agencies) · commercial (retail / office) ·
+## industrial · civil (city admin, police, hospital, post office; was "hospital").
+const ZONES := ["residential", "business", "commercial", "industrial", "civil"]
 const ZONE_FURNITURE := {
 	"residential": ["bed_frame", "cabinet", "chair", "fridge", "desk"],
+	"business": ["desk", "chair", "cabinet", "locker"],
 	"commercial": ["desk", "chair", "cabinet", "locker", "fridge"],
 	"industrial": ["locker", "pump", "med_cart", "cabinet"],
-	"hospital": ["med_cart", "bed_frame", "cabinet", "locker", "chair", "desk"],
+	"civil": ["med_cart", "bed_frame", "cabinet", "locker", "chair", "desk"],
 }
 const BLOCK_MATS := {"stone": 1, "wood": 2, "metal": 3, "plastic": 4}
 const CELL := 16
@@ -47,6 +53,7 @@ var _obj_textures: Dictionary = {}
 func _ready() -> void:
 	room = _default_room()
 	_build_ui()
+	_mount_pause_menu()
 	_refresh_load_list()
 	_refresh_furniture()
 	_sync_settings_to_ui()
@@ -56,6 +63,27 @@ func _default_room() -> Dictionary:
 		"depth_min": -9999, "depth_max": 9999, "objects": [], "blocks": []}
 
 # --- UI construction ---
+
+## Esc menu — the in-game pause menu (sound sliders, a CONTROLS page) with
+## editor bindings and QUIT TO TITLE in place of Save & Quit.
+func _mount_pause_menu() -> void:
+	var pm: CanvasLayer = load("res://scripts/ui/pause_menu.gd").new()
+	pm.custom_controls = [
+		["Paint block", "LMB (drag) with a block tool"],
+		["Place furniture", "LMB · bottom row sits on the clicked cell"],
+		["Move furniture", "Pointer tool: click to grab, click to drop"],
+		["Erase", "RMB · or the Erase tool"],
+		["Room size / depth", "Settings panel spinners"],
+		["Save", "SAVE / EXPORT → data/rooms.json"],
+		["Menu", "Esc"],
+	]
+	pm.hint_text = "Unsaved rooms are lost on quit — SAVE / EXPORT first"
+	pm.quit_text = "QUIT TO TITLE"
+	pm.quit_callable = _quit_to_title
+	add_child(pm)
+
+func _quit_to_title() -> void:
+	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
@@ -67,12 +95,23 @@ func _build_ui() -> void:
 	title.position = Vector2(8, 4)
 	add_child(title)
 
+	# Three columns in an HBox so the panels can never paint over the canvas
+	# (they grow with their contents; fixed x positions did not follow).
+	var root := HBoxContainer.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.offset_left = 8
+	root.offset_top = 18
+	root.offset_right = -8
+	root.offset_bottom = -8
+	root.add_theme_constant_override("separation", 8)
+	add_child(root)
+
 	# Left: settings
 	var sp := PanelContainer.new()
 	sp.add_theme_stylebox_override("panel", UITheme.steel_panel())
-	sp.position = Vector2(8, 18)
-	sp.custom_minimum_size = Vector2(140, 330)
-	add_child(sp)
+	sp.custom_minimum_size = Vector2(140, 0)
+	sp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	root.add_child(sp)
 	var sv := VBoxContainer.new()
 	sv.add_theme_constant_override("separation", 3)
 	sp.add_child(sv)
@@ -86,7 +125,7 @@ func _build_ui() -> void:
 	zone_option.add_theme_font_size_override("font_size", 8)
 	for z in ZONES:
 		zone_option.add_item(z)
-	zone_option.item_selected.connect(func(_i): _apply_settings(); _refresh_furniture())
+	zone_option.item_selected.connect(func(_i): _apply_settings(); _refresh_furniture(); _refresh_load_list())
 	sv.add_child(zone_option)
 	sv.add_child(UITheme.label("Room type", 8))
 	type_edit = LineEdit.new()
@@ -126,28 +165,36 @@ func _build_ui() -> void:
 	status_label = UITheme.label("", 8, Color(0.75, 0.95, 0.75))
 	sv.add_child(status_label)
 
-	# Center: canvas
+	# Center: tool readout over the canvas
+	var mid := VBoxContainer.new()
+	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mid.add_theme_constant_override("separation", 4)
+	root.add_child(mid)
+	tool_label = UITheme.label("Tool: pointer  (LMB use tool · RMB erase · pointer grabs furniture)", 8, Color(0.7, 0.78, 0.85))
+	tool_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mid.add_child(tool_label)
 	canvas = Control.new()
-	canvas.position = Vector2(158, 40)
 	canvas.custom_minimum_size = Vector2((MAX_W + 4) * CELL, (MAX_H + 4) * CELL)
-	canvas.size = canvas.custom_minimum_size
+	canvas.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	canvas.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	canvas.draw.connect(_draw_canvas)
 	canvas.gui_input.connect(_canvas_input)
-	add_child(canvas)
-	tool_label = UITheme.label("Tool: pointer  (LMB use tool · RMB erase · pointer grabs furniture)", 8, Color(0.7, 0.78, 0.85))
-	tool_label.position = Vector2(158, 22)
-	add_child(tool_label)
+	mid.add_child(canvas)
 
 	# Right: palettes
 	var pp := PanelContainer.new()
 	pp.add_theme_stylebox_override("panel", UITheme.steel_panel())
-	pp.position = Vector2(508, 18)
-	pp.custom_minimum_size = Vector2(124, 330)
-	add_child(pp)
+	pp.custom_minimum_size = Vector2(124, 0)
+	root.add_child(pp) # fills the column height; the list inside scrolls
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pp.add_child(scroll)
 	var pv := VBoxContainer.new()
 	pv.add_theme_constant_override("separation", 2)
-	pp.add_child(pv)
+	pv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(pv)
 	pv.add_child(UITheme.label("BLOCKS", 8, Color(0.56, 0.75, 0.81)))
 	var pointer := _button("Pointer / move", func(): _set_tool("pointer"))
 	pv.add_child(pointer)
@@ -166,7 +213,9 @@ func _spin(minv: int, maxv: int, val: int) -> SpinBox:
 	s.min_value = minv
 	s.max_value = maxv
 	s.value = val
-	s.add_theme_font_size_override("font_size", 8)
+	# The override must land on the inner LineEdit — SpinBox's own theme
+	# overrides do not propagate to it, so it would render at the default 16px.
+	s.get_line_edit().add_theme_font_size_override("font_size", 8)
 	s.custom_minimum_size = Vector2(56, 0)
 	return s
 
@@ -221,6 +270,7 @@ func _sync_settings_to_ui() -> void:
 	width_spin.value = room.width
 	height_spin.value = room.get("height", 5)
 	_refresh_furniture()
+	_refresh_load_list()
 	canvas.queue_redraw()
 
 func _apply_settings() -> void:
@@ -248,12 +298,9 @@ func _cell_at(pos: Vector2) -> Vector2i:
 func _standing_row() -> int:
 	return room.height - 1 # dy 0 = standing row (bottom interior row)
 
-func _is_wall(oid: String) -> bool:
-	return Data.objects.get(oid, {}).get("wall_mounted", false)
-
-## Floor furniture packs along the standing row; wall art hangs anywhere on
-## the wall plane (dy above the standing row) and only collides with other
-## wall art.
+## Any object goes anywhere inside the room: its footprint (w×h, bottom at dy
+## rows above the standing row) must lie within the interior and overlap no
+## other object and no painted block.
 func _fits_object(oid: String, x: int, ignore = null, dy: int = 0) -> bool:
 	var def: Dictionary = Data.objects.get(oid, {})
 	if def.is_empty():
@@ -262,30 +309,27 @@ func _fits_object(oid: String, x: int, ignore = null, dy: int = 0) -> bool:
 	var h := int(def.size[1])
 	if x < 0 or x + w > int(room.width):
 		return false
-	if _is_wall(oid):
-		if dy < 0 or dy + h > int(room.height):
-			return false
-		for o in room.objects:
-			if o == ignore or not _is_wall(o.id):
-				continue
-			var od: Dictionary = Data.objects[o.id]
-			var ody := int(o.get("dy", 0))
-			if x < int(o.x) + int(od.size[0]) and int(o.x) < x + w \
-					and dy < ody + int(od.size[1]) and ody < dy + int(od.size[1]):
-				return false
-		return true
-	if h > int(room.height):
+	if dy < 0 or dy + h > int(room.height):
 		return false
 	for o in room.objects:
-		if o == ignore or _is_wall(o.id):
+		if o == ignore:
 			continue
-		var ow := int(Data.objects[o.id].size[0])
-		if x < int(o.x) + ow and int(o.x) < x + w:
+		var od: Dictionary = Data.objects[o.id]
+		var ody := int(o.get("dy", 0))
+		if x < int(o.x) + int(od.size[0]) and int(o.x) < x + w \
+				and dy < ody + int(od.size[1]) and ody < dy + h:
 			return false
 	for b in room.blocks:
-		if int(b.dy) < h and int(b.x) >= x and int(b.x) < x + w:
+		if int(b.x) >= x and int(b.x) < x + w and int(b.dy) >= dy and int(b.dy) < dy + h:
 			return false
 	return true
+
+## Object entry for the library: dy is stored only when lifted off the floor.
+func _object_entry(oid: String, x: int, dy: int) -> Dictionary:
+	var entry := {"id": oid, "x": x}
+	if dy != 0:
+		entry["dy"] = dy
+	return entry
 
 func _block_at(x: int, dy: int):
 	for b in room.blocks:
@@ -326,21 +370,15 @@ func _use_tool(cell: Vector2i) -> void:
 		_erase(cell)
 	elif tool_mode.begins_with("object:"):
 		var oid := tool_mode.substr(7)
-		var dy := _wall_dy_at(oid, cell)
+		var dy := _dy_at(cell)
 		if _in_room(cell) and _fits_object(oid, cell.x, null, dy):
-			var entry := {"id": oid, "x": cell.x}
-			if _is_wall(oid):
-				entry["dy"] = dy
-			room.objects.append(entry)
+			room.objects.append(_object_entry(oid, cell.x, dy))
 			_say("Placed " + oid)
 	else: # pointer: grab / drop furniture (click-drag-click)
 		if not grabbed.is_empty():
-			var gdy := _wall_dy_at(grabbed.id, cell)
+			var gdy := _dy_at(cell)
 			if _in_room(cell) and _fits_object(grabbed.id, cell.x, null, gdy):
-				var gentry := {"id": grabbed.id, "x": cell.x}
-				if _is_wall(grabbed.id):
-					gentry["dy"] = gdy
-				room.objects.append(gentry)
+				room.objects.append(_object_entry(grabbed.id, cell.x, gdy))
 				grabbed = {}
 				_say("Moved")
 		elif _in_room(cell):
@@ -350,10 +388,8 @@ func _use_tool(cell: Vector2i) -> void:
 				room.objects.erase(o)
 				_say("Grabbed %s — click to drop" % grabbed.id)
 
-## dy for a wall-mounted piece dropped at `cell` (its BOTTOM sits there).
-func _wall_dy_at(oid: String, cell: Vector2i) -> int:
-	if not _is_wall(oid):
-		return 0
+## dy for a piece dropped at `cell` (its BOTTOM row sits on that cell).
+func _dy_at(cell: Vector2i) -> int:
 	return _standing_row() - cell.y
 
 ## The object (floor or wall) covering this cell, if any.
@@ -417,17 +453,17 @@ func _draw_canvas() -> void:
 	for b in room.blocks:
 		var cy := _standing_row() - int(b.dy)
 		_draw_tile(org + Vector2(int(b.x), cy) * CELL, int(b.mat), Color.WHITE)
-	# Furniture (bottom-aligned to the standing row; wall art lifted by dy)
+	# Furniture (bottom row at dy above the standing row)
 	for o in room.objects:
 		_draw_object(org, o.id, int(o.x), Color.WHITE, int(o.get("dy", 0)))
 	# Ghost previews
 	if tool_mode.begins_with("object:") and _in_room(hover_cell):
 		var oid := tool_mode.substr(7)
-		var gdy := _wall_dy_at(oid, hover_cell)
+		var gdy := _dy_at(hover_cell)
 		var ok := _fits_object(oid, hover_cell.x, null, gdy)
 		_draw_object(org, oid, hover_cell.x, Color(0.6, 1.0, 0.6, 0.55) if ok else Color(1.0, 0.5, 0.5, 0.55), gdy)
 	elif not grabbed.is_empty() and _in_room(hover_cell):
-		var gdy2 := _wall_dy_at(grabbed.id, hover_cell)
+		var gdy2 := _dy_at(hover_cell)
 		var ok2 := _fits_object(grabbed.id, hover_cell.x, null, gdy2)
 		_draw_object(org, grabbed.id, hover_cell.x, Color(0.6, 1.0, 0.6, 0.55) if ok2 else Color(1.0, 0.5, 0.5, 0.55), gdy2)
 	if _in_room(hover_cell):
@@ -460,11 +496,18 @@ func _read_library() -> Dictionary:
 		parsed = {"_comment": "Room template library (CT-04/05).", "rooms": []}
 	return parsed
 
+## Only rooms of the selected zone are listed (user request 2026-09-01: the
+## full library got too long). Legacy rooms without a zone fall back to type.
 func _refresh_load_list() -> void:
 	load_option.clear()
-	load_option.add_item("— load —")
+	load_option.add_item("— load (%s) —" % _zone())
 	for r in _read_library().rooms:
-		load_option.add_item(r.id)
+		if _room_zone(r) == _zone():
+			load_option.add_item(r.id)
+
+func _room_zone(r: Dictionary) -> String:
+	var z: String = r.get("zone", r.get("type", "residential"))
+	return "civil" if z == "hospital" else z
 
 func _load_selected(index: int) -> void:
 	if index <= 0:
@@ -474,7 +517,7 @@ func _load_selected(index: int) -> void:
 		if r.id == load_option.get_item_text(index):
 			room = r.duplicate(true)
 			room["height"] = room.get("height", 5)
-			room["zone"] = room.get("zone", room.get("type", "residential"))
+			room["zone"] = _room_zone(room)
 			room["depth_min"] = room.get("depth_min", -9999)
 			room["depth_max"] = room.get("depth_max", 9999)
 			_sync_settings_to_ui()

@@ -1,6 +1,8 @@
 # SunkenCity — MVP Development Checklist
 
 Living tracker for the M0–M6 build order defined in [MVP-overview.md](MVP-overview.md).
+The Drain endgame (relay stations, waterline drops, ending) is **deferred to after the Steam
+release** — it stays in the story; see "Post-release — The Drain" at the bottom.
 Check items as they land; each milestone ends with its **GATE** — a demonstrable in-build test.
 Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 
@@ -149,12 +151,13 @@ refilling tanks all working in the reclaimed room.
 - [x] Floor assembler: rooms stitched with doorway partitions; west stairwell (ladder + landings) and east elevator shaft guaranteed per tower (CT-06)
 - [x] Two-jump rule validator on assembled floors (WS-04): `CityGen.floor_blockages` flags any authored obstacle ≥4 tall from the standing row (jump = 3 blocks, crawl fits a 1-block gap); gen repairs by carving a 3-tall doorway — checked per tower in m3 smoke
 - [x] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve (4–56 floors; the tallest crowns break the surface)
-- [x] City layout: 40 towers over 2400×400 cells, centre-out height/gap curve, open ocean at the edges (CT-01); invisible edge walls clamp the player at the grid's x extents (CT-22)
+- [x] City layout: ~26 double-wide towers over 2400×400 cells, open ocean at the edges (CT-01); invisible edge walls clamp the player at the grid's x extents (CT-22). *Amended 2026-09-01 (user request): the old centre-out bell curve left mid-city towers at half the crown — now the central 80 % rolls a uniform 50-floor base (~39–56, similar heights with variance) and only the edge 20 % is all shorter (4–34, tapering out)*
 - [x] Wear pass: exterior breaches scaling with depth + occasional slab collapses (CT-11)
 - [x] Flood pass: connectivity flooding from the ocean at/below the waterline after doors exist (CT-12/13); ~85% of sealed floors keep their air, wear breaches the rest
 - [x] Authored inserts: starting medical room atop the tallest tower (bed spawn, med kit furniture) + bare concrete ground (CT-20/07); mega-pump shells (CT-08/CC-26, non-functional until endgame): central station hall in the widest centre gap on the ground + 3 relay pylons at the band boundaries (metal machine rooms with pump/breaker/lamp kits, legs dropping to the first solid cell)
 - [x] Surface debris pass (light, CT-23): floating wood rafts scattered on open water (~25-30 per city, occasional cardboard box aboard)
 - [x] Deterministic seeds (CT-21): same seed = identical grid + object hashes (m3 smoke); `--seed=N` on the command line; ~1.5 s per full generation
+- [x] **Interior pockets** (user request, 2026-09-01): apartment doorways on wing back walls beside the stairwell — ~30 % of floors, one per floor (random wing, never the top; a 3–4-floor countdown was tried and reverted, rolls play better); wood `room_door` through The Shallows (40 % standing open, 20 % deadbolted `room_door_locked` — pry bar+), chained `room_door_metal` below (bolt cutters+, GL-09 ladder); open ones step straight through, closed ones open on the first click; each leads to a room of its own carved in a solid-black `VOID` annex east of the city on the doorway's own rows (stone shell, metal slabs, one zone template, the return doorway inside; doorways link by cell and share their open state; 40 % of submerged pockets sealed dry, the rest drowned; loot/depth bands honest). Maps/minimap anchor on the doorway while inside; the annex is off the map and off-limits to spawns. Gate: `pocket_smoke.tscn` (43 checks); `save_smoke` covers the round trip
 
 ### World runtime
 - [x] Full grid in RAM (`WorldGrid` byte layers); rendering, collision tiles, lighting, and water drawing all window around the camera (CT-28) — *instant-settle for far water regions still open*
@@ -179,8 +182,8 @@ object/storage/door state, character inventory/skills/position, map reveal. **M3
 ## M4 — Danger
 
 ### Enemies
-- [x] Enemy framework: `data/enemies.json` — authored per-band stat tables (hp/damage/speed/aggro, GD-23), uniform-density seeding at gen (`EnemyGen`, ~575/city; the starting medical room stays clear), one data-driven `Enemy` scene (`scripts/enemies/enemy.gd`); records stream through the object-window pattern (`World.enemy_records`, frozen outside `ENEMY_WINDOW`) and persist in the world save (GD-23/27)
-- [x] Walker: chase, fall (falling *is* the pathfinding), squeeze what the hitbox fits, small-step hop, pound player-placed blocks (GD-04)
+- [x] Enemy framework: `data/enemies.json` — authored per-band stat tables (hp/damage/speed/aggro, GD-23), uniform-density seeding at gen (`EnemyGen`, ~575/city; the starting medical room stays clear), one data-driven `Enemy` scene (`scripts/enemies/enemy.gd`; a small health bar appears over a hurt enemy); records stream through the object-window pattern (`World.enemy_records`, frozen outside `ENEMY_WINDOW`) and persist in the world save (GD-23/27)
+- [x] Walker: chase, squeeze what the hitbox fits, small-step hop, pound player-placed blocks; edge sense (GD-04 amended 2026-08-31): never walks off a ledge — chasers hold the edge, wanderers turn around (gap jumping tried and dropped for now)
 - [x] Crawler: 12×10 body fits 1-block gaps and vents; same ground brain
 - [x] Floater: bobs at the surface, drifts, chases along it; night extras spawn near players and disperse at dawn — the one ambient-spawn exception (GD-29)
 - [x] The Drowned: fast swimmer (out-swims the player), never leaves water, flooded interiors of Dark/Crush (GD-13/14)
@@ -247,18 +250,17 @@ target pacing (GL-27). ✔ chain + mods + bench + tree + gates + depletion cover
 
 ---
 
-## M6 — The Drain
+## M6 — Release Readiness
 
-- [ ] Relay station interiors: reach → repair (materials) → power → activate loop (CC-26)
-- [ ] Per-band waterline drops: permanent, visible, bathtub-drain drain-down (CT-25)
-- [ ] Central ground station + final activation sequence
-- [ ] Ending: credits + world-complete flag + freeplay (CC-27)
-- [ ] Full-run integrity pass: fresh seed, medical room → drained city, no debug
+*(Was "The Drain" — the drain endgame moved to post-release on 2026-09-01; the release work that
+shared the section stays here.)*
+
+- [ ] Full-run integrity pass: fresh seed, medical room → hard suit on the city floor (The Crush), no debug
 - [ ] Performance pass: frame budget with full city + active sim
 - [ ] LAN smoke test: second player joins a listen server and moves/interacts (architecture validation only — full LAN is phase 2)
 
 **GATE (= MVP Definition of Done):** one player, one seed, zero debug commands — medical room to
-drained-city credits, saving/loading along the way.
+a hard suit on the floor of The Crush, saving/loading along the way.
 
 ---
 
@@ -270,3 +272,19 @@ drained-city credits, saving/loading along the way.
 - [ ] Character creation: name + shirt/pants/hair color (CC-17) — needed by first release, trivial any time
 - [ ] Tuning config files reviewed as systems land (speeds, oxygen, yields, tables)
 - [ ] Keep `docs/` in sync when implementation forces a design change — amend OpenQuestions.md answers, never silently drift
+
+---
+
+## Post-release — The Drain *(deferred 2026-09-01; after the Steam release)*
+
+The story's end goal is unchanged (GameOverview.md "End goal"): restore the mega-pump
+infrastructure and drain the city. It ships as the late endgame after the Steam release, not in
+the MVP.
+
+- [ ] Relay station interiors: reach → repair (materials) → power → activate loop (CC-26)
+- [ ] Per-band waterline drops: permanent, visible, bathtub-drain drain-down (CT-25)
+- [ ] Central ground station + final activation sequence
+- [ ] Ending: credits + world-complete flag + freeplay (CC-27)
+- [ ] Full-run integrity pass extended to the drained-city credits
+
+**GATE:** one player, one seed, zero debug commands — medical room to drained-city credits.

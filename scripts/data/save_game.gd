@@ -54,6 +54,8 @@ static func save_world(world_name: String, seed_value: int) -> void:
 		var st := {"id": rec.id, "cell": rec.cell, "placed": rec.placed,
 			"open": rec.open, "powered": rec.powered, "unlocked": rec.get("unlocked", false),
 			"outlet": rec.outlet}
+		if rec.has("link"): # interior doorway twin
+			st["link"] = rec.link
 		if rec.storage != null:
 			st["storage"] = rec.storage.slots.duplicate(true)
 		objs.append(st)
@@ -87,6 +89,7 @@ static func save_world(world_name: String, seed_value: int) -> void:
 		"objects": objs, "items": items, "backpacks": packs, "enemies": enemies,
 		"day_count": World.day_count, "next_red_moon_day": World.next_red_moon_day,
 		"red_moon_active": World.red_moon_active,
+		"city_w": World.city_bounds.size.x, "pockets": World.pockets.duplicate(true),
 	}
 	DirAccess.make_dir_recursive_absolute(WORLD_DIR)
 	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.WRITE)

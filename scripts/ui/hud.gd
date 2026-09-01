@@ -278,7 +278,9 @@ func _redraw_minimap() -> void:
 	if not World.is_ready() or World.map_reveal == null:
 		return
 	var w: Vector2i = Constants.MINIMAP_WINDOW
-	var center := World.cell_at(player.global_position)
+	# Inside an interior pocket the minimap stays on the city: it centres on
+	# the doorway you came through (the pocket itself is off the map).
+	var center := World.map_cell_for(player.global_position)
 	var org := center - w / 2
 	for py in w.y:
 		for px in w.x:

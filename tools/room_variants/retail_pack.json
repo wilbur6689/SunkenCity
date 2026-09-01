@@ -1,0 +1,101 @@
+{"rooms": [
+{"id": "retail_v01", "zone": "commercial", "type": "retail", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_counter", "x": 0}, {"id": "ret_cash_register", "x": 0, "dy": 2}, {"id": "ret_cans", "x": 2, "dy": 2},
+  {"id": "ret_open_sign", "x": 0, "dy": 3}, {"id": "ret_security_camera", "x": 2, "dy": 4},
+  {"id": "ret_chest_freezer", "x": 4}, {"id": "ret_box", "x": 4, "dy": 1}, {"id": "ret_poster", "x": 5, "dy": 2},
+  {"id": "ret_vending", "x": 7}, {"id": "com_digital_clock", "x": 7, "dy": 4},
+  {"id": "com_fire_extinguisher", "x": 9, "dy": 2},
+  {"id": "ret_shopping_cart", "x": 10}
+ ], "blocks": []},
+
+{"id": "retail_v02", "zone": "commercial", "type": "retail", "width": 13, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_mannequin", "x": 0},
+  {"id": "ret_clothes_rack", "x": 2}, {"id": "res_pendant_lamp", "x": 2, "dy": 2},
+  {"id": "ret_clothes_rack", "x": 5}, {"id": "ret_poster", "x": 5, "dy": 3}, {"id": "res_pendant_lamp", "x": 6, "dy": 2},
+  {"id": "res_modern_clock", "x": 7, "dy": 4},
+  {"id": "ret_mannequin", "x": 8}, {"id": "res_tall_plant", "x": 9},
+  {"id": "ret_counter", "x": 10}, {"id": "ret_cash_register", "x": 10, "dy": 2}, {"id": "ret_basket", "x": 12, "dy": 2},
+  {"id": "ret_open_sign", "x": 11, "dy": 3}, {"id": "ret_security_camera", "x": 10, "dy": 4}
+ ], "blocks": []},
+
+{"id": "retail_v03", "zone": "commercial", "type": "retail", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_booth", "x": 0}, {"id": "res_pendant_lamp", "x": 1, "dy": 2},
+  {"id": "ret_counter", "x": 4}, {"id": "ret_cash_register", "x": 4, "dy": 2}, {"id": "ret_cans", "x": 5, "dy": 2}, {"id": "com_coffee_maker", "x": 6, "dy": 2},
+  {"id": "ret_menu_board", "x": 4, "dy": 4}, {"id": "ret_open_sign", "x": 6, "dy": 4},
+  {"id": "com_station_clock", "x": 7, "dy": 2},
+  {"id": "ret_booth", "x": 8}, {"id": "res_pendant_lamp", "x": 9, "dy": 2},
+  {"id": "ret_basket", "x": 11}, {"id": "ret_security_camera", "x": 11, "dy": 4}
+ ], "blocks": []},
+
+{"id": "retail_v04", "zone": "commercial", "type": "retail", "width": 14, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_display_case", "x": 0}, {"id": "com_monitor", "x": 0, "dy": 2}, {"id": "com_monitor", "x": 2, "dy": 2}, {"id": "com_logo_sign", "x": 0, "dy": 4},
+  {"id": "ret_counter", "x": 4}, {"id": "ret_cash_register", "x": 4, "dy": 2}, {"id": "com_monitor", "x": 6, "dy": 2}, {"id": "ret_aisle_sign", "x": 4, "dy": 4},
+  {"id": "com_digital_clock", "x": 7, "dy": 4},
+  {"id": "ret_gondola", "x": 8}, {"id": "ret_security_camera", "x": 8, "dy": 4},
+  {"id": "com_server_rack", "x": 11}, {"id": "ret_box", "x": 12}, {"id": "ret_atm", "x": 13}, {"id": "ret_security_camera", "x": 13, "dy": 3}
+ ], "blocks": []},
+
+{"id": "retail_v05", "zone": "commercial", "type": "retail", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_stock_shelf", "x": 0}, {"id": "ret_box", "x": 0, "dy": 3}, {"id": "ret_box", "x": 2, "dy": 3}, {"id": "ret_security_camera", "x": 1, "dy": 4},
+  {"id": "ret_pallet_goods", "x": 4}, {"id": "ret_box", "x": 4, "dy": 1}, {"id": "ret_basket", "x": 5, "dy": 1},
+  {"id": "com_fire_extinguisher", "x": 4, "dy": 3}, {"id": "ind_punch_clock", "x": 6, "dy": 3},
+  {"id": "ret_undercounter", "x": 7}, {"id": "ret_cash_register", "x": 7, "dy": 1}, {"id": "com_cork_board", "x": 7, "dy": 3},
+  {"id": "ind_work_light", "x": 9},
+  {"id": "ret_gondola", "x": 10}, {"id": "ret_aisle_sign", "x": 10, "dy": 4}
+ ], "blocks": []},
+
+{"id": "retail_v06", "zone": "commercial", "type": "retail", "width": 13, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "com_water_cooler", "x": 0}, {"id": "ret_poster", "x": 0, "dy": 3},
+  {"id": "chair", "x": 2}, {"id": "chair", "x": 3}, {"id": "res_wall_sconce", "x": 3, "dy": 3},
+  {"id": "ret_counter", "x": 5}, {"id": "ret_cash_register", "x": 5, "dy": 2}, {"id": "ret_basket", "x": 7, "dy": 2},
+  {"id": "ret_menu_board", "x": 5, "dy": 4}, {"id": "ret_security_camera", "x": 7, "dy": 4},
+  {"id": "ret_stock_shelf", "x": 9}, {"id": "ret_box", "x": 9, "dy": 3}, {"id": "ret_cans", "x": 11, "dy": 3}, {"id": "com_whiteboard", "x": 9, "dy": 4},
+  {"id": "com_digital_clock", "x": 12, "dy": 3}
+ ], "blocks": []},
+
+{"id": "retail_v07", "zone": "commercial", "type": "retail", "width": 11, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_shopping_cart", "x": 0}, {"id": "ret_open_sign", "x": 0, "dy": 3},
+  {"id": "ret_basket", "x": 2}, {"id": "ret_box", "x": 3}, {"id": "ret_cans", "x": 3, "dy": 1},
+  {"id": "ret_chest_freezer", "x": 4}, {"id": "ret_cash_register", "x": 4, "dy": 1}, {"id": "ret_cans", "x": 5, "dy": 1}, {"id": "ret_poster", "x": 4, "dy": 3},
+  {"id": "ret_gondola", "x": 7}, {"id": "ret_security_camera", "x": 8, "dy": 4},
+  {"id": "ret_poster", "x": 9, "dy": 2},
+  {"id": "ret_magazine_rack", "x": 10}
+ ], "blocks": []},
+
+{"id": "retail_v08", "zone": "commercial", "type": "retail", "width": 12, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_display_case", "x": 0}, {"id": "res_desk_lamp", "x": 0, "dy": 2}, {"id": "res_wall_sconce", "x": 2, "dy": 3},
+  {"id": "ret_open_sign", "x": 0, "dy": 4}, {"id": "ret_security_camera", "x": 2, "dy": 4},
+  {"id": "ret_counter", "x": 4}, {"id": "ret_cash_register", "x": 4, "dy": 2}, {"id": "res_desk_lamp", "x": 6, "dy": 2}, {"id": "com_digital_clock", "x": 5, "dy": 4},
+  {"id": "ret_poster", "x": 7, "dy": 2},
+  {"id": "ret_display_case", "x": 8}, {"id": "res_desk_lamp", "x": 10, "dy": 2}, {"id": "res_wall_sconce", "x": 8, "dy": 3}, {"id": "ret_security_camera", "x": 10, "dy": 4},
+  {"id": "ret_mannequin", "x": 11}
+ ], "blocks": []},
+
+{"id": "retail_v09", "zone": "commercial", "type": "retail", "width": 10, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_magazine_rack", "x": 0}, {"id": "ret_poster", "x": 0, "dy": 3},
+  {"id": "ret_counter", "x": 2}, {"id": "ret_cash_register", "x": 2, "dy": 2}, {"id": "ret_cans", "x": 4, "dy": 2},
+  {"id": "ret_menu_board", "x": 2, "dy": 4}, {"id": "com_digital_clock", "x": 4, "dy": 4},
+  {"id": "res_pendant_lamp", "x": 5, "dy": 2},
+  {"id": "ret_gondola", "x": 6},
+  {"id": "ret_atm", "x": 9}, {"id": "ret_box", "x": 8, "dy": 3}, {"id": "ret_cans", "x": 9, "dy": 3}, {"id": "ret_poster", "x": 8, "dy": 4}
+ ], "blocks": [{"mat": 3, "x": 8, "dy": 2}, {"mat": 3, "x": 9, "dy": 2}]},
+
+{"id": "retail_v10", "zone": "commercial", "type": "retail", "width": 14, "height": 5, "depth_min": -9999, "depth_max": 9999,
+ "objects": [
+  {"id": "ret_vending", "x": 0}, {"id": "ret_open_sign", "x": 0, "dy": 4},
+  {"id": "ret_counter", "x": 3}, {"id": "ret_cash_register", "x": 3, "dy": 2}, {"id": "com_digital_clock", "x": 3, "dy": 4}, {"id": "ret_security_camera", "x": 5, "dy": 4},
+  {"id": "com_cubicle_wall", "x": 7}, {"id": "com_motivation_poster", "x": 9, "dy": 3},
+  {"id": "com_office_chair", "x": 9},
+  {"id": "desk", "x": 10}, {"id": "com_monitor", "x": 10, "dy": 2}, {"id": "com_desk_phone", "x": 12, "dy": 2}, {"id": "com_cork_board", "x": 10, "dy": 3},
+  {"id": "com_trash_bin", "x": 13}
+ ], "blocks": []}
+]}

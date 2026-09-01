@@ -276,7 +276,7 @@ def draw_sanitizer(d, W, H):
 ITEMS = [
     {
         "id": "hos_gurney", "name": "Hospital Gurney", "category": "furniture",
-        "size": [3, 2], "zones": ["hospital"], "room_type": "ward",
+        "size": [3, 2], "zones": ["civil"], "room_type": "ward",
         "weight": 20, "tool_tier": 1, "skill": 0, "scrap_time": 3.5, "xp": 7,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 5},
@@ -287,7 +287,7 @@ ITEMS = [
     },
     {
         "id": "hos_iv_stand", "name": "IV Stand", "category": "furniture",
-        "size": [1, 2], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 2], "zones": ["civil"], "room_type": "ward",
         "weight": 6, "tool_tier": 1, "skill": 0, "scrap_time": 1.5, "xp": 3,
         "yields": [
             {"item": "scrap_metal", "min": 2, "max": 4},
@@ -297,7 +297,7 @@ ITEMS = [
     },
     {
         "id": "hos_privacy_screen", "name": "Privacy Screen", "category": "furniture",
-        "size": [2, 2], "zones": ["hospital"], "room_type": "ward",
+        "size": [2, 2], "zones": ["civil"], "room_type": "ward",
         "weight": 10, "tool_tier": 0, "skill": 0, "scrap_time": 2.0, "xp": 4,
         "yields": [
             {"item": "cloth", "min": 3, "max": 5},
@@ -308,7 +308,7 @@ ITEMS = [
     },
     {
         "id": "hos_wheelchair", "name": "Wheelchair", "category": "furniture",
-        "size": [2, 2], "zones": ["hospital"], "room_type": "ward",
+        "size": [2, 2], "zones": ["civil"], "room_type": "ward",
         "weight": 14, "tool_tier": 1, "skill": 0, "scrap_time": 3.0, "xp": 6,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 5},
@@ -319,7 +319,7 @@ ITEMS = [
     },
     {
         "id": "hos_vitals_monitor", "name": "Vitals Monitor", "category": "furniture",
-        "size": [1, 2], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 2], "zones": ["civil"], "room_type": "ward",
         "weight": 10, "tool_tier": 0, "skill": 1, "scrap_time": 2.5, "xp": 8,
         "yields": [
             {"item": "plastic", "min": 3, "max": 5},
@@ -330,7 +330,7 @@ ITEMS = [
     },
     {
         "id": "hos_med_cabinet", "name": "Medicine Cabinet", "category": "furniture",
-        "size": [2, 3], "zones": ["hospital"], "room_type": "ward",
+        "size": [2, 3], "zones": ["civil"], "room_type": "ward",
         "weight": 18, "tool_tier": 1, "skill": 0, "scrap_time": 3.5, "xp": 7,
         "storage_slots": 10,
         "yields": [
@@ -342,7 +342,7 @@ ITEMS = [
     },
     {
         "id": "hos_linen_hamper", "name": "Linen Hamper", "category": "furniture",
-        "size": [2, 2], "zones": ["hospital"], "room_type": "ward",
+        "size": [2, 2], "zones": ["civil"], "room_type": "ward",
         "weight": 12, "tool_tier": 0, "skill": 0, "scrap_time": 2.0, "xp": 5,
         "storage_slots": 6,
         "yields": [
@@ -354,35 +354,35 @@ ITEMS = [
     },
     {
         "id": "hos_pill_bottles", "name": "Pill Bottles", "category": "clutter",
-        "size": [1, 1], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 1], "zones": ["civil"], "room_type": "ward",
         "weight": 1, "tool_tier": 0, "skill": 0, "scrap_time": 1.0, "xp": 2,
         "yields": [{"item": "plastic", "min": 1, "max": 2}],
         "draw": draw_pill_bottles,
     },
     {
         "id": "hos_bedpan", "name": "Bedpan", "category": "clutter",
-        "size": [1, 1], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 1], "zones": ["civil"], "room_type": "ward",
         "weight": 2, "tool_tier": 0, "skill": 0, "scrap_time": 1.0, "xp": 2,
         "yields": [{"item": "scrap_metal", "min": 1, "max": 2}],
         "draw": draw_bedpan,
     },
     {
         "id": "hos_biohazard_bin", "name": "Biohazard Bin", "category": "clutter",
-        "size": [1, 1], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 1], "zones": ["civil"], "room_type": "ward",
         "weight": 3, "tool_tier": 0, "skill": 0, "scrap_time": 1.2, "xp": 3,
         "yields": [{"item": "plastic", "min": 1, "max": 3}],
         "draw": draw_biohazard_bin,
     },
     {
         "id": "hos_oxygen_tank", "name": "Oxygen Tanks", "category": "clutter",
-        "size": [1, 1], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 1], "zones": ["civil"], "room_type": "ward",
         "weight": 4, "tool_tier": 1, "skill": 0, "scrap_time": 1.5, "xp": 3,
         "yields": [{"item": "scrap_metal", "min": 1, "max": 3}],
         "draw": draw_oxygen_tank,
     },
     {
         "id": "hos_eye_chart", "name": "Eye Chart", "category": "wall_art",
-        "size": [1, 1], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 1], "zones": ["civil"], "room_type": "ward",
         "weight": 2, "tool_tier": 0, "skill": 0, "scrap_time": 1.0, "xp": 2,
         "wall_mounted": True,
         "yields": [{"item": "wood", "min": 1, "max": 2}],
@@ -390,7 +390,7 @@ ITEMS = [
     },
     {
         "id": "hos_xray_lightbox", "name": "X-ray Lightbox", "category": "wall_art",
-        "size": [2, 1], "zones": ["hospital"], "room_type": "ward",
+        "size": [2, 1], "zones": ["civil"], "room_type": "ward",
         "weight": 6, "tool_tier": 1, "skill": 0, "scrap_time": 2.0, "xp": 5,
         "wall_mounted": True,
         "yields": [
@@ -401,7 +401,7 @@ ITEMS = [
     },
     {
         "id": "hos_sanitizer", "name": "Sanitizer Dispenser", "category": "wall_art",
-        "size": [1, 1], "zones": ["hospital"], "room_type": "ward",
+        "size": [1, 1], "zones": ["civil"], "room_type": "ward",
         "weight": 2, "tool_tier": 0, "skill": 0, "scrap_time": 1.0, "xp": 2,
         "wall_mounted": True,
         "yields": [{"item": "plastic", "min": 1, "max": 2}],

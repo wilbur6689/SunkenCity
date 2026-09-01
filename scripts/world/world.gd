@@ -30,6 +30,13 @@ var _water_relight_at: int = 0 # next _light_tick water motion may relight at
 
 ## Depth bands (GD-16): world data every system can query.
 var waterline_row: int = 0
+## The city proper (map, edge clamp, spawns). The grid may extend east of it
+## into the VOID annex that holds the interior pockets.
+var city_bounds: Rect2i
+## Interior pockets (user request 2026-09-01): {rect: interior Rect2i,
+## exit: doorway cell in the city, entry: doorway cell inside}. Saved.
+var pockets: Array = []
+const NO_LINK := Vector2i(-99999, -99999)
 ## Day/night (CC-11): 0..1, 0 = midnight; advances in real time.
 var time_of_day: float = 0.35 # start in the morning
 
@@ -68,13 +75,16 @@ var perf: Dictionary = {"water_ms": 0.0, "light_ms": 0.0, "fog_ms": 0.0,
 	"objects_live": 0, "objects_total": 0, "enemies_live": 0, "enemies_total": 0}
 
 func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
-		p_objects_root: Node, p_renderer: StructureRenderer, p_waterline_row: int) -> void:
+		p_objects_root: Node, p_renderer: StructureRenderer, p_waterline_row: int,
+		p_city_w: int = -1) -> void:
 	grid = p_grid
 	items_root = p_items_root
 	objects_root = p_objects_root
 	renderer = p_renderer
 	spawn_position = p_spawn
 	waterline_row = p_waterline_row
+	city_bounds = grid.bounds if p_city_w < 0 else Rect2i(grid.bounds.position, Vector2i(p_city_w, grid.bounds.size.y))
+	pockets.clear()
 	placed_blocks.clear()
 	structure_damage.clear()
 	damage_rev += 1
@@ -190,6 +200,42 @@ func band_at(cell: Vector2i) -> String:
 		return "dark"
 	return "crush"
 
+# --- Interior pockets ---
+
+## East of the city proper: the VOID annex where the pockets live.
+func in_annex(cell: Vector2i) -> bool:
+	return cell.x >= city_bounds.end.x
+
+## The pocket whose interior holds `cell` ({} when none).
+func pocket_at(cell: Vector2i) -> Dictionary:
+	for p: Dictionary in pockets:
+		if (p.rect as Rect2i).has_point(cell):
+			return p
+	return {}
+
+## Where a position "is" on the city map: itself, or — inside a pocket — the
+## doorway it was entered through (the minimap/map never show the annex).
+func map_cell_for(pos: Vector2) -> Vector2i:
+	var cell := cell_at(pos)
+	if not in_annex(cell):
+		return cell
+	var p := pocket_at(cell)
+	return p.exit if not p.is_empty() else cell
+
+## Feet position on the far side of the portal at `cell` (Vector2.INF when
+## it links nowhere). The twin swings open too — you came through it.
+func portal_target(cell: Vector2i) -> Vector2:
+	var rec: Dictionary = object_cells.get(cell, {})
+	var link: Vector2i = rec.get("link", NO_LINK) if not rec.is_empty() else NO_LINK
+	if link == NO_LINK:
+		return Vector2.INF
+	var twin: Dictionary = object_cells.get(link, {})
+	if not twin.is_empty():
+		twin.open = true
+		if twin.node != null and is_instance_valid(twin.node):
+			twin.node.set_open_look(true)
+	return Vector2((link.x + 0.5) * Constants.BLOCK_SIZE, (link.y + 1) * Constants.BLOCK_SIZE)
+
 # --- Queries ---
 
 func is_solid_cell(cell: Vector2i) -> bool:
@@ -304,7 +350,7 @@ func sight_transparency_cell(cell: Vector2i) -> float:
 	var m := grid.structure_at(cell)
 	if m == WorldGrid.M.AIR:
 		return 1.0
-	if m == WorldGrid.M.STONE or m == WorldGrid.M.METAL:
+	if m == WorldGrid.M.STONE or m == WorldGrid.M.METAL or m == WorldGrid.M.VOID:
 		return 0.0
 	return Constants.OBSTACLE_SIGHT_TRANSMISSION
 
@@ -339,6 +385,8 @@ func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
 ## placed lamp or dropped glowstick stays revealed even with no line of
 ## sight from the player — each beacon casts its own sight.
 func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
+	if grid.structure_at(cell) == WorldGrid.M.VOID:
+		return 0.0 # the blackness around interior pockets: never lit, no ray spent
 	if not has_back_wall_cell(cell):
 		return float(LightMap.MAX_LIGHT)
 	var vis := _sight_from(viewer_pos, cell, Constants.SIGHT_FULL_BLOCKS)
@@ -911,8 +959,8 @@ func _spawn_wave_zombie(pos: Vector2, mult: float) -> void:
 	var dx := randi_range(Constants.RED_MOON_SPAWN_MIN_BLOCKS, Constants.RED_MOON_SPAWN_MAX_BLOCKS) \
 		* (1 if randi() % 2 == 0 else -1)
 	var x := cell_at(pos).x + dx
-	if x <= grid.bounds.position.x + 2 or x >= grid.bounds.end.x - 2:
-		return
+	if x <= city_bounds.position.x + 2 or x >= city_bounds.end.x - 2:
+		return # never into the pocket annex
 	for y in range(grid.bounds.position.y + 2, waterline_row + 1):
 		var cell := Vector2i(x, y)
 		if is_solid_cell(cell) and not is_solid_cell(cell + Vector2i.UP):

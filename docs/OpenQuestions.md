@@ -220,7 +220,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **GD-03.** Do zombies respawn in cleared buildings, and on what timer?
   - **A:** **Cleared stays cleared** — no timers; red moons are the only replenishment.
 - [x] **GD-04.** How smart is zombie AI — pathfinding, breaking blocks/doors, climbing?
-  - **A:** Simple and physical: walk toward stimuli, fall off ledges (falling *is* their pathfinding), squeeze through openings they fit, pound player-placed blocks/doors when blocked. No navigation, no climbing.
+  - **A:** Simple and physical: walk toward stimuli, fall off ledges (falling *is* their pathfinding), squeeze through openings they fit, pound player-placed blocks/doors when blocked. No navigation, no climbing. *(Amended 2026-08-31, user request: edge sense — ground enemies never walk off a ledge: chasers hold the edge, idle wanderers turn around. Gap jumping was tried and dropped for now.)*
 - [x] **GD-05.** How do floating zombies behave — surface hazards drifting between buildings?
   - **A:** (From GD-01/29) Floaters drift the surface between buildings; extra floaters appear at night and disperse at dawn.
 - [x] **GD-06.** What senses do enemies use (sight cones, sound, blood in water)?
@@ -347,6 +347,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
   - **A:** **~40 towers**; center towers ~50 floors (50 × 6 = ~300 blocks ≈ 600 ft), tapering per the CC-28 bell curve to 5–10 floor fully submerged buildings at the edges. Total world ≈ **2,500 × 400 blocks**.
 - [x] **CT-02.** What building types exist (residential, office, hospital, police, mall, industrial)?
   - **A:** MVP: **residential, office, hospital** — and towers are **mixed-use: types are assigned per floor/section**, so one skyscraper can stack all three. More types (police, mall, industrial) join with the materials balancing pass.
+  - *Amended 2026-09-01 (user decision): room ZONES are now **residential · business** (small service firms — lawyers, accountants, agencies) **· commercial** (retail, office) **· industrial · civil** (city admin, police, hospital, post office); "hospital" was renamed civil. Zones key room templates, furniture palettes, loot tables and clutter.*
 - [x] **CT-03.** Do building types drive their loot tables and enemy types?
   - **A:** Yes — a floor's type drives its room-template pool and scrap/loot flavor (residential: cloth/wood/food; office: metal/electronics; hospital: med supplies).
 - [x] **CT-04.** How are buildings generated — hand-made templates with variation, or fully procedural?

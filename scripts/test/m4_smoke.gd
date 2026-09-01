@@ -119,6 +119,9 @@ func _run() -> void:
 	World.time_of_day = 0.5
 
 	print("== C. walker: chase, contact damage, bleeding (GD-04/21)")
+	# Same side of the floor-2 rope hole (x15) — with edge sense the walker
+	# rightly refuses to cross a 1-block pit its body would fall through.
+	await place(18, row)
 	var hp0 := player.health
 	check(await until(func(): return wnode.global_position.x < 22.0 * B, 240), "walker chases toward the player")
 	check(await until(func(): return player.health < hp0, 600), "contact does damage")
@@ -139,6 +142,20 @@ func _run() -> void:
 	for dy in 3:
 		World.remove_block(Vector2i(16, row - dy))
 	await clear_enemies()
+
+	print("== D2. edge sense (GD-04 amended): never walk off a ledge")
+	# A platform in floor 2's cavity; the player stands across the drop.
+	for x in [8, 9, 10]:
+		World.place_block("wood_block", Vector2i(x, 8))
+	await place(14, row) # below and to the right of the platform
+	var wh := spawn("walker", 9, 7)
+	var wh_y: float = wh.pos.y # rec.pos re-banks every tick; keep the spawn height
+	await ticks(180) # plenty of time to have blundered off
+	check(wh.node != null and wh.node.global_position.x < 11.0 * B 		and absf(wh.node.global_position.y - wh_y) < 12.0,
+		"chasing walker holds the ledge instead of falling")
+	await clear_enemies()
+	for x in [8, 9, 10]:
+		World.remove_block(Vector2i(x, 8))
 
 	print("== E. melee (GD-07/08)")
 	player.inventory.add("scrap_sword", 1)

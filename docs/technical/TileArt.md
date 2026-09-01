@@ -98,3 +98,12 @@ bare feet — a diver-scavenger), a 4-direction sheet (front/back/two sides — 
 side + flipped, so front/back are for menus/character creation), and a muted brown/blue/khaki
 palette. At 24px most of that detail collapses to 1–2px accents; the layered paper-doll
 (body + hair/shirt/pants tints + gear overlays, WS-25) is where those accents live.
+
+## Surface furniture (2026-09-01)
+
+Anything objects get placed on — desks, tables, counters, nightstands, carts, exam tables — draws
+its **top plane in row 0 of its sprite** (flush with the top of its block footprint). The Room
+Editor and the generator stack clutter at `dy = base height`, so a top that sits lower makes the
+stacked piece float. Room-pack items declare `"surface": True`; `render_check.py` enforces the
+row-0 rule and `build_room_packs.py` writes the flag into `objects.json`. Props that used to be
+painted onto tops (papers, mugs, registers) are separate clutter items now.
