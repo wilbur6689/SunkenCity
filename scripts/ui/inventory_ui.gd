@@ -18,7 +18,7 @@ const DESIGN_W := 640.0
 
 const EQUIP_SLOTS := ["head", "suit", "accessory1", "accessory2", "accessory3", "accessory4"]
 const EQUIP_GLYPH := {"head": 0, "suit": 1, "accessory1": 2, "accessory2": 2, "accessory3": 3, "accessory4": 3}
-const EQUIP_LABEL := {"head": "Head", "suit": "Suit", "accessory1": "Accessory", "accessory2": "Accessory", "accessory3": "Accessory (locked)", "accessory4": "Accessory (locked)"}
+const EQUIP_LABEL := {"head": "Head", "suit": "Suit", "accessory1": "Accessory", "accessory2": "Accessory", "accessory3": "Accessory", "accessory4": "Accessory"}
 
 var player: Player
 var open: bool = false
@@ -49,7 +49,9 @@ var chest_grid: GridContainer
 var cursor_icon: TextureRect
 var cursor_count: Label
 var _last_stations: Array = []
-var hover_label: Label
+var hover_plate: PanelContainer
+var hover_name: Label
+var hover_mods: Label
 var _hover: Dictionary = {} # {which, index} for the slot under the mouse
 
 ## Popup window rect in design pixels; the screens keep absolute layout
@@ -136,14 +138,23 @@ func _ready() -> void:
 	_build_skills_screen()
 	_build_modify_screen()
 
-	# Hovered-item name plate (LT-08 rarity title text): gray / green / blue /
-	# purple by modifier state, shown for whichever slot the mouse is over.
-	hover_label = UITheme.label("", 8)
-	hover_label.position = Vector2(185, 33)
-	hover_label.size = Vector2(DESIGN_W - 370, 12)
-	hover_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hover_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(hover_label)
+	# Hovered-item info plate (LT-08 rarity title text): a small panel that
+	# follows the cursor over any slot — name in gray/green/blue/purple by
+	# modifier state, plus one line per mod. Replaces the engine tooltips,
+	# which render huge at window scale.
+	hover_plate = PanelContainer.new()
+	hover_plate.add_theme_stylebox_override("panel", UITheme.flat_panel(Color(0.03, 0.06, 0.09, 0.97)))
+	hover_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hover_plate.z_index = 20
+	hover_plate.visible = false
+	var hv := VBoxContainer.new()
+	hv.add_theme_constant_override("separation", 1)
+	hover_plate.add_child(hv)
+	hover_name = UITheme.label("", 8)
+	hv.add_child(hover_name)
+	hover_mods = UITheme.label("", 8, Color(0.75, 0.79, 0.83))
+	hv.add_child(hover_mods)
+	root.add_child(hover_plate)
 
 	# Shared bag grid (wood frame) at the bottom
 	var frame := PanelContainer.new()
@@ -214,7 +225,6 @@ func _build_inventory_screen() -> void:
 		var b := Button.new()
 		b.custom_minimum_size = Vector2(SLOT, SLOT)
 		UITheme.style_steel_slot(b)
-		b.tooltip_text = EQUIP_LABEL[slot_name]
 		var g := TextureRect.new()
 		var gat := AtlasTexture.new()
 		gat.atlas = glyphs
@@ -356,9 +366,7 @@ func _refresh_skills() -> void:
 		var into: float = sk.xp[skill_name] - lvl * Constants.SKILL_XP_PER_LEVEL
 		var row := VBoxContainer.new()
 		row.add_theme_constant_override("separation", 1)
-		var nl := UITheme.label("%s  —  %d" % [skill_name.capitalize(), lvl], 8)
-		nl.tooltip_text = "%.0f / %.0f xp to next" % [into, Constants.SKILL_XP_PER_LEVEL]
-		row.add_child(nl)
+		row.add_child(UITheme.label("%s — %d  (%.0f/%.0f xp)" % [skill_name.capitalize(), lvl, into, Constants.SKILL_XP_PER_LEVEL], 8))
 		var bar := ProgressBar.new()
 		bar.custom_minimum_size = Vector2(110, 4)
 		bar.max_value = Constants.SKILL_XP_PER_LEVEL
@@ -432,7 +440,6 @@ func _ability_button(a: Dictionary) -> Button:
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(22, 16)
 	b.text = "I".repeat(int(a.tier))
-	b.tooltip_text = String(a.name)
 	UITheme.style_row(b, selected_ability == String(a.id))
 	if sk.has_ability(a.id):
 		b.modulate = Color(0.6, 1.0, 0.6)
@@ -644,13 +651,35 @@ func _hover_stack():
 		return player.equipment.get(w.substr(6))
 	return null
 
-func _update_hover_label() -> void:
-	var st = _hover_stack()
-	if st == null:
-		hover_label.text = ""
+func _update_hover_plate() -> void:
+	if _hover.is_empty() or cursor_stack != null: # hidden while dragging
+		hover_plate.visible = false
 		return
-	hover_label.text = ItemMods.display_name(st)
-	hover_label.add_theme_color_override("font_color", ItemMods.rarity_color(st))
+	var st = _hover_stack()
+	var title := ""
+	var color := Color(0.75, 0.79, 0.83)
+	var lines: Array = []
+	if st != null:
+		title = ItemMods.display_name(st)
+		color = ItemMods.rarity_color(st)
+		lines = ItemMods.describe(st)
+	elif String(_hover.which).begins_with("equip:"):
+		# Empty equipment slot: name it (or explain the lock).
+		var slot_name := String(_hover.which).substr(6)
+		title = EQUIP_LABEL[slot_name] if player.slot_unlocked(slot_name) \
+				else "Reserved — the tech tree unlocks it"
+	if title == "":
+		hover_plate.visible = false
+		return
+	hover_name.text = title
+	hover_name.add_theme_color_override("font_color", color)
+	hover_mods.text = "\n".join(lines)
+	hover_mods.visible = not lines.is_empty()
+	hover_plate.visible = true
+	hover_plate.reset_size()
+	var m := root.get_local_mouse_position() + Vector2(8, 10)
+	var vis := root.get_viewport_rect().size
+	hover_plate.position = Vector2(minf(m.x, vis.x - hover_plate.size.x - 2), minf(m.y, vis.y - hover_plate.size.y - 2))
 
 # --- Open / close / screens ---
 
@@ -745,7 +774,7 @@ func _process(_delta: float) -> void:
 	cursor_icon.position = m + Vector2(4, 4)
 	cursor_count.position = m + Vector2(12, 8)
 	_tick_slot_scrap(get_process_delta_time())
-	_update_hover_label()
+	_update_hover_plate()
 	if screen == "crafting":
 		_refresh_crafting()
 	elif screen == "modify" and _stations().has("mod_bench") != _bench_near:
@@ -766,12 +795,6 @@ func _refresh_all() -> void:
 		eb.glyph.visible = st == null
 		var locked: bool = not player.slot_unlocked(slot_name)
 		eb.button.modulate = Color(0.55, 0.57, 0.62) if locked else Color.WHITE
-		if st != null:
-			eb.button.tooltip_text = _mod_tooltip(st)
-		elif locked:
-			eb.button.tooltip_text = "Reserved — an ability on the tech tree unlocks it"
-		else:
-			eb.button.tooltip_text = EQUIP_LABEL[slot_name]
 	var s := player.skills
 	stats_label.text = "Level %d\nPoints %d\n\nScrapping %d\nSwimming %d\nBuilding %d\n\nWeight %.1f\nSwim x%.2f" % [
 		s.player_level(), s.available_points(), s.level("scrapping"), s.level("swimming"), s.level("building"),
@@ -790,15 +813,8 @@ func _refresh_grid(ui_slots: Array, inv: Inventory, is_bag: bool) -> void:
 		var st = inv.slots[i]
 		ui_slots[i].icon.texture = Data.icon(st.id) if st != null else null
 		ui_slots[i].count.text = str(st.count) if (st != null and st.count > 1) else ""
-		ui_slots[i].button.tooltip_text = _mod_tooltip(st) if st != null else ""
 		if is_bag:
 			UITheme.style_slot(ui_slots[i].button, i == player.selected_slot)
-
-## Tooltip: the (rarity-titled) name plus one line per modifier (LT-08).
-func _mod_tooltip(st) -> String:
-	var lines := [ItemMods.display_name(st)]
-	lines.append_array(ItemMods.describe(st))
-	return "\n".join(lines)
 
 func _stations() -> Array:
 	return World.stations_near(player.global_position, Constants.REACH_BLOCKS * Constants.BLOCK_SIZE * 1.5)
