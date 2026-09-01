@@ -10,7 +10,7 @@ const SPRINT_SPEED: float = 7.0 * BLOCK_SIZE
 const CRAWL_SPEED: float = 2.5 * BLOCK_SIZE
 const CLIMB_SPEED: float = 4.0 * BLOCK_SIZE
 const SURFACE_SWIM_SPEED: float = 5.0 * BLOCK_SIZE
-const UNDERWATER_SWIM_SPEED: float = 4.0 * BLOCK_SIZE
+const UNDERWATER_SWIM_SPEED: float = 5.0 * BLOCK_SIZE # = walk speed (user request 2026-08-31)
 
 # --- Acceleration / friction (blocks/second²) ---
 const GROUND_ACCEL: float = 45.0 * BLOCK_SIZE   # ~0.11 s to walk speed
@@ -68,6 +68,15 @@ const SCRAP_SPEED_MULT: float = 2.0 # global scrap-speed multiplier (2.0 = testi
 const FIELD_SCRAP_YIELD: float = 0.5 # fraction of full yield when scrapping in place
 const HAND_TOOL_TIER: int = 0
 const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
+
+# --- Structure demolition (GL-01 amended, user request 2026-08-31): any
+# structure block breaks under the right TOOL TIER — scrap tools (1) chew
+# wood/plastic, iron (2) cracks stone, steel (3) cuts metal. Keys are
+# WorldGrid.M materials; drops are 1 matching material per block. Structure
+# ladders/ropes and back walls keep their own rules.
+const STRUCTURE_TIER := {WorldGrid.M.WOOD: 1, WorldGrid.M.PLASTIC: 1, WorldGrid.M.STONE: 2, WorldGrid.M.METAL: 3}
+const STRUCTURE_HP := {WorldGrid.M.WOOD: 30.0, WorldGrid.M.PLASTIC: 20.0, WorldGrid.M.STONE: 80.0, WorldGrid.M.METAL: 120.0}
+const STRUCTURE_DROP := {WorldGrid.M.WOOD: "wood", WorldGrid.M.PLASTIC: "plastic", WorldGrid.M.STONE: "stone", WorldGrid.M.METAL: "scrap_metal"}
 
 # --- Building (WS-22) ---
 const HAND_BLOCK_DAMAGE: float = 0.0 # bare hands cannot break placed blocks

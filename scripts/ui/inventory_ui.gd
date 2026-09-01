@@ -658,7 +658,7 @@ func _hover_stack():
 	if w == "inv":
 		return player.inventory.slots[_hover.index]
 	if w == "chest" and container != null and is_instance_valid(container):
-		return container.storage.slots[_hover.index]
+		return container.storage.slots[_hover.index] if _hover.index < container.storage.slots.size() else null
 	if w == "bench":
 		return bench_stack
 	if w.begins_with("equip:"):
@@ -741,11 +741,14 @@ func close() -> void:
 		bench_stack = null
 
 func open_container(obj: WorldObject) -> void:
+	# Build the chest's slot buttons BEFORE any refresh runs: units differ
+	# in slot count, and a refresh against the previous container's buttons
+	# indexes out of bounds (crash seen opening a smaller unit).
 	container = obj
-	open_panel()
 	_chest_slots = _make_slots(chest_grid, obj.storage, "chest")
 	stats_panel.visible = false
 	storage_panel.visible = true
+	open_panel()
 	show_screen("inventory")
 
 func show_screen(name: String) -> void:
@@ -817,7 +820,7 @@ func _refresh_all() -> void:
 		_refresh_modify()
 
 func _refresh_grid(ui_slots: Array, inv: Inventory, is_bag: bool) -> void:
-	for i in ui_slots.size():
+	for i in mini(ui_slots.size(), inv.slots.size()):
 		var st = inv.slots[i]
 		ui_slots[i].icon.texture = Data.icon(st.id) if st != null else null
 		ui_slots[i].count.text = str(st.count) if (st != null and st.count > 1) else ""

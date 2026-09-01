@@ -103,8 +103,9 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
 or a hotbar slot is reselected; it no longer drops). Hold-RMB on a bag slot scraps that item
 (field yield away from stations; quick tap still takes half). Hammer hits play a swing arc +
 impact SFX (`Audio.play_sfx`). Grayed crafting recipes stay clickable to inspect (with `desc`
-lines from the data files); only CRAFT is gated. `World.placed_blocks` separates breakable player blocks from unbreakable
-  structure (GL-01).
+lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks player blocks (their own HP/hardness); structure
+  blocks are ALSO breakable (GL-01 re-amended 2026-08-31) under
+  `Constants.STRUCTURE_TIER/HP/DROP` — wood/plastic need tool tier 1, stone 2, metal 3.
 - Main scene is currently `scenes/test/test_tower.tscn` — a 15-floor test tower (3 dry, 12
   flooded; themed deep floors, stairwell, sealed door-floods). Rows 0-30 are load-bearing for
   the smoke tests — extend downward, do not reshape them. Gate tests: `m0/m1/m2/tower_smoke.tscn`.

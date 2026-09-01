@@ -288,6 +288,22 @@ func _ready() -> void:
 	print("  surface iron obtainable: %d · chain needs: %d" % [surface_iron, chain_iron])
 	check(surface_iron < chain_iron, "iron above The Cold (%d) cannot cover the gear chain (%d) — you must dive" % [surface_iron, chain_iron])
 
+	print("== M. structure demolition (GL-01 amended: right tool tier breaks any block)")
+	var demo := sc + Vector2i(0, -10)
+	while World.has_block_cell(demo): # find open air above the spawn room
+		demo.y -= 1
+	World.grid.set_structure(demo, WorldGrid.M.WOOD)
+	check(World.damage_block(demo, 100.0, 0) == "too_hard", "bare hands cannot break structure")
+	check(World.damage_block(demo, 100.0, 1) == "broken", "scrap tools (tier 1) break wood structure")
+	World.grid.set_structure(demo, WorldGrid.M.STONE)
+	check(World.damage_block(demo, 100.0, 1) == "too_hard", "stone refuses scrap tools")
+	check(World.damage_block(demo, 100.0, 2) == "broken", "iron tools (tier 2) crack stone")
+	World.grid.set_structure(demo, WorldGrid.M.METAL)
+	check(World.damage_block(demo, 100.0, 2) == "too_hard", "metal refuses iron tools")
+	check(World.damage_block(demo, 60.0, 3) == "damaged", "steel (tier 3) chews metal over several hits")
+	check(World.damage_block(demo, 100.0, 3) == "broken", "...and cuts through")
+	check(not World.has_block_cell(demo), "the demolished cell is open air")
+
 	print("\nM5 smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:
 		print("  FAIL: " + f)

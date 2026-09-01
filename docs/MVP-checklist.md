@@ -81,7 +81,7 @@ them; respawn.
 - [x] Block placement/removal with 4-block reach, ghost preview, body-overlap + neighbour-support checks (WS-12)
 - [x] Placeable set: wood/scrap/stone blocks, door, rope, ladder, chest, bed, standing lamp
 - [x] Player-placed blocks have HP + hardness (`data/blocks.json`); hammer tier-gated breaking, paced hits (WS-22)
-- [x] Structure unbreakable (GL-01): any tile not in `World.placed_blocks` refuses the hammer
+- [x] ~~Structure unbreakable (GL-01)~~ **GL-01 re-amended (2026-08-31): any structure block breaks under the right tool tier** — wood/plastic tier 1 (scrap), stone tier 2 (iron), metal tier 3 (steel); drops one matching material; partial damage persists in the save (`World.structure_damage`)
 - [x] Chests: opening storage shows the inventory screen with the unit's own grid beside it + quick-stack (LT-23); a full chest cannot be picked up
 - [x] Interactables (chests, cabinets, breakers, doors, stations, pumps…) glow softly under the mouse when in reach; **LMB click interacts, LMB hold (~0.5s) picks up** (E stays as legacy)
 - [x] Bed sets spawn (GL-23) — per-character once characters exist (M3 saves)

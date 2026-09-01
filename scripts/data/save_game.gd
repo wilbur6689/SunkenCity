@@ -70,6 +70,7 @@ static func save_world(world_name: String, seed_value: int) -> void:
 		"climb": g.climb.compress(FileAccess.COMPRESSION_ZSTD),
 		"water": World.water_sim.levels.compress(FileAccess.COMPRESSION_ZSTD),
 		"placed_blocks": World.placed_blocks.duplicate(true),
+		"structure_damage": World.structure_damage.duplicate(),
 		"objects": objs, "items": items,
 	}
 	DirAccess.make_dir_recursive_absolute(WORLD_DIR)

@@ -71,6 +71,7 @@ func _boot_loaded(data: Dictionary) -> void:
 	World.register(grid, data.spawn, items_root, objects_root, structure_renderer, int(data.waterline_row))
 	World.time_of_day = float(data.time_of_day)
 	World.placed_blocks = (data.placed_blocks as Dictionary).duplicate(true)
+	World.structure_damage = (data.get("structure_damage", {}) as Dictionary).duplicate()
 	for st in data.objects:
 		var rec := World.add_object_record(st.id, st.cell, bool(st.placed))
 		rec.open = bool(st.get("open", false))

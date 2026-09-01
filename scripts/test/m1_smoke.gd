@@ -228,7 +228,8 @@ func _run() -> void:
 	check(await until(func(): return inv_count("wood_block") >= 2, 120), "walked over the drops and picked them up (%d)" % inv_count("wood_block"))
 	await goto(17)
 	await hold_use(Vector2i(17, row + 1), func(): return false, 5)
-	check(World.has_block_cell(Vector2i(17, row + 1)) and player.interaction.message.begins_with("Building structure"), "slab is unbreakable structure (GL-01)")
+	check(World.has_block_cell(Vector2i(17, row + 1)) and player.interaction.message.begins_with("Needs a better tool"),
+			"metal slab shrugs off a scrap-tier hammer (GL-01 amended: metal needs steel)")
 
 	print("== K. background walls (WS-21)")
 	await goto(19)

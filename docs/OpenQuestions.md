@@ -123,7 +123,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **WS-21.** Can the player place and remove background walls?
   - **A:** Yes, as decoration only (no simulation effect).
 - [x] **WS-22.** Do blocks have HP/hardness tiers requiring better tools to break?
-  - **A:** Yes — **HP + hardness tiers** (glass/drywall < wood < concrete/steel). **Amended by GL-01:** hardness tiers apply only to the breakable set (contents, glass, interior partitions, player-placed blocks); building structure itself is unbreakable.
+  - **A:** Yes — **HP + hardness tiers** (glass/drywall < wood < concrete/steel). **Re-amended with GL-01 (2026-08-31):** hardness tiers now cover EVERYTHING, structure included — wood/plastic at tool tier 1, stone at 2, metal at 3 (`Constants.STRUCTURE_TIER/HP/DROP`).
 - [x] **WS-23.** How is water simulated — cellular per-tile flow, region/volume-based, or hybrid?
   - **A:** (From CC-13) Cellular per-tile flow — water is a block-like tile that flows downward and settles. Details: `technical/WaterPhysics.md`.
 - [x] **WS-24.** Does placing/removing blocks displace or release water in real time?
@@ -146,7 +146,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 ## 3. Main Game Loop (GL) — ✅ Reviewed 2026-08-30
 
 - [x] **GL-01.** What exactly gates each stage transition — gear thresholds only, or also milestones/quests?
-  - **A:** **Pure capability gating** — stages are emergent, enforced by physical/gear barriers (oxygen, tools, cold, pressure); no quest flags. Shallow-but-gear-locked pockets are a deliberate design tool. **Amendment: building structure (walls/floors/ceilings) is unbreakable** — access is always through openings; breakable = contents/furniture, glass, interior partitions, and player-placed blocks (supersedes part of WS-22).
+  - **A:** **Pure capability gating** — stages are emergent, enforced by physical/gear barriers (oxygen, tools, cold, pressure); no quest flags. Shallow-but-gear-locked pockets are a deliberate design tool. ~~Amendment: building structure is unbreakable~~ **Re-amended (2026-08-31, user decision): ANY structure block breaks under the right tool tier** — scrap tools (tier 1) break wood/plastic, iron (2) breaks stone, steel (3) cuts metal; each drops one matching material. Capability gating survives: the deep tool tiers ARE the gate on stone/metal demolition. Stairwell ladders/ropes and back walls keep their own rules.
 - [x] **GL-02.** What is the exact starting scenario — waking on a rooftop, adrift on debris, a wrecked boat?
   - **A:** Wake **inside a dry medical room** — loot the room, learn the basics, exit toward water.
 - [x] **GL-03.** What are the first craftable tools, and from what starter materials?

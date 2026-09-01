@@ -58,6 +58,7 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	spawn_position = p_spawn
 	waterline_row = p_waterline_row
 	placed_blocks.clear()
+	structure_damage.clear()
 	object_records.clear()
 	object_cells.clear()
 	pumps.clear()
@@ -438,7 +439,9 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 			return "none"
 	var key = _key(cell, layer_name)
 	if not placed_blocks.has(key):
-		return "structure"
+		if layer_name == "blocks":
+			return _damage_structure(cell, damage, tool_tier)
+		return "structure" # stairwell ladders/ropes stay fixed
 	var entry: Dictionary = placed_blocks[key]
 	var def: Dictionary = Data.blocks[entry.id]
 	if tool_tier < int(def.hardness) or damage <= 0.0:
@@ -448,6 +451,29 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 		return "damaged"
 	remove_block(cell, layer_name)
 	spawn_item(entry.id, 1, cell_center(cell))
+	return "broken"
+
+## Structure demolition (GL-01 amended): any structure block breaks under
+## the right tool tier (Constants.STRUCTURE_TIER), drops one matching
+## material, and — like any removal — wakes water, light, and fog.
+var structure_damage: Dictionary = {} # cell -> hp left (partially hit cells)
+
+func _damage_structure(cell: Vector2i, damage: float, tool_tier: int) -> String:
+	var mat := grid.structure_at(cell)
+	var need: int = Constants.STRUCTURE_TIER.get(mat, 99)
+	if tool_tier < need or damage <= 0.0:
+		return "too_hard"
+	var hp: float = structure_damage.get(cell, float(Constants.STRUCTURE_HP.get(mat, 60.0)))
+	hp -= damage
+	if hp > 0.0:
+		structure_damage[cell] = hp
+		return "damaged"
+	structure_damage.erase(cell)
+	grid.set_structure(cell, WorldGrid.M.AIR)
+	_cell_changed(cell)
+	var drop: String = Constants.STRUCTURE_DROP.get(mat, "")
+	if drop != "":
+		spawn_item(drop, 1, cell_center(cell))
 	return "broken"
 
 # --- Objects ---

@@ -195,7 +195,7 @@ func _run() -> void:
 	await ticks(30)
 	check(absf(player.global_position.y - y_rest) < 0.5 and st() == "UNDERWATER", "neutral buoyancy: holds depth")
 	press(["move_right"]); await ticks(25)
-	check(absf(player.velocity.x - Constants.UNDERWATER_SWIM_SPEED) < 1.0, "underwater swim 4 bl/s (%.2f)" % (player.velocity.x / B))
+	check(absf(player.velocity.x - Constants.UNDERWATER_SWIM_SPEED) < 1.0, "underwater swim %.0f bl/s (%.2f)" % [Constants.UNDERWATER_SWIM_SPEED / B, player.velocity.x / B])
 	release_all()
 	await hold(["move_left"], 25)
 
