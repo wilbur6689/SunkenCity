@@ -222,7 +222,7 @@ func _hammer(tool: Dictionary) -> void:
 		return
 	# Demolitionist (tech tree) lands hammer blows harder.
 	var dmg := float(tool.get("damage", 0)) * player.skills.effect("hammer_mult", 1.0)
-	var result := World.damage_block(target_cell, dmg, int(tool.get("tier", 0)))
+	var result := World.damage_block(target_cell, dmg, int(tool.get("tier", 0)), player.global_position)
 	match result:
 		"structure":
 			say("Building structure cannot be broken")

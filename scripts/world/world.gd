@@ -431,7 +431,8 @@ func erase_back_wall(cell: Vector2i) -> bool:
 	return true
 
 ## Tool hit. Returns "broken" | "damaged" | "too_hard" | "structure" | "none".
-func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
+## `by` (the miner's position) makes the drop toss toward them.
+func damage_block(cell: Vector2i, damage: float, tool_tier: int, by: Vector2 = Vector2.INF) -> String:
 	var layer_name := "blocks"
 	if not has_block_cell(cell):
 		if is_climbable_cell(cell):
@@ -441,7 +442,7 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 	var key = _key(cell, layer_name)
 	if not placed_blocks.has(key):
 		if layer_name == "blocks":
-			return _damage_structure(cell, damage, tool_tier)
+			return _damage_structure(cell, damage, tool_tier, by)
 		return "structure" # stairwell ladders/ropes stay fixed
 	var entry: Dictionary = placed_blocks[key]
 	var def: Dictionary = Data.blocks[entry.id]
@@ -452,8 +453,17 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 	if entry.hp > 0.0:
 		return "damaged"
 	remove_block(cell, layer_name)
-	spawn_item(entry.id, 1, cell_center(cell))
+	var it := spawn_item(entry.id, 1, cell_center(cell), _toss_velocity(cell_center(cell), by))
+	if it != null:
+		it.magnet = true
 	return "broken"
+
+## Velocity that arcs a mined drop toward the miner (lands at their feet /
+## inside pickup range instead of dropping at the far wall).
+func _toss_velocity(from: Vector2, by: Vector2) -> Vector2:
+	if by == Vector2.INF:
+		return Vector2.ZERO
+	return (by - from) * Constants.MINE_TOSS_FACTOR + Vector2(0, -Constants.MINE_TOSS_UP)
 
 ## Structure demolition (GL-01 amended): any structure block breaks under
 ## the right tool tier (Constants.STRUCTURE_TIER), drops one matching
@@ -461,7 +471,7 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int) -> String:
 var structure_damage: Dictionary = {} # cell -> hp left (partially hit cells)
 var damage_rev: int = 0 # bumped on any block damage; the crack overlay redraws on change
 
-func _damage_structure(cell: Vector2i, damage: float, tool_tier: int) -> String:
+func _damage_structure(cell: Vector2i, damage: float, tool_tier: int, by: Vector2 = Vector2.INF) -> String:
 	var mat := grid.structure_at(cell)
 	var need: int = Constants.STRUCTURE_TIER.get(mat, 99)
 	if tool_tier < need or damage <= 0.0:
@@ -477,7 +487,9 @@ func _damage_structure(cell: Vector2i, damage: float, tool_tier: int) -> String:
 	_cell_changed(cell)
 	var drop: String = Constants.STRUCTURE_DROP.get(mat, "")
 	if drop != "":
-		spawn_item(drop, 1, cell_center(cell))
+		var it := spawn_item(drop, 1, cell_center(cell), _toss_velocity(cell_center(cell), by))
+		if it != null:
+			it.magnet = true
 	return "broken"
 
 # --- Objects ---

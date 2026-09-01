@@ -223,9 +223,8 @@ func _run() -> void:
 	var dropped := tower.get_node("Items").get_child_count()
 	check(dropped >= 1, "broken block dropped as an item")
 	await hold_use(Vector2i(20, row), func(): return not World.has_block_cell(Vector2i(20, row)), 120)
-	await ticks(60) # let the drops settle on the floor
-	await goto(20)
-	check(await until(func(): return inv_count("wood_block") >= 2, 120), "walked over the drops and picked them up (%d)" % inv_count("wood_block"))
+	# Mined drops toss toward the miner and magnet home once grabbable.
+	check(await until(func(): return inv_count("wood_block") >= 2, 240), "mined drops home to the miner and are picked up (%d)" % inv_count("wood_block"))
 	await goto(17)
 	await hold_use(Vector2i(17, row + 1), func(): return false, 5)
 	check(World.has_block_cell(Vector2i(17, row + 1)) and player.interaction.message.begins_with("Needs a better tool"),

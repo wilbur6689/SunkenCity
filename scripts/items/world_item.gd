@@ -9,6 +9,7 @@ var id: String = ""
 var count: int = 1
 var velocity: Vector2 = Vector2.ZERO
 var pickup_delay: float = 0.0
+var magnet: bool = false # mined drops home to a nearby player (pays out visibly)
 var light: PointLight2D
 
 @onready var sprite: Sprite2D = $Sprite2D
@@ -55,6 +56,14 @@ func _physics_process(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, (8.0 if in_water else 3.0) * Constants.BLOCK_SIZE * delta)
 	if in_water:
 		velocity += World.current_at(global_position) * delta * 4.0 # currents carry items (WS-16)
+	# Mined-drop magnet: once grabbable, fly straight to a player in range
+	# (solid checks below still stop it at walls).
+	if magnet and pickup_delay <= 0.0:
+		for p in get_tree().get_nodes_in_group("player"):
+			var to: Vector2 = p.global_position - global_position
+			if to.length() <= Constants.ITEM_MAGNET_RADIUS_BLOCKS * Constants.BLOCK_SIZE:
+				velocity = to.normalized() * Constants.ITEM_MAGNET_SPEED
+				break
 	var next := global_position + velocity * delta
 	# rest on the top of the first solid cell below
 	if velocity.y > 0.0 and World.is_solid(next + Vector2(0, 4)):

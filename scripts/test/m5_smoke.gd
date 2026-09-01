@@ -44,6 +44,13 @@ func _chain_iron_need() -> int:
 		total += _iron_cost(id)
 	return total
 
+func _world_item_count(id: String) -> int:
+	var n := 0
+	for it in World.items_root.get_children():
+		if it is WorldItem and it.id == id:
+			n += it.count
+	return n
+
 func _ready() -> void:
 	var city: Node2D = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
@@ -294,7 +301,9 @@ func _ready() -> void:
 		demo.y -= 1
 	World.grid.set_structure(demo, WorldGrid.M.WOOD)
 	check(World.damage_block(demo, 200.0, 0) == "too_hard", "bare hands cannot break structure")
+	var wood_drops_before := _world_item_count("wood")
 	check(World.damage_block(demo, 200.0, 1) == "broken", "scrap tools (tier 1) break wood structure")
+	check(_world_item_count("wood") > wood_drops_before, "mining pays out: the block's material drops")
 	World.grid.set_structure(demo, WorldGrid.M.STONE)
 	check(World.damage_block(demo, 100.0, 1) == "too_hard", "stone refuses scrap tools")
 	var rev := World.damage_rev

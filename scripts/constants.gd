@@ -80,6 +80,13 @@ const STRUCTURE_TIER := {WorldGrid.M.WOOD: 1, WorldGrid.M.PLASTIC: 1, WorldGrid.
 # for metal (cutting torch, 3 dmg). Cracks appear at 25/50/75% damage.
 const STRUCTURE_HP := {WorldGrid.M.WOOD: 120.0, WorldGrid.M.PLASTIC: 80.0, WorldGrid.M.STONE: 200.0, WorldGrid.M.METAL: 260.0}
 const STRUCTURE_DROP := {WorldGrid.M.WOOD: "wood", WorldGrid.M.PLASTIC: "plastic", WorldGrid.M.STONE: "stone", WorldGrid.M.METAL: "scrap_metal"}
+# Mined drops must visibly pay out (user request): they pop toward the
+# miner (velocity = offset * factor + an upward kick) and then MAGNET home
+# to any player within radius once their pickup delay expires.
+const MINE_TOSS_FACTOR: float = 1.5
+const MINE_TOSS_UP: float = 1.0 * BLOCK_SIZE
+const ITEM_MAGNET_RADIUS_BLOCKS: float = 5.0
+const ITEM_MAGNET_SPEED: float = 9.0 * BLOCK_SIZE
 
 # --- Building (WS-22) ---
 const HAND_BLOCK_DAMAGE: float = 0.0 # bare hands cannot break placed blocks
