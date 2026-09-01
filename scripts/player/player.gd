@@ -804,6 +804,8 @@ func _update_swing(delta: float) -> void:
 				# Held at hand height: the tool's lower corner sits
 				# mid-body, not at the feet (user request).
 				_tool_sprite.position = Vector2(facing * 5.0, -5.0)
+			if state == State.SURFACE_SWIM: # ride the chest-deep body
+				_tool_sprite.position.y += Constants.SURFACE_SPRITE_SINK_PX
 		else:
 			_tool_sprite.visible = false
 		return
@@ -835,6 +837,8 @@ func _update_gear_visuals() -> void:
 	if _lamp_dot != null:
 		_lamp_dot.visible = head_light
 		_lamp_dot.position = Vector2(facing * 3.0, hitbox_top() + 3.0)
+		if state == State.SURFACE_SWIM:
+			_lamp_dot.position.y += Constants.SURFACE_SPRITE_SINK_PX
 
 func _update_sprite(delta: float) -> void:
 	if input_dir.x != 0.0:
@@ -858,6 +862,9 @@ func _update_sprite(delta: float) -> void:
 		sprite.rotation = 0.0
 		# Feet on the scaled frame's bottom row at local y = FEET_Y.
 		sprite.position = Vector2(0, FEET_Y - 16.0 * Constants.PLAYER_SPRITE_SCALE)
+		if state == State.SURFACE_SWIM:
+			# Chest-high waterline while treading (user request).
+			sprite.position.y += Constants.SURFACE_SPRITE_SINK_PX
 
 var zoom_index: int = Constants.CAMERA_ZOOM_DEFAULT_INDEX
 

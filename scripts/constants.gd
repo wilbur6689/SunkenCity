@@ -33,6 +33,9 @@ const MAX_FALL_SPEED: float = 30.0 * BLOCK_SIZE
 
 # --- Water (WS-07/09) ---
 const SURFACE_FLOAT_HEIGHT_PX: float = 4.0 # compact hitbox top sits this far above the waterline
+const SURFACE_SPRITE_SINK_PX: float = 8.0  # treading draws the body this much lower, so the
+                                           # waterline sits chest-high (user request); visual only —
+                                           # the hitbox/oxygen head point stays above the surface
 const SURFACE_TREAD_STIFFNESS: float = 12.0 # 1/s — auto-tread pull toward the float line
 
 # --- Hitboxes (WS-02: compact form fits 1-block holes; the 1.5x rescale was
