@@ -30,7 +30,10 @@ Quit to the title — quit from there); dev runs passing
 `scenes/city/city.tscn` — a seeded 2400×400 drowned city (`CityGen`, ~1.5 s, deterministic;
 `--seed=N`, `--shot=path[:zoom]` — shots need a window, not --headless) with mega-pump station
 shells, surface debris rafts, invisible edge walls (player x-clamp), a WS-04 two-jump repair
-pass, and a top-right minimap fed by per-character `MapReveal` (proximity r=14). Towers are
+pass, and a top-right minimap fed by per-character `MapReveal` (proximity r=14); **M** opens the
+full-screen map (`scripts/ui/map_view.gd`: drag pans, wheel zooms on the mouse, built once
+then kept fresh from `MapReveal.dirty` + a repaint window; colors shared with the minimap
+via `MapColors`). Towers are
 **double-wide twin-wing blocks** (2026-08-31): ladder stairwells on BOTH sides, an elevator
 shaft down the centre, rooms in each wing; submerged ladder runs decay into gaps with
 `broken_ladder` scrap pieces — scrap for wood, craft + place ladders to climb back up;

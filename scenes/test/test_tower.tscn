@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/test/test_tower.gd" id="1_tower"]
 [ext_resource type="Script" path="res://scripts/world/backdrop.gd" id="6_backdrop"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_ui.tscn" id="5_inventory_ui"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="10_pause"]
+[ext_resource type="Script" path="res://scripts/ui/map_view.gd" id="11_map"]
 
 [node name="TestTower" type="Node2D"]
 script = ExtResource("1_tower")
@@ -51,3 +52,6 @@ script = ExtResource("8_light")
 
 [node name="PauseMenu" type="CanvasLayer" parent="."]
 script = ExtResource("10_pause")
+
+[node name="MapView" type="CanvasLayer" parent="."]
+script = ExtResource("11_map")

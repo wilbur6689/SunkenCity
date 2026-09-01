@@ -7,6 +7,7 @@ extends RefCounted
 var bounds: Rect2i
 var bits := PackedByteArray()
 var revealed := 0 # running count (the bitset is too big to walk per frame)
+var dirty: PackedVector2Array = [] # newly revealed cells since last drain (map view)
 
 func _init(p_bounds: Rect2i) -> void:
 	bounds = p_bounds
@@ -29,6 +30,8 @@ func reveal_cell(cell: Vector2i) -> void:
 	if bits[i >> 3] & mask == 0:
 		bits[i >> 3] |= mask
 		revealed += 1
+		if dirty.size() < 200000: # safety cap; the map view drains this
+			dirty.append(Vector2(cell))
 
 ## Reveal a disc of cells around the player's position.
 func reveal_disc(center: Vector2i, radius: int) -> void:

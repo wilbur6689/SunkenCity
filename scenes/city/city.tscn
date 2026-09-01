@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/city/city.gd" id="1_city"]
 [ext_resource type="Script" path="res://scripts/world/backdrop.gd" id="2_backdrop"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="7_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_ui.tscn" id="8_ui"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="9_pause"]
+[ext_resource type="Script" path="res://scripts/ui/map_view.gd" id="10_map"]
 
 [node name="City" type="Node2D"]
 script = ExtResource("1_city")
@@ -48,3 +49,6 @@ script = ExtResource("6_light")
 
 [node name="PauseMenu" type="CanvasLayer" parent="."]
 script = ExtResource("9_pause")
+
+[node name="MapView" type="CanvasLayer" parent="."]
+script = ExtResource("10_map")

@@ -798,7 +798,8 @@ func _process(_delta: float) -> void:
 		player.crafting_opened.connect(open_panel)
 		player.inventory.changed.connect(_refresh_all)
 	var pause = get_tree().get_first_node_in_group("pause_menu")
-	if Input.is_action_just_pressed("inventory") and (pause == null or not pause.open):
+	var mv = get_tree().get_first_node_in_group("map_view")
+	if Input.is_action_just_pressed("inventory") and (pause == null or not pause.open) and (mv == null or not mv.open):
 		toggle()
 	if not open:
 		# Esc with no menu open is the pause menu's business (sound, quit).

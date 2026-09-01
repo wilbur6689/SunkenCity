@@ -269,17 +269,7 @@ func _build_minimap() -> void:
 	_minimap_tex = ImageTexture.create_from_image(_minimap_img)
 	_minimap.texture = _minimap_tex
 
-const _MAT_COLORS := {
-	WorldGrid.M.STONE: Color(0.52, 0.52, 0.55),
-	WorldGrid.M.WOOD: Color(0.55, 0.4, 0.24),
-	WorldGrid.M.METAL: Color(0.45, 0.52, 0.6),
-	WorldGrid.M.PLASTIC: Color(0.75, 0.72, 0.66),
-}
-const _UNREVEALED := Color(0.03, 0.03, 0.05)
-const _SKY := Color(0.22, 0.55, 0.64)
-const _INTERIOR := Color(0.16, 0.14, 0.13)
-const _WATER := Color(0.12, 0.3, 0.52)
-const _DEEP := Color(0.05, 0.12, 0.26)
+# Cell colors live in MapColors (shared with the full-screen map view).
 
 func _redraw_minimap() -> void:
 	if not World.is_ready() or World.map_reveal == null:
@@ -290,18 +280,7 @@ func _redraw_minimap() -> void:
 	for py in w.y:
 		for px in w.x:
 			var cell := org + Vector2i(px, py)
-			var col: Color = _UNREVEALED
-			if World.map_reveal.is_revealed(cell):
-				var mat: int = World.grid.structure_at(cell)
-				if mat != WorldGrid.M.AIR:
-					col = _MAT_COLORS.get(mat, _INTERIOR)
-				elif World.water_sim.level_at(cell) > 2:
-					var deep_f := clampf(float(cell.y - World.waterline_row) / 250.0, 0.0, 1.0)
-					col = _WATER.lerp(_DEEP, deep_f)
-				elif World.has_back_wall_cell(cell):
-					col = _INTERIOR
-				else:
-					col = _SKY if cell.y < World.waterline_row else _WATER.lerp(_INTERIOR, 0.5)
+			var col := MapColors.cell_color(cell) if World.map_reveal.is_revealed(cell) else MapColors.UNREVEALED
 			_minimap_img.set_pixel(px, py, col)
 	# The player: a bright 2x2 dot dead centre.
 	for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:

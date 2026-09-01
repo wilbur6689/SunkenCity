@@ -52,6 +52,9 @@ func _world_item_count(id: String) -> int:
 	return n
 
 func _ready() -> void:
+	# Isolation: never inherit a real character save from this machine (the
+	# default character name may exist and carry gear that skews checks).
+	SaveGame.pending_character = "__m5_smoke__"
 	var city: Node2D = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
 	var player: Player = city.get_node("Player")

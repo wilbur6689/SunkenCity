@@ -41,6 +41,7 @@ func _ready() -> void:
 	check(r1.towers >= 6, "800-wide slice holds %d towers (double-wide)" % r1.towers)
 
 	print("== B. the full city")
+	SaveGame.pending_character = "__m3_smoke__" # never inherit a real save
 	city = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
 	player = city.get_node("Player")

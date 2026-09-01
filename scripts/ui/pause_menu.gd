@@ -28,6 +28,7 @@ const CONTROL_ROWS := [
 	["Scrap / back wall", "RMB (hold)"],
 	["Interact (legacy)", ["interact"]],
 	["Inventory", ["inventory"]],
+	["Map", ["map"]],
 	["Bare hands", ["drop"]],
 	["Hotbar", "1–0 · wheel cycles"],
 	["Zoom", "Ctrl + wheel"],
@@ -166,10 +167,13 @@ func _process(_delta: float) -> void:
 		else:
 			close()
 		return
-	# The character menu owns Esc while it is open (it closes itself, and
-	# marks the frame so this menu does not pop in the same keypress).
+	# The character menu / map view own Esc while open (each closes itself
+	# and marks the frame so this menu does not pop on the same keypress).
 	var inv = get_tree().get_first_node_in_group("inventory_ui")
 	if inv != null and (inv.open or inv.esc_consumed_frame == Engine.get_process_frames()):
+		return
+	var mv = get_tree().get_first_node_in_group("map_view")
+	if mv != null and (mv.open or mv.esc_consumed_frame == Engine.get_process_frames()):
 		return
 	open_menu()
 
