@@ -236,6 +236,14 @@ func _hammer(tool: Dictionary) -> void:
 	player.play_swing()
 	var obj := World.object_at(target_cell)
 	if obj != null:
+		if obj.def.kind == "decal":
+			# Dressing (user request 2026-09-01): broken-wall patches and roof
+			# junk are not harvestable - a hammer knock simply clears them.
+			var dname: String = obj.def.name
+			World.remove_object(obj)
+			Audio.play_sfx("wood_break", World.cell_center(target_cell), 4)
+			say("Cleared away the " + dname.to_lower())
+			return
 		if obj.def.kind == "scrap":
 			say("Use a knife or your hands to scrap furniture")
 			return

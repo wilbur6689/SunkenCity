@@ -324,7 +324,7 @@ ITEMS = [
         "yields": [
             {"item": "plastic", "min": 3, "max": 5},
             {"item": "scrap_metal", "min": 2, "max": 3},
-            {"item": "iron", "min": 0, "max": 1},
+            {"item": "scrap_metal", "min": 0, "max": 1},
         ],
         "draw": draw_vitals_monitor,
     },
@@ -336,7 +336,7 @@ ITEMS = [
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 5},
             {"item": "plastic", "min": 2, "max": 3},
-            {"item": "iron", "min": 1, "max": 2},
+            {"item": "scrap_metal", "min": 1, "max": 2},
         ],
         "draw": draw_med_cabinet,
     },

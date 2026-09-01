@@ -14,7 +14,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from PIL import Image, ImageDraw  # noqa: E402
 
 VALID_YIELD_ITEMS = {"wood", "scrap_metal", "plastic", "cloth", "stone", "iron"}
-VALID_CATEGORIES = {"furniture", "clutter", "wall_art"}
+VALID_CATEGORIES = {"furniture", "clutter", "wall_art", "wall_detail", "statement", "roof", "tree"}
+# Per-category size caps (w, h); default is ordinary furniture.
+SIZE_CAPS = {"roof": (8, 16), "tree": (8, 16), "wall_detail": (4, 4), "statement": (4, 4)}
 REQUIRED = ["id", "name", "category", "size", "zones", "room_type", "weight",
             "tool_tier", "skill", "scrap_time", "xp", "yields", "draw"]
 
@@ -34,14 +36,16 @@ def check(module_name: str) -> int:
             errors.append(f"{label}: duplicate id")
         seen.add(it.get("id"))
         w, h = it.get("size", [1, 1])
-        if not (1 <= w <= 4 and 1 <= h <= 3):
-            errors.append(f"{label}: size {w}x{h} out of range (w 1-4, h 1-3)")
+        cap_w, cap_h = SIZE_CAPS.get(it.get("category"), (4, 3))
+        if not (1 <= w <= cap_w and 1 <= h <= cap_h):
+            errors.append(f"{label}: size {w}x{h} out of range (w 1-{cap_w}, h 1-{cap_h})")
         if it.get("category") not in VALID_CATEGORIES:
             errors.append(f"{label}: bad category {it.get('category')}")
         for y in it.get("yields", []):
             if y.get("item") not in VALID_YIELD_ITEMS:
                 errors.append(f"{label}: bad yield item {y.get('item')}")
-            if not (0 <= y.get("min", -1) <= y.get("max", -1) <= 30):
+            cap = 60 if it.get("category") in ("roof", "tree") else 30
+            if not (0 <= y.get("min", -1) <= y.get("max", -1) <= cap):
                 errors.append(f"{label}: bad yield range")
         try:
             img = Image.new("RGBA", (w * 16, h * 16), (0, 0, 0, 0))

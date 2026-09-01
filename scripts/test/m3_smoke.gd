@@ -50,7 +50,7 @@ func _ready() -> void:
 	var gen: Dictionary = city.gen
 	check(gen.towers >= 20, "city holds %d double-wide towers" % gen.towers)
 	check(World.spawn_position.y < CityGen.WATERLINE * B, "hospital spawn is above the waterline (GL-02)")
-	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands in the medical room")
+	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands on the hospital roof (drop-off start)")
 	check(World.band_at(World.cell_at(player.global_position)) == "dry", "spawn floor is in The Dry")
 	var ground_ok := true
 	for gx in [10, 400, 1200, 2000, 2390]:
@@ -114,11 +114,12 @@ func _ready() -> void:
 			"pack sprite loads as an AtlasTexture region (hos_gurney 48x32)")
 	# Wall art needs back walls behind every cell (WS-20/21): a spot inside
 	# the medical room has them; the open sky above the city does not.
-	var sc := World.cell_at(World.spawn_position) + Vector2i(0, -3) # above the bed
+	var med := Vector2i(int(city.gen.hospital.zones[0][0]) + 3, int(city.gen.hospital.top) + CityGen.FLOOR_H - 1)
+	var sc := med + Vector2i(0, -3) # above the medical room, one floor under the spawn roof
 	check(World.has_back_wall_cell(sc) and World.can_place_object("hos_eye_chart", sc),
 			"wall art hangs on an interior back wall")
 	check(not World.can_place_object("hos_eye_chart", Vector2i(6, 10)), "but not on open sky")
-	var sofa := World.place_object("res_sofa", World.cell_at(World.spawn_position) + Vector2i(6, 0), true)
+	var sofa := World.place_object("res_sofa", med + Vector2i(6, 0), true)
 	check(sofa != null and sofa.sprite.texture != null, "a pack item places with its sheet sprite")
 
 	print("== H. edge walls, stations, debris, two-jump (CT-22/08/23, WS-04)")

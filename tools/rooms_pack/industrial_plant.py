@@ -305,7 +305,7 @@ ITEMS = [
     {
         "id": "ind_water_heater", "name": "Water Heater", "category": "furniture",
         "size": [1, 3], "zones": ["industrial"], "room_type": "utility",
-        "weight": 20, "tool_tier": 1, "skill": 1, "scrap_time": 3.0, "xp": 6,
+        "weight": 20, "tool_tier": 1, "skill": 2, "scrap_time": 3.0, "xp": 6,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 5},
             {"item": "iron", "min": 1, "max": 2},
@@ -315,7 +315,7 @@ ITEMS = [
     {
         "id": "ind_air_compressor", "name": "Air Compressor", "category": "furniture",
         "size": [2, 2], "zones": ["industrial"], "room_type": "utility",
-        "weight": 18, "tool_tier": 1, "skill": 1, "scrap_time": 3.0, "xp": 6,
+        "weight": 18, "tool_tier": 1, "skill": 2, "scrap_time": 3.0, "xp": 6,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 4},
             {"item": "iron", "min": 1, "max": 3},
@@ -346,7 +346,7 @@ ITEMS = [
     {
         "id": "ind_drum_barrel", "name": "Steel Drum", "category": "furniture",
         "size": [1, 2], "zones": ["industrial"], "room_type": "utility",
-        "weight": 10, "tool_tier": 1, "skill": 0, "scrap_time": 2.0, "xp": 4,
+        "weight": 10, "tool_tier": 1, "skill": 2, "scrap_time": 2.0, "xp": 4,
         "yields": [
             {"item": "scrap_metal", "min": 2, "max": 3},
             {"item": "iron", "min": 0, "max": 1},
@@ -356,7 +356,7 @@ ITEMS = [
     {
         "id": "ind_pallet_jack", "name": "Pallet Jack", "category": "furniture",
         "size": [2, 1], "zones": ["industrial"], "room_type": "utility",
-        "weight": 12, "tool_tier": 1, "skill": 1, "scrap_time": 2.5, "xp": 5,
+        "weight": 12, "tool_tier": 1, "skill": 2, "scrap_time": 2.5, "xp": 5,
         "yields": [
             {"item": "scrap_metal", "min": 2, "max": 3},
             {"item": "iron", "min": 1, "max": 2},

@@ -262,7 +262,7 @@ ITEMS = [
         "size": [1, 2], "zones": ["commercial"], "room_type": "retail",
         "weight": 18, "tool_tier": 1, "skill": 1, "scrap_time": 3.0, "xp": 7,
         "yields": [{"item": "scrap_metal", "min": 3, "max": 5}, {"item": "plastic", "min": 1, "max": 2},
-                   {"item": "iron", "min": 0, "max": 1}],
+                   {"item": "scrap_metal", "min": 0, "max": 1}],
         "draw": draw_atm,
     },
     {

@@ -103,7 +103,7 @@ func restore_state(st: Dictionary) -> void:
 
 ## Objects that respond to E (everything except wired-in lights).
 func is_interactable() -> bool:
-	return def.kind != "light"
+	return def.kind != "light" and def.kind != "decal"
 
 func covered_cells() -> Array:
 	var cells := []

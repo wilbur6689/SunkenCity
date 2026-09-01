@@ -8,7 +8,7 @@ extends Control
 ## fill / box prefill. Right: the TileArt material palette.
 ## Save writes data/objects.json AND assets/sprites/objects/<id>.png.
 
-const ZONES := ["residential", "business", "commercial", "industrial", "civil"]
+const ZONES := ["residential", "business", "commercial", "industrial", "civil", "roof"]
 const KINDS := ["scrap", "chest", "bed", "light", "door", "pump", "breaker", "station"]
 const YIELD_ITEMS := ["wood", "scrap_metal", "plastic", "cloth", "stone", "iron"]
 const PX := 5 # canvas zoom

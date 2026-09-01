@@ -49,6 +49,10 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 	var annex_x0 := world_w + ANNEX_GAP
 	var grid := WorldGrid.new(Rect2i(0, 0, annex_x0 + ANNEX_W, WORLD_H))
 	var rooms := _load_rooms()
+	# Roof surface pool (user request 2026-09-01): pulled out of the
+	# interior mix and stamped on every tower's top slab instead.
+	var roof_pool: Array = rooms.get("roof", [])
+	rooms.erase("roof")
 	var objects: Array = []   # {id, cell[, link, open]} — portals carry their twin's cell
 	var doors: Array = []     # cells for wood_door
 	var sealed: Array = []    # Rect2i room interiors meant to start dry
@@ -92,6 +96,7 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 			floors = 56
 			forced_crown = true
 		var tower := _build_tower(grid, rng, rooms, x, w, floors, objects, doors, sealed, pk)
+		_stamp_roofs(grid, rng, roof_pool, tower, objects)
 		result.towers += 1
 		result.tower_list.append(tower)
 		if floors > tallest.floors:
@@ -387,6 +392,9 @@ static func _stamp_room(grid: WorldGrid, rng: RandomNumberGenerator, t: Dictiona
 		var bx := int(b.x)
 		if mirror:
 			bx = tw - 1 - bx
+		if bx < 0 or bx >= tw:
+			continue # authored past a cropped width (a mirrored bx can go negative
+			         # and stomp the column left of the room - a pocket doorway)
 		var bc := Vector2i(cx + bx, sr - int(b.dy))
 		if bc.x < zone_end:
 			grid.set_structure(bc, int(b.mat))
@@ -405,6 +413,98 @@ static func _stamp_room(grid: WorldGrid, rng: RandomNumberGenerator, t: Dictiona
 			if not _interval_taken(taken, ox2, ox2 + 1) and cx + ox2 + 1 <= zone_end:
 				taken.append([ox2, ox2 + 1])
 				objects.append({"id": id, "cell": Vector2i(cx + ox2, sr)})
+	# Interior details (user request 2026-09-01): 0-2 wall pieces from this
+	# zone's set (broken-wall decals, vents, duct/pipe runs) on the back
+	# wall, and a rare statement piece (statues) in free floor space.
+	var wall_bits := _zone_details(zone, "wall_detail")
+	if not wall_bits.is_empty():
+		var wall_taken: Array = []
+		for i in rng.randi_range(0, 2):
+			var wid: String = wall_bits[rng.randi_range(0, wall_bits.size() - 1)]
+			var wdef: Dictionary = Data.objects[wid]
+			var ww := int(wdef.size[0])
+			var wh := int(wdef.size[1])
+			var wx := rng.randi_range(0, maxi(tw - ww, 0))
+			var wdy := rng.randi_range(1, maxi(1, FLOOR_H - 1 - wh))
+			if not _interval_taken(wall_taken, wx, wx + ww) and cx + wx + ww <= zone_end:
+				wall_taken.append([wx, wx + ww])
+				objects.append({"id": wid, "cell": Vector2i(cx + wx, sr - wdy)})
+	if rng.randf() < 0.06:
+		var pieces := _zone_details(zone, "statement")
+		if not pieces.is_empty():
+			var pid: String = pieces[rng.randi_range(0, pieces.size() - 1)]
+			var pw := int(Data.objects[pid].size[0])
+			var px := rng.randi_range(0, maxi(tw - pw, 0))
+			if not _interval_taken(taken, px, px + pw) and cx + px + pw <= zone_end:
+				taken.append([px, px + pw])
+				objects.append({"id": pid, "cell": Vector2i(cx + px, sr)})
+
+## Roof surface (user request 2026-09-01; abandonment pass same day): each
+## wing gets ONE gear set - 2-3 pieces subsampled from a roof template -
+## mixed with trees (dry roofs only) and non-harvest junk, so the skyline
+## reads old and abandoned instead of crowded. ~30% of the gear rolls its
+## overgrown (vined) twin. Wall-mounted pieces never spawn up here.
+static func _stamp_roofs(grid: WorldGrid, rng: RandomNumberGenerator, pool: Array,
+		tower: Dictionary, objects: Array) -> void:
+	if pool.is_empty():
+		return
+	var roofr: int = int(tower.top) - 1
+	var depth := roofr - WATERLINE
+	var in_depth := func(r): return depth >= int(r.get("depth_min", -9999)) and depth <= int(r.get("depth_max", 9999))
+	var candidates: Array = pool.filter(in_depth)
+	if candidates.is_empty():
+		return
+	# Early-game roof lock (user request 2026-09-01): on dry crowns the open
+	# elevator-shaft mouth is sealed by a fixed, padlocked vent hatch - a
+	# solid grate until a pry-tier scrap tool (workbench chain) forces it.
+	# The roofs are the whole world until then; submerged towers stay open.
+	if roofr < WATERLINE:
+		objects.append({"id": "roof_hatch", "cell": Vector2i(int(tower.mid) - 1, int(tower.top))})
+	for zone in tower.zones:
+		var zx: int = int(zone[0])
+		var zend: int = int(zone[1])
+		var taken: Array = [] # wing-local [x0, x1) floor intervals
+		# 2-3 gear pieces from one themed template, scattered across the wing
+		var t: Dictionary = candidates[rng.randi_range(0, candidates.size() - 1)]
+		var picks: Array = (t.objects as Array).duplicate()
+		var want := rng.randi_range(2, 3)
+		while picks.size() > want:
+			picks.remove_at(rng.randi_range(0, picks.size() - 1))
+		for o in picks:
+			var def: Dictionary = Data.objects.get(o.id, {})
+			if def.is_empty() or def.get("wall_mounted", false):
+				continue
+			var oid: String = o.id
+			if rng.randf() < 0.3 and Data.objects.has(oid + "_vined"):
+				oid += "_vined" # a coat of vines (user request: overgrown roofs)
+			_roof_drop(rng, objects, taken, zx, zend, roofr, oid)
+		# trees claim free spots on every dry roof (mixed growth stages)
+		if depth <= -1:
+			for i in rng.randi_range(1, 3):
+				var stage: String = ["tree_sapling", "tree_sapling", "tree_young", "tree_mature"][rng.randi_range(0, 3)]
+				_roof_drop(rng, objects, taken, zx, zend, roofr, stage)
+		# non-harvest junk dressing: hammer-cleared, yields nothing
+		for i in rng.randi_range(1, 3):
+			_roof_drop(rng, objects, taken, zx, zend, roofr, _ROOF_JUNK[rng.randi_range(0, _ROOF_JUNK.size() - 1)])
+
+const _ROOF_JUNK: Array = ["roof_junk_pile", "roof_fallen_mast", "roof_tarp_crates"]
+
+## Place one object at a free random spot on the wing's roof row (give up
+## quietly when the wing is crowded - abandonment tolerates gaps).
+static func _roof_drop(rng: RandomNumberGenerator, objects: Array, taken: Array,
+		zx: int, zend: int, roofr: int, id: String) -> void:
+	var def: Dictionary = Data.objects.get(id, {})
+	if def.is_empty():
+		return
+	var w := int(def.size[0])
+	if zend - zx + 1 < w:
+		return
+	for attempt in 6:
+		var lx := rng.randi_range(0, zend - zx + 1 - w)
+		if not _interval_taken(taken, lx, lx + w):
+			taken.append([lx, lx + w])
+			objects.append({"id": id, "cell": Vector2i(zx + lx, roofr)})
+			return
 
 static func _interval_taken(taken: Array, x0: int, x1: int) -> bool:
 	for iv in taken:
@@ -427,6 +527,23 @@ static func _zone_clutter(zone: String) -> Array:
 			out.append(id)
 	out.sort()
 	_clutter_cache[zone] = out
+	return out
+
+static var _details_cache: Dictionary = {}
+
+## Zone-tagged detail pieces by category ("wall_detail" = vents, pipes and
+## broken-wall decals; "statement" = statues), sorted for CT-21.
+static func _zone_details(zone: String, category: String) -> Array:
+	var key := zone + "/" + category
+	if _details_cache.has(key):
+		return _details_cache[key]
+	var out: Array = []
+	for id in Data.objects:
+		var def: Dictionary = Data.objects[id]
+		if def.get("category", "") == category and (def.get("zones", []) as Array).has(zone):
+			out.append(id)
+	out.sort()
+	_details_cache[key] = out
 	return out
 
 static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Array, result: Dictionary) -> void:
@@ -452,7 +569,9 @@ static func _author_medical_room(grid: WorldGrid, tower: Dictionary, objects: Ar
 	objects.append({"id": "cabinet", "cell": Vector2i(zone_x + 8, sr)})
 	objects.append({"id": "locker", "cell": Vector2i(zone_x + 11, sr)})
 	objects.append({"id": "chair", "cell": Vector2i(zone_x + 13, sr)})
-	result.spawn_feet = Vector2((zone_x + 3 + 0.5) * Constants.BLOCK_SIZE, (sr + 1) * Constants.BLOCK_SIZE)
+	# The run starts dropped off on the very top of this roof (user request
+	# 2026-09-01); the medical room with the spawn bed sits one floor down.
+	result.spawn_feet = Vector2((zone_x + 3 + 0.5) * Constants.BLOCK_SIZE, float(top) * Constants.BLOCK_SIZE)
 	result["hospital"] = tower
 
 ## Mega-pump shells (CT-08, CC-26): non-functional for now — the endgame

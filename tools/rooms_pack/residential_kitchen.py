@@ -154,9 +154,9 @@ ITEMS = [
     {
         "id": "res_stove", "name": "Stove", "category": "furniture",
         "size": [2, 2], "zones": ["residential"], "room_type": "kitchen",
-        "weight": 30, "tool_tier": 1, "skill": 1, "scrap_time": 3.5, "xp": 8,
+        "weight": 30, "tool_tier": 1, "skill": 2, "scrap_time": 3.5, "xp": 8,
         "yields": [{"item": "scrap_metal", "min": 6, "max": 10},
-                   {"item": "iron", "min": 0, "max": 1}],
+                   {"item": "scrap_metal", "min": 0, "max": 1}],
         "draw": draw_stove,
     },
     {

@@ -58,7 +58,28 @@ submerged pockets stay sealed dry, the rest drown (`pockets[].flooded`, seeded a
 connectivity flood);
 `World.city_bounds` is the city proper (maps, edge clamp, wave spawns never enter the annex),
 `World.pockets` + `map_cell_for` anchor the minimap/map on the doorway while inside. Gate:
-`pocket_smoke.tscn`; dev arg `--at=col,row` teleports before a `--shot`. Towers are
+`pocket_smoke.tscn`; dev arg `--at=col,row` teleports before a `--shot`. **Roofs**
+(2026-09-01): every tower top is a `roof` zone — `CityGen._stamp_roofs` stamps roof room
+templates across both wings (elevator-shaft mouth stays open sky; wall-mounted pieces skipped),
+depth-filtered like interiors: rooftop gear from `tools/rooms_pack/roof_gear.py` (HVAC, cooling
+towers, fans/ducts/stacks/pipes, antenna arrays, comm masts, dishes, cabinets, transformers,
+switchgear, cable trays, generators, helipads, cranes, davit arms, window-washing rigs, anchors,
+illuminated/logo signs, crowns, lightning rods — scrap metal/plastic/stone, NO iron: GL-28
+surface-depletion holds) and **trees in three growth stages** on dry roofs only (`tree_sapling` ->
+`tree_young` -> `tree_mature` 5x15, ~2.5 rooms tall; each midnight `World._grow_trees()` rolls the
+def's `grow_chance` and swaps the record for `grows_into` — drowned or hemmed-in trees wait;
+saplings keep an item form so cut groves replant; grown trees are harvest-only wood). **The run
+starts dropped off on the hospital roof** and the early game is roof-locked: every dry crown's
+shaft mouth is sealed by `roof_hatch` (fixed, no-item, `lock_tier` 1 door) — roam roofs, harvest
+trees, craft the workbench chain to a pry-tier scrap tool, then force the hatch into the top
+floors. Interior rooms sprinkle zone-tagged details via `CityGen._zone_details`: `wall_detail`
+pieces (broken-wall decals — kind `decal`, hammer clears, no yields, from
+`tools/rooms_pack/interior_details.py`; vents/duct/pipe runs -> scrap metal, mostly
+commercial/industrial) and rare `statement` statues (-> stone, residential/commercial/civil);
+plants also pay out stone. Zones now include **roof** in both editors. Gate: `roof_smoke.tscn`.
+Fixes: `_stamp_room` mirrored blocks no longer spill left of a cropped template (stomped pocket
+doorways); `World.remove_object` falls back to identity search and `object_at` validates
+instances (freed-node hover crash when overlapping objects were scrapped). Towers are
 **double-wide twin-wing blocks** (2026-08-31): ladder stairwells on BOTH sides (ladders hug the
 room-side wall — 2026-09-01, so enemies chase through wing doorways onto them), an elevator
 shaft down the centre, rooms in each wing; the skyline is uniformly high-rise (CT-01 amended
@@ -71,7 +92,7 @@ overlay (build, depth, per-system costs, current music track) beside the always-
 bottom-centre;
 room templates live in `data/rooms.json` —
 authored visually in the **Room Editor** (`godot --path . res://scenes/tools/room_editor.tscn`:
-settings incl. zone + depth range — zones: residential / business / commercial / industrial / civil
+settings incl. zone + depth range — zones: residential / business / commercial / industrial / civil / roof
 (2026-09-01; "Load existing" lists only the selected zone) — block painting, zone-filtered
 furniture placed at any height —
 `dy` rows above the standing row, honoured by `CityGen`; **Esc** opens the shared pause menu with
@@ -106,7 +127,7 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   drives the player with `Input.action_press`) and `--headless res://scenes/test/m1_smoke.tscn`
   (the loop; feeds the player's input snapshot directly with `set_multiplayer_authority(2)`). Run
   both after touching the player, World, or data files; extend them when behaviour changes.
-  Further gates: `m2/m3/m4/m5/tower/save/pocket/room_editor/furniture_editor_smoke.tscn` — `save_smoke`
+  Further gates: `m2/m3/m4/m5/tower/save/pocket/roof/room_editor/furniture_editor_smoke.tscn` — `save_smoke`
   covers the full persistence round trip; run it after touching World state or SaveGame.
   `m4_smoke` covers enemies/combat/death loop/red moons; run it after touching enemies, combat,
   or the interaction layer.

@@ -1429,7 +1429,7 @@
    "type": "room",
    "width": 19,
    "height": 5,
-   "depth_min": -9999,
+   "depth_min": 40,
    "depth_max": 9999,
    "objects": [
     {
@@ -1506,7 +1506,7 @@
    "type": "room",
    "width": 19,
    "height": 5,
-   "depth_min": -9999,
+   "depth_min": 40,
    "depth_max": 9999,
    "objects": [
     {
@@ -5741,6 +5741,246 @@
      "id": "com_digital_clock",
      "x": 13,
      "dy": 3
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_mech_a",
+   "zone": "roof",
+   "type": "roof",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "roof_hvac",
+     "x": 0
+    },
+    {
+     "id": "roof_vent_duct",
+     "x": 4
+    },
+    {
+     "id": "roof_exhaust_fan",
+     "x": 8
+    },
+    {
+     "id": "roof_boiler_stack",
+     "x": 11
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_mech_b",
+   "zone": "roof",
+   "type": "roof",
+   "width": 10,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "roof_cooling_tower",
+     "x": 0
+    },
+    {
+     "id": "roof_exhaust_fan",
+     "x": 5
+    },
+    {
+     "id": "roof_vent_duct",
+     "x": 7
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_comms_a",
+   "zone": "roof",
+   "type": "roof",
+   "width": 13,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "roof_comm_mast",
+     "x": 0
+    },
+    {
+     "id": "roof_comm_cabinet",
+     "x": 3
+    },
+    {
+     "id": "roof_satellite_dish",
+     "x": 6
+    },
+    {
+     "id": "roof_cable_tray",
+     "x": 9
+    },
+    {
+     "id": "roof_radio_antenna",
+     "x": 12
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_power_a",
+   "zone": "roof",
+   "type": "roof",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "roof_generator",
+     "x": 0
+    },
+    {
+     "id": "roof_transformer",
+     "x": 4
+    },
+    {
+     "id": "roof_switchgear",
+     "x": 7
+    },
+    {
+     "id": "roof_lightning_rod",
+     "x": 10
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_helipad_a",
+   "zone": "roof",
+   "type": "roof",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "roof_helipad",
+     "x": 1
+    },
+    {
+     "id": "roof_davit_arm",
+     "x": 8
+    },
+    {
+     "id": "roof_hvac",
+     "x": 11
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_signage_a",
+   "zone": "roof",
+   "type": "roof",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "roof_sign",
+     "x": 0
+    },
+    {
+     "id": "roof_window_rig",
+     "x": 6
+    },
+    {
+     "id": "roof_logo_sign",
+     "x": 9
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_crown_a",
+   "zone": "roof",
+   "type": "roof",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "roof_crown",
+     "x": 0
+    },
+    {
+     "id": "roof_lightning_rod",
+     "x": 7
+    },
+    {
+     "id": "roof_antenna_array",
+     "x": 9
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_garden_a",
+   "zone": "roof",
+   "type": "roof",
+   "width": 14,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": -1,
+   "objects": [
+    {
+     "id": "tree_mature",
+     "x": 0
+    },
+    {
+     "id": "tree_sapling",
+     "x": 6
+    },
+    {
+     "id": "tree_young",
+     "x": 8
+    },
+    {
+     "id": "roof_pipes",
+     "x": 11
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "roof_garden_b",
+   "zone": "roof",
+   "type": "roof",
+   "width": 12,
+   "height": 5,
+   "depth_min": -9999,
+   "depth_max": -1,
+   "objects": [
+    {
+     "id": "tree_young",
+     "x": 0
+    },
+    {
+     "id": "tree_sapling",
+     "x": 4
+    },
+    {
+     "id": "tree_mature",
+     "x": 6
+    },
+    {
+     "id": "tree_sapling",
+     "x": 11
     }
    ],
    "blocks": []

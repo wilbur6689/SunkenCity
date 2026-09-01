@@ -13,7 +13,7 @@ extends Control
 ## Room zones (user decision 2026-09-01): residential · business (small service
 ## firms — lawyers, accountants, agencies) · commercial (retail / office) ·
 ## industrial · civil (city admin, police, hospital, post office; was "hospital").
-const ZONES := ["residential", "business", "commercial", "industrial", "civil"]
+const ZONES := ["residential", "business", "commercial", "industrial", "civil", "roof"]
 const ZONE_FURNITURE := {
 	"residential": ["bed_frame", "cabinet", "chair", "fridge", "desk"],
 	"business": ["desk", "chair", "cabinet", "locker"],

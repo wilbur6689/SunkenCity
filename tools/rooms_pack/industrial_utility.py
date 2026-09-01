@@ -274,7 +274,7 @@ ITEMS = [
     {
         "id": "ind_generator", "name": "Diesel Generator", "category": "furniture",
         "size": [3, 2], "zones": ["industrial"], "room_type": "utility",
-        "weight": 26, "tool_tier": 1, "skill": 1, "scrap_time": 4.0, "xp": 8,
+        "weight": 26, "tool_tier": 1, "skill": 2, "scrap_time": 4.0, "xp": 8,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 5},
             {"item": "iron", "min": 2, "max": 4},
@@ -285,7 +285,7 @@ ITEMS = [
     {
         "id": "ind_boiler", "name": "Boiler Tank", "category": "furniture",
         "size": [2, 3], "zones": ["industrial"], "room_type": "utility",
-        "weight": 28, "tool_tier": 1, "skill": 0, "scrap_time": 3.5, "xp": 7,
+        "weight": 28, "tool_tier": 1, "skill": 2, "scrap_time": 3.5, "xp": 7,
         "yields": [
             {"item": "scrap_metal", "min": 4, "max": 6},
             {"item": "iron", "min": 2, "max": 3},
@@ -295,7 +295,7 @@ ITEMS = [
     {
         "id": "ind_pipe_manifold", "name": "Pipe Manifold", "category": "furniture",
         "size": [2, 2], "zones": ["industrial"], "room_type": "utility",
-        "weight": 14, "tool_tier": 1, "skill": 0, "scrap_time": 2.5, "xp": 5,
+        "weight": 14, "tool_tier": 1, "skill": 2, "scrap_time": 2.5, "xp": 5,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 4},
             {"item": "iron", "min": 1, "max": 2},
@@ -305,7 +305,7 @@ ITEMS = [
     {
         "id": "ind_tool_table", "surface": True, "name": "Machinist's Table", "category": "furniture",
         "size": [3, 2], "zones": ["industrial"], "room_type": "utility",
-        "weight": 16, "tool_tier": 0, "skill": 0, "scrap_time": 3.0, "xp": 6,
+        "weight": 16, "tool_tier": 0, "skill": 2, "scrap_time": 3.0, "xp": 6,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 5},
             {"item": "iron", "min": 1, "max": 2},
@@ -326,7 +326,7 @@ ITEMS = [
     {
         "id": "ind_barrel_rack", "name": "Barrel Rack", "category": "furniture",
         "size": [2, 2], "zones": ["industrial"], "room_type": "utility",
-        "weight": 18, "tool_tier": 1, "skill": 0, "scrap_time": 3.0, "xp": 6,
+        "weight": 18, "tool_tier": 1, "skill": 2, "scrap_time": 3.0, "xp": 6,
         "yields": [
             {"item": "scrap_metal", "min": 2, "max": 4},
             {"item": "iron", "min": 1, "max": 2},
@@ -337,7 +337,7 @@ ITEMS = [
     {
         "id": "ind_tool_chest", "name": "Rolling Tool Chest", "category": "furniture",
         "size": [2, 2], "zones": ["industrial"], "room_type": "utility",
-        "weight": 14, "tool_tier": 1, "skill": 0, "scrap_time": 2.5, "xp": 6,
+        "weight": 14, "tool_tier": 1, "skill": 2, "scrap_time": 2.5, "xp": 6,
         "storage_slots": 8,
         "yields": [
             {"item": "scrap_metal", "min": 3, "max": 4},
@@ -348,7 +348,7 @@ ITEMS = [
     {
         "id": "ind_parts_shelf", "name": "Parts Bin Shelf", "category": "furniture",
         "size": [2, 3], "zones": ["industrial"], "room_type": "utility",
-        "weight": 16, "tool_tier": 0, "skill": 0, "scrap_time": 3.0, "xp": 6,
+        "weight": 16, "tool_tier": 0, "skill": 2, "scrap_time": 3.0, "xp": 6,
         "storage_slots": 12,
         "yields": [
             {"item": "scrap_metal", "min": 2, "max": 4},
@@ -370,7 +370,7 @@ ITEMS = [
         "weight": 4, "tool_tier": 1, "skill": 0, "scrap_time": 1.5, "xp": 3,
         "yields": [
             {"item": "scrap_metal", "min": 1, "max": 2},
-            {"item": "iron", "min": 0, "max": 1},
+            {"item": "scrap_metal", "min": 0, "max": 1},
         ],
         "draw": draw_gas_cylinder,
     },

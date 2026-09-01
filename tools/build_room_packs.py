@@ -62,6 +62,11 @@ def entry_for(item, module_name, rect):
         "sheet": "res://assets/sprites/sets/%s.png" % module_name,
         "rect": rect,
     }
+    if item.get("kind"):
+        e["kind"] = item["kind"]  # decals and other non-scrap pack items
+    for k in ("no_item", "desc", "grows_into", "grow_chance", "fixed", "lock_tier", "key"):
+        if k in item:
+            e[k] = item[k]
     if item.get("storage_slots"):
         e["storage_slots"] = int(item["storage_slots"])
     if item.get("wall_mounted"):

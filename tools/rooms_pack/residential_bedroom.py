@@ -154,9 +154,9 @@ ITEMS = [
     {
         "id": "res_radiator", "name": "Radiator", "category": "furniture",
         "size": [2, 1], "zones": ["residential"], "room_type": "bedroom",
-        "weight": 16, "tool_tier": 1, "skill": 1, "scrap_time": 2.5, "xp": 5,
+        "weight": 16, "tool_tier": 1, "skill": 2, "scrap_time": 2.5, "xp": 5,
         "yields": [{"item": "scrap_metal", "min": 3, "max": 5},
-                   {"item": "iron", "min": 0, "max": 1}],
+                   {"item": "scrap_metal", "min": 0, "max": 1}],
         "draw": draw_radiator,
     },
     {

@@ -320,7 +320,7 @@ ITEMS = [
         "size": [2, 3], "zones": ["commercial"], "room_type": "retail",
         "weight": 28, "tool_tier": 1, "skill": 0, "scrap_time": 4.0, "xp": 8,
         "yields": [{"item": "scrap_metal", "min": 5, "max": 7}, {"item": "plastic", "min": 2, "max": 4},
-                   {"item": "iron", "min": 1, "max": 2}],
+                   {"item": "scrap_metal", "min": 1, "max": 2}],
         "draw": draw_vending,
     },
     {
@@ -328,7 +328,7 @@ ITEMS = [
         "size": [3, 2], "zones": ["commercial"], "room_type": "retail",
         "weight": 18, "tool_tier": 0, "skill": 1, "scrap_time": 3.0, "xp": 8,
         "yields": [{"item": "wood", "min": 3, "max": 5}, {"item": "scrap_metal", "min": 2, "max": 3},
-                   {"item": "iron", "min": 0, "max": 1}],
+                   {"item": "scrap_metal", "min": 0, "max": 1}],
         "draw": draw_display_case,
     },
     {

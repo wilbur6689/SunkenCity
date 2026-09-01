@@ -123,6 +123,7 @@ func _physics_process(delta: float) -> void:
 	time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
 	if time_of_day < prev_time:
 		day_count += 1 # midnight wrap
+		_grow_trees()
 	_tick_night(delta)
 	_tick_red_moon(delta)
 	_tick_pumps()
@@ -624,7 +625,8 @@ func _damage_structure(cell: Vector2i, damage: float, tool_tier: int, by: Vector
 ## object is outside the window — gameplay only touches nearby objects).
 func object_at(cell: Vector2i) -> WorldObject:
 	var rec: Dictionary = object_cells.get(cell, {})
-	return rec.get("node") if not rec.is_empty() else null
+	var node = rec.get("node") if not rec.is_empty() else null
+	return node if node != null and is_instance_valid(node) else null
 
 func object_record_at(cell: Vector2i) -> Dictionary:
 	return object_cells.get(cell, {})
@@ -753,7 +755,17 @@ func _update_object_window(center: Vector2i) -> void:
 func remove_object(obj: WorldObject) -> void:
 	_light_dirty = true
 	var rec: Dictionary = object_cells.get(obj.cell, {})
-	if not rec.is_empty() and rec.node == obj:
+	if rec.is_empty() or rec.get("node") != obj:
+		# The cell lookup can miss when two gen-stamped objects overlap a cell
+		# (the later record owns it). Fall back to an identity search so the
+		# record always dies with its node - otherwise it keeps a freed `node`
+		# and the next hover crashes (the curtains bug, 2026-09-01).
+		rec = {}
+		for r: Dictionary in object_records:
+			if r.node == obj:
+				rec = r
+				break
+	if not rec.is_empty():
 		object_records.erase(rec)
 		for c in _record_cells(rec):
 			if object_cells.get(c) == rec:
@@ -762,6 +774,52 @@ func remove_object(obj: WorldObject) -> void:
 				water_sim.notify_changed(c)
 	pumps.erase(obj)
 	obj.queue_free()
+
+## Rooftop trees (user request 2026-09-01): each midnight every record whose
+## def names a `grows_into` stage rolls `grow_chance` to swap itself for the
+## next stage (sapling -> young -> mature). Records grow whether or not the
+## node is streamed in; drowned or hemmed-in trees simply wait. Stages are
+## plain scrap objects, so harvesting stays the normal scrap flow.
+func _grow_trees() -> void:
+	for rec: Dictionary in object_records.duplicate():
+		var next_id: String = rec.def.get("grows_into", "")
+		if next_id == "" or randf() >= float(rec.def.get("grow_chance", 0.5)):
+			continue
+		if is_water_cell(rec.cell):
+			continue # drowned trees don't grow
+		var nd: Dictionary = Data.objects.get(next_id, {})
+		if nd.is_empty():
+			continue
+		var ncell := Vector2i(rec.cell.x - (int(nd.size[0]) - int(rec.def.size[0])) / 2, rec.cell.y)
+		if _tree_space_free(rec, nd, ncell):
+			_replace_object_record(rec, next_id, ncell)
+
+## True when the next stage's footprint is clear (its own cells aside).
+func _tree_space_free(rec: Dictionary, nd: Dictionary, ncell: Vector2i) -> bool:
+	var own := _record_cells(rec)
+	for dy in int(nd.size[1]):
+		for dx in int(nd.size[0]):
+			var c := Vector2i(ncell.x + dx, ncell.y - dy)
+			if not grid.in_bounds(c):
+				return false
+			if own.has(c):
+				continue
+			if has_block_cell(c) or object_cells.has(c):
+				return false
+	return true
+
+## Swap a record for another object id in place (tree growth): cells
+## re-register, a live node rebuilds, placed/ownership carries over.
+func _replace_object_record(rec: Dictionary, new_id: String, new_cell: Vector2i) -> void:
+	var had_node: bool = rec.node != null
+	_despawn_record(rec)
+	object_records.erase(rec)
+	for c in _record_cells(rec):
+		if object_cells.get(c) == rec:
+			object_cells.erase(c)
+	var nrec := add_object_record(new_id, new_cell, rec.placed)
+	if had_node:
+		_instantiate_record(nrec)
 
 ## Called when an object's solidity changes in place (door toggled).
 func notify_object_changed(obj: WorldObject) -> void:

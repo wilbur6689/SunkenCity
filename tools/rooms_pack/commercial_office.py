@@ -254,7 +254,7 @@ ITEMS = [
         "scrap_time": 4.0, "xp": 8,
         "yields": [{"item": "scrap_metal", "min": 4, "max": 6},
                    {"item": "plastic", "min": 3, "max": 5},
-                   {"item": "iron", "min": 1, "max": 2}],
+                   {"item": "scrap_metal", "min": 1, "max": 2}],
         "draw": draw_copier,
     },
     {
@@ -263,7 +263,7 @@ ITEMS = [
         "room_type": "office", "weight": 14, "tool_tier": 1, "skill": 0,
         "scrap_time": 2.5, "xp": 5, "storage_slots": 6,
         "yields": [{"item": "scrap_metal", "min": 4, "max": 7},
-                   {"item": "iron", "min": 0, "max": 1}],
+                   {"item": "scrap_metal", "min": 0, "max": 1}],
         "draw": draw_filing_cabinet,
     },
     {
