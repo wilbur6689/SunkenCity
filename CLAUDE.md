@@ -23,7 +23,9 @@ harvest gates by material tier (iron → Scrapping 2, steel → 3), and verified
 pressure (surface iron can't cover the gear chain). The main scene is now
 `scenes/ui/title.tscn` — the world picker ↔ character picker (CC-09; separate world/character
 saves under `user://saves/`, written by `scripts/data/save_game.gd`; **F5** saves, **F9**
-reloads in-game; **Esc** saves + returns to the title, and quits from there; dev runs passing
+reloads in-game; **Esc** opens the pause menu (`scripts/ui/pause_menu.gd`: Resume,
+Music/SFX/Ambient sliders persisted to `user://settings.cfg` via the `Audio` autoload, Save &
+Quit to the title — quit from there); dev runs passing
 `--seed`/`--shot` skip the title; gate: `title_smoke.tscn`). The game scene is
 `scenes/city/city.tscn` — a seeded 2400×400 drowned city (`CityGen`, ~1.5 s, deterministic;
 `--seed=N`, `--shot=path[:zoom]` — shots need a window, not --headless) with mega-pump station
@@ -34,7 +36,7 @@ shaft down the centre, rooms in each wing; submerged ladder runs decay into gaps
 `broken_ladder` scrap pieces — scrap for wood, craft + place ladders to climb back up;
 objects stream via `World.object_records` (only the `OBJECT_WINDOW` around the player is
 instantiated; queries read records, so far doors still seal water); **F3** toggles the debug
-overlay (build, depth, per-system costs) beside the always-on FPS counter; the hotbar sits
+overlay (build, depth, per-system costs, current music track) beside the always-on FPS counter; the hotbar sits
 bottom-centre;
 room templates live in `data/rooms.json` —
 authored visually in the **Room Editor** (`godot --path . res://scenes/tools/room_editor.tscn`:

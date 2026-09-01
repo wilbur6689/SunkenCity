@@ -131,6 +131,30 @@ static func style_list(l: ItemList) -> void:
 	l.add_theme_color_override("font_hovered_color", Color(0.95, 0.97, 1.0))
 	l.add_theme_color_override("font_selected_color", Color(0.97, 0.99, 1.0))
 
+## Compact pixel-scale HSlider: dark groove, steel-blue fill, small grabber
+## (the default theme grabber is huge against the 8px UI).
+static func style_slider(s: HSlider) -> void:
+	var groove := StyleBoxFlat.new()
+	groove.bg_color = Color(0.03, 0.06, 0.09)
+	groove.border_color = Color(0.32, 0.47, 0.55)
+	groove.set_border_width_all(1)
+	groove.content_margin_top = 3
+	groove.content_margin_bottom = 3
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(0.56, 0.75, 0.81, 0.55)
+	fill.content_margin_top = 3
+	fill.content_margin_bottom = 3
+	s.add_theme_stylebox_override("slider", groove)
+	s.add_theme_stylebox_override("grabber_area", fill)
+	s.add_theme_stylebox_override("grabber_area_highlight", fill)
+	var img := Image.create(5, 9, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.9, 0.93, 0.95))
+	var grab := ImageTexture.create_from_image(img)
+	s.add_theme_icon_override("grabber", grab)
+	s.add_theme_icon_override("grabber_highlight", grab)
+	s.add_theme_icon_override("grabber_disabled", grab)
+	s.focus_mode = Control.FOCUS_NONE
+
 static func label(text: String, size: int = FONT_SIZE, color: Color = Color(0.9, 0.93, 0.95)) -> Label:
 	var l := Label.new()
 	l.text = text

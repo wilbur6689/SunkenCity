@@ -769,6 +769,25 @@ def build_ui_textures():
     acc = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); dd = ImageDraw.Draw(acc); dd.ellipse([4, 4, 11, 11], outline=dim); dd.point((7, 7), fill=dim); out.paste(acc, (32, 0))
     out.paste(glyphs.crop((48, 0, 64, 16)), (48, 0))
     out.save(UI_DIR / "equip_glyphs.png")
+    # Mouse cursors (32x32 = 16px art at 2x nearest): a magnifying glass for
+    # a searchable container; the same glass with a small green check once
+    # the container has been emptied. Hotspot = lens centre (10, 10).
+    def magnifier(check):
+        c = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+        d = ImageDraw.Draw(c)
+        d.line([8, 8, 13, 13], fill=(20, 24, 30, 255), width=3)      # handle shadow
+        d.line([8, 8, 12, 12], fill=(150, 108, 60, 255), width=2)    # wooden handle
+        d.ellipse([1, 1, 9, 9], outline=(20, 24, 30, 255), width=2)  # rim shadow
+        d.ellipse([2, 2, 8, 8], outline=(222, 230, 238, 255), width=1)
+        d.ellipse([3, 3, 7, 7], fill=(150, 195, 225, 110))           # glass
+        d.point((4, 4), (240, 248, 255, 200))
+        if check:
+            for off, col in ((1, (14, 60, 24, 255)), (0, (95, 225, 110, 255))):
+                d.line([10, 4 + off, 12, 6 + off], fill=col)
+                d.line([12, 6 + off, 15, 1 + off], fill=col)
+        return c.resize((32, 32), Image.NEAREST)
+    magnifier(False).save(UI_DIR / "cursor_search.png")
+    magnifier(True).save(UI_DIR / "cursor_search_done.png")
     # Character portrait for the inventory panel (front view from the reference art)
     portrait_src = ROOT / "docs" / "Examples" / "Character" / "MainCharacter-front.png"
     if portrait_src.exists():

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/test/test_tower.gd" id="1_tower"]
 [ext_resource type="Script" path="res://scripts/world/backdrop.gd" id="6_backdrop"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_playerscene"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_ui.tscn" id="5_inventory_ui"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="10_pause"]
 
 [node name="TestTower" type="Node2D"]
 script = ExtResource("1_tower")
@@ -47,3 +48,6 @@ script = ExtResource("8_light")
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
 
 [node name="InventoryUI" parent="." instance=ExtResource("5_inventory_ui")]
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+script = ExtResource("10_pause")

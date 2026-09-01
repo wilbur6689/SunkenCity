@@ -61,6 +61,7 @@ func tick(delta: float) -> void:
 	var reach := player.reach_blocks() * Constants.BLOCK_SIZE
 	target_in_reach = player.global_position.distance_to(World.cell_center(target_cell)) <= reach
 	_update_hover()
+	_update_cursor()
 	_update_ghost()
 
 	if player.wants_interact:
@@ -298,6 +299,29 @@ func _update_hover() -> void:
 	hovered = new_hover
 	if hovered != null:
 		hovered.sprite.self_modulate = Color(1.45, 1.42, 1.2)
+
+## Cursor swap (user request): a magnifying glass over a searchable
+## container; the same glass with a green check once it has been emptied.
+const CURSOR_SEARCH := "res://assets/ui/cursor_search.png"
+const CURSOR_SEARCH_DONE := "res://assets/ui/cursor_search_done.png"
+const CURSOR_HOTSPOT := Vector2(10, 10) # lens centre
+
+var _cursor_state: String = ""
+
+func _update_cursor() -> void:
+	var want := ""
+	if hovered != null and is_instance_valid(hovered) and hovered.storage != null:
+		want = "done" if hovered.storage.is_empty() else "search"
+	if want == _cursor_state:
+		return
+	_cursor_state = want
+	match want:
+		"search":
+			Input.set_custom_mouse_cursor(load(CURSOR_SEARCH), Input.CURSOR_ARROW, CURSOR_HOTSPOT)
+		"done":
+			Input.set_custom_mouse_cursor(load(CURSOR_SEARCH_DONE), Input.CURSOR_ARROW, CURSOR_HOTSPOT)
+		_:
+			Input.set_custom_mouse_cursor(null)
 
 # --- Ghost preview ---
 

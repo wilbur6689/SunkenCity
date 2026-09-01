@@ -240,6 +240,7 @@ func _refresh_debug() -> void:
 			World.items_root.get_child_count(), World.placed_blocks.size()],
 		"map revealed %d cells · clock %.2f · sun %.2f" % [
 			World.map_reveal.revealed_count(), World.time_of_day, World.sun_strength()],
+		"music: %s" % Audio.debug_status(),
 	]
 	_debug_text.text = "\n".join(PackedStringArray(lines))
 

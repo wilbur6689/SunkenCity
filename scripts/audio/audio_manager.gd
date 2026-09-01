@@ -9,10 +9,8 @@ extends Node
 ## quiet periods), so the city breathes instead of wall-to-wall music.
 
 const MUSIC_POOLS := {
+	# adventure01-03 cut (user request, 2026-08-31): they didn't fit the vibe.
 	"adventure": [
-		"res://assets/audio/music/adventure01.ogg",
-		"res://assets/audio/music/adventure02.ogg",
-		"res://assets/audio/music/adventure03.ogg",
 		"res://assets/audio/music/adventure04.ogg",
 	],
 	"threat": [
@@ -41,8 +39,9 @@ var _fading_out := false
 func _ready() -> void:
 	for bus_name: String in ["Music", "Ambient", "SFX"]:
 		_ensure_bus(bus_name)
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), Constants.MUSIC_VOLUME_DB)
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambient"), Constants.AMBIENT_VOLUME_DB)
+	_load_settings()
+	for bus_name: String in volumes:
+		_apply_volume(bus_name)
 	music = _player("Music")
 	music.finished.connect(_on_track_finished)
 	amb_inside = _player("Ambient", AMB_INSIDE)
@@ -77,6 +76,52 @@ func _player(bus_name: String, loop_path: String = "") -> AudioStreamPlayer:
 		if not _headless:
 			p.play()
 	return p
+
+# --- Volume settings (Esc menu): a 0..1 slider per bus, applied ON TOP of
+# the authored base levels so 100% = the tuned mix. Persisted per user in
+# settings.cfg (not per character/world).
+const SETTINGS_PATH := "user://settings.cfg"
+
+var volumes: Dictionary = {"Music": 1.0, "Ambient": 1.0, "SFX": 1.0}
+
+func _base_db(bus_name: String) -> float:
+	match bus_name:
+		"Music": return Constants.MUSIC_VOLUME_DB
+		"Ambient": return Constants.AMBIENT_VOLUME_DB
+	return 0.0
+
+func set_volume(bus_name: String, linear: float) -> void:
+	volumes[bus_name] = clampf(linear, 0.0, 1.0)
+	_apply_volume(bus_name)
+
+func volume(bus_name: String) -> float:
+	return float(volumes.get(bus_name, 1.0))
+
+func _apply_volume(bus_name: String) -> void:
+	var idx := AudioServer.get_bus_index(bus_name)
+	var v := volume(bus_name)
+	AudioServer.set_bus_mute(idx, v <= 0.0)
+	AudioServer.set_bus_volume_db(idx, _base_db(bus_name) + linear_to_db(maxf(v, 0.001)))
+
+func _load_settings() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) != OK:
+		return
+	for bus_name: String in volumes:
+		volumes[bus_name] = clampf(float(cfg.get_value("audio", bus_name.to_lower(), 1.0)), 0.0, 1.0)
+
+func save_settings() -> void:
+	var cfg := ConfigFile.new()
+	for bus_name: String in volumes:
+		cfg.set_value("audio", bus_name.to_lower(), volumes[bus_name])
+	cfg.save(SETTINGS_PATH)
+
+## One line for the F3 overlay: what the music director is doing right now.
+func debug_status() -> String:
+	if music != null and music.playing:
+		var title := _last_track.get_file().get_basename()
+		return "%s (%s)%s" % [title, _current_pool, " · fading out" if _fading_out else ""]
+	return "silent · next track in %ds (%s)" % [int(ceil(maxf(_silence_left, 0.0))), desired_pool()]
 
 const SFX_DIR := "res://assets/audio/sfx/"
 
@@ -159,6 +204,8 @@ func _update_music(delta: float) -> void:
 func _play_from(pool_name: String) -> void:
 	var pool: Array = MUSIC_POOLS[pool_name]
 	var picks := pool.filter(func(t): return t != _last_track)
+	if picks.is_empty(): # a one-track pool may repeat (the silence between hides it)
+		picks = pool
 	var track: String = picks[randi() % picks.size()]
 	_last_track = track
 	_current_pool = pool_name

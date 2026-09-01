@@ -764,6 +764,7 @@ func _update_move_sfx(delta: float) -> void:
 # Tool swing (user request): the held tool arcs in front of the player on
 # each hammer hit so breaking your own blocks reads as an action.
 var _swing_time: float = 0.0
+var _scrap_anim: float = 0.0
 var _tool_sprite: Sprite2D = null
 
 func play_swing() -> void:
@@ -789,8 +790,20 @@ func _update_swing(delta: float) -> void:
 			_tool_sprite.texture = Data.icon(held_item())
 			_tool_sprite.visible = true
 			_tool_sprite.flip_h = facing < 0
-			_tool_sprite.rotation = 0.35 * facing
-			_tool_sprite.position = Vector2(facing * 6.0, 3.0)
+			if interaction != null and interaction.scrapping != null:
+				# Levering motion while dismantling furniture (user request):
+				# the held tool rocks back and forth like a pry bar working
+				# a joint loose.
+				_scrap_anim += delta * 9.0
+				var osc := sin(_scrap_anim)
+				_tool_sprite.rotation = (0.55 + osc * 0.45) * facing
+				_tool_sprite.position = Vector2(facing * (6.0 + osc), -4.0 + absf(osc) * 1.5)
+			else:
+				_scrap_anim = 0.0
+				_tool_sprite.rotation = 0.35 * facing
+				# Held at hand height: the tool's lower corner sits
+				# mid-body, not at the feet (user request).
+				_tool_sprite.position = Vector2(facing * 5.0, -5.0)
 		else:
 			_tool_sprite.visible = false
 		return

@@ -56,12 +56,18 @@ var _hover: Dictionary = {} # {which, index} for the slot under the mouse
 
 ## Popup window rect in design pixels; the screens keep absolute layout
 ## coordinates and live in a `content` control offset by -window origin.
-const WIN_POS := Vector2(177, 2)
-const WIN_SIZE := Vector2(286, 326)
+## Widened for the 4-tab strip + the storage side panel (user request).
+const WIN_POS := Vector2(152, 2)
+const WIN_SIZE := Vector2(336, 326)
 
 var content: Control
 
+## Set when Esc closes this menu, so the pause menu (which polls after us)
+## does not open on the same keypress.
+var esc_consumed_frame: int = -1
+
 func _ready() -> void:
+	add_to_group("inventory_ui")
 	layer = 5
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -256,25 +262,33 @@ func _build_inventory_screen() -> void:
 	stats_panel.add_child(stats_label)
 
 	# Storage side panel (user request: opening storage shows the inventory
-	# screen with the unit's own inventory beside it)
-	storage_panel = _panel(Vector2(349, 34), Vector2(108, 168), UITheme.steel_panel())
+	# screen with the unit's own inventory beside it). Sits below the tab
+	# strip so all four tabs stay visible; quick stack rides the header row
+	# so a full 20-slot unit still fits above the bag grid.
+	storage_panel = _panel(Vector2(365, 44), Vector2(112, 158), UITheme.steel_panel())
 	storage_panel.visible = false
 	s.add_child(storage_panel)
 	var sv := VBoxContainer.new()
 	sv.add_theme_constant_override("separation", 2)
 	storage_panel.add_child(sv)
-	sv.add_child(UITheme.label("STORAGE", 8, Color(0.56, 0.75, 0.81)))
+	var sh := HBoxContainer.new()
+	sh.add_theme_constant_override("separation", 2)
+	var st_label := UITheme.label("STORAGE", 8, Color(0.56, 0.75, 0.81))
+	st_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sh.add_child(st_label)
+	var qs := Button.new()
+	qs.text = "Stack"
+	qs.tooltip_text = ""
+	qs.custom_minimum_size = Vector2(34, 12)
+	UITheme.style_button(qs)
+	qs.pressed.connect(_quick_stack)
+	sh.add_child(qs)
+	sv.add_child(sh)
 	chest_grid = GridContainer.new()
 	chest_grid.columns = 4
 	chest_grid.add_theme_constant_override("h_separation", GAP)
 	chest_grid.add_theme_constant_override("v_separation", GAP)
 	sv.add_child(chest_grid)
-	var qs := Button.new()
-	qs.text = "Quick stack"
-	qs.custom_minimum_size = Vector2(0, 14)
-	UITheme.style_button(qs)
-	qs.pressed.connect(_quick_stack)
-	sv.add_child(qs)
 
 func _build_crafting_screen() -> void:
 	var s := Control.new()
@@ -749,20 +763,14 @@ func _process(_delta: float) -> void:
 		player.container_opened.connect(open_container)
 		player.crafting_opened.connect(open_panel)
 		player.inventory.changed.connect(_refresh_all)
-	if Input.is_action_just_pressed("inventory"):
+	var pause = get_tree().get_first_node_in_group("pause_menu")
+	if Input.is_action_just_pressed("inventory") and (pause == null or not pause.open):
 		toggle()
 	if not open:
-		if Input.is_action_just_pressed("ui_cancel"):
-			# Esc with the menu open just closes it. Without a menu: in the
-			# city, save and return to the title (quit from there); in bare
-			# test scenes there is no title flow, so quit outright.
-			var scene := get_tree().current_scene
-			if scene != null and scene.has_method("save_and_exit_to_title"):
-				scene.save_and_exit_to_title()
-			else:
-				get_tree().quit()
+		# Esc with no menu open is the pause menu's business (sound, quit).
 		return
 	if Input.is_action_just_pressed("ui_cancel"):
+		esc_consumed_frame = Engine.get_process_frames()
 		close()
 		return
 	if container != null:
