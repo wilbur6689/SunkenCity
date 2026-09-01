@@ -10,8 +10,31 @@ const BUSES := ["Music", "SFX", "Ambient"]
 var open: bool = false
 var root: Control
 var quit_button: Button
+var main_box: VBoxContainer
+var controls_box: VBoxContainer
 var _sliders: Dictionary = {}
 var _pct_labels: Dictionary = {}
+
+## The controls list: [label, actions-array (keys read live from InputMap,
+## joined with " / ") or a literal string]. Curated so mouse semantics and
+## fixed function keys (not InputMap actions) can be described too.
+const CONTROL_ROWS := [
+	["Move", ["move_left", "move_right"]],
+	["Climb / swim", ["move_up", "move_down"]],
+	["Jump", ["jump"]],
+	["Sprint", ["sprint"]],
+	["Crouch / crawl", ["crouch"]],
+	["Use / place / hit", "LMB · click interacts, hold picks up"],
+	["Scrap / back wall", "RMB (hold)"],
+	["Interact (legacy)", ["interact"]],
+	["Inventory", ["inventory"]],
+	["Bare hands", ["drop"]],
+	["Hotbar", "1–0 · wheel cycles"],
+	["Zoom", "Ctrl + wheel"],
+	["Save / load", "F5 / F9"],
+	["Debug overlay", "F3"],
+	["Menu", "Esc"],
+]
 
 func _ready() -> void:
 	add_to_group("pause_menu")
@@ -34,37 +57,79 @@ func _ready() -> void:
 	root.add_child(centering)
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UITheme.flat_panel())
-	panel.custom_minimum_size = Vector2(170, 0)
+	panel.custom_minimum_size = Vector2(180, 0)
 	centering.add_child(panel)
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 5)
-	panel.add_child(v)
+	main_box = VBoxContainer.new()
+	main_box.add_theme_constant_override("separation", 5)
+	panel.add_child(main_box)
 
 	var title := UITheme.label("MENU", 10, Color(0.56, 0.75, 0.81))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(title)
+	main_box.add_child(title)
 
 	var resume := Button.new()
 	resume.text = "RESUME"
 	UITheme.style_button(resume)
 	resume.custom_minimum_size = Vector2(0, 16)
 	resume.pressed.connect(close)
-	v.add_child(resume)
+	main_box.add_child(resume)
 
-	v.add_child(UITheme.label("SOUND", 8, Color(0.56, 0.75, 0.81)))
+	main_box.add_child(UITheme.label("SOUND", 8, Color(0.56, 0.75, 0.81)))
 	for bus_name in BUSES:
-		v.add_child(_volume_row(bus_name))
+		main_box.add_child(_volume_row(bus_name))
+
+	var controls_btn := Button.new()
+	controls_btn.text = "CONTROLS"
+	UITheme.style_button(controls_btn)
+	controls_btn.custom_minimum_size = Vector2(0, 16)
+	controls_btn.pressed.connect(_show_controls.bind(true))
+	main_box.add_child(controls_btn)
 
 	quit_button = Button.new()
 	quit_button.text = "SAVE & QUIT"
 	UITheme.style_button(quit_button)
 	quit_button.custom_minimum_size = Vector2(0, 16)
 	quit_button.pressed.connect(_quit)
-	v.add_child(quit_button)
+	main_box.add_child(quit_button)
 
 	var hint := UITheme.label("F5 saves any time", 8, Color(0.55, 0.6, 0.68))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(hint)
+	main_box.add_child(hint)
+
+	# Controls page (user request): every binding, read live from the
+	# InputMap so rebinds show correctly; mouse/function keys described.
+	controls_box = VBoxContainer.new()
+	controls_box.add_theme_constant_override("separation", 2)
+	controls_box.visible = false
+	panel.add_child(controls_box)
+	var ct := UITheme.label("CONTROLS", 10, Color(0.56, 0.75, 0.81))
+	ct.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	controls_box.add_child(ct)
+	for row in CONTROL_ROWS:
+		var hb := HBoxContainer.new()
+		hb.add_theme_constant_override("separation", 6)
+		var name_l := UITheme.label(String(row[0]), 8, Color(0.7, 0.78, 0.85))
+		name_l.custom_minimum_size = Vector2(72, 0)
+		hb.add_child(name_l)
+		var keys: String = row[1] if row[1] is String else " / ".join((row[1] as Array).map(_key_of))
+		hb.add_child(UITheme.label(keys, 8))
+		controls_box.add_child(hb)
+	var back := Button.new()
+	back.text = "BACK"
+	UITheme.style_button(back)
+	back.custom_minimum_size = Vector2(0, 16)
+	back.pressed.connect(_show_controls.bind(false))
+	controls_box.add_child(back)
+
+## First bound key/button of an InputMap action, cleaned for display.
+func _key_of(action: String) -> String:
+	for ev in InputMap.action_get_events(action):
+		return ev.as_text().replace(" - Physical", "").replace(" (Physical)", "")
+	return "—"
+
+func _show_controls(show_it: bool) -> void:
+	controls_box.visible = show_it
+	main_box.visible = not show_it
 
 ## "Music  [====-----]  80%" — slider drives the bus live.
 func _volume_row(bus_name: String) -> HBoxContainer:
@@ -96,7 +161,10 @@ func _process(_delta: float) -> void:
 	if not Input.is_action_just_pressed("ui_cancel"):
 		return
 	if open:
-		close()
+		if controls_box.visible: # Esc from the controls page goes back first
+			_show_controls(false)
+		else:
+			close()
 		return
 	# The character menu owns Esc while it is open (it closes itself, and
 	# marks the frame so this menu does not pop in the same keypress).
@@ -108,6 +176,7 @@ func _process(_delta: float) -> void:
 func open_menu() -> void:
 	open = true
 	root.visible = true
+	_show_controls(false)
 	for bus_name in BUSES:
 		_sliders[bus_name].set_value_no_signal(Audio.volume(bus_name) * 100.0)
 		_pct_labels[bus_name].text = "%d%%" % int(Audio.volume(bus_name) * 100.0)
