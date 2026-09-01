@@ -9,13 +9,19 @@ extends Node
 ## quiet periods), so the city breathes instead of wall-to-wall music.
 
 const MUSIC_POOLS := {
-	# adventure01-03 cut (user request, 2026-08-31): they didn't fit the vibe.
+	# adventure01-03 replaced with new takes (2026-08-31; the originals were
+	# cut for vibe). Sources live in docs/Examples/Audio/music — run
+	# tools/convert_music.py after dropping new WAVs there.
 	"adventure": [
+		"res://assets/audio/music/adventure01.ogg",
+		"res://assets/audio/music/adventure02.ogg",
+		"res://assets/audio/music/adventure03.ogg",
 		"res://assets/audio/music/adventure04.ogg",
 	],
 	"threat": [
 		"res://assets/audio/music/threat01.ogg",
 		"res://assets/audio/music/threat02.ogg",
+		"res://assets/audio/music/threat03.ogg",
 	],
 }
 const AMB_INSIDE := "res://assets/audio/ambient/underwater_inside.ogg"

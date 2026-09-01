@@ -67,6 +67,9 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   covers the full persistence round trip; run it after touching World state or SaveGame.
 - Regenerate placeholder art: `python tools/gen_placeholder_art.py` (tiles, character, item icons,
   object sprites, light texture — deterministic).
+- Convert music drops: `python tools/convert_music.py` (WAVs from `docs/Examples/Audio/music`
+  → `assets/audio/music/*.ogg`, needs ffmpeg; new tracks also go into `MUSIC_POOLS` in
+  `scripts/audio/audio_manager.gd`).
 
 ## Code Conventions
 
