@@ -4,7 +4,7 @@
   {
    "authored_icon": true,
    "category": "material",
-   "desc": "Salvaged lumber \u00e2\u20ac\u201d burns, builds, and braces.",
+   "desc": "Salvaged lumber â€” burns, builds, and braces.",
    "icon": [
     0.0,
     0.0
@@ -16,7 +16,7 @@
   {
    "authored_icon": true,
    "category": "material",
-   "desc": "Salvage metal \u00e2\u20ac\u201d the city's most versatile material.",
+   "desc": "Salvage metal â€” the city's most versatile material.",
    "icon": [
     1.0,
     0.0
@@ -28,7 +28,7 @@
   {
    "authored_icon": true,
    "category": "material",
-   "desc": "Molded scrap \u00e2\u20ac\u201d light parts and cheap fittings.",
+   "desc": "Molded scrap â€” light parts and cheap fittings.",
    "icon": [
     2.0,
     0.0
@@ -40,7 +40,7 @@
   {
    "authored_icon": true,
    "category": "material",
-   "desc": "Torn fabric \u00e2\u20ac\u201d bandages, beds, and gear.",
+   "desc": "Torn fabric â€” bandages, beds, and gear.",
    "icon": [
     3.0,
     0.0
@@ -52,7 +52,7 @@
   {
    "authored_icon": true,
    "category": "material",
-   "desc": "Concrete rubble \u00e2\u20ac\u201d heavy, solid construction.",
+   "desc": "Concrete rubble â€” heavy, solid construction.",
    "icon": [
     4.0,
     0.0
@@ -100,7 +100,7 @@
   {
    "authored_icon": true,
    "category": "tool",
-   "desc": "A quick, light blade \u00e2\u20ac\u201d the least slowed weapon underwater.",
+   "desc": "A quick, light blade â€” the least slowed weapon underwater.",
    "icon": [
     1.0,
     1.0
@@ -197,7 +197,7 @@
   {
    "authored_icon": true,
    "category": "consumable",
-   "desc": "Preserved food \u00e2\u20ac\u201d restores hunger anywhere.",
+   "desc": "Preserved food â€” restores hunger anywhere.",
    "icon": [
     1.0,
     2.0
@@ -213,7 +213,7 @@
   {
    "authored_icon": true,
    "category": "consumable",
-   "desc": "Chemical light. Sinks when dropped \u00e2\u20ac\u201d mark flooded rooms and routes.",
+   "desc": "Chemical light. Sinks when dropped â€” mark flooded rooms and routes.",
    "icon": [
     2.0,
     2.0
@@ -737,6 +737,7 @@
    "weight": 2.0
   },
   {
+   "authored_icon": true,
    "category": "weapon",
    "desc": "Found only. A semi-auto scrounger's dream; useless submerged.",
    "found_only": true,
@@ -763,8 +764,7 @@
     "reload": 1.8,
     "speed": 5.0
    },
-   "weight": 3.5,
-   "authored_icon": true
+   "weight": 3.5
   },
   {
    "authored_icon": true,
@@ -797,6 +797,7 @@
    "weight": 4.0
   },
   {
+   "authored_icon": true,
    "category": "weapon",
    "desc": "A sharpened slab of scrap. Swings slow underwater.",
    "icon": [
@@ -823,10 +824,10 @@
     "speed": 1.6,
     "water_factor": 0.5
    },
-   "weight": 2.0,
-   "authored_icon": true
+   "weight": 2.0
   },
   {
+   "authored_icon": true,
    "category": "weapon",
    "desc": "A proper forged blade. Swings slow underwater.",
    "icon": [
@@ -849,8 +850,7 @@
     "speed": 1.6,
     "water_factor": 0.5
    },
-   "weight": 2.5,
-   "authored_icon": true
+   "weight": 2.5
   },
   {
    "authored_icon": true,

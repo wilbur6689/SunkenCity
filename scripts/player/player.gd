@@ -916,34 +916,70 @@ func _update_swing(delta: float) -> void:
 			_tool_sprite.texture = Data.icon(held_item())
 			_fit_tool_sprite()
 			_tool_sprite.visible = true
-			_tool_sprite.flip_h = facing < 0
 			if interaction != null and interaction.scrapping != null:
-				# Levering motion while dismantling furniture (user request):
-				# the held tool rocks back and forth like a pry bar working
-				# a joint loose.
-				_scrap_anim += delta * 9.0
-				var osc := sin(_scrap_anim)
-				_tool_sprite.rotation = (0.55 + osc * 0.45) * facing
-				_tool_sprite.position = Vector2(facing * (6.0 + osc), -4.0 + absf(osc) * 1.5)
+				# Harvest chop (user request 2026-09-01): wind back, arc over
+				# the head, pull down onto the resource, repeat.
+				_scrap_anim += delta / CHOP_CYCLE_TIME
+				_chop_pose(fposmod(_scrap_anim, 1.0), 1.0 if facing >= 0 else -1.0)
 			else:
+				# Ready stance (user request 2026-09-02): the icon flipped and
+				# rotated ~90 deg down, so the tool hangs at the mid-section.
 				_scrap_anim = 0.0
-				_tool_sprite.rotation = 0.35 * facing
-				# Held at hand height: the tool's lower corner sits
-				# mid-body, not at the feet (user request).
-				_tool_sprite.position = Vector2(facing * 5.0, -5.0)
-			if state == State.SURFACE_SWIM: # ride the chest-deep body
-				_tool_sprite.position.y += Constants.SURFACE_SPRITE_SINK_PX
+				_apply_rest_pose(1.0 if facing >= 0 else -1.0)
 		else:
 			_tool_sprite.visible = false
 		return
+	# One-shot swing (a single hammer hit): one chop toward the aim point.
 	_swing_time = maxf(_swing_time - delta, 0.0)
 	var t := 1.0 - _swing_time / Constants.TOOL_SWING_TIME
-	var dir := 1.0 if aim_position.x >= global_position.x else -1.0
-	var ang := lerpf(-1.9, 0.6, t) # overhead wind-up to forward-down
 	_tool_sprite.visible = true
-	_tool_sprite.rotation = ang * dir
+	_chop_pose(t, 1.0 if aim_position.x >= global_position.x else -1.0)
+
+## The chop curve (user request 2026-09-01): a slow wind-up back and over the
+## head (phase 0-0.3), a fast strike down onto the target (0.3-0.5), then an
+## ease back to the ready stance (0.5-1.0). `dir` = +1 facing right.
+const _CHOP_REST := -0.35   # ready: head up, leaning back
+const _CHOP_WIND := -1.05   # wound up behind the head
+const _CHOP_STRIKE := 2.35  # blade driven down and forward onto the target
+const CHOP_CYCLE_TIME := 0.55 # seconds per harvest chop
+
+func _chop_pose(ph: float, dir: float) -> void:
+	var a: float
+	if ph < 0.30:
+		var w := ph / 0.30
+		a = lerpf(_CHOP_REST, _CHOP_WIND, 1.0 - (1.0 - w) * (1.0 - w)) # ease-out
+	elif ph < 0.50:
+		var w := (ph - 0.30) / 0.20
+		a = lerpf(_CHOP_WIND, _CHOP_STRIKE, w * w) # ease-in strike
+	else:
+		a = lerpf(_CHOP_STRIKE, _CHOP_REST, (ph - 0.50) / 0.50)
+	_apply_tool_pose(a, dir)
+
+## Place the held tool at chop angle `a` (facing `dir`): the icon points up,
+## so the head direction is (sin, -cos); the sprite orbits the hand pivot so
+## the head traces the arc, and flips to face the swing.
+## Resting held pose (user request 2026-09-02): the tool icon flipped
+## horizontally and rotated 90 deg down toward the mid-section, so it hangs
+## in the hand instead of resting on the head.
+func _apply_rest_pose(dir: float) -> void:
+	var ang := (PI * 0.5) * dir
+	_tool_sprite.rotation = ang
+	_tool_sprite.flip_h = dir > 0 # flipped vs the chop's facing flip
+	var head := Vector2(sin(ang), -cos(ang))
+	var pos := Vector2(dir * 3.0, 0.0) + head * 3.0
+	if state == State.SURFACE_SWIM:
+		pos.y += Constants.SURFACE_SPRITE_SINK_PX
+	_tool_sprite.position = pos
+
+func _apply_tool_pose(a: float, dir: float) -> void:
+	var ang := a * dir
+	_tool_sprite.rotation = ang
 	_tool_sprite.flip_h = dir < 0
-	_tool_sprite.position = Vector2(dir * 7.0, 0.0) + Vector2(sin(ang) * dir, -cos(ang)) * 5.0
+	var head := Vector2(sin(ang), -cos(ang))
+	var pos := Vector2(dir * 4.0, -6.0) + head * 4.0
+	if state == State.SURFACE_SWIM: # ride the chest-deep body
+		pos.y += Constants.SURFACE_SPRITE_SINK_PX
+	_tool_sprite.position = pos
 
 var _lamp_dot: Sprite2D = null
 
