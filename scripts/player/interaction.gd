@@ -407,6 +407,7 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		World.remove_object(obj)
 		for y in yields:
 			var leftover: int = player.inventory.add(y.item, y.count)
+			player.notify_gain(y.item, int(y.count) - leftover)
 			if leftover > 0:
 				World.spawn_item(y.item, leftover, pos)
 		player.skills.add_xp("scrapping", float(obj.def.get("xp", 3)))
@@ -478,7 +479,8 @@ func _update_ghost() -> void:
 		_ghost_rect.position = origin
 		_ghost.texture = Data.icon(held)
 		_ghost.position = origin
-		_ghost.scale = Vector2.ONE
+		_ghost.scale = Vector2.ONE if _ghost.texture == null or _ghost.texture.get_width() <= Constants.BLOCK_SIZE \
+				else Vector2.ONE * (float(Constants.BLOCK_SIZE) / _ghost.texture.get_width())
 	else:
 		var d: Dictionary = Data.objects[it.places_object]
 		ok = target_in_reach and World.can_place_object(it.places_object, target_cell, player)

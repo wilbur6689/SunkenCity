@@ -203,11 +203,15 @@ func _run() -> void:
 	await interact(Vector2i(3, row))
 	check(absf(World.spawn_position.x - bed.bottom_center().x) < 0.5, "bed set the spawn point (GL-23)")
 	player.apply_damage(999.0)
-	await ticks(30)
-	check(absf(player.global_position.x - bed.bottom_center().x) < 0.5 and player.health == Constants.MAX_HEALTH, "died and respawned at the bed")
-	# M4 death loop (CC-07): dying moved the whole bag into a backpack at the
-	# death spot — walk back over it to take everything back.
+	await ticks(5)
+	check(player.dying, "death plays a 3 s scene before the respawn (2026-09-01)")
+	# M4 death loop (CC-07): the bag moved into a backpack the moment of
+	# death - checked DURING the scene, because respawning at the bed (the
+	# death spot here) walks straight over the pack.
 	check(not get_tree().get_nodes_in_group("backpacks").is_empty() and inv.is_empty(), "death dropped the bag as a backpack (CC-07)")
+	check(await until(func(): return not player.dying and player.health == Constants.MAX_HEALTH, 260), "the scene ends in a respawn")
+	await ticks(10)
+	check(absf(player.global_position.x - bed.bottom_center().x) < 0.5 and player.health == Constants.MAX_HEALTH, "died and respawned at the bed")
 	await goto(5)
 	check(await until(func(): return get_tree().get_nodes_in_group("backpacks").is_empty(), 240), "backpack recovered on touch")
 

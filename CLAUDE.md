@@ -92,7 +92,9 @@ blocks apart for roof-hopping. The wood wall got its own dark vertical-plank til
 Editor** (`res://scenes/tools/flora_editor.tscn`) authors category-`flora` objects (type, growth
 chain `grows_into`/`grow_chance`, `flora_weight` spawn bias, no-item flag, up to 8x16-block
 canvas); `CityGen._stamp_roofs` sprinkles all roof-zone flora by weight, so a saved plant
-appears in the next generated world. Gate: `flora_editor_smoke.tscn`. **Room draw planes +
+appears in the next generated world; editor saves set `authored: true` - pack rebuilds keep
+their hands off such entries, and `Data.object_texture` loads authored sprites RAW from disk
+(the import cache is stale after an in-game save). Gate: `flora_editor_smoke.tscn`. **Room draw planes +
 zombie sheets** (2026-09-01): rooms layer back wall (tile layer z -3) -> decals (z -2) ->
 wall-mounted pieces/doorways (z -1) -> furniture (z 0) -> player (tree order); backdrop planes
 sit at z -10/-11 in both game scenes. The hand-made monster sheets in `docs/Examples/Monsters`
@@ -106,7 +108,38 @@ walker head (2026-09-01); walkers animate via
 edits `data/enemies.json` in place: identity/hitbox/flags/frames/variants, the drops table
 (drop items validated against the item registry), and the authored per-band stat grid — enabling
 a band row is what lets the type seed there (GD-23); an animated sprite preview cycles variants
-with a hitbox overlay. Gate: `monster_editor_smoke.tscn`. Towers are
+with a hitbox overlay, arrow keys step frames, and **Edit frame…** opens an overlay pixel
+window (frame-palette swatches, pick/paint/erase; BACK returns) - saving a frame writes the
+strip and sets `authored_sprites`, which makes the game raw-load the strips and
+`convert_monsters.py` keep its hands off. Gate: `monster_editor_smoke.tscn`. **Feel fixes**
+(2026-09-01): water plunge drag (`WATER_PLUNGE_DECEL`) - players, items and enemies falling
+into water brake within a couple of blocks of the surface instead of coasting to the bottom;
+death now plays a 3 s scene (`DEATH_SCENE_SECONDS`: input frozen, HUD cleared, camera closes
+to 2x, fade to black, respawn with a fade-in) - `player.dying` guards damage and the HUD. **Material icon surfacing** (2026-09-01): the
+hover card shows scrap yields as an ICON row (icon + min-max) instead of text, and a left-side
+**gain feed** (HUD) shows icon + running +count for every material gained from harvesting
+(`player.notify_gain`, drained per frame). The **Icon Editor**
+(`res://scenes/tools/icon_editor.tscn`) repaints material icons: saves
+`assets/sprites/icons/<id>.png` + `authored_icon` in data/items.json; `Data.icon` raw-loads
+authored icons. Gate: `icon_editor_smoke.tscn`. **Urban zombie pack** (2026-09-01):
+`docs/Examples/Monsters/urban-zombie-sprite-sheet-pixel-art-pack` (4 zombies x 5 clips, real
+alpha) converts to square-cell strips `walker_h..k` + `_idle/_attack/_hurt/_dead` companions
+(one shared scale per zombie; walker now has 11 looks). Enemies play the clips: idle sway,
+attack one-shot on a landed bite, hurt flinch, and a lingering fading corpse on death; frame
+counts derive from square cells (width/height), legacy strips fall back to `frames`. All pixel editors gained **Select / Copy / Cut /
+Paste** (marquee drag; ghost-follow paste stamps repeatedly - patterns and moving sections);
+the Icon Editor covers EVERY icon-bearing item (materials, tools, weapons, armor, ammo),
+grouped by category. Side vents gate only Shallows-band breaches - deeper breaches are the
+flood inlets (vent-sealing everything left tower interiors dry: a 50-block air fall). The user's icon sheet
+(`docs/Examples/Objects/resources.jpg`, 2 groups x ~120 icons) slices via
+`python tools/convert_icons.py` (white-key, band detection, 32x32 NEAREST - user request: keep the sheet's detail): 31 item icons
+mapped into `assets/sprites/icons/` (materials, meds, ammo, tools, gear, weapons, schematics,
+rope), the rest parked in `icons/extra/` for future items; a file in the icons dir is
+authoritative for `Data.icon` (no flag needed - covers block-backed items). `convert_icons.py` **never overwrites an
+existing icon** (protects Icon-Editor hand edits; `ICONS_FORCE=1` regenerates) and border-floods
+white removal + trims the JPEG halo so no white edges survive. `Weapons.jpg` swords + SMG
+(`convert_weapons`) replace scrap_sword/iron_sword/smg; machete, longsword, combat knife and
+bone scimitar park in icons/extra. Towers are
 **double-wide twin-wing blocks** (2026-08-31): ladder stairwells on BOTH sides (ladders hug the
 room-side wall — 2026-09-01, so enemies chase through wing doorways onto them), an elevator
 shaft down the centre, rooms in each wing; the skyline is uniformly high-rise (CT-01 amended
@@ -154,7 +187,7 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   drives the player with `Input.action_press`) and `--headless res://scenes/test/m1_smoke.tscn`
   (the loop; feeds the player's input snapshot directly with `set_multiplayer_authority(2)`). Run
   both after touching the player, World, or data files; extend them when behaviour changes.
-  Further gates: `m2/m3/m4/m5/tower/save/pocket/roof/room_editor/furniture_editor/flora_editor/monster_editor_smoke.tscn` — `save_smoke`
+  Further gates: `m2/m3/m4/m5/tower/save/pocket/roof/room_editor/furniture_editor/flora_editor/monster_editor/icon_editor_smoke.tscn` — `save_smoke`
   covers the full persistence round trip; run it after touching World state or SaveGame.
   `m4_smoke` covers enemies/combat/death loop/red moons; run it after touching enemies, combat,
   or the interaction layer.

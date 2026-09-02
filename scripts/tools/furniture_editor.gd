@@ -31,8 +31,14 @@ var def: Dictionary = {}
 var image: Image
 var texture: ImageTexture
 var brush := Color8(120, 82, 50)
+var brush2 := Color8(40, 26, 14) # RMB paints this secondary colour
 var tool_mode := "pencil" # pencil | eraser | fill
 var hover_px := Vector2i(-1, -1)
+var sel_a := Vector2i(-1, -1) # selection anchor / end (Select tool drag)
+var sel_b := Vector2i(-1, -1)
+var clipboard: Image = null
+var _clip_tex: ImageTexture = null
+var pasting := false
 
 var canvas: Control
 var id_edit: LineEdit
@@ -53,6 +59,7 @@ var load_option: OptionButton
 var status_label: Label
 var tool_label: Label
 var brush_swatch: ColorRect
+var brush2_swatch: ColorRect
 
 func _ready() -> void:
 	def = _default_def()
@@ -79,21 +86,24 @@ func _new_image() -> void:
 func _mount_pause_menu() -> void:
 	var pm: CanvasLayer = load("res://scripts/ui/pause_menu.gd").new()
 	pm.custom_controls = [
-		["Paint pixel", "LMB (drag) · Pencil tool"],
-		["Erase pixel", "RMB · or the Eraser tool"],
+		["Paint pixel", "LMB primary · RMB secondary"],
+		["Erase pixel", "Eraser tool · or MMB click"],
 		["Fill", "Fill tool · LMB on a region"],
 		["Pick colour", "Swatches · Custom… opens a picker"],
 		["Sprite size", "Width / Height spinners (blocks)"],
 		["Save", "SAVE / EXPORT → data/objects.json + PNG"],
+		["Select / move", "Select drag · Copy / Cut / Paste (LMB stamps, RMB stops)"],
 		["Menu", "Esc"],
 	]
 	pm.hint_text = "Unsaved furniture is lost on quit — SAVE / EXPORT first"
-	pm.quit_text = "QUIT TO TITLE"
-	pm.quit_callable = _quit_to_title
+	pm.quit_text = "QUIT GAME"
+	pm.quit_callable = _quit_game
 	add_child(pm)
 
-func _quit_to_title() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
+## Editors are standalone tools (user request 2026-09-01): Esc quits the
+## app outright instead of returning to the title screen.
+func _quit_game() -> void:
+	get_tree().quit()
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
@@ -129,13 +139,16 @@ func _build_ui() -> void:
 	sv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sscroll.add_child(sv)
 	sv.add_child(UITheme.label("SETTINGS", 8, Color(0.56, 0.75, 0.81)))
+	sv.add_child(UITheme.label("Identity - id / display name", 8, Color(0.6, 0.66, 0.72)))
 	var row1 := HBoxContainer.new()
-	id_edit = _edit("id")
-	name_edit = _edit("Name")
+	id_edit = _edit("id", "Unique id (lowercase_snake_case). Names the object entry AND its sprite PNG.")
+	name_edit = _edit("Name", "Display name players see in-game.")
 	row1.add_child(id_edit)
 	row1.add_child(name_edit)
 	sv.add_child(row1)
+	sv.add_child(UITheme.label("Kind (behaviour)", 8, Color(0.6, 0.66, 0.72)))
 	kind_option = OptionButton.new()
+	kind_option.tooltip_text = "How the object behaves: scrap furniture, chest (storage), bed (spawn point), light, door (seals water), pump, breaker, or crafting station."
 	kind_option.add_theme_font_size_override("font_size", 8)
 	for k in KINDS:
 		kind_option.add_item(k)
@@ -146,6 +159,7 @@ func _build_ui() -> void:
 	for i in ZONES.size():
 		var cb := CheckBox.new()
 		cb.text = ZONES[i].substr(0, 5)
+		cb.tooltip_text = "May appear in " + ZONES[i] + " rooms."
 		cb.add_theme_font_size_override("font_size", 8)
 		zone_checks[ZONES[i]] = cb
 		(zrow if i < 2 else zrow2).add_child(cb)
@@ -154,13 +168,13 @@ func _build_ui() -> void:
 	var g := GridContainer.new()
 	g.columns = 4
 	g.add_theme_constant_override("h_separation", 2)
-	w_spin = _spin(1, MAX_BLOCKS, 2, "W")
-	h_spin = _spin(1, MAX_BLOCKS, 2, "H")
-	weight_spin = _spin(1, 99, 10, "Wt")
-	tier_spin = _spin(0, 3, 0, "Tool")
-	skill_spin = _spin(0, 5, 0, "Skill")
-	time_spin = _spin(1, 20, 3, "Time")
-	xp_spin = _spin(1, 30, 4, "XP")
+	w_spin = _spin(1, MAX_BLOCKS, 2, "Sprite width in blocks (16 px each).")
+	h_spin = _spin(1, MAX_BLOCKS, 2, "Sprite height in blocks.")
+	weight_spin = _spin(1, 99, 10, "Carry weight when hauled in the bag (heavy bags slow swimming).")
+	tier_spin = _spin(0, 3, 0, "Minimum tool tier to scrap (0 = hands, 1 = scrap tools, 2 = iron, 3 = steel).")
+	skill_spin = _spin(0, 5, 0, "Minimum Scrapping skill level to scrap.")
+	time_spin = _spin(1, 20, 3, "Seconds to scrap at base speed.")
+	xp_spin = _spin(1, 30, 4, "Scrapping XP awarded when scrapped.")
 	for arr in [["Width", w_spin], ["Height", h_spin], ["Weight", weight_spin], ["Tool tier", tier_spin], ["Skill", skill_spin], ["Scrap s", time_spin], ["XP", xp_spin]]:
 		g.add_child(UITheme.label(arr[0], 8))
 		g.add_child(arr[1])
@@ -171,9 +185,10 @@ func _build_ui() -> void:
 	strow.add_theme_constant_override("separation", 4)
 	storage_check = CheckBox.new()
 	storage_check.text = "Has inventory"
+	storage_check.tooltip_text = "Checked: opens like a chest and gets loot at world gen (searchable container)."
 	storage_check.add_theme_font_size_override("font_size", 8)
 	strow.add_child(storage_check)
-	storage_slots_spin = _spin(4, 20, 12, "Slots")
+	storage_slots_spin = _spin(4, 20, 12, "Number of storage slots when it has an inventory.")
 	strow.add_child(storage_slots_spin)
 	strow.add_child(UITheme.label("slots", 8, Color(0.6, 0.66, 0.72)))
 	sv.add_child(strow)
@@ -183,20 +198,21 @@ func _build_ui() -> void:
 	sv.add_child(yields_box)
 	sv.add_child(_button("+ add yield", func():
 		def.yields.append({"item": "wood", "min": 1, "max": 2})
-		_rebuild_yields()))
+		_rebuild_yields(), "Add another yield material."))
 	var lrow := HBoxContainer.new()
 	lrow.add_child(_button("New", func():
 		def = _default_def()
 		_new_image()
 		_sync_to_ui()
-		_prefill_box()))
+		_prefill_box(), "Start fresh furniture (unsaved changes are lost)."))
 	load_option = OptionButton.new()
 	load_option.add_theme_font_size_override("font_size", 8)
 	load_option.item_selected.connect(_load_selected)
+	load_option.tooltip_text = "Load an existing object to edit (pack items rebind to a standalone PNG on save)."
 	load_option.custom_minimum_size = Vector2(70, 0)
 	lrow.add_child(load_option)
 	sv.add_child(lrow)
-	sv.add_child(_button("SAVE / EXPORT", _save))
+	sv.add_child(_button("SAVE / EXPORT", _save, "Write data/objects.json + the sprite PNG. Rooms use it in the next generated world."))
 	status_label = UITheme.label("", 8, Color(0.75, 0.95, 0.75))
 	sv.add_child(status_label)
 
@@ -204,7 +220,7 @@ func _build_ui() -> void:
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mid.add_theme_constant_override("separation", 4)
 	root.add_child(mid)
-	tool_label = UITheme.label("Tool: pencil  (LMB paint · RMB erase)", 8, Color(0.7, 0.78, 0.85))
+	tool_label = UITheme.label("Tool: pencil  (LMB primary · RMB secondary)", 8, Color(0.7, 0.78, 0.85))
 	tool_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mid.add_child(tool_label)
 	canvas = Control.new()
@@ -228,16 +244,23 @@ func _build_ui() -> void:
 	pv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pscroll.add_child(pv)
 	pv.add_child(UITheme.label("TOOLS", 8, Color(0.56, 0.75, 0.81)))
-	pv.add_child(_button("Pencil", func(): _set_tool("pencil")))
-	pv.add_child(_button("Eraser", func(): _set_tool("eraser")))
-	pv.add_child(_button("Fill", func(): _set_tool("fill")))
-	pv.add_child(_button("Box prefill", _prefill_box))
+	pv.add_child(_button("Pencil", func(): _set_tool("pencil"), "Paint pixels: LMB primary colour, RMB secondary."))
+	pv.add_child(_button("Eraser", func(): _set_tool("eraser"), "Clicks clear pixels (MMB click also clears in any tool)."))
+	pv.add_child(_button("Fill", func(): _set_tool("fill"), "Flood-fill the clicked colour region."))
+	pv.add_child(_button("Select", func(): _set_tool("select"), "Drag a rectangle over the pixels to move or duplicate."))
+	var crow := HBoxContainer.new()
+	crow.add_theme_constant_override("separation", 2)
+	crow.add_child(_button("Copy", func(): _copy_selection(false), "Copy the selected pixels."))
+	crow.add_child(_button("Cut", func(): _copy_selection(true), "Copy the selection and clear it (move = Cut + Paste)."))
+	crow.add_child(_button("Paste", _begin_paste, "A ghost follows the mouse: LMB stamps, RMB stops."))
+	pv.add_child(crow)
+	pv.add_child(_button("Box prefill", _prefill_box, "Reset the canvas to a shaded box hull starting shape."))
 	pv.add_child(_button("Clear", func():
 		image.fill(Color(0, 0, 0, 0))
-		_dirty()))
+		_dirty(), "Wipe the whole canvas transparent."))
 	var brow := HBoxContainer.new()
 	brow.add_theme_constant_override("separation", 4)
-	brow.add_child(UITheme.label("Brush", 8))
+	brow.add_child(UITheme.label("L", 8))
 	brush_swatch = ColorRect.new()
 	brush_swatch.custom_minimum_size = Vector2(14, 14)
 	brush_swatch.color = brush
@@ -247,10 +270,26 @@ func _build_ui() -> void:
 	picker.add_theme_font_size_override("font_size", 8)
 	picker.custom_minimum_size = Vector2(56, 14)
 	picker.color = brush
+	picker.tooltip_text = "Primary brush - painted with LMB."
 	picker.color_changed.connect(func(c):
 		brush = c
 		brush_swatch.color = c)
 	brow.add_child(picker)
+	brow.add_child(UITheme.label("R", 8))
+	brush2_swatch = ColorRect.new()
+	brush2_swatch.custom_minimum_size = Vector2(14, 14)
+	brush2_swatch.color = brush2
+	brow.add_child(brush2_swatch)
+	var picker2 := ColorPickerButton.new()
+	picker2.text = "..."
+	picker2.add_theme_font_size_override("font_size", 8)
+	picker2.custom_minimum_size = Vector2(28, 14)
+	picker2.color = brush2
+	picker2.tooltip_text = "Secondary brush - painted with RMB."
+	picker2.color_changed.connect(func(c):
+		brush2 = c
+		brush2_swatch.color = c)
+	brow.add_child(picker2)
 	pv.add_child(brow)
 	pv.add_child(UITheme.label("MATERIALS", 8, Color(0.56, 0.75, 0.81)))
 	for ramp in PALETTE:
@@ -281,18 +320,24 @@ func _swatch_row(colors: Array) -> HBoxContainer:
 		sw.pressed.connect(func():
 			brush = col
 			brush_swatch.color = col)
+		sw.gui_input.connect(func(e):
+			if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_RIGHT:
+				brush2 = col
+				brush2_swatch.color = col)
 		srow.add_child(sw)
 	return srow
 
-func _edit(placeholder: String) -> LineEdit:
+func _edit(placeholder: String, tip: String = "") -> LineEdit:
 	var e := LineEdit.new()
 	e.placeholder_text = placeholder
+	e.tooltip_text = tip
 	e.add_theme_font_size_override("font_size", 8)
 	e.custom_minimum_size = Vector2(76, 0)
 	return e
 
-func _spin(minv: float, maxv: float, val: float, _tip: String) -> SpinBox:
+func _spin(minv: float, maxv: float, val: float, tip: String = "") -> SpinBox:
 	var s := SpinBox.new()
+	s.tooltip_text = tip
 	s.min_value = minv
 	s.max_value = maxv
 	s.step = 0.5 if maxv <= 20 and minv >= 1 else 1
@@ -300,12 +345,14 @@ func _spin(minv: float, maxv: float, val: float, _tip: String) -> SpinBox:
 	# The override must land on the inner LineEdit — SpinBox's own theme
 	# overrides do not propagate to it, so it would render at the default 16px.
 	s.get_line_edit().add_theme_font_size_override("font_size", 8)
+	s.get_line_edit().tooltip_text = tip
 	s.custom_minimum_size = Vector2(52, 0)
 	return s
 
-func _button(text: String, cb: Callable) -> Button:
+func _button(text: String, cb: Callable, tip: String = "") -> Button:
 	var b := Button.new()
 	b.text = text
+	b.tooltip_text = tip
 	b.custom_minimum_size = Vector2(0, 14)
 	UITheme.style_button(b)
 	b.pressed.connect(cb)
@@ -313,7 +360,8 @@ func _button(text: String, cb: Callable) -> Button:
 
 func _set_tool(mode: String) -> void:
 	tool_mode = mode
-	tool_label.text = "Tool: " + mode + "  (LMB paint · RMB erase)"
+	pasting = false
+	tool_label.text = "Tool: " + mode + "  (LMB primary · RMB secondary · MMB clears)"
 
 func _say(text: String) -> void:
 	status_label.text = text
@@ -325,21 +373,22 @@ func _rebuild_yields() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 2)
 		var item := OptionButton.new()
+		item.tooltip_text = "Material this yields when scrapped."
 		item.add_theme_font_size_override("font_size", 8)
 		for it in YIELD_ITEMS:
 			item.add_item(it)
 		item.selected = maxi(YIELD_ITEMS.find(y.item), 0)
 		item.item_selected.connect(func(i): y.item = YIELD_ITEMS[i])
 		row.add_child(item)
-		var mn := _spin(0, 30, int(y.min), "")
+		var mn := _spin(0, 30, int(y.min), "Minimum count rolled.")
 		mn.value_changed.connect(func(v): y.min = int(v))
 		row.add_child(mn)
-		var mx := _spin(0, 30, int(y.max), "")
+		var mx := _spin(0, 30, int(y.max), "Maximum count rolled.")
 		mx.value_changed.connect(func(v): y.max = int(v))
 		row.add_child(mx)
 		var del := _button("x", func():
 			def.yields.erase(y)
-			_rebuild_yields())
+			_rebuild_yields(), "Remove this yield row.")
 		del.custom_minimum_size = Vector2(16, 14)
 		row.add_child(del)
 		yields_box.add_child(row)
@@ -392,24 +441,63 @@ func _in_image(p: Vector2i) -> bool:
 func _canvas_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		hover_px = _px_at(event.position)
+		if pasting:
+			canvas.queue_redraw()
+			return
+		if tool_mode == "select":
+			if (event.button_mask & MOUSE_BUTTON_MASK_LEFT) and _in_image(hover_px):
+				sel_b = hover_px
+			canvas.queue_redraw()
+			return
 		if _in_image(hover_px):
 			if event.button_mask & MOUSE_BUTTON_MASK_LEFT:
 				_apply(hover_px, false)
 			elif event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
 				_apply(hover_px, true)
+			elif event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
+				_erase_at(hover_px)
 		canvas.queue_redraw()
 	elif event is InputEventMouseButton and event.pressed:
+		# LMB/RMB paint, MMB clears (user request 2026-09-01); wheel
+		# scrolls never touch pixels.
 		var p := _px_at(event.position)
-		if _in_image(p):
+		if not _in_image(p):
+			return
+		if pasting:
+			if event.button_index == MOUSE_BUTTON_LEFT and _in_image(p):
+				_stamp_clipboard(p)
+			elif event.button_index == MOUSE_BUTTON_RIGHT:
+				pasting = false
+				canvas.queue_redraw()
+			return
+		if tool_mode == "select":
+			if event.button_index == MOUSE_BUTTON_LEFT and _in_image(p):
+				sel_a = p
+				sel_b = p
+			elif event.button_index == MOUSE_BUTTON_RIGHT:
+				sel_a = Vector2i(-1, -1)
+				sel_b = sel_a
+			canvas.queue_redraw()
+			return
+		if event.button_index == MOUSE_BUTTON_MIDDLE:
+			_erase_at(p)
+		elif event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT:
 			_apply(p, event.button_index == MOUSE_BUTTON_RIGHT)
 
-func _apply(p: Vector2i, erase: bool) -> void:
-	if erase or tool_mode == "eraser":
+## LMB paints the primary colour, RMB the secondary; only the eraser tool
+## clears (user request 2026-09-01).
+func _apply(p: Vector2i, secondary: bool) -> void:
+	if tool_mode == "eraser":
 		image.set_pixel(p.x, p.y, Color(0, 0, 0, 0))
 	elif tool_mode == "fill":
-		_flood_fill(p, image.get_pixel(p.x, p.y), brush)
+		_flood_fill(p, image.get_pixel(p.x, p.y), brush2 if secondary else brush)
 	else:
-		image.set_pixel(p.x, p.y, brush)
+		image.set_pixel(p.x, p.y, brush2 if secondary else brush)
+	_dirty()
+
+## Middle-click eraser: clears regardless of the selected tool.
+func _erase_at(p: Vector2i) -> void:
+	image.set_pixel(p.x, p.y, Color(0, 0, 0, 0))
 	_dirty()
 
 func _flood_fill(start: Vector2i, from: Color, to: Color) -> void:
@@ -432,11 +520,14 @@ func _draw_canvas() -> void:
 	var w := image.get_width()
 	var h := image.get_height()
 	# checkerboard = transparency
+	# hot-pink checker = transparency (user request 2026-09-01: dark pixels
+	# vanished against the old dark backdrop)
+	canvas.draw_rect(Rect2(0, 0, w * PX, h * PX), Color(1.0, 0.25, 0.8))
 	for x in range(0, w):
 		for y in range(0, h):
 			if (x + y) % 2 == 0:
-				canvas.draw_rect(Rect2(x * PX, y * PX, PX, PX), Color(0.18, 0.2, 0.26))
-	canvas.draw_rect(Rect2(0, 0, w * PX, h * PX), Color(0.14, 0.16, 0.2), false)
+				canvas.draw_rect(Rect2(x * PX, y * PX, PX, PX), Color(0.85, 0.15, 0.65))
+	canvas.draw_rect(Rect2(0, 0, w * PX, h * PX), Color(0.5, 0.08, 0.38), false)
 	if texture != null:
 		canvas.draw_texture_rect(texture, Rect2(0, 0, w * PX, h * PX), false)
 	# block grid (16px cells) + hover
@@ -444,6 +535,11 @@ func _draw_canvas() -> void:
 		canvas.draw_line(Vector2(bx * PX, 0), Vector2(bx * PX, h * PX), Color(1, 1, 1, 0.18))
 	for by in range(0, h + 1, 16):
 		canvas.draw_line(Vector2(0, by * PX), Vector2(w * PX, by * PX), Color(1, 1, 1, 0.18))
+	var _sr := _sel_rect()
+	if _sr.size.x > 0:
+		canvas.draw_rect(Rect2(Vector2(_sr.position) * PX, Vector2(_sr.size) * PX), Color(1, 1, 0.4, 0.9), false)
+	if pasting and _clip_tex != null and _in_image(hover_px):
+		canvas.draw_texture_rect(_clip_tex, Rect2(Vector2(hover_px) * PX, _clip_tex.get_size() * PX), false, Color(1, 1, 1, 0.6))
 	if _in_image(hover_px):
 		canvas.draw_rect(Rect2(hover_px.x * PX, hover_px.y * PX, PX, PX), Color(1, 1, 0.6, 0.7), false)
 
@@ -540,6 +636,9 @@ func _save() -> void:
 	if def.id == "":
 		_say("Give the furniture an id first")
 		return
+	def.erase("sheet") # the save rebinds to the exported standalone PNG
+	def.erase("rect")
+	def["authored"] = true # pack rebuilds keep their hands off editor saves
 	var lib := _read_library()
 	var replaced := false
 	for i in lib.objects.size():
@@ -554,3 +653,47 @@ func _save() -> void:
 	image.save_png(ProjectSettings.globalize_path(sprites_dir + def.id + ".png"))
 	_refresh_load_list()
 	_say("%s %s + sprite (%d objects)" % ["Updated" if replaced else "Exported", def.id, lib.objects.size()])
+
+# --- Select / Copy / Cut / Paste (user request 2026-09-01): drag a marquee
+# with the Select tool, Cut + Paste to move sections; the paste ghost
+# follows the mouse - LMB stamps (opaque pixels only), RMB stops.
+
+func _sel_rect() -> Rect2i:
+	if sel_a.x < 0:
+		return Rect2i()
+	var tl := Vector2i(mini(sel_a.x, sel_b.x), mini(sel_a.y, sel_b.y))
+	var br := Vector2i(maxi(sel_a.x, sel_b.x), maxi(sel_a.y, sel_b.y))
+	var r := Rect2i(tl, br - tl + Vector2i.ONE)
+	return r.intersection(Rect2i(0, 0, image.get_width(), image.get_height()))
+
+func _copy_selection(cut: bool) -> void:
+	var r := _sel_rect()
+	if r.size.x <= 0 or r.size.y <= 0:
+		_say("Drag a selection first (Select tool)")
+		return
+	clipboard = image.get_region(r)
+	_clip_tex = ImageTexture.create_from_image(clipboard)
+	if cut:
+		for y in r.size.y:
+			for x in r.size.x:
+				image.set_pixel(r.position.x + x, r.position.y + y, Color(0, 0, 0, 0))
+		_dirty()
+	_say("%s %dx%d px - Paste stamps it" % ["Cut" if cut else "Copied", r.size.x, r.size.y])
+
+func _begin_paste() -> void:
+	if clipboard == null:
+		_say("Nothing copied yet (Select, then Copy or Cut)")
+		return
+	pasting = true
+	_say("Paste: LMB stamps at the cursor - RMB stops")
+
+func _stamp_clipboard(at: Vector2i) -> void:
+	for y in clipboard.get_height():
+		for x in clipboard.get_width():
+			var c := clipboard.get_pixel(x, y)
+			if c.a <= 0.0:
+				continue
+			var d := at + Vector2i(x, y)
+			if _in_image(d):
+				image.set_pixel(d.x, d.y, c)
+	_dirty()

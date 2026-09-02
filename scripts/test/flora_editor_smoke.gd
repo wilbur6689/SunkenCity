@@ -26,8 +26,20 @@ func _ready() -> void:
 	ed.tool_mode = "pencil"
 	ed._apply(Vector2i(5, 5), false)
 	check(ed.image.get_pixel(5, 5).is_equal_approx(Color8(96, 160, 94)), "pencil paints the brush colour")
+	ed.brush2 = Color8(40, 80, 200)
 	ed._apply(Vector2i(5, 5), true)
-	check(ed.image.get_pixel(5, 5).a < 0.1, "RMB erases")
+	check(ed.image.get_pixel(5, 5).is_equal_approx(Color8(40, 80, 200)), "RMB paints the secondary colour")
+	ed.tool_mode = "eraser"
+	ed._apply(Vector2i(5, 5), false)
+	check(ed.image.get_pixel(5, 5).a < 0.1, "only the eraser clears")
+	ed.tool_mode = "pencil"
+	ed._apply(Vector2i(5, 5), false)
+	var mev := InputEventMouseButton.new()
+	mev.pressed = true
+	mev.button_index = MOUSE_BUTTON_MIDDLE
+	mev.position = Vector2(5 * ed.PX + 2, 5 * ed.PX + 2)
+	ed._canvas_input(mev)
+	check(ed.image.get_pixel(5, 5).a < 0.1, "MMB click clears the pixel")
 	ed.h_spin.value = 5 # taller; painted pixels preserved
 	check(ed.image.get_height() == 80 and ed.image.get_pixel(16, 10).a > 0.9, "resize keeps painted content")
 	ed.grow_edit.text = "smoke_bush_big"

@@ -244,7 +244,7 @@ func _run() -> void:
 	press(["move_down"]); await ticks(60)
 	check(player.drowning, "drowning after oxygen hits zero")
 	check(player.health < Constants.MAX_HEALTH, "drowning drains health (hp %.0f)" % player.health)
-	check(await until(func(): return player.health == Constants.MAX_HEALTH and not player.drowning, 700), "dies and respawns with full health")
+	check(await until(func(): return player.health == Constants.MAX_HEALTH and not player.drowning and not player.dying, 1100), "dies (3 s scene) and respawns with full health")
 	release_all()
 	check(absf(player.global_position.x - World.spawn_position.x) < 0.5, "respawned at world spawn")
 	check(await until(grounded, 60), "lands after respawn (%s)" % st())

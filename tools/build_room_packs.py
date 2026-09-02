@@ -93,6 +93,11 @@ def main():
         for it in mod.ITEMS:
             entry = entry_for(it, name, rects[it["id"]])
             if it["id"] in by_id:
+                if lib["objects"][by_id[it["id"]]].get("authored"):
+                    # claimed by an in-game editor (Flora/Furniture): the
+                    # module is only the seed art now - keep the edit.
+                    print(f"  {it['id']}: editor-authored, kept")
+                    continue
                 lib["objects"][by_id[it["id"]]] = entry
             else:
                 by_id[it["id"]] = len(lib["objects"])

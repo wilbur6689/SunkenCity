@@ -901,6 +901,7 @@ func _refresh_crafting(force: bool = false) -> void:
 		b.text = "  " + Data.item_name(r.output.item) + ("" if int(r.output.count) == 1 else " x%d" % int(r.output.count))
 		b.icon = Data.icon(r.output.item)
 		b.expand_icon = false
+		b.add_theme_constant_override("icon_max_width", 16)
 		b.custom_minimum_size = Vector2(0, 18)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UITheme.style_row(b, r == selected_recipe)
@@ -943,7 +944,7 @@ func _refresh_detail() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	detail_box.add_child(title)
 	var st_name: String = "By hand" if r.station == "hand" else (Data.objects[r.station].name if Data.objects.has(r.station) else r.station)
-	detail_box.add_child(UITheme.label("%s · tier %d" % [st_name, int(r.tier)], 8, Color(0.7, 0.78, 0.85)))
+	detail_box.add_child(UITheme.label("%s · tier %d" % [st_name, int(r.get("tier", 0))], 8, Color(0.7, 0.78, 0.85)))
 	if not _station_in_reach(r.station):
 		detail_box.add_child(UITheme.label("Craft at a %s" % st_name, 8, Color(0.95, 0.6, 0.55)))
 	detail_box.add_child(UITheme.label("Needs:", 8, Color(0.7, 0.78, 0.85)))

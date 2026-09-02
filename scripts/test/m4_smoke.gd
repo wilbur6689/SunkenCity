@@ -299,6 +299,8 @@ func _run() -> void:
 	check(packs.size() == 1, "death spawned the backpack where you fell")
 	check(inv_count("wood") == 0, "inventory transferred into the pack")
 	check(player.equipped("suit") == "clothes", "equipped gear stays on the body")
+	check(await until(func(): return not player.dying, 260), "the 3 s death scene plays out (2026-09-01)")
+	await ticks(5)
 	check(player.health == Constants.MAX_HEALTH and player.global_position.distance_to(
 		World.spawn_position) < 8.0 * B, "respawned at the spawn point")
 	var pack: Node2D = packs[0]

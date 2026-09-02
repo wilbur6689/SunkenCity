@@ -78,12 +78,14 @@ func _mount_pause_menu() -> void:
 		["Menu", "Esc"],
 	]
 	pm.hint_text = "Unsaved rooms are lost on quit — SAVE / EXPORT first"
-	pm.quit_text = "QUIT TO TITLE"
-	pm.quit_callable = _quit_to_title
+	pm.quit_text = "QUIT GAME"
+	pm.quit_callable = _quit_game
 	add_child(pm)
 
-func _quit_to_title() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
+## Editors are standalone tools (user request 2026-09-01): Esc quits the
+## app outright instead of returning to the title screen.
+func _quit_game() -> void:
+	get_tree().quit()
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
@@ -118,10 +120,12 @@ func _build_ui() -> void:
 	sv.add_child(UITheme.label("SETTINGS", 8, Color(0.56, 0.75, 0.81)))
 	sv.add_child(UITheme.label("Room id", 8))
 	id_edit = LineEdit.new()
+	id_edit.tooltip_text = "Unique room template id (lowercase_snake_case)."
 	id_edit.add_theme_font_size_override("font_size", 8)
 	sv.add_child(id_edit)
 	sv.add_child(UITheme.label("Zone", 8))
 	zone_option = OptionButton.new()
+	zone_option.tooltip_text = "Zone pool the generator draws this room from (roof templates stamp on tower tops)."
 	zone_option.add_theme_font_size_override("font_size", 8)
 	for z in ZONES:
 		zone_option.add_item(z)
@@ -131,19 +135,20 @@ func _build_ui() -> void:
 	type_edit = LineEdit.new()
 	type_edit.add_theme_font_size_override("font_size", 8)
 	type_edit.placeholder_text = "bedroom, ward, office…"
+	type_edit.tooltip_text = "Free-form descriptive tag; not used for selection (zone + depth are)."
 	sv.add_child(type_edit)
 	sv.add_child(UITheme.label("Depth range (blocks below", 8))
 	sv.add_child(UITheme.label("waterline; -9999 = any)", 8, Color(0.6, 0.66, 0.72)))
-	depth_min_spin = _spin(-9999, 9999, 0)
-	depth_max_spin = _spin(-9999, 9999, 9999)
+	depth_min_spin = _spin(-9999, 9999, 0, "Shallowest spawn depth in blocks below the waterline (-9999 = anywhere, negative = above water).")
+	depth_max_spin = _spin(-9999, 9999, 9999, "Deepest spawn depth in blocks below the waterline (9999 = anywhere). Iron-bearing rooms stay >= 40 (GL-28).")
 	var dh := HBoxContainer.new()
 	dh.add_child(depth_min_spin)
 	dh.add_child(depth_max_spin)
 	sv.add_child(dh)
 	sv.add_child(UITheme.label("Size (width x height)", 8))
-	width_spin = _spin(MIN_W, MAX_W, 12)
+	width_spin = _spin(MIN_W, MAX_W, 12, "Interior width in cells - rooms tile side by side across a tower wing.")
 	width_spin.value_changed.connect(func(_v): _apply_settings())
-	height_spin = _spin(MIN_H, MAX_H, 5)
+	height_spin = _spin(MIN_H, MAX_H, 5, "Interior height in cells (tower floors hold 5).")
 	height_spin.value_changed.connect(func(_v): _apply_settings())
 	var sh := HBoxContainer.new()
 	sh.add_child(width_spin)
@@ -153,14 +158,15 @@ func _build_ui() -> void:
 	var new_btn := _button("New room", func():
 		room = _default_room()
 		_sync_settings_to_ui()
-		_say("New room"))
+		_say("New room"), "Start a fresh template (unsaved changes are lost).")
 	sv.add_child(new_btn)
 	sv.add_child(UITheme.label("Load existing", 8))
 	load_option = OptionButton.new()
 	load_option.add_theme_font_size_override("font_size", 8)
+	load_option.tooltip_text = "Load an existing room of the selected zone."
 	load_option.item_selected.connect(_load_selected)
 	sv.add_child(load_option)
-	var save_btn := _button("SAVE / EXPORT", _save)
+	var save_btn := _button("SAVE / EXPORT", _save, "Write this template into data/rooms.json - the generator uses it in the next world.")
 	sv.add_child(save_btn)
 	status_label = UITheme.label("", 8, Color(0.75, 0.95, 0.75))
 	sv.add_child(status_label)
@@ -196,32 +202,35 @@ func _build_ui() -> void:
 	pv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(pv)
 	pv.add_child(UITheme.label("BLOCKS", 8, Color(0.56, 0.75, 0.81)))
-	var pointer := _button("Pointer / move", func(): _set_tool("pointer"))
+	var pointer := _button("Pointer / move", func(): _set_tool("pointer"), "Grab and move furniture: click to grab, click again to drop.")
 	pv.add_child(pointer)
 	for mat_name in BLOCK_MATS:
 		var m: int = BLOCK_MATS[mat_name]
-		pv.add_child(_button(mat_name.capitalize(), func(): _set_tool("block:%d" % m)))
-	pv.add_child(_button("Erase", func(): _set_tool("erase")))
+		pv.add_child(_button(mat_name.capitalize(), func(): _set_tool("block:%d" % m), "Paint " + mat_name + " blocks (LMB drag). Counters, shelves, obstacles."))
+	pv.add_child(_button("Erase", func(): _set_tool("erase"), "Clicks remove blocks and furniture (RMB also erases in any tool)."))
 	pv.add_child(UITheme.label(" ", 4))
 	pv.add_child(UITheme.label("FURNITURE (zone)", 8, Color(0.56, 0.75, 0.81)))
 	furniture_box = VBoxContainer.new()
 	furniture_box.add_theme_constant_override("separation", 2)
 	pv.add_child(furniture_box)
 
-func _spin(minv: int, maxv: int, val: int) -> SpinBox:
+func _spin(minv: int, maxv: int, val: int, tip: String = "") -> SpinBox:
 	var s := SpinBox.new()
+	s.tooltip_text = tip
 	s.min_value = minv
 	s.max_value = maxv
 	s.value = val
 	# The override must land on the inner LineEdit — SpinBox's own theme
 	# overrides do not propagate to it, so it would render at the default 16px.
 	s.get_line_edit().add_theme_font_size_override("font_size", 8)
+	s.get_line_edit().tooltip_text = tip
 	s.custom_minimum_size = Vector2(56, 0)
 	return s
 
-func _button(text: String, cb: Callable) -> Button:
+func _button(text: String, cb: Callable, tip: String = "") -> Button:
 	var b := Button.new()
 	b.text = text
+	b.tooltip_text = tip
 	b.custom_minimum_size = Vector2(0, 15)
 	UITheme.style_button(b)
 	b.pressed.connect(cb)
@@ -254,7 +263,7 @@ func _refresh_furniture() -> void:
 	for oid in ids:
 		var def: Dictionary = Data.objects[oid]
 		furniture_box.add_child(_button("%s (%dx%d)" % [def.name, def.size[0], def.size[1]],
-			func(): _set_tool("object:" + oid)))
+			func(): _set_tool("object:" + oid), "Place: LMB drops it with its bottom row on the clicked cell (any height - the generator honours it)."))
 
 func _zone() -> String:
 	return ZONES[zone_option.selected]

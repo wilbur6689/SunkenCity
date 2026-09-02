@@ -18,6 +18,8 @@ func setup(p_item: String, p_velocity: Vector2, p_damage: float) -> void:
 func _ready() -> void:
 	var s := Sprite2D.new()
 	s.texture = Data.icon(item_id)
+	if s.texture != null and s.texture.get_width() > Constants.BLOCK_SIZE:
+		s.scale = Vector2.ONE * (float(Constants.BLOCK_SIZE) / s.texture.get_width())
 	add_child(s)
 	rotation = velocity.angle()
 

@@ -62,6 +62,11 @@ func _ready() -> void:
 	var sim := World.water_sim
 	check(sim.level_at(Vector2i(6, CityGen.WATERLINE + 20)) == WaterSim.MAX_LEVEL, "open ocean is flooded")
 	check(sim.level_at(Vector2i(6, CityGen.WATERLINE - 4)) == 0, "no water above the waterline")
+	# Tower interiors must flood to the waterline (user bug 2026-09-01:
+	# fully vent-sealed towers stayed dry inside - a 50-block air fall).
+	var hosp3: Dictionary = gen.hospital
+	check(sim.level_at(Vector2i(int(hosp3.x0) + 4, CityGen.WATERLINE + 10)) > 0,
+		"the tallest tower's stairwell holds water below the waterline")
 	var dry_rooms := 0
 	for rect: Rect2i in gen.sealed:
 		var has_water := false

@@ -29,6 +29,11 @@ func _ready() -> void:
 	check(title.world_list != null and title.world_list.get_item_text(0) == "+ New world", "world list leads with '+ New world'")
 	check(title.char_list.get_item_text(0) == "+ New character", "character list leads with '+ New character'")
 	check(title.world_list.get_selected_items().size() == 1, "a row starts selected (DIVE always works)")
+	var has_quit := false
+	for c in title.find_children("*", "Button", true, false):
+		if c.text == "QUIT":
+			has_quit = true
+	check(has_quit, "a QUIT button sits on the title screen (2026-09-01)")
 
 	print("== B. create a new world + character")
 	title.world_list.select(0) # the create rows

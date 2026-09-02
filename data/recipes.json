@@ -18,7 +18,8 @@
    "output": {
     "item": "wood_axe",
     "count": 1
-   }
+   },
+   "tier": 1
   },
   {
    "id": "pry_bar",

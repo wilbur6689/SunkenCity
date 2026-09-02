@@ -52,11 +52,20 @@ func _ready() -> void:
 		if pick > 0:
 			variant = "_" + char(97 + pick) # _b, _c...
 	var path := SPRITE_DIR + String(rec.type) + variant + ".png"
-	if not ResourceLoader.exists(path):
+	if not FileAccess.file_exists(path):
 		path = SPRITE_DIR + String(rec.type) + ".png"
-	if ResourceLoader.exists(path):
-		sprite.texture = load(path)
-		sprite.hframes = maxi(int(def.get("frames", 1)), 1)
+	var tex := _load_strip(path)
+	if tex != null:
+		walk_tex = tex
+		sprite.texture = tex
+		sprite.hframes = _frames_of(tex)
+		# Optional clips beside the walk strip (urban pack, 2026-09-01):
+		# <strip>_idle / _attack / _hurt / _dead play when present.
+		var base := path.trim_suffix(".png")
+		for anim in ["idle", "attack", "hurt", "dead"]:
+			var at := _load_strip(base + "_" + anim + ".png")
+			if at != null:
+				anim_tex[anim] = at
 	# Enemies never body-block players (contact damage is a check, not a
 	# collision); they still collide with the world tiles.
 	for p in get_tree().get_nodes_in_group("player"):
@@ -87,17 +96,75 @@ func _physics_process(delta: float) -> void:
 	# (hp banks in hurt()).
 	rec.pos = global_position
 
-## Walk-strip animation: frames advance with actual movement speed and
-## rest on frame 0 while standing (types without a strip no-op).
+## Animation clips (2026-09-01): the walk strip drives movement, an idle
+## clip sways while standing, attack/hurt clips one-shot over the action,
+## and a dead clip lingers as a corpse. Frame counts derive from square
+## cells (width / height); legacy non-square strips fall back to
+## def.frames.
 var _anim_t := 0.0
+var walk_tex: Texture2D = null
+var anim_tex: Dictionary = {}
+var _oneshot := ""
+var _oneshot_t := 0.0
+var _oneshot_dur := 0.3
+
+func _frames_of(tex: Texture2D) -> int:
+	var h := tex.get_height()
+	if h > 0 and tex.get_width() % h == 0:
+		return maxi(tex.get_width() / h, 1)
+	return maxi(int(def.get("frames", 1)), 1)
+
+## A strip texture, honouring the authored-sprites raw-load rule.
+func _load_strip(path: String) -> Texture2D:
+	if def.get("authored_sprites", false) and FileAccess.file_exists(path):
+		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
+		if img != null:
+			return ImageTexture.create_from_image(img)
+	if ResourceLoader.exists(path):
+		return load(path)
+	if FileAccess.file_exists(path):
+		var raw := Image.load_from_file(ProjectSettings.globalize_path(path))
+		if raw != null:
+			return ImageTexture.create_from_image(raw)
+	return null
+
+func _set_strip(tex: Texture2D) -> void:
+	if sprite.texture != tex:
+		sprite.texture = tex
+		sprite.hframes = _frames_of(tex)
+		sprite.frame = 0
+
+func _play_oneshot(anim: String, dur: float) -> void:
+	if not anim_tex.has(anim):
+		return
+	_set_strip(anim_tex[anim])
+	_oneshot = anim
+	_oneshot_t = 0.0
+	_oneshot_dur = dur
 
 func _tick_anim(delta: float) -> void:
-	if sprite.hframes <= 1:
+	if walk_tex == null:
 		return
+	if _oneshot != "":
+		_oneshot_t += delta
+		var tex: Texture2D = anim_tex[_oneshot]
+		var n := _frames_of(tex)
+		var idx := int(_oneshot_t / _oneshot_dur * n)
+		if idx < n:
+			sprite.frame = idx
+			return
+		_oneshot = ""
+		_set_strip(walk_tex)
 	var moving := velocity.length() > 6.0
 	if moving:
-		_anim_t += delta * clampf(velocity.length() / Constants.BLOCK_SIZE * 2.0, 3.0, 10.0)
-		sprite.frame = int(_anim_t) % sprite.hframes
+		_set_strip(walk_tex)
+		if sprite.hframes > 1:
+			_anim_t += delta * clampf(velocity.length() / Constants.BLOCK_SIZE * 2.0, 3.0, 10.0)
+			sprite.frame = int(_anim_t) % sprite.hframes
+	elif anim_tex.has("idle"):
+		_set_strip(anim_tex["idle"])
+		_anim_t += delta * 5.0
+		sprite.frame = int(_anim_t) % maxi(sprite.hframes, 1)
 	else:
 		sprite.frame = 0
 
@@ -145,6 +212,10 @@ func _move_ground(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, dir * speed, 30.0 * Constants.BLOCK_SIZE * delta)
 	velocity.y = minf(velocity.y + Constants.gravity * (0.3 if in_water else 1.0) * delta,
 		Constants.MAX_FALL_SPEED)
+	if in_water and velocity.y > Constants.WATER_SINK_LIMIT:
+		# plunge drag (user report 2026-09-01): a zombie knocked off a roof
+		# brakes within a few blocks of the surface too
+		velocity.y = move_toward(velocity.y, Constants.WATER_SINK_LIMIT, Constants.WATER_PLUNGE_DECEL * delta)
 	move_and_slide()
 	if dir != 0.0 and is_on_wall():
 		_handle_block(dir)
@@ -210,6 +281,8 @@ func _move_swim(delta: float) -> void:
 	_update_target()
 	_tick_wander(delta)
 	var speed: float = float(stats.speed) * Constants.BLOCK_SIZE
+	if velocity.length() > speed: # plunge drag: entry momentum bleeds off fast
+		velocity = velocity.move_toward(velocity.normalized() * speed, Constants.WATER_PLUNGE_DECEL * delta)
 	var desired := Vector2.ZERO
 	if target != null:
 		desired = (target.global_position - global_position).normalized() * speed
@@ -279,6 +352,7 @@ func _try_touch() -> void:
 		var in_front: bool = signf(to.x) == float(facing) and d.x < half.x + reach 				and not World.is_solid(global_position + Vector2(facing * (half.x + Constants.BLOCK_SIZE * 0.5), 0.0))
 		if touching or in_front:
 			attack_cd = Constants.ENEMY_TOUCH_COOLDOWN
+			_play_oneshot("attack", 0.5) # the bite reads on the body (2026-09-01)
 			p.hurt_from_enemy(float(stats.damage), global_position, def.get("bleeds", false))
 			return
 
@@ -306,6 +380,8 @@ func hurt(damage: float, from_pos: Vector2, knockback: float = 0.0) -> void:
 	_flash = 0.12
 	if sprite != null: # hurt can land the same frame the node spawns
 		sprite.modulate = Color(1, 0.4, 0.4)
+		if _oneshot != "attack": # a flinch, unless mid-bite
+			_play_oneshot("hurt", 0.3)
 	if knockback > 0.0:
 		var dir := (global_position - from_pos).normalized()
 		velocity += Vector2(dir.x, minf(dir.y, 0.0) - 0.4).normalized() * knockback * Constants.BLOCK_SIZE
@@ -324,4 +400,22 @@ func _die() -> void:
 				World.spawn_item(drop.item, n, global_position,
 					Vector2(randf_range(-1.5, 1.5), -2.0) * Constants.BLOCK_SIZE)
 	Audio.play_sfx("dismantle_rattle", global_position, 1, -10.0)
+	_spawn_corpse()
 	World.remove_enemy(rec)
+
+## A lingering corpse playing the dead clip, then fading out (2026-09-01).
+func _spawn_corpse() -> void:
+	if not anim_tex.has("dead") or not is_inside_tree():
+		return
+	var c := Sprite2D.new()
+	c.texture = anim_tex["dead"]
+	c.hframes = _frames_of(anim_tex["dead"])
+	c.flip_h = sprite.flip_h
+	get_parent().add_child(c)
+	c.global_position = global_position
+	var n := c.hframes
+	var tw := c.create_tween()
+	tw.tween_method(func(f): c.frame = clampi(int(f), 0, n - 1), 0.0, float(n), 0.7)
+	tw.tween_interval(1.8)
+	tw.tween_property(c, "modulate:a", 0.0, 0.8)
+	tw.tween_callback(c.queue_free)

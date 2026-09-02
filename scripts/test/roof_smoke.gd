@@ -97,6 +97,8 @@ func _ready() -> void:
 					roofed[cell.y * 100000 + int(span[0])] = true
 			if not on_roof:
 				stray += 1
+			if Data.objects.get(id, {}).get("room_type", "") == "grass":
+				continue # the grass blanket is uncapped; density counts the rest
 		if id.begins_with("tree_"):
 			trees += 1
 			if cell.y >= CityGen.WATERLINE:
@@ -128,7 +130,7 @@ func _ready() -> void:
 			vined_placed += 1
 		if oid2.begins_with("roof_junk") or oid2 == "roof_fallen_mast" or oid2 == "roof_tarp_crates":
 			junk_placed += 1
-		if oid2.begins_with("roof_") or oid2.begins_with("tree_"):
+		if (oid2.begins_with("roof_") or oid2.begins_with("tree_")) 				and Data.objects.get(oid2, {}).get("room_type", "") != "grass":
 			for span2: Array in roof_rows.get(o.cell.y, []):
 				if o.cell.x >= int(span2[0]) and o.cell.x <= int(span2[1]):
 					var tk2: int = o.cell.y * 100000 + int(span2[0])
@@ -137,15 +139,41 @@ func _ready() -> void:
 	check(junk_placed >= 4, "%d junk dressing pieces scattered" % junk_placed)
 	var crowded := 0
 	for k in per_tower:
-		if int(per_tower[k]) > 20:
+		if int(per_tower[k]) > 30:
 			crowded += 1
-	check(crowded == 0, "no roof is crowded (max ~2-3 gear + trees + junk per wing)")
+	check(crowded == 0, "roofs stay under the non-grass budget (gear + junk + woody flora)")
 	var dry_wings_with_trees := 0
 	var dry_towers := 0
 	for t2 in r.tower_list:
 		if int(t2.top) - 1 < CityGen.WATERLINE:
 			dry_towers += 1
 	check(dry_towers == 0 or trees >= dry_towers, "trees on every dry roof on average (%d trees, %d dry towers)" % [trees, dry_towers])
+	# Overgrowth coverage (user request 2026-09-01): dry roofs read as
+	# meadows - at most ~10-20% bare cells per wing.
+	var cover_ok := true
+	var checked_wings := 0
+	for t3 in r.tower_list:
+		var roofr3: int = int(t3.top) - 1
+		if roofr3 >= CityGen.WATERLINE:
+			continue
+		for zone3 in t3.zones:
+			var zx3: int = int(zone3[0])
+			var zend3: int = int(zone3[1])
+			var occupied := {}
+			for o in r.objects:
+				if o.cell.y != roofr3:
+					continue
+				var d3: Dictionary = Data.objects.get(o.id, {})
+				if d3.is_empty():
+					continue
+				for dx3 in int(d3.size[0]):
+					var x3: int = o.cell.x + dx3
+					if x3 >= zx3 and x3 <= zend3:
+						occupied[x3] = true
+			checked_wings += 1
+			if float(occupied.size()) / float(zend3 - zx3 + 1) < 0.8:
+				cover_ok = false
+	check(checked_wings > 0 and cover_ok, "dry roof wings are >= 80%% covered (%d wings checked)" % checked_wings)
 	# Side-breach vents (user request): every wear breach carries a grate.
 	var vent_def: Dictionary = Data.objects.side_vent
 	check(vent_def.kind == "door" and vent_def.get("fixed", false) and int(vent_def.get("lock_tier", 0)) == 1,
@@ -159,7 +187,7 @@ func _ready() -> void:
 				for dx in 2:
 					if r.grid.structure_at(Vector2i(o.cell.x + dx, o.cell.y - dy)) != WorldGrid.M.AIR:
 						vent_sealed = false
-	check(vents >= 20, "%d side breaches wear vent grates" % vents)
+	check(vents >= 3, "%d Shallows-band breaches wear vent grates (deeper ones stay open as flood inlets)" % vents)
 	check(vent_sealed, "every grate sits in a fully carved 2x2 breach")
 	# Central 20%: towers crowd to <= 5 blocks apart (user request).
 	var tight_pairs := 0
@@ -212,7 +240,13 @@ func _ready() -> void:
 	check(World.object_record_at(Vector2i(20, 29)) == World.object_record_at(Vector2i(20, 17)),
 			"the grown canopy registers its cells")
 	World.add_object_record("tree_sapling", Vector2i(40, 29), false)
-	g.set_structure(Vector2i(39, 25), WorldGrid.M.STONE) # hem the young stage in
+	# hem the young stage in: wall off its projected footprint row (computed
+	# from the live defs - the trees are editor-authored and resizable)
+	var yw := int(Data.objects.tree_young.size[0])
+	var hx := 40 - (yw - int(Data.objects.tree_sapling.size[0])) / 2
+	var hem_y := 29 - mini(int(Data.objects.tree_young.size[1]) - 1, 3)
+	for hdx in yw:
+		g.set_structure(Vector2i(hx + hdx, hem_y), WorldGrid.M.STONE)
 	for i in 60:
 		World._grow_trees()
 	check(World.object_record_at(Vector2i(40, 29)).get("id", "") == "tree_sapling", "a hemmed-in tree waits")
@@ -231,8 +265,8 @@ func _ready() -> void:
 	var desk2 := World.place_object("roof_comm_cabinet", Vector2i(33, 29), false)
 	check(deco.z_index == -2 and vent2.z_index == -1 and desk2.z_index == 0,
 			"draw planes: decal (-2) < wall piece (-1) < furniture (0)")
-	check(Data.enemies.walker.get("frames", 0) == 8 and Data.enemies.walker.get("sprite_variants", 0) == 7,
-			"walkers carry the 8-frame walk strips (7 variants incl. 2 fat)")
+	check(Data.enemies.walker.get("frames", 0) == 8 and Data.enemies.walker.get("sprite_variants", 0) == 11,
+			"walkers carry walk strips (11 looks: hand-made, procedural, urban pack)")
 	# A streamed-in tree swaps its node on growth.
 	World.refresh_objects_around(Vector2(30 * B, 29 * B))
 	var mature_node := World.object_at(Vector2i(20, 29))

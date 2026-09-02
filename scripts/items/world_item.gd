@@ -23,6 +23,9 @@ func setup(p_id: String, p_count: int, p_velocity: Vector2 = Vector2.ZERO) -> vo
 func _ready() -> void:
 	add_to_group("world_items")
 	sprite.texture = Data.icon(id)
+	if sprite.texture != null and sprite.texture.get_width() > Constants.BLOCK_SIZE:
+		# 32x32 authored icons draw at one block in the world (2026-09-01)
+		sprite.scale = Vector2.ONE * (float(Constants.BLOCK_SIZE) / sprite.texture.get_width())
 	var it := Data.item(id)
 	var drop_light: Dictionary = it.get("use", {}).get("drop_light", {})
 	if not drop_light.is_empty():
@@ -45,7 +48,9 @@ func _physics_process(delta: float) -> void:
 			var cell := World.cell_at(global_position + Vector2(0, -6.0))
 			global_position.y = (cell.y + 1) * Constants.BLOCK_SIZE + 5.0
 		else:
-			velocity.y = move_toward(velocity.y, -Constants.ITEM_BUOYANCY_RISE, 6.0 * Constants.BLOCK_SIZE * delta)
+			# plunging in from a fall brakes hard (user report 2026-09-01)
+			var rise_accel := Constants.WATER_PLUNGE_DECEL if velocity.y > 0.0 else 6.0 * Constants.BLOCK_SIZE
+			velocity.y = move_toward(velocity.y, -Constants.ITEM_BUOYANCY_RISE, rise_accel * delta)
 			var surface := World.water_surface_y(global_position)
 			if global_position.y + velocity.y * delta < surface + 3.0:
 				global_position.y = surface + 3.0 # bob at the surface
@@ -82,6 +87,7 @@ func _try_pickup() -> void:
 	for p in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) <= radius:
 			var leftover: int = p.inventory.add(id, count)
+			p.notify_gain(id, count - leftover)
 			if leftover < count:
 				count = leftover
 				if count <= 0:

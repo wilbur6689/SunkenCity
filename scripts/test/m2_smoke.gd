@@ -102,6 +102,17 @@ func _run() -> void:
 	float_item.queue_free(); pinned.queue_free(); sinker.queue_free()
 
 	print("== E. the gate: seal floor 4, pump it dry, move in")
+	print("== plunge drag: a max-speed dive stops within blocks (2026-09-01)")
+	player.global_position = Vector2(6 * B + 8, 13 * B)
+	player.velocity = Vector2(0, Constants.MAX_FALL_SPEED)
+	var deepest := 0.0
+	for i in 240:
+		await get_tree().physics_frame
+		deepest = maxf(deepest, player.global_position.y)
+	check(deepest < (18.0 + 8.0) * B,
+		"dive from max fall speed stops %.1f blocks under the surface (< 8)" % ((deepest - 18.0 * B) / B))
+	player.velocity = Vector2.ZERO
+
 	# Patch every opening in slab 18 (pool + shaft) and the swim hole below.
 	player.inventory.add("wood_block", 30)
 	var patches: Array[Vector2i] = []

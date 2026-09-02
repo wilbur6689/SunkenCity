@@ -800,12 +800,19 @@ def _draw_enemy(d, eid, W, H, rng):
             d.point((x + 5, y), fill=(120, 145, 165))
 
 
+def _authored_enemy_sprites():
+    """Types whose strips were hand-edited in the Monster Editor."""
+    import json
+    data = json.loads((ROOT / "data" / "enemies.json").read_text(encoding="utf-8"))
+    return {t["id"] for t in data["types"] if t.get("authored_sprites")}
+
+
 def build_enemies():
     out_dir = ROOT / "assets" / "sprites" / "enemies"
     out_dir.mkdir(parents=True, exist_ok=True)
     for eid, (w, h) in ENEMIES.items():
-        if eid in ("walker", "floater"):
-            continue  # hand-made art (tools/convert_monsters.py) - never stomp
+        if eid in ("walker", "floater") or eid in _authored_enemy_sprites():
+            continue  # hand-made / editor-edited art - never stomp
         img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         _draw_enemy(ImageDraw.Draw(img), eid, w, h, random.Random(hash(eid) & 0xFFFF))
         img.save(out_dir / f"{eid}.png")

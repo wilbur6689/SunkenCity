@@ -8,6 +8,7 @@ extends Node
 const ITEM_ICON_SHEET := "res://assets/sprites/items.png"
 const BLOCK_ATLAS := "res://assets/tiles/placeholder_blocks.png"
 const OBJECT_SPRITE_DIR := "res://assets/sprites/objects/"
+const ICON_DIR := "res://assets/sprites/icons/" # Icon-Editor overrides (authored_icon)
 const STATIONS := ["hand", "workbench", "forge", "med_station", "dive_station", "mod_bench"]
 
 var items: Dictionary = {}    # id -> item def
@@ -163,7 +164,15 @@ func icon(id: String) -> Texture2D:
 		return _icon_cache[id]
 	var tex: Texture2D = null
 	var it: Dictionary = items.get(id, {})
-	if it.has("icon"):
+	# A file in the icons dir IS the icon (blocks included - rope has no
+	# items.json entry to carry the authored_icon flag, 2026-09-01).
+	if FileAccess.file_exists(ICON_DIR + id + ".png"):
+		# Icon-Editor-authored icons load RAW from disk (the import cache is
+		# stale after an in-game save; same rule as authored sprites).
+		var img := Image.load_from_file(ProjectSettings.globalize_path(ICON_DIR + id + ".png"))
+		if img != null:
+			tex = ImageTexture.create_from_image(img)
+	elif it.has("icon"):
 		tex = _atlas(ITEM_ICON_SHEET, Vector2i(it.icon[0], it.icon[1]))
 	elif blocks.has(id):
 		tex = _atlas(BLOCK_ATLAS, Vector2i(0, blocks[id].atlas_row))
@@ -183,7 +192,21 @@ func object_texture(id: String) -> Texture2D:
 		at.region = Rect2(r[0], r[1], r[2], r[3])
 		return at
 	var path := OBJECT_SPRITE_DIR + id + ".png"
-	return load(path) if ResourceLoader.exists(path) else null
+	# Editor-authored sprites (Flora/Furniture Editor saves) load RAW from
+	# disk, never through the import cache: a plain game run does not
+	# re-import a changed PNG, so the cache serves stale art after an
+	# in-game save (user report 2026-09-01 - "old tree variations").
+	if def.get("authored", false) and FileAccess.file_exists(path):
+		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
+		if img != null:
+			return ImageTexture.create_from_image(img)
+	if ResourceLoader.exists(path):
+		return load(path)
+	if FileAccess.file_exists(path):
+		var raw := Image.load_from_file(ProjectSettings.globalize_path(path))
+		if raw != null:
+			return ImageTexture.create_from_image(raw)
+	return null
 
 func _atlas(sheet: String, cell: Vector2i) -> Texture2D:
 	var at := AtlasTexture.new()

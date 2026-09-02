@@ -228,9 +228,101 @@ def build_variants():
         print("wrote", OUT / out_name, v.size, "(fat)" if fat else "")
 
 
+PACK = ROOT / "docs" / "Examples" / "Monsters" / "urban-zombie-sprite-sheet-pixel-art-pack"
+PACK_CELL_SRC = 128
+PACK_TARGET_H = 26  # scaled figure height (matches the hand-made walkers)
+PACK_VARIANTS = {  # source dir -> variant suffix (walker looks 8..11)
+    "Zombie_1": "h", "Zombie_2": "i", "Zombie_3": "j", "Zombie_4": "k",
+}
+PACK_ANIMS = {  # clip file -> strip suffix ("" = the main walk strip)
+    "Walk.png": "", "Idle.png": "_idle", "Attack.png": "_attack",
+    "Hurt.png": "_hurt", "Dead.png": "_dead",
+}
+
+
+def _slice_cells(path):
+    sheet = Image.open(path).convert("RGBA")
+    n = sheet.width // PACK_CELL_SRC
+    return [sheet.crop((i * PACK_CELL_SRC, 0, (i + 1) * PACK_CELL_SRC, sheet.height)) for i in range(n)]
+
+
+def _squarify(frames, cell):
+    """Pack frames bottom-centred into square cells: hframes = width/height."""
+    strip = Image.new("RGBA", (cell * len(frames), cell), (0, 0, 0, 0))
+    for i, f in enumerate(frames):
+        strip.paste(f, (i * cell + (cell - f.width) // 2, cell - f.height), f)
+    return strip
+
+
+def build_pack(skip_existing=False):
+    """Urban-zombie pack (real alpha, 128px cells): one shared scale per
+    zombie (from its Walk clip) keeps every clip in proportion; the cell is
+    sized to the largest scaled frame (the lying Dead pose), so every strip
+    stays square-celled. skip_existing protects hand-edited strips: files
+    already on disk are never rewritten then."""
+    for src_dir, suffix in PACK_VARIANTS.items():
+        if skip_existing and (OUT / ("walker_%s.png" % suffix)).exists():
+            print("skip walker_%s - exists and walker strips are hand-edited" % suffix)
+            continue
+        walk_cells = _slice_cells(PACK / src_dir / "Walk.png")
+        walk_h = max((c.getbbox()[3] - c.getbbox()[1]) for c in walk_cells if c.getbbox())
+        scale = PACK_TARGET_H / walk_h
+        scaled = {}  # anim suffix -> [frames]
+        cell = 0
+        for fname, anim in PACK_ANIMS.items():
+            frames = []
+            for c in _slice_cells(PACK / src_dir / fname):
+                box = c.getbbox()
+                if box is None:
+                    continue
+                fig = c.crop(box)
+                fig = fig.resize((max(int(fig.width * scale), 1), max(int(fig.height * scale), 1)), Image.NEAREST)
+                frames.append(fig)
+                cell = max(cell, fig.width, fig.height)
+            scaled[anim] = frames
+        for anim, frames in scaled.items():
+            out = OUT / ("walker_%s%s.png" % (suffix, anim))
+            _squarify(frames, cell).save(out)
+        print("pack %s -> walker_%s (+4 clips), cell %dpx" % (src_dir, suffix, cell))
+
+
+def resquare_legacy():
+    """Re-emit the hand-made strips as square cells so the game derives
+    frame counts from texture shape (width/height) everywhere."""
+    for name in ["walker", "walker_b", "walker_c", "walker_d", "walker_e", "walker_f", "walker_g"]:
+        path = OUT / (name + ".png")
+        strip = Image.open(path).convert("RGBA")
+        if strip.width % strip.height == 0:
+            continue  # already square-celled
+        fw = strip.width // 8
+        frames = [strip.crop((i * fw, 0, (i + 1) * fw, strip.height)) for i in range(8)]
+        cell = max(fw, strip.height)
+        _squarify(frames, cell).save(path)
+        print("resquared", name, "to %dpx cells" % cell)
+
+
+def _authored_types():
+    """Types whose strips were hand-edited in the Monster Editor: theirs now."""
+    import json
+    data = json.loads((ROOT / "data" / "enemies.json").read_text(encoding="utf-8"))
+    return {t["id"] for t in data["types"] if t.get("authored_sprites")}
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
-    for src, (name, h) in SHEETS.items():
-        convert(src, name, h)
-    build_variants()
-    build_floater()
+    authored = _authored_types()
+    if "walker" in authored:
+        print("skip walker strips + variants - hand-edited in the Monster Editor")
+    else:
+        for src, (name, h) in SHEETS.items():
+            convert(src, name, h)
+        build_variants()
+    if "floater" in authored:
+        print("skip floater - hand-edited in the Monster Editor")
+    else:
+        build_floater()
+    if "walker" in authored:
+        print("skip resquare - walker strips are hand-edited")
+    else:
+        resquare_legacy()
+    build_pack(skip_existing="walker" in authored)

@@ -17,7 +17,7 @@ func _ready() -> void:
 	var pm = ed.get_tree().get_first_node_in_group("pause_menu")
 	check(pm != null and not pm.open, "pause menu mounted, closed at start")
 	pm.open_menu()
-	check(pm.open and pm.quit_button.text == "QUIT TO TITLE", "Esc menu opens with QUIT TO TITLE")
+	check(pm.open and pm.quit_button.text == "QUIT GAME", "Esc menu opens with QUIT GAME (standalone tool)")
 	pm._show_controls(true)
 	check(pm.controls_box.visible and pm.controls_box.get_child_count() > 3, "CONTROLS page lists editor bindings")
 	pm.close()

@@ -130,10 +130,21 @@ func _build_ui() -> void:
 	UITheme.style_button(play)
 	play.add_theme_font_size_override("font_size", 14)
 	play.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	play.position = Vector2(-42, -48)
+	play.position = Vector2(-42, -64)
 	play.custom_minimum_size = Vector2(84, 28)
 	play.pressed.connect(_play)
 	frame.add_child(play)
+
+	# QUIT under DIVE (user request 2026-09-01): out of the game entirely.
+	var quit := Button.new()
+	quit.text = "QUIT"
+	UITheme.style_button(quit)
+	quit.add_theme_font_size_override("font_size", 10)
+	quit.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	quit.position = Vector2(-42, -32)
+	quit.custom_minimum_size = Vector2(84, 18)
+	quit.pressed.connect(func(): get_tree().quit())
+	frame.add_child(quit)
 
 	_refresh_lists()
 

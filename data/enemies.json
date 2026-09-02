@@ -1,276 +1,281 @@
 {
- "comment": "M4 enemy roster (GD-01..29). types = behaviour identity; bands = AUTHORED per-band stat tables (GD-23, no formulas): hp / damage per hit / speed in blocks-per-sec / aggro radius in blocks. An enemy only seeds in bands it has a row for. drops are the light kind (GD-24): cloth and scrap bits from zombies, meat from fish.",
- "types": [
-  {
-   "id": "walker",
-   "name": "Walker",
-   "mode": "ground",
-   "size": [
-    12,
-    22
-   ],
-   "bleeds": true,
-   "drops": [
-    {
-     "item": "cloth",
-     "min": 0,
-     "max": 2,
-     "chance": 0.8
-    },
-    {
-     "item": "scrap_metal",
-     "min": 1,
-     "max": 1,
-     "chance": 0.35
-    }
-   ],
-   "frames": 8,
-   "sprite_variants": 7
-  },
-  {
-   "id": "crawler",
-   "name": "Crawler",
-   "mode": "ground",
-   "size": [
-    12,
-    10
-   ],
-   "bleeds": true,
-   "drops": [
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 2,
-     "chance": 0.7
-    }
-   ]
-  },
-  {
-   "id": "floater",
-   "name": "Floater",
-   "mode": "surface",
-   "size": [
-    14,
-    14
-   ],
-   "bleeds": true,
-   "drops": [
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 2,
-     "chance": 0.8
-    }
-   ]
-  },
-  {
-   "id": "drowned",
-   "name": "The Drowned",
-   "mode": "swim",
-   "size": [
-    12,
-    22
-   ],
-   "bleeds": true,
-   "water_only": true,
-   "drops": [
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 2,
-     "chance": 0.8
-    },
-    {
-     "item": "scrap_metal",
-     "min": 1,
-     "max": 2,
-     "chance": 0.5
-    }
-   ]
-  },
-  {
-   "id": "shark",
-   "name": "Shark",
-   "mode": "swim",
-   "size": [
-    36,
-    14
-   ],
-   "water_only": true,
-   "open_water": true,
-   "drops": [
-    {
-     "item": "fish_meat",
-     "min": 2,
-     "max": 4,
-     "chance": 1.0
-    }
-   ]
-  },
-  {
-   "id": "fish_school",
-   "name": "Fish School",
-   "mode": "fish",
-   "size": [
-    20,
-    10
-   ],
-   "passive": true,
-   "drops": []
-  }
- ],
  "bands": {
-  "dry": {
-   "walker": {
-    "hp": 30,
-    "damage": 8,
-    "speed": 2.2,
-    "aggro": 10
-   },
-   "crawler": {
-    "hp": 20,
-    "damage": 6,
-    "speed": 2.6,
-    "aggro": 8
-   }
-  },
-  "shallows": {
-   "walker": {
-    "hp": 40,
-    "damage": 10,
-    "speed": 2.2,
-    "aggro": 10
-   },
-   "crawler": {
-    "hp": 26,
-    "damage": 8,
-    "speed": 2.6,
-    "aggro": 8
-   },
-   "floater": {
-    "hp": 24,
-    "damage": 8,
-    "speed": 1.2,
-    "aggro": 9
-   },
-   "fish_school": {
-    "hp": 1,
-    "damage": 0,
-    "speed": 2.0,
-    "aggro": 0
-   }
-  },
   "cold": {
-   "walker": {
-    "hp": 55,
-    "damage": 13,
-    "speed": 2.4,
-    "aggro": 11
-   },
    "crawler": {
-    "hp": 34,
-    "damage": 10,
-    "speed": 2.8,
-    "aggro": 9
-   },
-   "shark": {
-    "hp": 90,
-    "damage": 18,
-    "speed": 5.5,
-    "aggro": 14
+    "aggro": 9.0,
+    "damage": 10.0,
+    "hp": 34.0,
+    "speed": 2.8
    },
    "fish_school": {
-    "hp": 1,
-    "damage": 0,
-    "speed": 2.0,
-    "aggro": 0
-   }
-  },
-  "dark": {
-   "walker": {
-    "hp": 70,
-    "damage": 16,
-    "speed": 2.4,
-    "aggro": 11
-   },
-   "crawler": {
-    "hp": 45,
-    "damage": 13,
-    "speed": 2.8,
-    "aggro": 9
-   },
-   "drowned": {
-    "hp": 80,
-    "damage": 18,
-    "speed": 6.5,
-    "aggro": 12
+    "aggro": 0.0,
+    "damage": 0.0,
+    "hp": 1.0,
+    "speed": 2.0
    },
    "shark": {
-    "hp": 110,
-    "damage": 22,
-    "speed": 5.5,
-    "aggro": 14
+    "aggro": 14.0,
+    "damage": 18.0,
+    "hp": 90.0,
+    "speed": 5.5
    },
-   "fish_school": {
-    "hp": 1,
-    "damage": 0,
-    "speed": 2.0,
-    "aggro": 0
+   "walker": {
+    "aggro": 11.0,
+    "damage": 13.0,
+    "hp": 55.0,
+    "speed": 2.4
    }
   },
   "crush": {
-   "walker": {
-    "hp": 90,
-    "damage": 20,
-    "speed": 2.6,
-    "aggro": 12
-   },
    "crawler": {
-    "hp": 60,
-    "damage": 16,
-    "speed": 3.0,
-    "aggro": 10
+    "aggro": 10.0,
+    "damage": 16.0,
+    "hp": 60.0,
+    "speed": 3.0
    },
    "drowned": {
-    "hp": 110,
-    "damage": 24,
-    "speed": 7.0,
-    "aggro": 13
-   },
-   "shark": {
-    "hp": 140,
-    "damage": 28,
-    "speed": 6.0,
-    "aggro": 15
+    "aggro": 13.0,
+    "damage": 24.0,
+    "hp": 110.0,
+    "speed": 7.0
    },
    "fish_school": {
-    "hp": 1,
-    "damage": 0,
-    "speed": 2.0,
-    "aggro": 0
+    "aggro": 0.0,
+    "damage": 0.0,
+    "hp": 1.0,
+    "speed": 2.0
+   },
+   "shark": {
+    "aggro": 15.0,
+    "damage": 28.0,
+    "hp": 140.0,
+    "speed": 6.0
+   },
+   "walker": {
+    "aggro": 12.0,
+    "damage": 20.0,
+    "hp": 90.0,
+    "speed": 2.6
+   }
+  },
+  "dark": {
+   "crawler": {
+    "aggro": 9.0,
+    "damage": 13.0,
+    "hp": 45.0,
+    "speed": 2.8
+   },
+   "drowned": {
+    "aggro": 12.0,
+    "damage": 18.0,
+    "hp": 80.0,
+    "speed": 6.5
+   },
+   "fish_school": {
+    "aggro": 0.0,
+    "damage": 0.0,
+    "hp": 1.0,
+    "speed": 2.0
+   },
+   "shark": {
+    "aggro": 14.0,
+    "damage": 22.0,
+    "hp": 110.0,
+    "speed": 5.5
+   },
+   "walker": {
+    "aggro": 11.0,
+    "damage": 16.0,
+    "hp": 70.0,
+    "speed": 2.4
+   }
+  },
+  "dry": {
+   "crawler": {
+    "aggro": 8.0,
+    "damage": 6.0,
+    "hp": 20.0,
+    "speed": 2.6
+   },
+   "walker": {
+    "aggro": 10.0,
+    "damage": 8.0,
+    "hp": 30.0,
+    "speed": 2.2
+   }
+  },
+  "shallows": {
+   "crawler": {
+    "aggro": 8.0,
+    "damage": 8.0,
+    "hp": 26.0,
+    "speed": 2.6
+   },
+   "fish_school": {
+    "aggro": 0.0,
+    "damage": 0.0,
+    "hp": 1.0,
+    "speed": 2.0
+   },
+   "floater": {
+    "aggro": 9.0,
+    "damage": 8.0,
+    "hp": 24.0,
+    "speed": 1.2
+   },
+   "walker": {
+    "aggro": 10.0,
+    "damage": 10.0,
+    "hp": 40.0,
+    "speed": 2.2
    }
   }
  },
+ "comment": "M4 enemy roster (GD-01..29). types = behaviour identity; bands = AUTHORED per-band stat tables (GD-23, no formulas): hp / damage per hit / speed in blocks-per-sec / aggro radius in blocks. An enemy only seeds in bands it has a row for. drops are the light kind (GD-24): cloth and scrap bits from zombies, meat from fish.",
  "seeding": {
   "comment": "Uniform density everywhere (GD-27) - per-band strength does the scaling. Spacings are block ranges between open-water spawns.",
+  "fish_spacing": [
+   40.0,
+   90.0
+  ],
+  "floater_spacing": [
+   50.0,
+   120.0
+  ],
+  "shark_spacing": [
+   80.0,
+   160.0
+  ],
+  "wing_crawler_chance": 0.3,
+  "wing_drowned_chance": 0.4,
   "wing_zombie_weights": [
    0.35,
    0.45,
    0.2
-  ],
-  "wing_crawler_chance": 0.3,
-  "wing_drowned_chance": 0.4,
-  "floater_spacing": [
-   50,
-   120
-  ],
-  "shark_spacing": [
-   80,
-   160
-  ],
-  "fish_spacing": [
-   40,
-   90
   ]
- }
+ },
+ "types": [
+  {
+   "authored_sprites": true,
+   "bleeds": true,
+   "drops": [
+    {
+     "chance": 0.8,
+     "item": "cloth",
+     "max": 2.0,
+     "min": 0.0
+    },
+    {
+     "chance": 0.35,
+     "item": "scrap_metal",
+     "max": 1.0,
+     "min": 1.0
+    }
+   ],
+   "frames": 8.0,
+   "id": "walker",
+   "mode": "ground",
+   "name": "Walker",
+   "size": [
+    12.0,
+    22.0
+   ],
+   "sprite_variants": 11
+  },
+  {
+   "bleeds": true,
+   "drops": [
+    {
+     "chance": 0.7,
+     "item": "cloth",
+     "max": 2.0,
+     "min": 1.0
+    }
+   ],
+   "id": "crawler",
+   "mode": "ground",
+   "name": "Crawler",
+   "size": [
+    12.0,
+    10.0
+   ]
+  },
+  {
+   "authored_sprites": true,
+   "bleeds": true,
+   "drops": [
+    {
+     "chance": 0.8,
+     "item": "cloth",
+     "max": 2.0,
+     "min": 1.0
+    }
+   ],
+   "id": "floater",
+   "mode": "surface",
+   "name": "Floater",
+   "size": [
+    14,
+    14
+   ]
+  },
+  {
+   "authored_sprites": true,
+   "bleeds": true,
+   "drops": [
+    {
+     "chance": 0.8,
+     "item": "cloth",
+     "max": 2.0,
+     "min": 1.0
+    },
+    {
+     "chance": 0.5,
+     "item": "scrap_metal",
+     "max": 2.0,
+     "min": 1.0
+    }
+   ],
+   "id": "drowned",
+   "mode": "swim",
+   "name": "The Drowned",
+   "size": [
+    12.0,
+    22.0
+   ],
+   "water_only": true
+  },
+  {
+   "authored_sprites": true,
+   "drops": [
+    {
+     "chance": 1.0,
+     "item": "fish_meat",
+     "max": 4.0,
+     "min": 2.0
+    }
+   ],
+   "id": "shark",
+   "mode": "swim",
+   "name": "Shark",
+   "open_water": true,
+   "size": [
+    36.0,
+    14.0
+   ],
+   "water_only": true
+  },
+  {
+   "authored_sprites": true,
+   "drops": [],
+   "id": "fish_school",
+   "mode": "fish",
+   "name": "Fish School",
+   "passive": true,
+   "size": [
+    20.0,
+    10.0
+   ]
+  }
+ ]
 }

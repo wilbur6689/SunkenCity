@@ -18,7 +18,7 @@ func _ready() -> void:
 	var pm = ed.get_tree().get_first_node_in_group("pause_menu")
 	check(pm != null and not pm.open, "pause menu mounted, closed at start")
 	pm.open_menu()
-	check(pm.open and pm.quit_button.text == "QUIT TO TITLE", "Esc menu opens with QUIT TO TITLE")
+	check(pm.open and pm.quit_button.text == "QUIT GAME", "Esc menu opens with QUIT GAME (standalone tool)")
 	pm._show_controls(true)
 	check(pm.controls_box.visible and pm.controls_box.get_child_count() > 3, "CONTROLS page lists editor bindings")
 	pm.close()
@@ -31,8 +31,20 @@ func _ready() -> void:
 	ed.tool_mode = "pencil"
 	ed._apply(Vector2i(5, 5), false)
 	check(ed.image.get_pixel(5, 5).is_equal_approx(Color8(200, 60, 50)), "pencil paints the brush colour")
+	ed.brush2 = Color8(40, 80, 200)
 	ed._apply(Vector2i(5, 5), true)
-	check(ed.image.get_pixel(5, 5).a < 0.1, "RMB erases")
+	check(ed.image.get_pixel(5, 5).is_equal_approx(Color8(40, 80, 200)), "RMB paints the secondary colour")
+	ed.tool_mode = "eraser"
+	ed._apply(Vector2i(5, 5), false)
+	check(ed.image.get_pixel(5, 5).a < 0.1, "only the eraser clears")
+	ed.tool_mode = "pencil"
+	ed._apply(Vector2i(5, 5), false)
+	var mev := InputEventMouseButton.new()
+	mev.pressed = true
+	mev.button_index = MOUSE_BUTTON_MIDDLE
+	mev.position = Vector2(5 * ed.PX + 2, 5 * ed.PX + 2)
+	ed._canvas_input(mev)
+	check(ed.image.get_pixel(5, 5).a < 0.1, "MMB click clears the pixel")
 	ed.w_spin.value = 3 # widen; existing pixels preserved
 	check(ed.image.get_width() == 48 and ed.image.get_pixel(3, 3).a > 0.9, "resize keeps painted content")
 	ed.def.yields = [{"item": "scrap_metal", "min": 2, "max": 4}]

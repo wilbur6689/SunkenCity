@@ -100,6 +100,11 @@ const WATER_BUDGET_PER_TICK: int = 3000 # awake cells processed per physics tick
 const PUMP_UNITS_PER_TICK: int = 2      # 8 units = one cell; 2/tick @60 = 15 cells/sec
 const PUMP_RANGE_BLOCKS: float = 24.0   # how far a pump's outlet can be set
 const CURRENT_PUSH: float = 14.0        # px/s of push per unit of flow (WS-16; tuned escapable)
+# Plunge drag (user report 2026-09-01: a rooftop dive coasted to the shaft
+# bottom): speed beyond swimming bleeds off at this rate the moment a body
+# is in water - a max-speed fall stops within a handful of blocks.
+const WATER_PLUNGE_DECEL: float = 90.0 * BLOCK_SIZE
+const WATER_SINK_LIMIT: float = 2.0 * BLOCK_SIZE  # sustained sink speed for non-swimmers
 const ITEM_BUOYANCY_RISE: float = 3.0 * BLOCK_SIZE # floating items rise at this speed (CC-07)
 
 # --- Lighting & sight (WS-17 + fog of war) ---
@@ -209,6 +214,8 @@ const BLEED_DURATION: float = 18.0       # untreated bleed length; bandage/medki
 const BLEED_CHANCE: float = 0.35         # per zombie/Drowned hit
 
 # --- Death loop (CC-07): the backpack keeps everything; gear stays worn ---
+const DEATH_SCENE_SECONDS: float = 3.0   # slow zoom + fade to black before the respawn (user request 2026-09-01)
+const DEATH_SCENE_ZOOM: float = 2.0      # camera closes to this multiple on the body
 const BACKPACK_PICKUP_DELAY: float = 1.5 # seconds before the dropped pack can be recovered
 
 # --- Red moons (CC-14, GL-15, GD-23) ---

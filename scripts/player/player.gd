@@ -85,6 +85,9 @@ func _clamp_to_world_bounds() -> void:
 		velocity.x = 0.0
 
 func _physics_process(delta: float) -> void:
+	if dying: # death scene (user request 2026-09-01): 3 s of stillness -
+		_tick_death(delta) # camera closing in, screen fading - then respawn
+		return
 	if is_multiplayer_authority():
 		_read_input()
 	_tick_timers(delta)
@@ -418,6 +421,7 @@ func scrap_item(id: String, n: int = 1, allow_field: bool = false) -> bool:
 		if not full:
 			count = int(ceil(count * skills.effect("field_yield", Constants.FIELD_SCRAP_YIELD)))
 		var leftover: int = inventory.add(y.item, count)
+		notify_gain(y.item, count - leftover)
 		if leftover > 0:
 			World.spawn_item(y.item, leftover, global_position)
 	skills.add_xp("scrapping", float(obj_def.get("xp", 2)) * n)
@@ -475,7 +479,10 @@ func begin_loaded_crawl() -> void:
 ## up in quarter-block steps (falling back to a crawl pose) until legal;
 ## a hopeless overlap respawns at the bed instead of wedging in the floor.
 func unstick() -> void:
-	for i in 13:
+	# 32 quarter-block steps = 8 blocks of rescue: enough to climb out of a
+	# slab-and-furniture stack when a restored position lands inside one
+	# (user report 2026-09-01: "spawned in the floor and can't move").
+	for i in 32:
 		var off := Vector2(0, -4.0 * i)
 		if _pose_clear(global_position + off, compact):
 			global_position += off
@@ -685,6 +692,12 @@ func _state_underwater(delta: float) -> void:
 	if input_dir.y <= 0.0 and _can_surface():
 		state = State.SURFACE_SWIM
 		return
+	# Plunge drag (user report 2026-09-01): entry momentum from a fall
+	# bleeds off hard, so a dive stops within a few blocks instead of
+	# coasting to the bottom of a flooded shaft.
+	if velocity.length() > Constants.UNDERWATER_SWIM_SPEED:
+		velocity = velocity.move_toward(velocity.normalized() * Constants.UNDERWATER_SWIM_SPEED,
+			Constants.WATER_PLUNGE_DECEL * delta)
 	# Free 8-way, neutral buoyancy (WS-06/09): no gravity, drag to rest.
 	var target := input_dir * Constants.UNDERWATER_SWIM_SPEED * swim_factor()
 	target += World.current_at(_center_point()) # currents push, swimmable against (WS-16)
@@ -735,6 +748,8 @@ func start_bleeding() -> void:
 	message.emit("You are bleeding — bandage it!")
 
 func apply_damage(amount: float) -> void:
+	if dying:
+		return # the body on the ground takes no further hits
 	combat_timer = 0.0
 	health = maxf(health - amount, 0.0)
 	if health <= 0.0:
@@ -755,7 +770,47 @@ func _die() -> void:
 		message.emit("You died — your backpack is where you fell")
 	else:
 		message.emit("You died")
-	respawn()
+	_begin_death_scene()
+
+## Death scene (user request 2026-09-01): the UI clears, the camera slowly
+## closes in on the body, the screen fades to black over DEATH_SCENE_SECONDS,
+## and only then the respawn happens (with a quick fade back in).
+var dying := false
+var _death_t := 0.0
+var _death_zoom_from := Vector2.ONE
+var _death_fade: ColorRect = null
+
+func _begin_death_scene() -> void:
+	if dying:
+		return
+	dying = true
+	_death_t = 0.0
+	velocity = Vector2.ZERO
+	_death_zoom_from = camera.zoom
+	if _death_fade == null:
+		var layer := CanvasLayer.new()
+		layer.layer = 90 # above the HUD, below nothing that matters mid-death
+		_death_fade = ColorRect.new()
+		_death_fade.color = Color(0, 0, 0, 0)
+		_death_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_death_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		layer.add_child(_death_fade)
+		add_child(layer)
+	_death_fade.color.a = 0.0
+
+func _tick_death(delta: float) -> void:
+	_death_t += delta
+	var t := clampf(_death_t / Constants.DEATH_SCENE_SECONDS, 0.0, 1.0)
+	var zoom_t := minf(t / 0.85, 1.0) # the zoom lands just before full black
+	var z := lerpf(1.0, Constants.DEATH_SCENE_ZOOM, zoom_t * zoom_t * (3.0 - 2.0 * zoom_t))
+	camera.zoom = _death_zoom_from * z
+	_death_fade.color.a = clampf((t - 0.45) / 0.5, 0.0, 1.0)
+	if _death_t >= Constants.DEATH_SCENE_SECONDS:
+		dying = false
+		camera.zoom = _death_zoom_from
+		respawn()
+		var tw := create_tween() # eyes open at the bed
+		tw.tween_property(_death_fade, "color:a", 0.0, 0.5)
 
 func respawn() -> void:
 	health = Constants.MAX_HEALTH
@@ -830,12 +885,20 @@ var _swing_time: float = 0.0
 var _scrap_anim: float = 0.0
 var _tool_sprite: Sprite2D = null
 
+## 32x32 authored icons ride in the hand at 16 px (2026-09-01).
+func _fit_tool_sprite() -> void:
+	if _tool_sprite.texture != null and _tool_sprite.texture.get_width() > 16:
+		_tool_sprite.scale = Vector2.ONE * (16.0 / _tool_sprite.texture.get_width())
+	else:
+		_tool_sprite.scale = Vector2.ONE
+
 func play_swing() -> void:
 	if _tool_sprite == null:
 		_tool_sprite = Sprite2D.new()
 		_tool_sprite.z_index = 1
 		add_child(_tool_sprite)
 	_tool_sprite.texture = Data.icon(held_item())
+	_fit_tool_sprite()
 	_swing_time = Constants.TOOL_SWING_TIME
 
 func _update_swing(delta: float) -> void:
@@ -851,6 +914,7 @@ func _update_swing(delta: float) -> void:
 		var it := Data.item(held_item())
 		if it.has("tool") or it.has("weapon"):
 			_tool_sprite.texture = Data.icon(held_item())
+			_fit_tool_sprite()
 			_tool_sprite.visible = true
 			_tool_sprite.flip_h = facing < 0
 			if interaction != null and interaction.scrapping != null:
@@ -942,3 +1006,12 @@ func zoom_step(direction: int) -> void:
 
 func state_name() -> String:
 	return State.keys()[state]
+
+## Left-side gain feed (user request 2026-09-01): materials gained from
+## harvesting queue here; the HUD drains the list and shows icon + count.
+var gain_feed: Array = []
+
+func notify_gain(id: String, count: int) -> void:
+	if count <= 0 or Data.item(id).get("category", "") != "material":
+		return
+	gain_feed.append({"id": id, "count": count})

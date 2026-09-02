@@ -200,7 +200,7 @@
    ]
   },
   {
-   "desc": "Station for metalwork — iron tools and hard blocks.",
+   "desc": "Station for metalwork â€” iron tools and hard blocks.",
    "id": "forge",
    "kind": "station",
    "name": "Forge",
@@ -224,7 +224,7 @@
    ]
   },
   {
-   "desc": "Station for medical crafting — bandages and better.",
+   "desc": "Station for medical crafting â€” bandages and better.",
    "id": "med_station",
    "kind": "station",
    "name": "Med Station",
@@ -248,7 +248,7 @@
    ]
   },
   {
-   "desc": "Station for dive gear — suits and tanks for the deep.",
+   "desc": "Station for dive gear â€” suits and tanks for the deep.",
    "id": "dive_station",
    "kind": "station",
    "name": "Dive Station",
@@ -7299,6 +7299,7 @@
    ]
   },
   {
+   "authored": true,
    "category": "flora",
    "desc": "Plant it on a sunny roof; it grows a little every night.",
    "flora_weight": 3.0,
@@ -7329,30 +7330,31 @@
    ]
   },
   {
+   "authored": true,
    "category": "flora",
-   "flora_weight": 1,
+   "flora_weight": 1.0,
    "grow_chance": 0.35,
    "grows_into": "tree_mature",
    "id": "tree_young",
    "kind": "scrap",
-   "name": "Young Tree",
+   "name": "Young Tree 01",
    "no_item": true,
    "requires_tool": "axe",
    "room_type": "tree",
-   "scrap_time": 6.0,
+   "scrap_time": 1.5,
    "size": [
-    3,
-    8
+    1.0,
+    3.0
    ],
-   "skill": 0,
-   "tool_tier": 1,
-   "weight": 30.0,
-   "xp": 6,
+   "skill": 0.0,
+   "tool_tier": 0.0,
+   "weight": 4.0,
+   "xp": 2.0,
    "yields": [
     {
      "item": "wood",
-     "max": 14.0,
-     "min": 8.0
+     "max": 2.0,
+     "min": 1.0
     }
    ],
    "zones": [
@@ -7360,22 +7362,16 @@
    ]
   },
   {
+   "authored": true,
    "category": "flora",
    "flora_weight": 1.0,
    "id": "tree_mature",
    "kind": "scrap",
    "name": "Mature Tree",
    "no_item": true,
-   "rect": [
-    0.0,
-    0.0,
-    80.0,
-    240.0
-   ],
    "requires_tool": "axe",
-   "room_type": "roof",
+   "room_type": "tree",
    "scrap_time": 14.0,
-   "sheet": "res://assets/sprites/sets/roof_gear.png",
    "size": [
     5.0,
     15.0
@@ -8392,20 +8388,14 @@
    ]
   },
   {
+   "authored": true,
    "category": "flora",
    "flora_weight": 2.0,
    "id": "roof_bush",
    "kind": "scrap",
    "name": "Rooftop Bush",
-   "rect": [
-    192.0,
-    672.0,
-    32.0,
-    32.0
-   ],
    "room_type": "bush",
    "scrap_time": 1.5,
-   "sheet": "res://assets/sprites/sets/roof_gear.png",
    "size": [
     2.0,
     2.0
@@ -8426,20 +8416,142 @@
    ]
   },
   {
+   "authored": true,
    "category": "flora",
    "flora_weight": 3.0,
    "id": "roof_grass",
    "kind": "scrap",
    "name": "Grass Tuft",
-   "rect": [
-    240.0,
-    752.0,
-    16.0,
-    16.0
-   ],
    "room_type": "grass",
    "scrap_time": 0.5,
-   "sheet": "res://assets/sprites/sets/roof_gear.png",
+   "size": [
+    1.0,
+    1.0
+   ],
+   "skill": 0.0,
+   "tool_tier": 0.0,
+   "weight": 1.0,
+   "xp": 1.0,
+   "yields": [],
+   "zones": [
+    "roof"
+   ]
+  },
+  {
+   "authored": true,
+   "category": "flora",
+   "flora_weight": 1.0,
+   "id": "new_flora",
+   "kind": "scrap",
+   "name": "New Flora",
+   "room_type": "tree",
+   "scrap_time": 1.5,
+   "size": [
+    1.0,
+    3.0
+   ],
+   "skill": 0.0,
+   "tool_tier": 0.0,
+   "weight": 4.0,
+   "xp": 2.0,
+   "yields": [
+    {
+     "item": "wood",
+     "max": 2.0,
+     "min": 1.0
+    }
+   ],
+   "zones": [
+    "roof"
+   ]
+  },
+  {
+   "authored": true,
+   "category": "flora",
+   "flora_weight": 1.0,
+   "id": "pine_tree_young",
+   "kind": "scrap",
+   "name": "Young Tree 01",
+   "room_type": "tree",
+   "scrap_time": 1.5,
+   "size": [
+    1.0,
+    3.0
+   ],
+   "skill": 0.0,
+   "tool_tier": 0.0,
+   "weight": 4.0,
+   "xp": 2.0,
+   "yields": [
+    {
+     "item": "wood",
+     "max": 2.0,
+     "min": 1.0
+    }
+   ],
+   "zones": [
+    "roof"
+   ]
+  },
+  {
+   "authored": true,
+   "category": "flora",
+   "flora_weight": 1,
+   "id": "large_tree",
+   "kind": "scrap",
+   "name": "Large Tree",
+   "room_type": "tree",
+   "scrap_time": 1.5,
+   "size": [
+    2,
+    3
+   ],
+   "skill": 0,
+   "tool_tier": 0,
+   "weight": 4.0,
+   "xp": 2,
+   "yields": [
+    {
+     "item": "wood",
+     "max": 2.0,
+     "min": 3.0
+    }
+   ],
+   "zones": [
+    "roof"
+   ]
+  },
+  {
+   "authored": true,
+   "category": "flora",
+   "flora_weight": 3.0,
+   "id": "roof_grass02",
+   "kind": "scrap",
+   "name": "Grass Tuft",
+   "room_type": "grass",
+   "scrap_time": 0.5,
+   "size": [
+    1.0,
+    1.0
+   ],
+   "skill": 0.0,
+   "tool_tier": 0.0,
+   "weight": 1.0,
+   "xp": 1.0,
+   "yields": [],
+   "zones": [
+    "roof"
+   ]
+  },
+  {
+   "authored": true,
+   "category": "flora",
+   "flora_weight": 3.0,
+   "id": "roof_grass01",
+   "kind": "scrap",
+   "name": "Grass Tuft",
+   "room_type": "grass",
+   "scrap_time": 0.5,
    "size": [
     1.0,
     1.0

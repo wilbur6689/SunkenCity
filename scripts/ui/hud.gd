@@ -28,6 +28,9 @@ var _hover_desc: Label
 var _hover_action: Label
 var _hover_shown: float = 0.0 # 0 = fully hidden, 1 = fully up
 var _hover_obj: WorldObject = null
+var _hover_mats: HBoxContainer
+var _gain_box: VBoxContainer
+var _gain_rows: Dictionary = {} # item id -> {row, count_label, count, t}
 var _weight_icon: TextureRect
 
 func _ready() -> void:
@@ -73,6 +76,7 @@ func _ready() -> void:
 	_build_minimap()
 	_build_debug()
 	_build_hover_panel()
+	_build_gain_feed()
 
 func _on_hotbar_click(ev: InputEvent, i: int) -> void:
 	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT and player != null:
@@ -102,8 +106,10 @@ func _build_hover_panel() -> void:
 	_hover_action = Label.new()
 	_hover_action.add_theme_font_size_override("font_size", 8)
 	_hover_action.add_theme_color_override("font_color", Color(0.55, 0.8, 0.95))
-	for l: Label in [_hover_title, _hover_desc, _hover_action]:
-		box.add_child(l)
+	_hover_mats = HBoxContainer.new()
+	_hover_mats.add_theme_constant_override("separation", 4)
+	for c: Control in [_hover_title, _hover_desc, _hover_mats, _hover_action]:
+		box.add_child(c)
 	_hover_panel.add_child(box)
 	get_node("Root").add_child(_hover_panel)
 	_hover_panel.visible = false
@@ -142,13 +148,8 @@ func _hover_lines(obj: WorldObject) -> Array:
 			else:
 				what = "Furniture"
 				how = "Hold LMB: pick up · RMB: scrap"
-	if what.begins_with("Furniture") or def.kind == "chest" or obj.storage != null:
-		var mats: Array = []
-		for y in def.get("yields", []):
-			if not mats.has(String(y.item)):
-				mats.append(String(y.item))
-		if not mats.is_empty():
-			what += " · scraps into " + ", ".join(PackedStringArray(mats)).replace("_", " ")
+	# Scrap yields render as an icon row now (user request 2026-09-01),
+	# not appended text - see _fill_hover_mats.
 	return [title, what, how]
 
 func _update_hover_panel(delta: float) -> void:
@@ -160,6 +161,7 @@ func _update_hover_panel(delta: float) -> void:
 			_hover_title.text = lines[0]
 			_hover_desc.text = lines[1]
 			_hover_action.text = lines[2]
+			_fill_hover_mats(obj)
 		_hover_shown = minf(_hover_shown + delta * 6.0, 1.0)
 	else:
 		_hover_obj = null
@@ -298,6 +300,8 @@ func show_message(text: String) -> void:
 	_message_timer = 2.5
 
 func _process(delta: float) -> void:
+	if player != null:
+		visible = not player.dying # the death scene clears the UI (2026-09-01)
 	if player == null:
 		player = get_tree().get_first_node_in_group("player") as Player
 		if player == null:
@@ -339,6 +343,7 @@ func _process(delta: float) -> void:
 		_refresh_debug()
 
 	_update_hover_panel(delta)
+	_tick_gain_feed(delta)
 
 	var inter := player.interaction
 	scrap_bar.visible = inter.scrapping != null
@@ -354,3 +359,70 @@ func _process(delta: float) -> void:
 		roundi(player.health), player.oxygen, v.x, v.y, player.inventory.total_weight(),
 		player.skills.player_level(), player.skills.level("scrapping"), player.skills.level("swimming"),
 		player.skills.level("building")]
+
+## Scrap yields as an icon row on the hover card (user request 2026-09-01):
+## each material's icon with its min-max roll, instead of a text list.
+func _fill_hover_mats(obj: WorldObject) -> void:
+	for c in _hover_mats.get_children():
+		c.queue_free()
+	var yields: Array = obj.def.get("yields", [])
+	_hover_mats.visible = not yields.is_empty()
+	for y in yields:
+		var ic := TextureRect.new()
+		ic.texture = Data.icon(String(y.item))
+		ic.custom_minimum_size = Vector2(14, 14)
+		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ic.tooltip_text = Data.item_name(String(y.item))
+		_hover_mats.add_child(ic)
+		var lb := Label.new()
+		lb.add_theme_font_size_override("font_size", 8)
+		lb.add_theme_color_override("font_color", Color(0.75, 0.8, 0.82))
+		lb.text = ("%d-%d" % [int(y.min), int(y.max)]) if int(y.min) != int(y.max) else str(int(y.max))
+		_hover_mats.add_child(lb)
+
+## Left-side harvest feed (user request 2026-09-01): each material gained
+## shows its icon and a running +count; repeat gains bump the row and reset
+## its clock; rows fade out after a beat.
+func _build_gain_feed() -> void:
+	_gain_box = VBoxContainer.new()
+	_gain_box.add_theme_constant_override("separation", 2)
+	_gain_box.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+	_gain_box.position = Vector2(8, -50)
+	_gain_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	get_node("Root").add_child(_gain_box)
+
+func _tick_gain_feed(delta: float) -> void:
+	for g in player.gain_feed:
+		var id: String = g.id
+		if _gain_rows.has(id):
+			var r: Dictionary = _gain_rows[id]
+			r.count += int(g.count)
+			r.t = 0.0
+			(r.count_label as Label).text = "+%d" % int(r.count)
+			(r.row as Control).modulate.a = 1.0
+		else:
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 3)
+			var ic := TextureRect.new()
+			ic.texture = Data.icon(id)
+			ic.custom_minimum_size = Vector2(14, 14)
+			ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			row.add_child(ic)
+			var lb := Label.new()
+			lb.add_theme_font_size_override("font_size", 9)
+			lb.add_theme_color_override("font_color", Color(0.8, 0.95, 0.8))
+			lb.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+			lb.text = "+%d" % int(g.count)
+			row.add_child(lb)
+			_gain_box.add_child(row)
+			_gain_rows[id] = {"row": row, "count_label": lb, "count": int(g.count), "t": 0.0}
+	player.gain_feed.clear()
+	for id in _gain_rows.keys():
+		var r: Dictionary = _gain_rows[id]
+		r.t += delta
+		(r.row as Control).modulate.a = clampf((2.6 - float(r.t)) / 0.6, 0.0, 1.0)
+		if float(r.t) >= 2.6:
+			(r.row as Node).queue_free()
+			_gain_rows.erase(id)

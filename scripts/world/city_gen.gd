@@ -303,9 +303,14 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 				grid.set_structure(Vector2i(side, by), WorldGrid.M.AIR)
 				grid.set_structure(Vector2i(side + 1, by), WorldGrid.M.AIR)
 			# Side openings are vent-gated like the roof (user request
-			# 2026-09-01): a fixed, padlocked grate fills the breach - pry it
-			# to get in (and it seals water until someone does).
-			objects.append({"id": "side_vent", "cell": Vector2i(side, sr)})
+			# 2026-09-01) - but only through The Shallows. A closed vent
+			# SEALS water, and venting every breach left whole towers dry
+			# inside (user bug report: fell 50 blocks through "underwater"
+			# floors in air). Deeper breaches stay open as the flood inlets,
+			# so interiors fill to the waterline; the shallow, reachable
+			# openings still need a pry tool.
+			if sr - WATERLINE <= Constants.BAND_SHALLOWS_DEPTH:
+				objects.append({"id": "side_vent", "cell": Vector2i(side, sr)})
 		if f > 0 and rng.randf() < 0.10:
 			var cy := top + f * FLOOR_H
 			var hole_x := rng.randi_range(x0 + 6, x1 - 10)
@@ -469,6 +474,9 @@ static func _stamp_roofs(grid: WorldGrid, rng: RandomNumberGenerator, pool: Arra
 	# The roofs are the whole world until then; submerged towers stay open.
 	if roofr < WATERLINE:
 		objects.append({"id": "roof_hatch", "cell": Vector2i(int(tower.mid) - 1, int(tower.top))})
+	var flora := _zone_details("roof", "flora")
+	var grasses: Array = flora.filter(func(id): return Data.objects[id].get("room_type", "") == "grass" and int(Data.objects[id].size[0]) == 1)
+	var woody: Array = flora.filter(func(id): return Data.objects[id].get("room_type", "") != "grass")
 	for zone in tower.zones:
 		var zx: int = int(zone[0])
 		var zend: int = int(zone[1])
@@ -487,16 +495,35 @@ static func _stamp_roofs(grid: WorldGrid, rng: RandomNumberGenerator, pool: Arra
 			if rng.randf() < 0.3 and Data.objects.has(oid + "_vined"):
 				oid += "_vined" # a coat of vines (user request: overgrown roofs)
 			_roof_drop(rng, objects, taken, zx, zend, roofr, oid)
-		# flora claims free spots on every dry roof: anything of category
-		# "flora" tagged for the roof zone (trees, bushes, grass - authored
-		# in the Flora Editor), picked by each def's flora_weight.
-		var flora := _zone_details("roof", "flora")
-		if depth <= -1 and not flora.is_empty():
-			for i in rng.randi_range(2, 4):
-				_roof_drop(rng, objects, taken, zx, zend, roofr, _weighted_flora(rng, flora))
 		# non-harvest junk dressing: hammer-cleared, yields nothing
 		for i in rng.randi_range(1, 3):
 			_roof_drop(rng, objects, taken, zx, zend, roofr, _ROOF_JUNK[rng.randi_range(0, _ROOF_JUNK.size() - 1)])
+		# Flora blankets every dry roof (user request 2026-09-01: only ~10%
+		# bare): a healthy stand of trees and bushes first (weighted picks
+		# from the Flora Editor pool), then grass-type flora fills nearly
+		# every remaining cell.
+		if depth <= -1:
+			if not woody.is_empty():
+				for i in rng.randi_range(3, 6):
+					_roof_drop(rng, objects, taken, zx, zend, roofr, _weighted_flora(rng, woody))
+			if not grasses.is_empty():
+				for lx in range(zend - zx + 1):
+					if not _interval_taken(taken, lx, lx + 1) and rng.randf() < 0.9:
+						taken.append([lx, lx + 1])
+						objects.append({"id": _weighted_flora(rng, grasses), "cell": Vector2i(zx + lx, roofr)})
+	# The strips OUTSIDE the wings - stairwell tops, wing gaps, parapet
+	# edges - carry the same grass blanket, so the whole roofline reads as
+	# a meadow; only the open shaft mouth stays bare (user request).
+	if depth <= -1 and not grasses.is_empty():
+		for x in range(int(tower.x0) + 2, int(tower.x1) - 1):
+			if x >= int(tower.mid) - 1 and x <= int(tower.mid) + 1:
+				continue
+			var in_wing := false
+			for zn in tower.zones:
+				if x >= int(zn[0]) and x <= int(zn[1]):
+					in_wing = true
+			if not in_wing and rng.randf() < 0.9:
+				objects.append({"id": _weighted_flora(rng, grasses), "cell": Vector2i(x, roofr)})
 
 const _ROOF_JUNK: Array = ["roof_junk_pile", "roof_fallen_mast", "roof_tarp_crates"]
 
