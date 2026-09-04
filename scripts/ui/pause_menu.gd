@@ -50,6 +50,7 @@ func _ready() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.visible = false
 	add_child(root)
+	UIScale.register(root) # UI size scaling (2026-09-02)
 	layer = 6 # above the character menu (5)
 
 	# Dimmer: also soaks up clicks so the world cannot be poked through it.
@@ -85,6 +86,9 @@ func _ready() -> void:
 	main_box.add_child(UITheme.label("SOUND", 8, Color(0.56, 0.75, 0.81)))
 	for bus_name in BUSES:
 		main_box.add_child(_volume_row(bus_name))
+
+	main_box.add_child(UITheme.label("DISPLAY", 8, Color(0.56, 0.75, 0.81)))
+	main_box.add_child(_ui_size_row())
 
 	var controls_btn := Button.new()
 	controls_btn.text = "CONTROLS"
@@ -141,6 +145,32 @@ func _key_of(action: String) -> String:
 func _show_controls(show_it: bool) -> void:
 	controls_box.visible = show_it
 	main_box.visible = not show_it
+
+## "UI Size  [==----]  100%" — scales every UI layer live (user request
+## 2026-09-02). 100% is the current, smallest size.
+func _ui_size_row() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	var name_label := UITheme.label("UI Size", 8)
+	name_label.custom_minimum_size = Vector2(38, 0)
+	row.add_child(name_label)
+	var s := HSlider.new()
+	s.min_value = UIScale.MIN_SCALE
+	s.max_value = UIScale.MAX_SCALE
+	s.step = 0.25
+	s.custom_minimum_size = Vector2(78, 10)
+	s.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	UITheme.style_slider(s)
+	s.set_value_no_signal(UIScale.scale)
+	var pct := UITheme.label("%d%%" % int(UIScale.scale * 100.0), 8, Color(0.7, 0.78, 0.85))
+	pct.custom_minimum_size = Vector2(24, 0)
+	pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	s.value_changed.connect(func(val: float):
+		UIScale.set_scale(val)
+		pct.text = "%d%%" % int(val * 100.0))
+	row.add_child(s)
+	row.add_child(pct)
+	return row
 
 ## "Music  [====-----]  80%" — slider drives the bus live.
 func _volume_row(bus_name: String) -> HBoxContainer:

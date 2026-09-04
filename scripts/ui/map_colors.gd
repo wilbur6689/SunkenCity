@@ -16,13 +16,16 @@ const INTERIOR := Color(0.16, 0.14, 0.13)
 const WATER := Color(0.12, 0.3, 0.52)
 const DEEP := Color(0.05, 0.12, 0.26)
 
-## Color of one REVEALED cell (callers handle unrevealed themselves).
-static func cell_color(cell: Vector2i) -> Color:
+## Color of one REVEALED MAP cell (callers handle unrevealed themselves):
+## samples the top-left world cell of the MAP_CELL square; the depth ramp is
+## in world rows.
+static func cell_color(map_cell: Vector2i) -> Color:
+	var cell := map_cell * Constants.MAP_CELL
 	var mat: int = World.grid.structure_at(cell)
 	if mat != WorldGrid.M.AIR:
 		return MAT.get(mat, INTERIOR)
 	if World.water_sim.level_at(cell) > 2:
-		var deep_f := clampf(float(cell.y - World.waterline_row) / 250.0, 0.0, 1.0)
+		var deep_f := clampf(float(cell.y - World.waterline_row) / 500.0, 0.0, 1.0)
 		return WATER.lerp(DEEP, deep_f)
 	if World.has_back_wall_cell(cell):
 		return INTERIOR

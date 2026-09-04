@@ -144,6 +144,10 @@ func set_open_look(v: bool) -> void:
 ## Locked doors (GL-09 ladder): a matching key unlocks for good, or a pry
 ## tool at the lock's tier forces it. "" once unlocked, else the reason.
 func _try_unlock(player) -> String:
+	# Button-locked doors (user request 2026-09-02) can't be forced at all -
+	# only the room's hidden release button opens them.
+	if def.get("lock", "") == "button" and not unlocked:
+		return "Barred shut - find the release button in this room"
 	if unlocked or int(def.get("lock_tier", 0)) <= 0:
 		return ""
 	var kid: String = def.get("key", "")
@@ -193,6 +197,32 @@ func interact(player) -> String:
 		"pump":
 			player.interaction.begin_pump_targeting(self)
 			return ""
+		"planter":
+			# Short-click with a seed held plants it (user request 2026-09-02);
+			# a full water bucket waters it up a stage; hold-LMB picks it up.
+			var seed: String = player.held_item()
+			if seed == "wood_bucket_full":
+				var w := World.water_plant_above(cell)
+				if w == 1:
+					player.interaction._swap_held("wood_bucket")
+					Audio.play_sfx("splash", center(), 3, -10.0)
+					return "Watered - it surges to the next stage"
+				elif w == 0:
+					return "Nothing more to water here"
+				return "Plant a tree seed here first"
+			if Data.item(seed).get("category", "") == "seed":
+				if World.plant_in_planter(self):
+					player.inventory.remove_from_slot(player.selected_slot, 1)
+					player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
+					Audio.play_sfx("creak_plastic", center(), 3, -8.0)
+					return "Planted a seed - give it open sky to grow"
+				return "This planter already has something growing"
+			return "A planter pot - plant a tree seed here"
+		"button":
+			if World.release_barred_door(cell):
+				Audio.play_sfx("door_latch", center())
+				return "A latch releases - the barred door swings open"
+			return "It clicks, but nothing happens"
 		"breaker":
 			if World.water_sim != null and World.water_sim.level_at(cell) > 2:
 				return "The breaker is flooded"
@@ -224,6 +254,9 @@ func interact(player) -> String:
 		"station":
 			player.open_crafting(def.station)
 			return ""
+		"scrapper":
+			# Tiered scrap bench: bulk-grind the bag's furniture of this tier.
+			return player.bulk_scrap(int(def.get("scrap_stage", 1)))
 		_:
 			if def.get("fixed", false):
 				return "It is wired into the building"

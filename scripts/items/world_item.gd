@@ -10,6 +10,8 @@ var count: int = 1
 var velocity: Vector2 = Vector2.ZERO
 var pickup_delay: float = 0.0
 var magnet: bool = false # mined drops home to a nearby player (pays out visibly)
+var gentle: bool = false # harvest drops drift in softly instead of snapping (2026-09-02)
+var _bob_t: float = randf() * TAU # phase-offset so a pile of drops doesn't bob in unison
 var light: PointLight2D
 
 @onready var sprite: Sprite2D = $Sprite2D
@@ -23,9 +25,9 @@ func setup(p_id: String, p_count: int, p_velocity: Vector2 = Vector2.ZERO) -> vo
 func _ready() -> void:
 	add_to_group("world_items")
 	sprite.texture = Data.icon(id)
-	if sprite.texture != null and sprite.texture.get_width() > Constants.BLOCK_SIZE:
+	if sprite.texture != null and sprite.texture.get_width() > Data.ICON_PX: # icons draw at 16 px in the world
 		# 32x32 authored icons draw at one block in the world (2026-09-01)
-		sprite.scale = Vector2.ONE * (float(Constants.BLOCK_SIZE) / sprite.texture.get_width())
+		sprite.scale = Vector2.ONE * (float(Data.ICON_PX) / sprite.texture.get_width())
 	var it := Data.item(id)
 	var drop_light: Dictionary = it.get("use", {}).get("drop_light", {})
 	if not drop_light.is_empty():
@@ -49,7 +51,7 @@ func _physics_process(delta: float) -> void:
 			global_position.y = (cell.y + 1) * Constants.BLOCK_SIZE + 5.0
 		else:
 			# plunging in from a fall brakes hard (user report 2026-09-01)
-			var rise_accel := Constants.WATER_PLUNGE_DECEL if velocity.y > 0.0 else 6.0 * Constants.BLOCK_SIZE
+			var rise_accel := Constants.WATER_PLUNGE_DECEL if velocity.y > 0.0 else 12.0 * Constants.BLOCK_SIZE
 			velocity.y = move_toward(velocity.y, -Constants.ITEM_BUOYANCY_RISE, rise_accel * delta)
 			var surface := World.water_surface_y(global_position)
 			if global_position.y + velocity.y * delta < surface + 3.0:
@@ -57,8 +59,8 @@ func _physics_process(delta: float) -> void:
 				velocity.y = 0.0
 	else:
 		var g := Constants.gravity * (0.15 if in_water else 1.0)
-		velocity.y = minf(velocity.y + g * delta, (2.0 if in_water else 20.0) * Constants.BLOCK_SIZE)
-	velocity.x = move_toward(velocity.x, 0.0, (8.0 if in_water else 3.0) * Constants.BLOCK_SIZE * delta)
+		velocity.y = minf(velocity.y + g * delta, (4.0 if in_water else 40.0) * Constants.BLOCK_SIZE)
+	velocity.x = move_toward(velocity.x, 0.0, (16.0 if in_water else 6.0) * Constants.BLOCK_SIZE * delta)
 	if in_water:
 		velocity += World.current_at(global_position) * delta * 4.0 # currents carry items (WS-16)
 	# Mined-drop magnet: once grabbable, fly straight to a player in range
@@ -67,7 +69,12 @@ func _physics_process(delta: float) -> void:
 		for p in get_tree().get_nodes_in_group("player"):
 			var to: Vector2 = p.global_position - global_position
 			if to.length() <= Constants.ITEM_MAGNET_RADIUS_BLOCKS * Constants.BLOCK_SIZE:
-				velocity = to.normalized() * Constants.ITEM_MAGNET_SPEED
+				if gentle:
+					# Ease toward the player - a soft drift that ramps up (user request).
+					var target := to.normalized() * Constants.ITEM_MAGNET_GENTLE_SPEED
+					velocity = velocity.move_toward(target, Constants.ITEM_MAGNET_GENTLE_ACCEL * delta)
+				else:
+					velocity = to.normalized() * Constants.ITEM_MAGNET_SPEED
 				break
 	var next := global_position + velocity * delta
 	# rest on the top of the first solid cell below
@@ -79,6 +86,15 @@ func _physics_process(delta: float) -> void:
 		next.x = global_position.x
 		velocity.x = 0.0
 	global_position = next
+	# Gentle hover so a dropped resource reads as "come collect me" (user
+	# request 2026-09-02) - a visual sprite offset only, so pickup range is
+	# unaffected. Only while resting, so it doesn't fight a pop or a fall.
+	if absf(velocity.x) < 2.0 and absf(velocity.y) < 2.0:
+		_bob_t += delta
+		sprite.position.y = -2.0 + sin(_bob_t * 4.0) * 1.5
+	else:
+		_bob_t = 0.0
+		sprite.position.y = 0.0
 	if pickup_delay <= 0.0:
 		_try_pickup()
 

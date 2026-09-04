@@ -159,7 +159,7 @@ func _tick_anim(delta: float) -> void:
 	if moving:
 		_set_strip(walk_tex)
 		if sprite.hframes > 1:
-			_anim_t += delta * clampf(velocity.length() / Constants.BLOCK_SIZE * 2.0, 3.0, 10.0)
+			_anim_t += delta * clampf(velocity.length() / Constants.BLOCK_SIZE, 3.0, 10.0)
 			sprite.frame = int(_anim_t) % sprite.hframes
 	elif anim_tex.has("idle"):
 		_set_strip(anim_tex["idle"])
@@ -209,7 +209,7 @@ func _move_ground(delta: float) -> void:
 		if target == null:
 			wander_x = -wander_x
 		dir = 0.0
-	velocity.x = move_toward(velocity.x, dir * speed, 30.0 * Constants.BLOCK_SIZE * delta)
+	velocity.x = move_toward(velocity.x, dir * speed, 60.0 * Constants.BLOCK_SIZE * delta)
 	velocity.y = minf(velocity.y + Constants.gravity * (0.3 if in_water else 1.0) * delta,
 		Constants.MAX_FALL_SPEED)
 	if in_water and velocity.y > Constants.WATER_SINK_LIMIT:
@@ -225,7 +225,7 @@ func _move_ground(delta: float) -> void:
 func _edge_ahead(dir: float) -> bool:
 	var front := global_position.x + dir * (half.x + 3.0)
 	var feet_y := global_position.y + half.y
-	for drop in 2:
+	for drop in 4:
 		if World.is_solid_cell(World.cell_at(Vector2(front, feet_y + 2.0 + drop * Constants.BLOCK_SIZE))):
 			return false
 	return true
@@ -263,9 +263,9 @@ func _move_surface(delta: float) -> void:
 		else:
 			dir = wander_x
 			speed *= Constants.ENEMY_WANDER_SPEED
-		velocity.x = move_toward(velocity.x, dir * speed, 8.0 * Constants.BLOCK_SIZE * delta)
+		velocity.x = move_toward(velocity.x, dir * speed, 16.0 * Constants.BLOCK_SIZE * delta)
 	else: # stranded dry: a bloated body barely shuffles
-		velocity.x = move_toward(velocity.x, wander_x * speed * 0.2, 8.0 * Constants.BLOCK_SIZE * delta)
+		velocity.x = move_toward(velocity.x, wander_x * speed * 0.2, 16.0 * Constants.BLOCK_SIZE * delta)
 		velocity.y = minf(velocity.y + Constants.gravity * delta, Constants.MAX_FALL_SPEED)
 	move_and_slide()
 
@@ -274,7 +274,7 @@ func _move_surface(delta: float) -> void:
 func _move_swim(delta: float) -> void:
 	if not World.is_water(global_position):
 		# Drained on them: flop, harmless-ish, until water returns.
-		velocity.x = move_toward(velocity.x, 0.0, 10.0 * Constants.BLOCK_SIZE * delta)
+		velocity.x = move_toward(velocity.x, 0.0, 20.0 * Constants.BLOCK_SIZE * delta)
 		velocity.y = minf(velocity.y + Constants.gravity * delta, Constants.MAX_FALL_SPEED)
 		move_and_slide()
 		return
@@ -289,12 +289,12 @@ func _move_swim(delta: float) -> void:
 	elif def.get("open_water", false):
 		# Shark patrol: level cruising, flipping at walls and building edges.
 		swim_dir = Vector2(signf(swim_dir.x) if swim_dir.x != 0.0 else 1.0, 0.0)
-		if not _swimmable(global_position + swim_dir * (half.x + Constants.BLOCK_SIZE * 2.0)):
+		if not _swimmable(global_position + swim_dir * (half.x + Constants.BLOCK_SIZE * 4.0)):
 			swim_dir.x = -swim_dir.x
 		desired = swim_dir * speed * 0.45
 	else:
 		desired = swim_dir * speed * Constants.ENEMY_WANDER_SPEED
-	velocity = velocity.move_toward(desired, 20.0 * Constants.BLOCK_SIZE * delta)
+	velocity = velocity.move_toward(desired, 40.0 * Constants.BLOCK_SIZE * delta)
 	# Never leave the water (per axis, so they glide along the surface).
 	var next := global_position + velocity * delta
 	if not _swimmable(Vector2(next.x, global_position.y)):
@@ -315,7 +315,7 @@ func _swimmable(pos: Vector2) -> bool:
 func _move_fish(delta: float) -> void:
 	_tick_wander(delta)
 	var speed: float = float(stats.speed) * Constants.BLOCK_SIZE * 0.5
-	velocity = velocity.move_toward(swim_dir * speed, 6.0 * Constants.BLOCK_SIZE * delta)
+	velocity = velocity.move_toward(swim_dir * speed, 12.0 * Constants.BLOCK_SIZE * delta)
 	var next := global_position + velocity * delta
 	if not World.is_water(next):
 		swim_dir = -swim_dir
@@ -349,7 +349,7 @@ func _try_touch() -> void:
 		if d.y >= half.y + 12.0:
 			continue
 		var touching: bool = d.x < half.x + 7.0
-		var in_front: bool = signf(to.x) == float(facing) and d.x < half.x + reach 				and not World.is_solid(global_position + Vector2(facing * (half.x + Constants.BLOCK_SIZE * 0.5), 0.0))
+		var in_front: bool = signf(to.x) == float(facing) and d.x < half.x + reach 				and not World.is_solid(global_position + Vector2(facing * (half.x + Constants.BLOCK_SIZE * 1.0), 0.0))
 		if touching or in_front:
 			attack_cd = Constants.ENEMY_TOUCH_COOLDOWN
 			_play_oneshot("attack", 0.5) # the bite reads on the body (2026-09-01)
@@ -398,7 +398,7 @@ func _die() -> void:
 			var n := randi_range(int(drop.min), int(drop.max))
 			if n > 0:
 				World.spawn_item(drop.item, n, global_position,
-					Vector2(randf_range(-1.5, 1.5), -2.0) * Constants.BLOCK_SIZE)
+					Vector2(randf_range(-3.0, 3.0), -4.0) * Constants.BLOCK_SIZE)
 	Audio.play_sfx("dismantle_rattle", global_position, 1, -10.0)
 	_spawn_corpse()
 	World.remove_enemy(rec)

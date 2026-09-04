@@ -6,7 +6,8 @@ extends Node
 ## and the thing in your bag. Per LT-11 nothing here is per-item code.
 
 const ITEM_ICON_SHEET := "res://assets/sprites/items.png"
-const BLOCK_ATLAS := "res://assets/tiles/placeholder_blocks.png"
+const BLOCK_ATLAS := "res://assets/tiles/placeholder_blocks.png" # the 16 px sheet: block ICONS only (world tiles come from StructureRenderer.TILESET)
+const ICON_PX := 16 # icon sheets (items.png, the block atlas) are 16 px cells - independent of BLOCK_SIZE since 2026-09-04
 const OBJECT_SPRITE_DIR := "res://assets/sprites/objects/"
 const ICON_DIR := "res://assets/sprites/icons/" # Icon-Editor overrides (authored_icon)
 const STATIONS := ["hand", "workbench", "forge", "med_station", "dive_station", "mod_bench"]
@@ -150,6 +151,22 @@ func is_tool(id: String, type: String) -> bool:
 func scrap_yield(id: String) -> Array:
 	return items.get(id, {}).get("scrap", [])
 
+## Which stage's scrap bench handles an item (user request 2026-09-02): the
+## HIGHEST material tier it yields. 1 wood/plastic/cloth · 2 scrap_metal/stone ·
+## 3 iron · 4 steel. 0 = not scrappable furniture. The Master bench (stage 5)
+## takes any stage >= 1.
+const MATERIAL_STAGE := {
+	"cloth": 1, "plastic": 1, "wood": 1, "stone": 2, "scrap_metal": 2, "iron": 3, "steel": 4,
+}
+func item_scrap_stage(id: String) -> int:
+	var yields: Array = scrap_yield(id)
+	if yields.is_empty():
+		return 0
+	var stage := 0
+	for y in yields:
+		stage = maxi(stage, int(MATERIAL_STAGE.get(y.item, 1)))
+	return stage
+
 func recipes_for_station(station: String, known: Callable) -> Array:
 	var out := []
 	for r in recipe_list:
@@ -211,5 +228,5 @@ func object_texture(id: String) -> Texture2D:
 func _atlas(sheet: String, cell: Vector2i) -> Texture2D:
 	var at := AtlasTexture.new()
 	at.atlas = load(sheet)
-	at.region = Rect2(cell.x * Constants.BLOCK_SIZE, cell.y * Constants.BLOCK_SIZE, Constants.BLOCK_SIZE, Constants.BLOCK_SIZE)
+	at.region = Rect2(cell.x * ICON_PX, cell.y * ICON_PX, ICON_PX, ICON_PX)
 	return at

@@ -12,7 +12,7 @@ func _ready() -> void:
 	ed.rooms_path = "user://rooms_test.json"
 	add_child(ed)
 	await get_tree().process_frame
-	check(ed.room.width == 12 and ed.room.height == 5, "default room is 12x5")
+	check(ed.room.width == 24 and ed.room.height == 10, "default room is 24x10 cells")
 	# Esc menu (user request): the in-game pause menu mounted with editor bindings.
 	var pm = ed.get_tree().get_first_node_in_group("pause_menu")
 	check(pm != null and not pm.open, "pause menu mounted, closed at start")
@@ -29,18 +29,18 @@ func _ready() -> void:
 	ed.depth_max_spin.value = 80
 	ed._apply_settings()
 	ed._set_tool("block:2")
-	ed._paint(Vector2i(3, 2))
+	ed._paint(Vector2i(6, 4))
 	check(ed.room.blocks.size() == 1 and ed.room.blocks[0].mat == 2, "block painted (wood)")
-	check(ed._fits_object("med_cart", 5), "furniture fits in empty space")
-	ed.room.objects.append({"id": "med_cart", "x": 5})
-	check(not ed._fits_object("cabinet", 6), "overlap rejected")
-	check(ed._fits_object("cabinet", 8), "adjacent placement fits")
-	ed.room.objects.append({"id": "cabinet", "x": 8})
+	check(ed._fits_object("med_cart", 10), "furniture fits in empty space")
+	ed.room.objects.append({"id": "med_cart", "x": 10})
+	check(not ed._fits_object("cabinet", 12), "overlap rejected")
+	check(ed._fits_object("cabinet", 14), "adjacent placement fits")
+	ed.room.objects.append({"id": "cabinet", "x": 14})
 	# Free placement: any object may sit off the floor; footprints collide as rectangles.
 	ed._set_tool("object:chair")
-	ed._use_tool(Vector2i(0, ed._standing_row() - 2)) # bottom row 2 above the floor
-	check(ed.room.objects.size() == 3 and int(ed.room.objects[2].get("dy", 0)) == 2, "furniture placed off the floor keeps dy")
-	check(not ed._fits_object("chair", 0, null, 2), "elevated overlap rejected")
+	ed._use_tool(Vector2i(0, ed._standing_row() - 4)) # bottom row 4 above the floor (a chair is 2x4 cells)
+	check(ed.room.objects.size() == 3 and int(ed.room.objects[2].get("dy", 0)) == 4, "furniture placed off the floor keeps dy")
+	check(not ed._fits_object("chair", 0, null, 4), "elevated overlap rejected")
 	check(ed._fits_object("chair", 0, null, 0), "same column on the floor still fits below it")
 	ed._save()
 	var lib = JSON.parse_string(FileAccess.get_file_as_string("user://rooms_test.json"))
@@ -48,7 +48,7 @@ func _ready() -> void:
 	var r = lib.rooms[0]
 	check(r.zone == "civil" and r.depth_min == 10 and r.depth_max == 80 and r.type == "test ward", "settings exported (zone, type, depth range)")
 	check(r.objects.size() == 3 and r.blocks.size() == 1, "contents exported")
-	check(int(r.objects[2].get("dy", 0)) == 2, "elevated dy exported")
+	check(int(r.objects[2].get("dy", 0)) == 4, "elevated dy exported")
 	ed._save() # update path
 	lib = JSON.parse_string(FileAccess.get_file_as_string("user://rooms_test.json"))
 	check(lib.rooms.size() == 1, "re-saving updates instead of duplicating")

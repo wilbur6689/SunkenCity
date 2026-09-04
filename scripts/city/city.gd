@@ -44,6 +44,8 @@ func _ready() -> void:
 			var xy := a.substr(5).split(",")
 			if xy.size() == 2:
 				player.travel_to(Vector2((int(xy[0]) + 0.5) * Constants.BLOCK_SIZE, (int(xy[1]) + 1) * Constants.BLOCK_SIZE))
+		elif a.begins_with("--time="): # dev aid: set time_of_day (0=midnight, 0.5=noon)
+			World.time_of_day = clampf(a.substr(7).to_float(), 0.0, 1.0)
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--shot="):
 			_take_shot(a.substr(7))
@@ -51,6 +53,7 @@ func _ready() -> void:
 func _boot_generated() -> void:
 	var t0 := Time.get_ticks_msec()
 	gen = CityGen.generate(seed_value)
+	var t_gen := Time.get_ticks_msec() - t0
 	World.register(gen.grid, gen.spawn_feet, items_root, objects_root, structure_renderer,
 		gen.waterline_row, int(gen.get("city_w", -1)))
 	# Data-only records: the object window instantiates the ones near spawn.
@@ -59,6 +62,8 @@ func _boot_generated() -> void:
 		if o.has("link"): # interior doorway: its twin's cell + shared open state
 			rec["link"] = o.link
 			rec.open = bool(o.get("open", false))
+		if o.has("door"): # release button: the barred door it opens
+			rec["door"] = o.door
 	for dc in gen.doors:
 		World.add_object_record(dc.id, dc.cell, false)
 	for p in gen.get("pockets", []):
@@ -66,13 +71,15 @@ func _boot_generated() -> void:
 	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value)
 	for e in EnemyGen.seed_city(gen, seed_value): # M4: seeded once, no respawn (GD-02)
 		World.add_enemy_record(e.type, e.pos)
+	var t_flood0 := Time.get_ticks_msec()
 	CityGen.flood(World) # after doors exist: sealing is solidity (WS-20)
+	var t_flood := Time.get_ticks_msec() - t_flood0
 	# Pockets touch no ocean: the generator decided which ones drowned.
 	for p in gen.get("pockets", []):
 		if p.flooded:
 			World.water_sim.fill_rect(p.rect, WaterSim.MAX_LEVEL)
-	print("City seed %d: %d towers, %d enemies, generated in %d ms" % [seed_value, gen.towers,
-		World.enemy_records.size(), Time.get_ticks_msec() - t0])
+	print("City seed %d: %d towers, %d enemies, generated in %d ms (gen %d · records+loot+enemies %d · flood %d)" % [seed_value, gen.towers,
+		World.enemy_records.size(), Time.get_ticks_msec() - t0, t_gen, t_flood0 - t0 - t_gen, t_flood])
 	_setup_visuals()
 	player.respawn()
 	player.inventory.add("bandage", 2) # LT-30 starting kit
@@ -103,6 +110,10 @@ func _boot_loaded(data: Dictionary) -> void:
 		rec.outlet = st.get("outlet", WorldObject.NO_OUTLET)
 		if st.has("link"):
 			rec["link"] = st.link
+		if st.has("door"):
+			rec["door"] = st.door
+		if st.has("grow_day"):
+			rec["grow_day"] = st.grow_day
 		if rec.storage != null and st.has("storage"):
 			var slots: Array = (st.storage as Array).duplicate(true)
 			slots.resize(rec.storage.slots.size())
@@ -136,19 +147,25 @@ func _setup_visuals() -> void:
 
 ## Red moon dressing (CC-14): a blood tint while the moon is up, a warning
 ## line when it rises. The World runs the actual waves.
-var _red_tint: CanvasModulate = null
+@onready var _daynight: CanvasModulate = $CanvasModulate # the scene's world-layer tint
 var _red_moon_seen := false
 
 func _process(_delta: float) -> void:
-	if not World.is_ready() or World.red_moon_active == _red_moon_seen:
+	if not World.is_ready():
 		return
-	_red_moon_seen = World.red_moon_active
-	if _red_tint == null:
-		_red_tint = CanvasModulate.new()
-		add_child(_red_tint)
-	_red_tint.color = Constants.RED_MOON_TINT if _red_moon_seen else Color.WHITE
-	player.message.emit("The moon rises red — they are coming"
-		if _red_moon_seen else "Dawn breaks; the red moon sets")
+	# Visible day/night cycle (user request 2026-09-02): the world fades to a
+	# moonlit blue at deepest night and back to full daylight by noon, driven
+	# by the sun. The blood moon layers its red over whatever the night tint is.
+	var s := World.sun_strength() # [0.12, 1.0]
+	var t := clampf((s - 0.12) / 0.88, 0.0, 1.0)
+	var col: Color = Constants.NIGHT_TINT.lerp(Color.WHITE, t)
+	if World.red_moon_active:
+		col = col * Constants.RED_MOON_TINT
+	_daynight.color = col
+	if World.red_moon_active != _red_moon_seen:
+		_red_moon_seen = World.red_moon_active
+		player.message.emit("The moon rises red — they are coming"
+			if _red_moon_seen else "Dawn breaks; the red moon sets")
 
 ## Write both save files for the current run.
 func save_now() -> void:
@@ -195,7 +212,7 @@ func _take_shot(spec: String) -> void:
 		for obj in World.objects_root.get_children():
 			if obj is WorldObject and obj.is_interactable():
 				var d: float = obj.center().distance_to(player.global_position)
-				if d < best and d < 5 * Constants.BLOCK_SIZE:
+				if d < best and d < 10 * Constants.BLOCK_SIZE:
 					best = d
 					nearest = obj
 		if nearest != null:
@@ -204,4 +221,8 @@ func _take_shot(spec: String) -> void:
 			await get_tree().create_timer(0.5).timeout # let the card slide up
 	get_viewport().get_texture().get_image().save_png(path)
 	print("shot saved: ", path)
+	var hud := get_node_or_null("HUD")
+	if hud != null and hud.get("_debug_text") != null and OS.get_cmdline_user_args().has("--f3"):
+		print("F3 at shot:
+" + hud._debug_text.text) # dev aid: exact perf numbers alongside the picture
 	get_tree().quit()

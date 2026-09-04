@@ -80,15 +80,20 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 - [x] **WS-01.** What is the base game resolution and camera zoom (e.g., 640×360 viewport scaled up)?
   - **A:** **640×360** internal resolution (40×22.5 blocks visible), integer-scaled (×2 → 720p, ×3 → 1080p, ×6 → 4K).
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* 1920×1080 canvas, default zoom 3.0 = the same 640×360 world px on screen (80×45 blocks visible); fractional stretch.
 - [x] **WS-02.** How wide is the character sprite in pixels (hitbox vs visual)?
   - **A:** Hitbox **12px wide (0.75 blocks) × ~22px tall**; visual sprite may reach 16px wide with gear. The player fits through 1-block-wide holes.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* the same 12×22 px hitbox is now 1.5×2.75 blocks; a standing player needs a 3-block gap, the compact form fits 2.
 - [x] **WS-03.** What are the movement speeds — walk, sprint, surface swim, underwater swim?
   - **A:** Walk **~5 blocks/s**, sprint **~7**, surface swim **~5** (matches walk), underwater **~4**. All speeds live in one tuning config resource.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* walk 10 / sprint 14 / swim 10 blocks/s (identical px/s).
 - [x] **WS-04.** How high can the player jump, in blocks?
   - **A:** **3 blocks.** Two-jump rule: the next floor up must be reachable in two jumps via an intermediate foothold (furniture/rubble) — a world-gen guarantee.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* 6 blocks (`JUMP_HEIGHT_BLOCKS`, `CityGen.JUMP_CELLS`); the validator carves 6-tall doorways.
 - [x] **WS-05.** Can the player crouch/crawl through gaps smaller than their standing height?
   - **A:** Yes — **crawl through 2-block gaps** (vents, collapsed passages); standing traversal needs 3 blocks.
   - *Implementation note (updated 2026-08-31):* a 1.5× player rescale (which made this answer exact) was tried and reverted for feel. With the kept 12×22 hitbox a standing player fits a 2-block (32px) gap; crawling (12×12 compact) is what fits **1-block** gaps. Either amend this answer to "crawl through 1-block gaps, stand through 2" or revisit the hitbox — decide before M3 room templates bake gap sizes.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* resolved by the finer grid — crawl through **2-block (16 px)** gaps, stand in **3-block (24 px)** ones (`CityGen.CRAWL_GAP` / `STAND_GAP`).
 - [x] **WS-06.** How does underwater movement control — free 8-directional swim, or gravity-biased?
   - **A:** (From WS-09) **Free 8-directional swim** with neutral buoyancy.
 - [x] **WS-07.** How does surface swimming differ from being underwater (treading, faster lateral movement)?
@@ -101,14 +106,17 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
   - **A:** Yes — **total carried load slows swimming** progressively (see WS-14). Hauling loot up is part of the challenge.
 - [x] **WS-11.** How tall is a standard building floor in blocks (e.g., 6 blocks = 12 ft)?
   - **A:** **6 blocks floor-to-floor** (≈5 blocks open room + 1 block slab). Every floor = 12 ft of dive depth.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* 12 blocks floor-to-floor (10 open + a 2-block slab); still 12 ft per floor.
 - [x] **WS-12.** What is the player's interaction/mining reach in blocks?
   - **A:** **4 blocks (8 ft)**; extendable later via tech tree/gear.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* 8 blocks (8 ft).
 - [x] **WS-13.** How many inventory slots does the player have, and does it expand?
   - **A:** **~40 slots with stacking** as the organizational limit.
 - [x] **WS-14.** Is there a weight/encumbrance system on top of slot limits?
   - **A:** Yes, as a **soft cap**: no hard weight limit — carried weight progressively slows swimming, and the player decides whether the loot is worth swimming slowly.
 - [x] **WS-15.** Is there fall damage, and does water entry from height cause damage?
   - **A:** Fall damage on land (safe to ~8 blocks, scaling beyond); **water always breaks the fall from any height**. Flooding the floor below is a legitimate safety strategy.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* safe to 16 blocks (16 ft), 5 damage per block beyond.
 - [x] **WS-16.** What traversal aids exist — ladders, ropes, stairs, grappling hooks?
   - **A:** **Ropes and ladders** in MVP (stairs emerge from block placement/platforms). **No grappling hook for now.** Plus **engineered water currents**: piped/directed flow exerts force on the player, so currents can push the player into otherwise unreachable areas.
 - [x] **WS-17.** How does lighting work — darkness underwater/indoors, placeable and carried lights?
@@ -140,6 +148,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
   - **A:** Start simple: **depth-driven color grade only** (warm→cold ramp per CC-22), at native resolution. No distortion for now.
 - [x] **WS-30.** What unit conventions should the technical docs standardize (blocks vs pixels vs feet)?
   - **A:** **Blocks are canonical** in all design docs and tuning values (blocks, blocks/s); pixels only in art specs (1 block = 16px); feet as flavor only (1 block = 2 ft). Code holds a single `BLOCK_SIZE = 16` constant.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* 1 block = **8 px = 1 ft**; `BLOCK_SIZE = 8`. Icon sheets stay 16 px (`Data.ICON_PX`), world tiles are 24 px texels drawn at 1/3; the map/minimap work on 2×2 macro cells (`MAP_CELL`).
 
 ---
 
@@ -345,6 +354,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 
 - [x] **CT-01.** How big is the city — number of buildings, world width, and depth to ground in blocks?
   - **A:** **~40 towers**; center towers ~50 floors (50 × 6 = ~300 blocks ≈ 600 ft), tapering per the CC-28 bell curve to 5–10 floor fully submerged buildings at the edges. Total world ≈ **2,500 × 400 blocks**.
+  - *Amended 2026-09-04 (half-size blocks, 1 block = 8 px = 1 ft; nothing changed on screen):* 50 × 12 = ~600 blocks ≈ 600 ft; world 4,800 × 800 blocks (`CityGen.WORLD_W/H`), same pixel extent.
 - [x] **CT-02.** What building types exist (residential, office, hospital, police, mall, industrial)?
   - **A:** MVP: **residential, office, hospital** — and towers are **mixed-use: types are assigned per floor/section**, so one skyscraper can stack all three. More types (police, mall, industrial) join with the materials balancing pass.
   - *Amended 2026-09-01 (user decision): room ZONES are now **residential · business** (small service firms — lawyers, accountants, agencies) **· commercial** (retail, office) **· industrial · civil** (city admin, police, hospital, post office); "hospital" was renamed civil. Zones key room templates, furniture palettes, loot tables and clutter.*

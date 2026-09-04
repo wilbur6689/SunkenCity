@@ -1,12 +1,17 @@
 class_name LightRenderer
 extends Node2D
-## Darkness overlay (fog of war). Visibility is computed per world cell
+## Darkness overlay (fog of war). Visibility is computed per FOG cell
 ## (World.visibility_at: interior-only, raycast LOS, light x sight falloff)
-## into a small texture — one pixel per cell — then drawn over the view by
-## a shader that samples it bilinearly and quantizes to quarter-block steps,
-## so fog edges are soft 4px stipples instead of full-block squares.
+## into a small texture - one pixel per fog cell - then drawn over the view by
+## a shader that samples it bilinearly and quantizes to 4 px steps, so fog
+## edges are soft stipples instead of full-block squares.
+##
+## A fog cell is FOG_CELL world cells square (2 since the 8 px cell of
+## 2026-09-04): sampling every world cell would cost 4x the raycasts for the
+## same screen, so the fog stays at the old 16 px granularity.
 
-const SUB_STEPS := 4.0 # sub-cells per block (1/4 block granularity)
+const FOG_CELL := 2       # world cells per fog sample
+const SUB_STEPS := 4.0    # quantization steps per fog cell (4 px stipples)
 
 const FOG_SHADER := """
 shader_type canvas_item;
@@ -55,7 +60,7 @@ func _draw() -> void:
 	if player == null:
 		return
 	var viewer: Vector2 = player.global_position
-	var s := Constants.BLOCK_SIZE
+	var s := Constants.BLOCK_SIZE * FOG_CELL # fog-cell size in world px
 	var view := get_viewport_rect()
 	var inv := get_canvas_transform().affine_inverse()
 	var top_left := inv * view.position
@@ -64,7 +69,7 @@ func _draw() -> void:
 	var c1 := Vector2i(ceili(bottom_right.x / s) + 1, ceili(bottom_right.y / s) + 1)
 	var size := Vector2i(c1.x - c0.x + 1, c1.y - c0.y + 1)
 	var recompute := size != _size or c0 != _origin or _texture == null or _idle >= 0.5 \
-		or (_cooldown <= 0.0 and viewer.distance_to(_last_viewer) >= Constants.BLOCK_SIZE * 0.25)
+		or (_cooldown <= 0.0 and viewer.distance_to(_last_viewer) >= 4.0) # px
 	if recompute:
 		var t0 := Time.get_ticks_usec()
 		if size != _size:
@@ -74,7 +79,7 @@ func _draw() -> void:
 		_origin = c0
 		for y in size.y:
 			for x in size.x:
-				var vis := World.visibility_at(Vector2i(c0.x + x, c0.y + y), viewer)
+				var vis := World.visibility_at(Vector2i((c0.x + x) * FOG_CELL, (c0.y + y) * FOG_CELL), viewer)
 				_image.set_pixel(x, y, Color(vis / LightMap.MAX_LIGHT, 0, 0))
 		if _texture == null:
 			_texture = ImageTexture.create_from_image(_image)

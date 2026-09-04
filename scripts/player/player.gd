@@ -66,6 +66,7 @@ func _ready() -> void:
 	_stand_shape.size = Constants.STAND_HITBOX
 	_compact_shape.size = Constants.COMPACT_HITBOX
 	_set_compact(false)
+	_apply_zoom()
 	if World.is_ready():
 		respawn()
 
@@ -302,7 +303,7 @@ func use_item(slot: int) -> void:
 		known_recipes[use.learn_recipe] = true
 		message.emit("Learned recipe: " + Data.item_name(Data.recipes[use.learn_recipe].output.item))
 	if use.has("drop_light"):
-		World.spawn_item(s.id, 1, global_position, Vector2(facing * 3.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
+		World.spawn_item(s.id, 1, global_position, Vector2(facing * 6.0 * Constants.BLOCK_SIZE, -4.0 * Constants.BLOCK_SIZE))
 	inventory.remove_from_slot(slot, 1)
 
 func drop_held(n: int) -> void:
@@ -310,7 +311,7 @@ func drop_held(n: int) -> void:
 	if id == "":
 		return
 	var taken := inventory.remove_from_slot(selected_slot, n)
-	World.spawn_item(id, taken, global_position, Vector2(facing * 4.0 * Constants.BLOCK_SIZE, -2.0 * Constants.BLOCK_SIZE))
+	World.spawn_item(id, taken, global_position, Vector2(facing * 8.0 * Constants.BLOCK_SIZE, -4.0 * Constants.BLOCK_SIZE))
 
 # --- Equipment (LT-03: Suit + Head + two Accessories; accessory3/4 are the
 # reserved mounts, opened by the Tool Harness / Rigger's Kit abilities) ---
@@ -427,6 +428,46 @@ func scrap_item(id: String, n: int = 1, allow_field: bool = false) -> bool:
 	skills.add_xp("scrapping", float(obj_def.get("xp", 2)) * n)
 	message.emit("Scrapped %s x%d%s" % [Data.item_name(id), n, "" if full else " (field yield)"])
 	return true
+
+## Tiered scrap benches (user request 2026-09-02): grind every collected
+## FURNITURE object of `stage` in the bag down to its materials at once (full
+## yield). Stage 5 (Master bench) takes any tier. Never touches tools, gear,
+## materials, or functional objects (chests/beds/lamps/stations) you carry.
+func bulk_scrap(stage: int) -> String:
+	var to_scrap := {} # id -> total count
+	var blocked := false
+	for slot in inventory.slots:
+		if slot == null:
+			continue
+		var id: String = slot.id
+		if Data.item(id).get("category", "") != "placeable_object":
+			continue
+		var odef: Dictionary = Data.objects.get(id, {})
+		if odef.get("kind", "") != "scrap":
+			continue
+		var istage := Data.item_scrap_stage(id)
+		if istage < 1 or (stage < 5 and istage != stage):
+			continue
+		if skills.level("scrapping") < int(odef.get("skill", 0)):
+			blocked = true
+			continue
+		to_scrap[id] = int(to_scrap.get(id, 0)) + int(slot.count)
+	var total := 0
+	for id: String in to_scrap:
+		var n: int = to_scrap[id]
+		for y in Data.scrap_yield(id):
+			var count := roll_yield(int(y.count) * n)
+			var leftover: int = inventory.add(y.item, count)
+			notify_gain(y.item, count - leftover)
+			if leftover > 0:
+				World.spawn_item(y.item, leftover, global_position)
+		inventory.remove(id, n)
+		skills.add_xp("scrapping", float(Data.objects.get(id, {}).get("xp", 2)) * n)
+		total += n
+	if total == 0:
+		return "Nothing here to grind down" + (" - needs a higher Scrapping skill" if blocked else "")
+	Audio.play_sfx("dismantle_rattle", global_position)
+	return "Ground down %d object%s to materials" % [total, "" if total == 1 else "s"]
 
 func open_container(obj: WorldObject) -> void:
 	container_opened.emit(obj)
@@ -587,9 +628,16 @@ func _state_grounded(delta: float) -> void:
 		_jump()
 		return
 	if not is_on_floor():
+		# Going down a ladder/rope (user request 2026-09-02): pressing down
+		# while over a climbable grabs and descends it instead of falling -
+		# whether standing on a ladder top or stepping off a ledge onto a rope.
+		# (Gated on the down key so a fast shaft-drop into water still falls.)
+		if input_dir.y > 0.0 and climbable_below:
+			_enter_climbing()
+			return
 		var ladder_top := _ladder_top_surface()
 		if not is_nan(ladder_top) and velocity.y >= 0.0:
-			# Standing on a ladder top: keep the feet pinned to the surface.
+			# Standing on a ladder top (not descending): pin to the surface.
 			global_position.y = ladder_top - FEET_Y
 			velocity.y = 0.0
 			return
@@ -642,18 +690,22 @@ func _state_crawling(delta: float) -> void:
 func _state_climbing(delta: float) -> void:
 	if _try_enter_water():
 		return
-	# Descending onto/through a ladder counts as climbing even while the body
-	# center is still above the top rung (stepping down from a ladder top).
-	if not on_climbable and not (input_dir.y > 0.0 and climbable_below):
+	# Column exit. Hanging at the very top (center above the top rung) still
+	# counts as on the ladder/rope so you can grab-and-hang from a ledge and
+	# then descend (user request 2026-09-02); you only leave by reaching a
+	# floor, topping out (pressing up off the top), or clearing the column.
+	if not on_climbable and not climbable_below:
 		if is_on_floor():
 			state = State.GROUNDED
 		else:
-			if input_dir.y < 0.0:
-				# Topping out: a partial-jump hop so the player can step off the
-				# rope/ladder instead of dropping straight back into the hole
-				# (0.8 clears the taller body's centre-to-feet gap).
-				velocity.y = Constants.jump_velocity * 0.8
 			_enter_airborne()
+		return
+	if not on_climbable and input_dir.y < 0.0:
+		# Topping out: a partial-jump hop so the player can step off the
+		# rope/ladder instead of dropping straight back into the hole
+		# (0.8 clears the taller body's centre-to-feet gap).
+		velocity.y = Constants.jump_velocity * 0.8
+		_enter_airborne()
 		return
 	if _consume_jump():
 		_jump()
@@ -825,6 +877,7 @@ func respawn() -> void:
 	fall_start_y = global_position.y
 	camera.offset = Vector2.ZERO
 	camera.reset_smoothing()
+	reset_physics_interpolation()
 
 ## Step through an interior doorway (or any authored portal): land with the
 ## feet at `feet`, no momentum, camera snapped — the far side can be a whole
@@ -837,6 +890,7 @@ func travel_to(feet: Vector2) -> void:
 	fall_start_y = global_position.y
 	camera.offset = Vector2.ZERO
 	camera.reset_smoothing()
+	reset_physics_interpolation()
 	World.refresh_objects_around(global_position)
 	unstick()
 
@@ -859,12 +913,12 @@ var _splash_cooldown: float = 0.0
 func _update_move_sfx(delta: float) -> void:
 	_splash_cooldown = maxf(_splash_cooldown - delta, 0.0)
 	var stride := Constants.FOOTSTEP_STRIDE_BLOCKS * Constants.BLOCK_SIZE
-	if state == State.GROUNDED and absf(velocity.x) > 0.5 * Constants.BLOCK_SIZE:
+	if state == State.GROUNDED and absf(velocity.x) > 1.0 * Constants.BLOCK_SIZE:
 		_step_dist += absf(velocity.x) * delta
 		if _step_dist >= stride:
 			_step_dist = 0.0
 			Audio.play_sfx("footstep_wood", _feet_point(), 12, -8.0)
-	elif state == State.CRAWLING and velocity.length() > 0.4 * Constants.BLOCK_SIZE:
+	elif state == State.CRAWLING and velocity.length() > 0.8 * Constants.BLOCK_SIZE:
 		_step_dist += velocity.length() * delta
 		if _step_dist >= stride:
 			_step_dist = 0.0
@@ -873,9 +927,9 @@ func _update_move_sfx(delta: float) -> void:
 		_step_dist = stride * 0.6 # first step lands quickly when moving resumes
 	if in_water and not _was_in_water and _splash_cooldown <= 0.0:
 		var speed := velocity.length()
-		if speed > 1.5 * Constants.BLOCK_SIZE:
+		if speed > 3.0 * Constants.BLOCK_SIZE:
 			_splash_cooldown = 0.4
-			var vol := clampf(-18.0 + speed / (6.0 * Constants.BLOCK_SIZE) * 18.0, -18.0, 0.0)
+			var vol := clampf(-18.0 + speed / (12.0 * Constants.BLOCK_SIZE) * 18.0, -18.0, 0.0)
 			Audio.play_sfx("splash", _feet_point(), 5, vol)
 	_was_in_water = in_water
 
@@ -887,8 +941,8 @@ var _tool_sprite: Sprite2D = null
 
 ## 32x32 authored icons ride in the hand at 16 px (2026-09-01).
 func _fit_tool_sprite() -> void:
-	if _tool_sprite.texture != null and _tool_sprite.texture.get_width() > 16:
-		_tool_sprite.scale = Vector2.ONE * (16.0 / _tool_sprite.texture.get_width())
+	if _tool_sprite.texture != null and _tool_sprite.texture.get_width() > Data.ICON_PX:
+		_tool_sprite.scale = Vector2.ONE * (float(Data.ICON_PX) / _tool_sprite.texture.get_width())
 	else:
 		_tool_sprite.scale = Vector2.ONE
 
@@ -962,9 +1016,12 @@ func _chop_pose(ph: float, dir: float) -> void:
 ## horizontally and rotated 90 deg down toward the mid-section, so it hangs
 ## in the hand instead of resting on the head.
 func _apply_rest_pose(dir: float) -> void:
-	var ang := (PI * 0.5) * dir
+	# ~82 deg, not a flat 90: tilted back counter-clockwise so the handle
+	# reads level in the hand (user request 2026-09-02); slightly scaled down.
+	var ang := (PI * 0.5 - 0.14) * dir
 	_tool_sprite.rotation = ang
-	_tool_sprite.flip_h = dir > 0 # flipped vs the chop's facing flip
+	_tool_sprite.flip_h = dir > 0
+	_tool_sprite.scale *= 0.85
 	var head := Vector2(sin(ang), -cos(ang))
 	var pos := Vector2(dir * 3.0, 0.0) + head * 3.0
 	if state == State.SURFACE_SWIM:
@@ -974,7 +1031,7 @@ func _apply_rest_pose(dir: float) -> void:
 func _apply_tool_pose(a: float, dir: float) -> void:
 	var ang := a * dir
 	_tool_sprite.rotation = ang
-	_tool_sprite.flip_h = dir < 0
+	_tool_sprite.flip_h = dir > 0 # matches the rest pose's flip so the blade leads the swing (user request 2026-09-02)
 	var head := Vector2(sin(ang), -cos(ang))
 	var pos := Vector2(dir * 4.0, -6.0) + head * 4.0
 	if state == State.SURFACE_SWIM: # ride the chest-deep body
@@ -1008,7 +1065,7 @@ func _update_sprite(delta: float) -> void:
 		facing = 1 if input_dir.x > 0.0 else -1
 	_update_gear_visuals()
 	var speed := absf(velocity.x) if not compact else velocity.length()
-	var moving := speed > 0.5 * Constants.BLOCK_SIZE
+	var moving := speed > 1.0 * Constants.BLOCK_SIZE
 	var frame_col := 0
 	if moving:
 		_anim_time += delta * clampf(speed / Constants.WALK_SPEED, 0.5, 2.0)
@@ -1034,11 +1091,19 @@ var zoom_index: int = Constants.CAMERA_ZOOM_DEFAULT_INDEX
 ## Camera stays centred on the player (smooth follow only, no lookahead).
 func _update_camera(_delta: float) -> void:
 	camera.offset = Vector2.ZERO
+	if not dying: # the death scene drives the zoom itself
+		_apply_zoom() # re-apply each frame so a UI-size change takes effect live
+
+## Camera zoom, divided by the UI scale so that enlarging the UI (via the
+## engine's content_scale_factor, which scales the whole canvas) leaves the
+## world the same apparent size (user request 2026-09-02).
+func _apply_zoom() -> void:
+	var z: float = Constants.CAMERA_ZOOM_LEVELS[zoom_index] / maxf(UIScale.content_scale(), 0.01)
+	camera.zoom = Vector2(z, z)
 
 func zoom_step(direction: int) -> void:
 	zoom_index = clampi(zoom_index + direction, 0, Constants.CAMERA_ZOOM_LEVELS.size() - 1)
-	var z: float = Constants.CAMERA_ZOOM_LEVELS[zoom_index]
-	camera.zoom = Vector2(z, z)
+	_apply_zoom()
 
 func state_name() -> String:
 	return State.keys()[state]

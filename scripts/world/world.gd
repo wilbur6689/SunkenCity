@@ -25,6 +25,10 @@ var _light_tick: int = 0
 ## something it depends on changed: blocks/doors/power (_light_dirty),
 ## active water, or the window/sun/sources key.
 var _light_dirty: bool = true
+## Per-column cache of the first solid row from the sky (structure or a closed
+## door); -1 = not computed yet. Invalidated by _cell_changed and door changes.
+## Lets the relight skip the empty rows above the window (2026-09-04 perf).
+var _sky_cache := PackedInt32Array()
 var _light_key: Array = []
 var _water_relight_at: int = 0 # next _light_tick water motion may relight at
 
@@ -33,10 +37,12 @@ var waterline_row: int = 0
 ## The city proper (map, edge clamp, spawns). The grid may extend east of it
 ## into the VOID annex that holds the interior pockets.
 var city_bounds: Rect2i
+var map_bounds: Rect2i # city_bounds in map cells (Constants.MAP_CELL); the annex is never mapped
 ## Interior pockets (user request 2026-09-01): {rect: interior Rect2i,
 ## exit: doorway cell in the city, entry: doorway cell inside}. Saved.
 var pockets: Array = []
 const NO_LINK := Vector2i(-99999, -99999)
+const SIGHT_RAY_STEP_PX := 6.4 # sight raycast sample step in world px (0.4 of the old 16 px block; independent of BLOCK_SIZE)
 ## Day/night (CC-11): 0..1, 0 = midnight; advances in real time.
 var time_of_day: float = 0.35 # start in the morning
 
@@ -84,6 +90,7 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	spawn_position = p_spawn
 	waterline_row = p_waterline_row
 	city_bounds = grid.bounds if p_city_w < 0 else Rect2i(grid.bounds.position, Vector2i(p_city_w, grid.bounds.size.y))
+	map_bounds = MapReveal.macro_bounds(city_bounds)
 	pockets.clear()
 	placed_blocks.clear()
 	structure_damage.clear()
@@ -109,6 +116,8 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	map_reveal = MapReveal.new(grid.bounds)
 	_light_dirty = true
 	_light_key = []
+	_sky_cache.resize(grid.bounds.size.x)
+	_sky_cache.fill(-1)
 
 func is_ready() -> bool:
 	return grid != null
@@ -123,6 +132,10 @@ func _physics_process(delta: float) -> void:
 	time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
 	if time_of_day < prev_time:
 		day_count += 1 # midnight wrap
+	# Trees grow at dawn, not midnight (user request 2026-09-02): each morning
+	# every planted/seeded stage advances once - a sapling planted on day N is
+	# fully grown on the morning of day N+2 (a 2-day period).
+	if prev_time < Constants.MORNING_TIME and time_of_day >= Constants.MORNING_TIME:
 		_grow_trees()
 	_tick_night(delta)
 	_tick_red_moon(delta)
@@ -138,7 +151,7 @@ func _physics_process(delta: float) -> void:
 		if p != null:
 			var center := cell_at(p.global_position)
 			var radius: int = p.reveal_radius() if p.has_method("reveal_radius") else Constants.MAP_REVEAL_RADIUS
-			map_reveal.reveal_disc(center, radius)
+			map_reveal.reveal_disc(map_macro_for(p.global_position), radius)
 			_update_object_window(center)
 			_update_enemy_window(center)
 			var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
@@ -156,8 +169,8 @@ func _physics_process(delta: float) -> void:
 				_light_dirty = false
 				_light_key = key
 				var lt0 := Time.get_ticks_usec()
-				light_map.compute_window(window, grid.bounds.position.y, is_solid_cell,
-					water_sim.level_at, sources, sun_strength())
+				light_map.compute_window(window, grid.bounds, grid.structure, water_sim.levels,
+					closed_door_cells(), sky_row, waterline_row, sources, sun_strength())
 				perf.light_ms = (Time.get_ticks_usec() - lt0) / 1000.0
 
 ## Daylight factor (CC-11): full sun by day, a dim glow at night.
@@ -223,6 +236,11 @@ func map_cell_for(pos: Vector2) -> Vector2i:
 	var p := pocket_at(cell)
 	return p.exit if not p.is_empty() else cell
 
+## The same anchor in MAP cells (the reveal bitset / minimap / map grid).
+func map_macro_for(pos: Vector2) -> Vector2i:
+	var c := map_cell_for(pos)
+	return Vector2i(floori(float(c.x) / Constants.MAP_CELL), floori(float(c.y) / Constants.MAP_CELL))
+
 ## Feet position on the far side of the portal at `cell` (Vector2.INF when
 ## it links nowhere). The twin swings open too — you came through it.
 func portal_target(cell: Vector2i) -> Vector2:
@@ -235,9 +253,68 @@ func portal_target(cell: Vector2i) -> Vector2:
 		twin.open = true
 		if twin.node != null and is_instance_valid(twin.node):
 			twin.node.set_open_look(true)
-	return Vector2((link.x + 0.5) * Constants.BLOCK_SIZE, (link.y + 1) * Constants.BLOCK_SIZE)
+	# Land centred on the twin DOORWAY (DOOR_W cells wide since the 8 px cell):
+	# the record anchors bottom-left, and a body centred on that one cell would
+	# overlap the wall beside it and get unstuck out of the room.
+	var dw := int(Data.objects.get(twin.get("id", ""), {}).get("size", [2, 6])[0])
+	return Vector2((link.x + dw * 0.5) * Constants.BLOCK_SIZE, (link.y + 1) * Constants.BLOCK_SIZE)
+
+## Release a barred door (user request 2026-09-02): a hidden button's record
+## carries the door's cell in `door`. Opens + unlocks that door for good.
+func release_barred_door(button_cell: Vector2i) -> bool:
+	var brec: Dictionary = object_cells.get(button_cell, {})
+	if brec.is_empty() or not brec.has("door"):
+		return false
+	var drec: Dictionary = object_cells.get(brec.door, {})
+	if drec.is_empty():
+		return false
+	drec.open = true
+	drec.unlocked = true
+	if drec.node != null and is_instance_valid(drec.node):
+		drec.node.unlocked = true
+		drec.node.set_open_look(true)
+	return true
 
 # --- Queries ---
+
+## Cells of every closed door record (Vector2i -> true): solid to light and
+## the connectivity flood, as is_solid_cell says.
+func closed_door_cells() -> Dictionary:
+	var out := {}
+	for rec: Dictionary in object_records:
+		if rec.def.kind == "door" and not rec.open:
+			for c in _record_cells(rec):
+				out[c] = true
+	return out
+
+## First solid row from the sky in column x (structure or closed door), or a
+## huge number when the column is open to the bottom of the grid. Cached.
+func sky_row(x: int) -> int:
+	var ix := x - grid.bounds.position.x
+	if ix < 0 or ix >= _sky_cache.size():
+		return 1 << 30
+	var cached := _sky_cache[ix]
+	if cached >= 0:
+		return cached
+	var gw := grid.bounds.size.x
+	var gi := ix
+	var found := 1 << 30
+	for y in range(grid.bounds.position.y, grid.bounds.end.y):
+		if grid.structure[gi] != WorldGrid.M.AIR:
+			found = y
+			break
+		var rec: Dictionary = object_cells.get(Vector2i(x, y), {})
+		if not rec.is_empty() and _record_solid(rec):
+			found = y
+			break
+		gi += gw
+	_sky_cache[ix] = found
+	return found
+
+func _invalidate_sky(cell: Vector2i) -> void:
+	var ix := cell.x - grid.bounds.position.x
+	if ix >= 0 and ix < _sky_cache.size():
+		_sky_cache[ix] = -1
 
 func is_solid_cell(cell: Vector2i) -> bool:
 	if grid.structure_at(cell) != WorldGrid.M.AIR:
@@ -284,14 +361,23 @@ func is_ladder_top_cell(cell: Vector2i) -> bool:
 func is_player_block(cell: Vector2i) -> bool:
 	return placed_blocks.has(cell)
 
-## Global x of the center of the climbable column containing global_pos.
+## Global x of the center of the climbable RUN containing global_pos: since
+## the 8 px cell (2026-09-04) generated ladders are two cells wide, so the
+## player centres on the pair, not on whichever half it grabbed.
 func climbable_center_x(global_pos: Vector2) -> float:
-	return cell_center(cell_at(global_pos)).x
+	var cell := cell_at(global_pos)
+	var x0 := cell.x
+	var x1 := cell.x
+	while x0 - cell.x > -3 and is_climbable_cell(Vector2i(x0 - 1, cell.y)):
+		x0 -= 1
+	while x1 - cell.x < 3 and is_climbable_cell(Vector2i(x1 + 1, cell.y)):
+		x1 += 1
+	return (x0 + x1 + 1) * 0.5 * Constants.BLOCK_SIZE
 
 ## Highest contiguous water cell in the column above global_pos.
 func _surface_cell(global_pos: Vector2) -> Vector2i:
 	var cell := cell_at(global_pos)
-	var limit := 64 # safety bound for the column scan
+	var limit := 128 # safety bound for the column scan
 	while limit > 0 and is_water_cell(cell + Vector2i.UP):
 		cell += Vector2i.UP
 		limit -= 1
@@ -364,7 +450,7 @@ func sight_transmission(from_pos: Vector2, to_cell: Vector2i) -> float:
 		return 1.0
 	var trans := 1.0
 	var last := cell_at(from_pos)
-	var steps := int(dist / (Constants.BLOCK_SIZE * 0.4)) + 1
+	var steps := int(dist / SIGHT_RAY_STEP_PX) + 1
 	for i in range(1, steps):
 		var c := cell_at(from_pos + delta * (float(i) / steps))
 		if c == to_cell:
@@ -389,7 +475,19 @@ func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
 	if grid.structure_at(cell) == WorldGrid.M.VOID:
 		return 0.0 # the blackness around interior pockets: never lit, no ray spent
 	if not has_back_wall_cell(cell):
-		return float(LightMap.MAX_LIGHT)
+		# Exterior (WS-20): fully revealed by day, but dark at night (user
+		# request 2026-09-02) - only a small moonlit radius, placed lights,
+		# dropped glowsticks, and a worn head lamp cut through.
+		var day := clampf((sun_strength() - 0.12) / 0.88, 0.0, 1.0)
+		var ambient := lerpf(Constants.NIGHT_AMBIENT_VIS, float(LightMap.MAX_LIGHT), day)
+		if ambient >= float(LightMap.MAX_LIGHT):
+			return float(LightMap.MAX_LIGHT)
+		var v := maxf(ambient, _night_moonlight(viewer_pos, cell))
+		for b: Vector2 in light_beacons():
+			v = maxf(v, _sight_from(b, cell, Constants.BEACON_FULL_BLOCKS))
+			if v >= float(LightMap.MAX_LIGHT):
+				break
+		return v
 	var vis := _sight_from(viewer_pos, cell, Constants.SIGHT_FULL_BLOCKS)
 	if vis >= float(LightMap.MAX_LIGHT):
 		return vis
@@ -398,6 +496,18 @@ func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
 		if vis >= float(LightMap.MAX_LIGHT):
 			break
 	return vis
+
+## The player's unaided night vision outdoors (user request 2026-09-02): a
+## tight moonlit radius that falls off fast, so you can see your own feet but
+## need a light to see the area - not the long sight-fade a torch gets.
+func _night_moonlight(from_pos: Vector2, cell: Vector2i) -> float:
+	var d := cell_center(cell).distance_to(from_pos) / Constants.BLOCK_SIZE
+	if d >= Constants.NIGHT_VIEWER_BLOCKS + 3.0:
+		return 0.0
+	var cap := float(LightMap.MAX_LIGHT)
+	if d > Constants.NIGHT_VIEWER_BLOCKS:
+		cap *= 1.0 - (d - Constants.NIGHT_VIEWER_BLOCKS) / 3.0
+	return cap * sight_transmission(from_pos, cell)
 
 func _sight_from(from_pos: Vector2, cell: Vector2i, full_blocks: float) -> float:
 	var d := cell_center(cell).distance_to(from_pos) / Constants.BLOCK_SIZE
@@ -432,6 +542,12 @@ func light_beacons() -> Array:
 		for it in items_root.get_children():
 			if it is WorldItem and it.light != null and not it.is_queued_for_deletion():
 				_beacon_cache.append((it as Node2D).global_position)
+	# A worn head lamp is a moving beacon (user request 2026-09-02): it lets
+	# the player see at night the way a placed light does, but hands-free.
+	for p in get_tree().get_nodes_in_group("player"):
+		if p is Node2D and p.has_method("equipped") \
+				and float(Data.item(p.equipped("head")).get("stats", {}).get("light", 0.0)) > 0.0:
+			_beacon_cache.append((p as Node2D).global_position)
 	return _beacon_cache
 
 func _gather_light_sources() -> Array:
@@ -453,7 +569,11 @@ func _gather_light_sources() -> Array:
 			level = Constants.GLOWSTICK_LIGHT
 		if p.has_method("equip_stat"): # helmet lamp / glow band (M5 gear)
 			level = maxi(level, int(p.equip_stat("light")))
-		out.append({"cell": cell_at(p.global_position), "level": level})
+		# Quantized to the 2-cell macro grid: the source key changing every 8 px
+		# step would force a full relight per step (2026-09-04 perf).
+		var pc := cell_at(p.global_position)
+		var m: int = Constants.MAP_CELL
+		out.append({"cell": Vector2i(floori(float(pc.x) / m) * m, floori(float(pc.y) / m) * m), "level": level})
 	return out
 
 ## Building power (WS-17).
@@ -521,11 +641,78 @@ func place_block(id: String, cell: Vector2i) -> bool:
 	_cell_changed(cell)
 	return true
 
+## Rope placement (user request 2026-09-02): a rope drops as a run of cells
+## from the anchor. Clicking anywhere on an existing rope extends it from the
+## BOTTOM, so you can lengthen a line from a ledge. Anchors need support above
+## or a neighbour; the cells below just hang.
+func can_place_rope(cell: Vector2i) -> bool:
+	if grid == null or not grid.in_bounds(cell):
+		return false
+	if grid.climb_at(cell) == WorldGrid.C.ROPE:
+		return true # extend an existing column
+	return not has_block_cell(cell) and not is_climbable_cell(cell) and not object_cells.has(cell) \
+		and (_has_neighbor_support(cell) or is_climbable_cell(cell + Vector2i.UP))
+
+## Places up to `max_cells` rope cells downward from `cell` (or from the bottom
+## of the column `cell` is part of). Returns how many were placed.
+func place_rope(cell: Vector2i, max_cells: int) -> int:
+	if grid == null:
+		return 0
+	if grid.climb_at(cell) == WorldGrid.C.ROPE:
+		while grid.climb_at(cell + Vector2i.DOWN) == WorldGrid.C.ROPE:
+			cell += Vector2i.DOWN
+		cell += Vector2i.DOWN # first cell below the column
+	var hp := float(Data.blocks.get("rope", {}).get("hp", 5))
+	var placed := 0
+	while placed < max_cells and grid.in_bounds(cell) and not has_block_cell(cell) \
+			and not is_climbable_cell(cell) and not object_cells.has(cell):
+		grid.set_climb(cell, WorldGrid.C.ROPE)
+		placed_blocks[_key(cell, "climb")] = {"id": "rope", "hp": hp, "layer": "climb"}
+		_cell_changed(cell)
+		placed += 1
+		cell += Vector2i.DOWN
+	return placed
+
+## Plant a tree sapling on a planter (user request 2026-09-02): it sits one
+## cell above the pot and grows via _grow_trees. Returns false if the space
+## above is blocked (a plant already there, or a low ceiling).
+func plant_in_planter(planter) -> bool:
+	var sd: Dictionary = Data.objects.get("tree_sapling", {})
+	if sd.is_empty():
+		return false
+	var base: Vector2i = planter.cell - Vector2i(0, int(planter.size.y)) # the cell row above the pot
+	for dy in int(sd.get("size", [1, 2])[1]):
+		var c := base - Vector2i(0, dy)
+		if not grid.in_bounds(c) or has_block_cell(c) or object_cells.has(c) or is_solid_cell(c):
+			return false
+	place_object("tree_sapling", base, true)
+	return true
+
+## Water the plant growing on a planter (user request 2026-09-02): a bucket of
+## water surges it one growth stage right now. Returns 1 grew, 0 can't (mature
+## / drowned / no room), -1 no plant to water.
+func water_plant_above(planter_cell: Vector2i) -> int:
+	var rec: Dictionary = object_cells.get(planter_cell - Vector2i(0, int(Data.objects.get("planter", {}).get("size", [1, 1])[1])), {})
+	if rec.is_empty() or rec.get("def", {}).get("category", "") != "flora":
+		return -1
+	var next_id: String = rec.def.get("grows_into", "")
+	if next_id == "" or is_water_cell(rec.cell):
+		return 0
+	var nd: Dictionary = Data.objects.get(next_id, {})
+	if nd.is_empty():
+		return 0
+	var ncell := Vector2i(rec.cell.x - (int(nd.size[0]) - int(rec.def.size[0])) / 2, rec.cell.y)
+	if not _tree_space_free(rec, nd, ncell):
+		return 0
+	_replace_object_record(rec, next_id, ncell)
+	return 1
+
 func _key(cell: Vector2i, layer_name: String) -> Variant:
 	return cell if layer_name == "blocks" else "%s:%d,%d" % [layer_name, cell.x, cell.y]
 
 func _cell_changed(cell: Vector2i) -> void:
 	_light_dirty = true
+	_invalidate_sky(cell)
 	if water_sim != null:
 		water_sim.notify_changed(cell)
 	if renderer != null:
@@ -668,11 +855,15 @@ func add_object_record(id: String, cell: Vector2i, placed_by_player: bool) -> Di
 	var rec := {"id": id, "def": def, "cell": cell, "placed": placed_by_player,
 		"open": false, "powered": false, "unlocked": false, "outlet": WorldObject.NO_OUTLET,
 		"storage": Inventory.new(slots) if slots > 0 else null, "node": null}
+	if def.has("grows_into"): # trees track the day this stage began (2026-09-02)
+		rec["grow_day"] = day_count
 	object_records.append(rec)
 	if _record_solid(rec):
 		_light_dirty = true
 	for c in _record_cells(rec):
 		object_cells[c] = rec
+		if rec.def.kind == "door":
+			_invalidate_sky(c)
 		if water_sim != null and _record_solid(rec):
 			water_sim.notify_changed(c)
 	return rec
@@ -730,7 +921,7 @@ func refresh_objects_around(pos: Vector2) -> void:
 ## has moved a few cells; the window is generous so teleport-happy tests
 ## and normal play never see furniture pop.
 func _update_object_window(center: Vector2i) -> void:
-	if (_obj_window_center - center).length_squared() < 36: # < 6 cells moved
+	if (_obj_window_center - center).length_squared() < 144: # < 12 cells moved
 		return
 	_obj_window_center = center
 	var half: Vector2i = Constants.OBJECT_WINDOW / 2
@@ -770,6 +961,8 @@ func remove_object(obj: WorldObject) -> void:
 		for c in _record_cells(rec):
 			if object_cells.get(c) == rec:
 				object_cells.erase(c)
+			if rec.def.kind == "door":
+				_invalidate_sky(c)
 			if water_sim != null:
 				water_sim.notify_changed(c)
 	pumps.erase(obj)
@@ -783,10 +976,14 @@ func remove_object(obj: WorldObject) -> void:
 func _grow_trees() -> void:
 	for rec: Dictionary in object_records.duplicate():
 		var next_id: String = rec.def.get("grows_into", "")
-		if next_id == "" or randf() >= float(rec.def.get("grow_chance", 0.5)):
+		if next_id == "":
+			continue
+		# Deterministic, one stage per day (user request 2026-09-02): skip if
+		# this stage began today; grow_day is set when the record is created.
+		if int(rec.get("grow_day", day_count)) >= day_count:
 			continue
 		if is_water_cell(rec.cell):
-			continue # drowned trees don't grow
+			continue # drowned trees wait
 		var nd: Dictionary = Data.objects.get(next_id, {})
 		if nd.is_empty():
 			continue
@@ -827,6 +1024,9 @@ func notify_object_changed(obj: WorldObject) -> void:
 	var rec: Dictionary = object_cells.get(obj.cell, {})
 	if not rec.is_empty() and rec.node == obj:
 		rec.open = obj.open
+	if obj.def.kind == "door":
+		for c in obj.covered_cells():
+			_invalidate_sky(c)
 	if water_sim != null:
 		for c in obj.covered_cells():
 			water_sim.notify_changed(c)
@@ -899,7 +1099,7 @@ func remove_enemy(rec: Dictionary) -> void:
 ## Instantiate records near `center`, freeze the rest (the object-window
 ## pattern; enemies outside the window don't think or move).
 func _update_enemy_window(center: Vector2i) -> void:
-	if (_enemy_window_center - center).length_squared() < 36:
+	if (_enemy_window_center - center).length_squared() < 144:
 		return
 	_enemy_window_center = center
 	var half: Vector2i = Constants.ENEMY_WINDOW / 2
@@ -969,7 +1169,7 @@ func _tick_night(delta: float) -> void:
 	for p in get_tree().get_nodes_in_group("player"):
 		if live_night >= Constants.NIGHT_FLOATER_MAX:
 			break
-		var cell := _open_surface_near(p.global_position, 20, 45)
+		var cell := _open_surface_near(p.global_position, 40, 90)
 		if cell.x != -99999:
 			add_enemy_record("floater", cell_center(cell), 1.0, true)
 			live_night += 1
@@ -1037,6 +1237,43 @@ func _enemy_in_window(rec: Dictionary) -> bool:
 	return Rect2i(_enemy_window_center - half, Constants.ENEMY_WINDOW).has_point(cell_at(rec.pos))
 
 # --- Items ---
+
+## Debris tint per material, for the break burst (user request 2026-09-02).
+const HARVEST_TINT := {
+	"wood": Color(0.60, 0.42, 0.24), "scrap_metal": Color(0.56, 0.61, 0.67),
+	"plastic": Color(0.42, 0.72, 0.52), "stone": Color(0.55, 0.55, 0.56),
+	"cloth": Color(0.78, 0.72, 0.58), "iron": Color(0.62, 0.64, 0.68),
+	"steel": Color(0.70, 0.72, 0.78), "tree_seed": Color(0.50, 0.36, 0.22),
+}
+var _puff_tex: ImageTexture
+
+## A short one-shot debris burst where an object breaks into resources (user
+## request 2026-09-02): the icons then pop out and hover for pickup.
+func spawn_break_puff(pos: Vector2, item_id: String) -> void:
+	if items_root == null:
+		return
+	if _puff_tex == null:
+		var img := Image.create(3, 3, false, Image.FORMAT_RGBA8)
+		img.fill(Color.WHITE)
+		_puff_tex = ImageTexture.create_from_image(img)
+	var p := CPUParticles2D.new()
+	p.texture = _puff_tex
+	p.one_shot = true
+	p.emitting = true
+	p.amount = 12
+	p.lifetime = 0.5
+	p.explosiveness = 1.0
+	p.direction = Vector2.UP
+	p.spread = 120.0
+	p.gravity = Vector2(0, 18.0 * Constants.BLOCK_SIZE)
+	p.initial_velocity_min = 4.0 * Constants.BLOCK_SIZE
+	p.initial_velocity_max = 10.0 * Constants.BLOCK_SIZE
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 2.2
+	p.color = HARVEST_TINT.get(item_id, Color(0.62, 0.56, 0.5))
+	p.global_position = pos
+	items_root.add_child(p)
+	get_tree().create_timer(p.lifetime + 0.3).timeout.connect(p.queue_free)
 
 func spawn_item(id: String, count: int, pos: Vector2, velocity: Vector2 = Vector2.ZERO) -> WorldItem:
 	var it: WorldItem = WORLD_ITEM_SCENE.instantiate()

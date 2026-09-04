@@ -9,8 +9,7 @@ extends RefCounted
 ## surface, sharks patrolling open water from The Cold down, fish schools
 ## in open water everywhere below the surface.
 ## Deterministic: its own RNG stream off the world seed (CT-21).
-
-const FLOOR_H := 6 # CityGen.FLOOR_H
+## Cells are 8 px (2026-09-04): row/column margins below are in cells.
 
 static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 	var rng := RandomNumberGenerator.new()
@@ -21,16 +20,16 @@ static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 	var cfg: Dictionary = Data.enemy_seeding
 	var zw: Array = cfg.get("wing_zombie_weights", [0.35, 0.45, 0.2])
 	# --- Tower interiors ---
-	var hospital: Dictionary = gen.get("hospital", {})
+	var spawn_tower: Dictionary = gen.get("spawn_tower", {})
 	for tower in gen.tower_list:
 		for f in int(tower.floors):
-			if f == 0 and not hospital.is_empty() and tower == hospital:
-				continue # the authored starting medical room wakes you safely (GL-02)
-			var sr: int = int(tower.top) + f * FLOOR_H + FLOOR_H - 1
+			if f == 0 and not spawn_tower.is_empty() and tower == spawn_tower:
+				continue # keep the roof drop-off tower's top floor clear — no ambush on landing
+			var sr: int = int(tower.top) + f * CityGen.FLOOR_H + CityGen.FLOOR_H - 1
 			for zone in tower.zones:
 				var zx0 := int(zone[0])
 				var zx1 := int(zone[1])
-				if zx1 - zx0 < 4:
+				if zx1 - zx0 < 8:
 					continue
 				var mid := Vector2i((zx0 + zx1) / 2, sr - 1)
 				var dry := sr < waterline or _in_sealed(gen.sealed, mid)
@@ -50,9 +49,9 @@ static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 	_scatter(out, rng, grid, "floater", cfg.get("floater_spacing", [50, 120]),
 		waterline, waterline, waterline, city_end)
 	_scatter(out, rng, grid, "shark", cfg.get("shark_spacing", [80, 160]),
-		waterline + Constants.BAND_COLD_DEPTH + 4, grid.bounds.end.y - 12, waterline, city_end)
+		waterline + Constants.BAND_COLD_DEPTH + 8, grid.bounds.end.y - 24, waterline, city_end)
 	_scatter(out, rng, grid, "fish_school", cfg.get("fish_spacing", [40, 90]),
-		waterline + 4, grid.bounds.end.y - 8, waterline, city_end)
+		waterline + 8, grid.bounds.end.y - 16, waterline, city_end)
 	return out
 
 static func _band(depth: int) -> String:
@@ -78,8 +77,12 @@ static func _stand(out: Array, rng: RandomNumberGenerator, grid: WorldGrid,
 	var h := float(Data.enemies[tid].size[1])
 	for attempt in 4:
 		var x := rng.randi_range(zx0, zx1)
-		if grid.structure_at(Vector2i(x, sr)) == WorldGrid.M.AIR \
-				and grid.structure_at(Vector2i(x, sr - 1)) == WorldGrid.M.AIR:
+		var clear := true
+		for dy in CityGen.STAND_GAP: # a standing body needs STAND_GAP rows
+			if grid.structure_at(Vector2i(x, sr - dy)) != WorldGrid.M.AIR:
+				clear = false
+				break
+		if clear:
 			out.append({"type": tid, "pos": Vector2((x + 0.5) * Constants.BLOCK_SIZE,
 				(sr + 1) * Constants.BLOCK_SIZE - h * 0.5 - 1.0)})
 			return
@@ -91,14 +94,14 @@ static func _scatter(out: Array, rng: RandomNumberGenerator, grid: WorldGrid,
 	if y0 > y1:
 		return
 	var h := float(Data.enemies[tid].size[1])
-	var x := 30
-	while x < x_end - 30:
+	var x := 60
+	while x < x_end - 60:
 		x += rng.randi_range(int(spacing[0]), int(spacing[1]))
-		if x >= x_end - 30:
+		if x >= x_end - 60:
 			break # the last stride must not overshoot into the open gap east of the city
 		var y := rng.randi_range(y0, y1)
 		var ok := y >= waterline # the spawn row itself must be flooded
-		for dy in range(-1, 2):
+		for dy in range(-3, 3): # 6 clear rows around the spawn row
 			var c := Vector2i(x, y + dy)
 			if not grid.bounds.has_point(c) or grid.structure_at(c) != WorldGrid.M.AIR \
 					or grid.back_at(c) != WorldGrid.M.AIR:

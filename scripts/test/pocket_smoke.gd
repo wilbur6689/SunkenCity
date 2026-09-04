@@ -34,7 +34,9 @@ func until(pred: Callable, n: int) -> bool:
 ## Teleport the player's feet onto standing row `row` at column `cx`.
 func place(cx: int, row: int) -> void:
 	player.velocity = Vector2.ZERO
-	player.global_position = Vector2((cx + 0.5) * B, (row + 1) * B - Player.FEET_Y)
+	player.global_position = Vector2((cx + 1.0) * B, (row + 1) * B - Player.FEET_Y) # centred on a 2-wide doorway
+	player.state = Player.State.AIRBORNE
+	player.fall_start_y = player.global_position.y # a teleport is not a fall
 	World.refresh_objects_around(player.global_position)
 	await ticks(3)
 
@@ -46,18 +48,18 @@ func portal_objects(r: Dictionary) -> Dictionary: # cell -> gen object entry
 	return out
 
 func _ready() -> void:
-	print("== A. generation (800-wide slice)")
-	var r := CityGen.generate(101, 800)
-	var r2 := CityGen.generate(101, 800)
+	print("== A. generation (1600-wide slice)")
+	var r := CityGen.generate(101, 1600)
+	var r2 := CityGen.generate(101, 1600)
 	var g: WorldGrid = r.grid
-	var annex_x0: int = 800 + CityGen.ANNEX_GAP
-	check(int(r.city_w) == 800, "result carries the city width")
+	var annex_x0: int = 1600 + CityGen.ANNEX_GAP
+	check(int(r.city_w) == 1600, "result carries the city width")
 	check(g.bounds.size.x == annex_x0 + CityGen.ANNEX_W, "grid widened by the gap + VOID annex (%d cols)" % g.bounds.size.x)
 	check(r.pockets.size() >= 15, "slice carved %d pockets" % r.pockets.size())
 	check(str(r.pockets) == str(r2.pockets) and g.content_hash() == r2.grid.content_hash(), "pockets are seed-deterministic (CT-21)")
-	check(g.structure_at(Vector2i(annex_x0, 5)) == WorldGrid.M.VOID and g.structure_at(Vector2i(annex_x0 + 100, 380)) == WorldGrid.M.VOID,
+	check(g.structure_at(Vector2i(annex_x0, 5)) == WorldGrid.M.VOID and g.structure_at(Vector2i(annex_x0 + 200, 760)) == WorldGrid.M.VOID,
 		"annex is VOID top to bottom outside the pockets")
-	check(g.structure_at(Vector2i(800 + 10, 200)) == WorldGrid.M.AIR, "the gap east of the city stays open air")
+	check(g.structure_at(Vector2i(1600 + 20, 400)) == WorldGrid.M.AIR, "the gap east of the city stays open air")
 	var portals := portal_objects(r)
 	var shell_ok := true
 	var link_ok := true
@@ -73,31 +75,32 @@ func _ready() -> void:
 		var sr: int = rect.end.y - 1
 		if rect.position.x < annex_x0 or rect.end.x > g.bounds.end.x:
 			shell_ok = false
-		if sr != int(p.exit.y) or rect.size.y != CityGen.FLOOR_H - 1:
+		if sr != int(p.exit.y) or rect.size.y != CityGen.FLOOR_OPEN:
 			rows_ok = false # a pocket sits on exactly its doorway's floor rows
 		for y in range(rect.position.y, rect.end.y):
 			for x in range(rect.position.x, rect.end.x):
 				if g.back_at(Vector2i(x, y)) == WorldGrid.M.AIR:
 					shell_ok = false # interiors are back-walled (fog of war applies)
 		for y in range(rect.position.y, rect.end.y):
-			if g.structure_at(Vector2i(rect.position.x - 1, y)) != WorldGrid.M.STONE \
-					or g.structure_at(Vector2i(rect.end.x, y)) != WorldGrid.M.STONE:
-				shell_ok = false
+			for t in CityGen.WALL_T: # WALL_T-wide stone walls either side
+				if g.structure_at(Vector2i(rect.position.x - 1 - t, y)) != WorldGrid.M.STONE \
+						or g.structure_at(Vector2i(rect.end.x + t, y)) != WorldGrid.M.STONE:
+					shell_ok = false
 		for x in range(rect.position.x - 1, rect.end.x + 1):
 			if g.structure_at(Vector2i(x, rect.position.y - 1)) != WorldGrid.M.METAL \
 					or g.structure_at(Vector2i(x, rect.end.y)) != WorldGrid.M.METAL:
 				shell_ok = false
-		if g.structure_at(Vector2i(rect.position.x - 2, sr)) != WorldGrid.M.VOID:
+		if g.structure_at(Vector2i(rect.position.x - 1 - CityGen.WALL_T, sr)) != WorldGrid.M.VOID:
 			shell_ok = false # spacer: blackness right behind the west wall
-		if rect.position.x - 1 - annex_x0 < CityGen.POCKET_VIEW_MARGIN 				or g.bounds.end.x - (rect.end.x + 1) < CityGen.POCKET_VIEW_MARGIN:
+		if rect.position.x - CityGen.WALL_T - annex_x0 < CityGen.POCKET_VIEW_MARGIN 				or g.bounds.end.x - (rect.end.x + CityGen.WALL_T) < CityGen.POCKET_VIEW_MARGIN:
 			shell_ok = false # a screen's worth of VOID before the gap / the grid edge
 		if g.structure_at(Vector2i(rect.position.x, sr)) != WorldGrid.M.AIR:
 			shell_ok = false # the return doorway's column is clear to stand in
 		var ex: Dictionary = portals.get(p.exit, {})
 		var en: Dictionary = portals.get(p.entry, {})
 		if ex.is_empty() or en.is_empty() or ex.link != p.entry or en.link != p.exit \
-				or en.id != "room_door" or not (ex.id in ["room_door", "room_door_locked", "room_door_metal"]) \
-				or bool(ex.open) != bool(en.open) or int(p.exit.x) >= 800 or p.entry != Vector2i(rect.position.x, sr):
+				or en.id != "room_door" or not (ex.id in ["room_door", "room_door_locked", "room_door_metal", "room_door_barred"]) \
+				or bool(ex.open) != bool(en.open) or int(p.exit.x) >= 1600 or p.entry != Vector2i(rect.position.x, sr):
 			link_ok = false
 		# Door material follows the GL-09 ladder: wood through The Shallows,
 		# chained metal below; locked doors are never found open.
@@ -112,7 +115,7 @@ func _ready() -> void:
 			opened += 1
 		if bool(p.flooded):
 			flooded += 1
-		for dy in 3: # the city-side doorway hangs on a back wall in clear air
+		for dy in CityGen.DOOR_H: # the city-side doorway hangs on a back wall in clear air
 			var c: Vector2i = p.exit - Vector2i(0, dy)
 			if g.structure_at(c) != WorldGrid.M.AIR or g.back_at(c) == WorldGrid.M.AIR:
 				exit_clear_ok = false
@@ -123,7 +126,7 @@ func _ready() -> void:
 				overlap_ok = false
 			elif other.position.y == rect.position.y:
 				var gap: int = maxi(other.position.x - rect.end.x, rect.position.x - other.end.x)
-				if gap < 2 + CityGen.POCKET_SPACER:
+				if gap < 2 * CityGen.WALL_T + CityGen.POCKET_SPACER:
 					overlap_ok = false
 		rects.append(rect)
 	check(shell_ok, "every pocket: stone walls, metal slabs, back walls, VOID spacer, clear doorway column")
@@ -132,7 +135,7 @@ func _ready() -> void:
 	for tower in r.tower_list:
 		total_floors += int(tower.floors)
 	var density := float(r.pockets.size()) / total_floors
-	check(density > 0.18 and density < 0.38, "%.0f%% of floors carry a doorway (target ~30%%)" % (density * 100.0))
+	check(density > 0.38 and density < 0.60, "%.0f%% of floors carry a doorway (target ~50%%)" % (density * 100.0))
 	check(rows_ok, "every pocket sits on its doorway's floor rows (depth/band preserved)")
 	check(link_ok, "doorway twins link both ways, share their open state, exits stay in the city")
 	check(exit_clear_ok, "city-side doorways hang on back walls in clear air")
@@ -205,7 +208,7 @@ func _ready() -> void:
 	await ticks(2)
 	var cell := World.cell_at(player.global_position)
 	check(World.in_annex(cell) and World.pocket_at(cell) == World.pockets[gen_pockets.find(plain)], "second click steps into the pocket ('%s')" % msg)
-	check(cell.x == int(plain.entry.x), "arrived standing at the return doorway")
+	check(cell.x == int(plain.entry.x) or cell.x == int(plain.entry.x) + 1, "arrived standing at the return doorway")
 	check(World.map_cell_for(player.global_position) == exit_cell, "map anchor inside a pocket is the doorway it was entered through")
 	check(await until(func(): return player.state == Player.State.GROUNDED, 60), "lands on the pocket floor")
 	var rect: Rect2i = plain.rect
@@ -215,8 +218,8 @@ func _ready() -> void:
 			if World.is_water_cell(Vector2i(x, y)):
 				clear = false
 	check(clear, "a sealed pocket is dry")
-	check(World.visibility_at(Vector2i(rect.position.x - 2, rect.end.y - 1), player.global_position) == 0.0, "the VOID beyond the wall is pitch black")
-	check(World.visibility_at(Vector2i(rect.position.x + 2, rect.end.y - 1), player.global_position) > 0.0, "the room itself is in sight")
+	check(World.visibility_at(Vector2i(rect.position.x - 1 - CityGen.WALL_T, rect.end.y - 1), player.global_position) == 0.0, "the VOID beyond the wall is pitch black")
+	check(World.visibility_at(Vector2i(rect.position.x + 4, rect.end.y - 1), player.global_position) > 0.0, "the room itself is in sight")
 	var furniture := 0
 	for c in World.object_cells:
 		if rect.has_point(c) and World.object_cells[c].def.kind != "portal":
@@ -227,8 +230,8 @@ func _ready() -> void:
 	msg = back.interact(player)
 	await ticks(2)
 	cell = World.cell_at(player.global_position)
-	check(not World.in_annex(cell) and cell.x == exit_cell.x and absi(cell.y - exit_cell.y) <= 1, "back in the corridor where you started ('%s')" % msg)
-	check(player.global_position.distance_to(before) < 2.0 * B, "returned to the same spot")
+	check(not World.in_annex(cell) and (cell.x == exit_cell.x or cell.x == exit_cell.x + 1) and absi(cell.y - exit_cell.y) <= 2, "back in the corridor where you started ('%s')" % msg)
+	check(player.global_position.distance_to(before) < 4.0 * B, "returned to the same spot")
 	# The city-side record banked the open state (windowed objects re-read it).
 	check(World.object_record_at(exit_cell).open, "record keeps the door open")
 

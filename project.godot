@@ -23,17 +23,18 @@ Constants="*res://scripts/constants.gd"
 Data="*res://scripts/data/data.gd"
 World="*res://scripts/world/world.gd"
 Audio="*res://scripts/audio/audio_manager.gd"
+UIScale="*res://scripts/ui/ui_scale.gd"
 
 [display]
 
-window/size/viewport_width=640
-window/size/viewport_height=360
+window/size/viewport_width=1920
+window/size/viewport_height=1080
 window/size/mode=2
-window/size/window_width_override=1720
-window/size/window_height_override=720
+window/size/window_width_override=1920
+window/size/window_height_override=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/stretch/scale_mode="integer"
+window/stretch/scale_mode="fractional"
 
 [input]
 
@@ -652,8 +653,12 @@ hotbar_10={
 )]
 }
 
+[physics]
+
+common/physics_interpolation=true
+
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
-2d/snap/snap_2d_transforms_to_pixel=true
-2d/snap/snap_2d_vertices_to_pixel=true
+2d/snap/snap_2d_transforms_to_pixel=false
+2d/snap/snap_2d_vertices_to_pixel=false

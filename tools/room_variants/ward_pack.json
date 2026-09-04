@@ -4,8 +4,8 @@
    "id": "ward_v01",
    "zone": "civil",
    "type": "ward",
-   "width": 14,
-   "height": 5,
+   "width": 28,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -16,47 +16,47 @@
     {
      "id": "hos_xray_lightbox",
      "x": 0,
-     "dy": 3
+     "dy": 6
     },
     {
      "id": "hos_iv_stand",
-     "x": 3
-    },
-    {
-     "id": "hos_privacy_screen",
-     "x": 4
-    },
-    {
-     "id": "hos_gurney",
      "x": 6
     },
     {
+     "id": "hos_privacy_screen",
+     "x": 8
+    },
+    {
+     "id": "hos_gurney",
+     "x": 12
+    },
+    {
      "id": "hos_eye_chart",
-     "x": 7,
-     "dy": 3
+     "x": 14,
+     "dy": 6
     },
     {
      "id": "hos_vitals_monitor",
-     "x": 9
+     "x": 18
     },
     {
      "id": "hos_defibrillator",
-     "x": 10,
-     "dy": 2
+     "x": 20,
+     "dy": 4
     },
     {
      "id": "hos_linen_hamper",
-     "x": 11
+     "x": 22
     },
     {
      "id": "hos_sanitizer",
-     "x": 13,
-     "dy": 2
+     "x": 26,
+     "dy": 4
     },
     {
      "id": "com_digital_clock",
-     "x": 13,
-     "dy": 4
+     "x": 26,
+     "dy": 8
     }
    ],
    "blocks": []
@@ -65,8 +65,8 @@
    "id": "ward_v02",
    "zone": "civil",
    "type": "ward",
-   "width": 11,
-   "height": 5,
+   "width": 22,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -76,59 +76,59 @@
     },
     {
      "id": "hos_bedpan",
-     "x": 2,
-     "dy": 1
-    },
-    {
-     "id": "hos_xray_lightbox",
-     "x": 0,
-     "dy": 3
-    },
-    {
-     "id": "hos_anatomy_poster",
-     "x": 3,
-     "dy": 2
-    },
-    {
-     "id": "med_cart",
-     "x": 4
-    },
-    {
-     "id": "hos_pill_bottles",
      "x": 4,
      "dy": 2
     },
     {
+     "id": "hos_xray_lightbox",
+     "x": 0,
+     "dy": 6
+    },
+    {
+     "id": "hos_anatomy_poster",
+     "x": 6,
+     "dy": 4
+    },
+    {
+     "id": "med_cart",
+     "x": 8
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 8,
+     "dy": 4
+    },
+    {
      "id": "hos_biohazard_bin",
-     "x": 5,
-     "dy": 2
+     "x": 10,
+     "dy": 4
     },
     {
      "id": "chair",
-     "x": 6
+     "x": 12
     },
     {
      "id": "hos_scale",
-     "x": 7
+     "x": 14
     },
     {
      "id": "hos_eye_chart",
-     "x": 7,
-     "dy": 3
+     "x": 14,
+     "dy": 6
     },
     {
      "id": "hos_sanitizer",
-     "x": 8,
-     "dy": 2
+     "x": 16,
+     "dy": 4
     },
     {
      "id": "hos_med_cabinet",
-     "x": 9
+     "x": 18
     },
     {
      "id": "com_digital_clock",
-     "x": 10,
-     "dy": 4
+     "x": 20,
+     "dy": 8
     }
    ],
    "blocks": []
@@ -137,8 +137,8 @@
    "id": "ward_v03",
    "zone": "civil",
    "type": "ward",
-   "width": 12,
-   "height": 5,
+   "width": 24,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -149,53 +149,53 @@
     {
      "id": "res_desk_lamp",
      "x": 0,
-     "dy": 2
+     "dy": 4
     },
     {
      "id": "hos_pill_bottles",
-     "x": 2,
-     "dy": 2
+     "x": 4,
+     "dy": 4
     },
     {
      "id": "com_station_clock",
-     "x": 1,
-     "dy": 3
+     "x": 2,
+     "dy": 6
     },
     {
      "id": "chair",
-     "x": 3
+     "x": 6
     },
     {
      "id": "hos_sanitizer",
-     "x": 4,
-     "dy": 2
+     "x": 8,
+     "dy": 4
     },
     {
      "id": "hos_wheelchair",
-     "x": 5
+     "x": 10
     },
     {
      "id": "hos_defibrillator",
-     "x": 7,
-     "dy": 2
+     "x": 14,
+     "dy": 4
     },
     {
      "id": "hos_waiting_chairs",
-     "x": 8
+     "x": 16
     },
     {
      "id": "hos_eye_chart",
-     "x": 9,
-     "dy": 3
+     "x": 18,
+     "dy": 6
     },
     {
      "id": "hos_crutches",
-     "x": 11
+     "x": 22
     },
     {
      "id": "hos_anatomy_poster",
-     "x": 11,
-     "dy": 2
+     "x": 22,
+     "dy": 4
     }
    ],
    "blocks": []
@@ -204,8 +204,8 @@
    "id": "ward_v04",
    "zone": "civil",
    "type": "ward",
-   "width": 14,
-   "height": 5,
+   "width": 28,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -215,59 +215,59 @@
     },
     {
      "id": "hos_eye_chart",
-     "x": 1,
-     "dy": 2
+     "x": 2,
+     "dy": 4
     },
     {
      "id": "hos_waiting_chairs",
-     "x": 3
+     "x": 6
     },
     {
      "id": "com_station_clock",
-     "x": 4,
-     "dy": 3
+     "x": 8,
+     "dy": 6
     },
     {
      "id": "hos_anatomy_poster",
-     "x": 6,
-     "dy": 1
+     "x": 12,
+     "dy": 2
     },
     {
      "id": "hos_sanitizer",
-     "x": 7,
-     "dy": 2
+     "x": 14,
+     "dy": 4
     },
     {
      "id": "desk",
-     "x": 8
+     "x": 16
     },
     {
      "id": "res_desk_lamp",
-     "x": 8,
-     "dy": 2
+     "x": 16,
+     "dy": 4
     },
     {
      "id": "hos_pill_bottles",
-     "x": 10,
-     "dy": 2
+     "x": 20,
+     "dy": 4
     },
     {
      "id": "hos_xray_lightbox",
-     "x": 9,
-     "dy": 3
+     "x": 18,
+     "dy": 6
     },
     {
      "id": "chair",
-     "x": 11
+     "x": 22
     },
     {
      "id": "hos_wheelchair",
-     "x": 12
+     "x": 24
     },
     {
      "id": "com_digital_clock",
-     "x": 13,
-     "dy": 3
+     "x": 26,
+     "dy": 6
     }
    ],
    "blocks": []
@@ -276,8 +276,8 @@
    "id": "ward_v05",
    "zone": "civil",
    "type": "ward",
-   "width": 12,
-   "height": 5,
+   "width": 24,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -287,69 +287,99 @@
     },
     {
      "id": "hos_supply_shelving",
-     "x": 2
+     "x": 4
     },
     {
      "id": "hos_sanitizer",
-     "x": 4,
-     "dy": 2
-    },
-    {
-     "id": "hos_xray_lightbox",
-     "x": 4,
-     "dy": 3
-    },
-    {
-     "id": "hos_med_cabinet",
-     "x": 5
-    },
-    {
-     "id": "hos_biohazard_bin",
-     "x": 7
-    },
-    {
-     "id": "hos_pill_bottles",
-     "x": 7,
-     "dy": 3
-    },
-    {
-     "id": "hos_bedpan",
-     "x": 8,
-     "dy": 3
-    },
-    {
-     "id": "com_digital_clock",
      "x": 8,
      "dy": 4
     },
     {
-     "id": "locker",
-     "x": 9
+     "id": "hos_xray_lightbox",
+     "x": 8,
+     "dy": 6
     },
     {
-     "id": "hos_oxygen_tank",
+     "id": "hos_med_cabinet",
      "x": 10
     },
     {
+     "id": "hos_biohazard_bin",
+     "x": 14
+    },
+    {
+     "id": "hos_pill_bottles",
+     "x": 14,
+     "dy": 6
+    },
+    {
+     "id": "hos_bedpan",
+     "x": 16,
+     "dy": 6
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 16,
+     "dy": 8
+    },
+    {
+     "id": "locker",
+     "x": 18
+    },
+    {
+     "id": "hos_oxygen_tank",
+     "x": 20
+    },
+    {
      "id": "hos_defibrillator",
-     "x": 10,
-     "dy": 2
+     "x": 20,
+     "dy": 4
     },
     {
      "id": "hos_crutches",
-     "x": 11
+     "x": 22
     }
    ],
    "blocks": [
     {
      "mat": 3,
-     "x": 7,
-     "dy": 2
+     "x": 14,
+     "dy": 4
     },
     {
      "mat": 3,
-     "x": 8,
-     "dy": 2
+     "x": 14,
+     "dy": 5
+    },
+    {
+     "mat": 3,
+     "x": 15,
+     "dy": 4
+    },
+    {
+     "mat": 3,
+     "x": 15,
+     "dy": 5
+    },
+    {
+     "mat": 3,
+     "x": 16,
+     "dy": 4
+    },
+    {
+     "mat": 3,
+     "x": 16,
+     "dy": 5
+    },
+    {
+     "mat": 3,
+     "x": 17,
+     "dy": 4
+    },
+    {
+     "mat": 3,
+     "x": 17,
+     "dy": 5
     }
    ]
   },
@@ -357,8 +387,8 @@
    "id": "ward_v06",
    "zone": "civil",
    "type": "ward",
-   "width": 13,
-   "height": 5,
+   "width": 26,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -368,53 +398,53 @@
     },
     {
      "id": "hos_gurney",
-     "x": 1
+     "x": 2
     },
     {
      "id": "hos_defibrillator",
-     "x": 4,
-     "dy": 1
+     "x": 8,
+     "dy": 2
     },
     {
      "id": "med_cart",
-     "x": 5
+     "x": 10
     },
     {
      "id": "hos_biohazard_bin",
-     "x": 5,
-     "dy": 2
+     "x": 10,
+     "dy": 4
     },
     {
      "id": "hos_pill_bottles",
-     "x": 6,
-     "dy": 2
+     "x": 12,
+     "dy": 4
     },
     {
      "id": "hos_wheelchair",
-     "x": 8
+     "x": 16
     },
     {
      "id": "hos_xray_lightbox",
-     "x": 8,
-     "dy": 3
+     "x": 16,
+     "dy": 6
     },
     {
      "id": "hos_sanitizer",
-     "x": 10,
-     "dy": 2
+     "x": 20,
+     "dy": 4
     },
     {
      "id": "hos_oxygen_tank",
-     "x": 11
+     "x": 22
     },
     {
      "id": "hos_bedpan",
-     "x": 12
+     "x": 24
     },
     {
      "id": "com_station_clock",
-     "x": 11,
-     "dy": 3
+     "x": 22,
+     "dy": 6
     }
    ],
    "blocks": []
@@ -423,8 +453,8 @@
    "id": "ward_v07",
    "zone": "civil",
    "type": "ward",
-   "width": 11,
-   "height": 5,
+   "width": 22,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -434,53 +464,53 @@
     },
     {
      "id": "hos_eye_chart",
-     "x": 1,
-     "dy": 3
+     "x": 2,
+     "dy": 6
     },
     {
      "id": "hos_vitals_monitor",
-     "x": 3
+     "x": 6
     },
     {
      "id": "hos_defibrillator",
-     "x": 3,
-     "dy": 3
+     "x": 6,
+     "dy": 6
     },
     {
      "id": "hos_iv_stand",
-     "x": 4
+     "x": 8
     },
     {
      "id": "hos_biohazard_bin",
-     "x": 5
+     "x": 10
     },
     {
      "id": "hos_sanitizer",
-     "x": 5,
-     "dy": 2
-    },
-    {
-     "id": "hos_anatomy_poster",
-     "x": 6,
-     "dy": 2
-    },
-    {
-     "id": "hos_privacy_screen",
-     "x": 7
-    },
-    {
-     "id": "hos_sanitizer",
-     "x": 9,
-     "dy": 2
-    },
-    {
-     "id": "com_digital_clock",
-     "x": 9,
+     "x": 10,
      "dy": 4
     },
     {
+     "id": "hos_anatomy_poster",
+     "x": 12,
+     "dy": 4
+    },
+    {
+     "id": "hos_privacy_screen",
+     "x": 14
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 18,
+     "dy": 4
+    },
+    {
+     "id": "com_digital_clock",
+     "x": 18,
+     "dy": 8
+    },
+    {
      "id": "locker",
-     "x": 10
+     "x": 20
     }
    ],
    "blocks": []
@@ -489,8 +519,8 @@
    "id": "ward_v08",
    "zone": "civil",
    "type": "ward",
-   "width": 12,
-   "height": 5,
+   "width": 24,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -501,47 +531,47 @@
     {
      "id": "hos_oxygen_tank",
      "x": 0,
-     "dy": 1
+     "dy": 2
     },
     {
      "id": "hos_crutches",
-     "x": 3
-    },
-    {
-     "id": "hos_crutches",
-     "x": 4
-    },
-    {
-     "id": "hos_anatomy_poster",
-     "x": 5,
-     "dy": 1
-    },
-    {
-     "id": "hos_scale",
      "x": 6
     },
     {
-     "id": "hos_eye_chart",
-     "x": 7,
-     "dy": 3
-    },
-    {
-     "id": "hos_wheelchair",
+     "id": "hos_crutches",
      "x": 8
     },
     {
-     "id": "hos_sanitizer",
+     "id": "hos_anatomy_poster",
      "x": 10,
      "dy": 2
     },
     {
+     "id": "hos_scale",
+     "x": 12
+    },
+    {
+     "id": "hos_eye_chart",
+     "x": 14,
+     "dy": 6
+    },
+    {
+     "id": "hos_wheelchair",
+     "x": 16
+    },
+    {
+     "id": "hos_sanitizer",
+     "x": 20,
+     "dy": 4
+    },
+    {
      "id": "com_station_clock",
-     "x": 10,
-     "dy": 3
+     "x": 20,
+     "dy": 6
     },
     {
      "id": "chair",
-     "x": 11
+     "x": 22
     }
    ],
    "blocks": []
@@ -550,8 +580,8 @@
    "id": "ward_v09",
    "zone": "civil",
    "type": "ward",
-   "width": 13,
-   "height": 5,
+   "width": 26,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -562,74 +592,104 @@
     {
      "id": "res_desk_lamp",
      "x": 0,
-     "dy": 2
+     "dy": 4
     },
     {
      "id": "hos_microscope",
-     "x": 2,
-     "dy": 2
+     "x": 4,
+     "dy": 4
     },
     {
      "id": "com_digital_clock",
-     "x": 1,
-     "dy": 3
+     "x": 2,
+     "dy": 6
     },
     {
      "id": "chair",
-     "x": 3
+     "x": 6
     },
     {
      "id": "hos_defibrillator",
-     "x": 4,
-     "dy": 2
+     "x": 8,
+     "dy": 4
     },
     {
      "id": "hos_med_cabinet",
-     "x": 5
+     "x": 10
     },
     {
      "id": "hos_pill_bottles",
-     "x": 5,
-     "dy": 4
+     "x": 10,
+     "dy": 8
     },
     {
      "id": "hos_bedpan",
-     "x": 6,
-     "dy": 4
+     "x": 12,
+     "dy": 8
     },
     {
      "id": "hos_sanitizer",
-     "x": 7,
-     "dy": 2
+     "x": 14,
+     "dy": 4
     },
     {
      "id": "hos_gurney",
-     "x": 8
+     "x": 16
     },
     {
      "id": "hos_iv_stand",
-     "x": 11
+     "x": 22
     },
     {
      "id": "hos_biohazard_bin",
-     "x": 12
+     "x": 24
     },
     {
      "id": "hos_eye_chart",
-     "x": 12,
-     "dy": 3
+     "x": 24,
+     "dy": 6
     }
    ],
    "blocks": [
     {
      "mat": 3,
-     "x": 5,
-     "dy": 3
+     "x": 10,
+     "dy": 6
     },
     {
      "mat": 3,
-     "x": 6,
-     "dy": 3
+     "x": 10,
+     "dy": 7
+    },
+    {
+     "mat": 3,
+     "x": 11,
+     "dy": 6
+    },
+    {
+     "mat": 3,
+     "x": 11,
+     "dy": 7
+    },
+    {
+     "mat": 3,
+     "x": 12,
+     "dy": 6
+    },
+    {
+     "mat": 3,
+     "x": 12,
+     "dy": 7
+    },
+    {
+     "mat": 3,
+     "x": 13,
+     "dy": 6
+    },
+    {
+     "mat": 3,
+     "x": 13,
+     "dy": 7
     }
    ]
   },
@@ -637,8 +697,8 @@
    "id": "ward_v10",
    "zone": "civil",
    "type": "ward",
-   "width": 14,
-   "height": 5,
+   "width": 28,
+   "height": 10,
    "depth_min": -9999,
    "depth_max": 9999,
    "objects": [
@@ -648,62 +708,63 @@
     },
     {
      "id": "hos_eye_chart",
-     "x": 1,
-     "dy": 3
+     "x": 2,
+     "dy": 6
     },
     {
      "id": "med_cart",
-     "x": 3
+     "x": 6
     },
     {
      "id": "hos_pill_bottles",
-     "x": 3,
-     "dy": 2
+     "x": 6,
+     "dy": 4
     },
     {
      "id": "hos_bedpan",
-     "x": 4,
-     "dy": 2
+     "x": 8,
+     "dy": 4
     },
     {
      "id": "bed_frame",
-     "x": 5
+     "x": 10
     },
     {
      "id": "hos_anatomy_poster",
-     "x": 6,
-     "dy": 2
+     "x": 12,
+     "dy": 4
     },
     {
      "id": "hos_defibrillator",
-     "x": 8,
-     "dy": 1
+     "x": 16,
+     "dy": 2
     },
     {
      "id": "hos_scale",
-     "x": 9
+     "x": 18
     },
     {
      "id": "hos_xray_lightbox",
-     "x": 9,
-     "dy": 3
+     "x": 18,
+     "dy": 6
     },
     {
      "id": "hos_linen_hamper",
-     "x": 11
+     "x": 22
     },
     {
      "id": "hos_sanitizer",
-     "x": 13,
-     "dy": 1
+     "x": 26,
+     "dy": 2
     },
     {
      "id": "com_digital_clock",
-     "x": 13,
-     "dy": 3
+     "x": 26,
+     "dy": 6
     }
    ],
    "blocks": []
   }
- ]
+ ],
+ "cell_px": 8
 }

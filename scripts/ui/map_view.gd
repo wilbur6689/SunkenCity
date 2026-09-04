@@ -8,7 +8,7 @@ extends CanvasLayer
 const ZOOM_MIN := 0.5
 const ZOOM_MAX := 8.0
 const REFRESH_SECONDS := 0.5
-const REPAINT_WINDOW := Vector2i(120, 70) # cells around the player kept fresh
+const REPAINT_WINDOW := Vector2i(120, 70) # map cells around the player kept fresh
 
 var open: bool = false
 var esc_consumed_frame: int = -1
@@ -32,6 +32,7 @@ func _ready() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_STOP
 	root.gui_input.connect(_gui_input)
 	add_child(root)
+	UIScale.register(root) # UI size scaling (2026-09-02)
 	var bg := ColorRect.new()
 	bg.color = Color(0.02, 0.03, 0.05)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -82,7 +83,7 @@ func _process(delta: float) -> void:
 	map_rect.size = Vector2(_img.get_size()) * zoom
 	var player = get_tree().get_first_node_in_group("player")
 	if player != null:
-		var cell := World.map_cell_for(player.global_position) - World.city_bounds.position
+		var cell := World.map_macro_for(player.global_position) - World.map_bounds.position
 		marker.position = pan + Vector2(cell) * zoom - marker.size * 0.5
 	marker.visible = int(Time.get_ticks_msec() / 400) % 2 == 0 # blink
 
@@ -98,7 +99,7 @@ func open_map() -> void:
 	if player != null:
 		player.ui_blocks_mouse = true
 		# centre the view on the player (inside a pocket: on its doorway)
-		var cell := World.map_cell_for(player.global_position) - World.city_bounds.position
+		var cell := World.map_macro_for(player.global_position) - World.map_bounds.position
 		pan = root.size * 0.5 - Vector2(cell) * zoom
 
 func close() -> void:
@@ -139,7 +140,7 @@ func _clamp_pan() -> void:
 ## One-time full build (first open); afterwards only new reveals repaint.
 func _build_full() -> void:
 	var t0 := Time.get_ticks_msec()
-	var b: Rect2i = World.city_bounds # the pocket annex is never mapped
+	var b: Rect2i = World.map_bounds # map cells; the pocket annex is never mapped
 	_img = Image.create(b.size.x, b.size.y, false, Image.FORMAT_RGB8)
 	_img.fill(MapColors.UNREVEALED)
 	for y in b.size.y:
@@ -156,7 +157,7 @@ func _build_full() -> void:
 ## Newly revealed cells + a window around the player (terrain there may
 ## have changed: mining, pumping, building).
 func _update_pixels() -> void:
-	var b: Rect2i = World.city_bounds
+	var b: Rect2i = World.map_bounds
 	for v in World.map_reveal.dirty:
 		var cell := Vector2i(v)
 		if b.has_point(cell): # reveals inside a pocket stay off the city map
@@ -164,7 +165,7 @@ func _update_pixels() -> void:
 	World.map_reveal.dirty.clear()
 	var player = get_tree().get_first_node_in_group("player")
 	if player != null:
-		var center := World.map_cell_for(player.global_position)
+		var center := World.map_macro_for(player.global_position)
 		var org := center - REPAINT_WINDOW / 2
 		for dy in REPAINT_WINDOW.y:
 			for dx in REPAINT_WINDOW.x:

@@ -276,7 +276,13 @@ def build_pack(skip_existing=False):
                 if box is None:
                     continue
                 fig = c.crop(box)
-                fig = fig.resize((max(int(fig.width * scale), 1), max(int(fig.height * scale), 1)), Image.NEAREST)
+                # NEAREST at this ~0.2x downscale keeps only every ~5th texel,
+                # riddling thin limbs/outlines with holes. Area-average on
+                # premultiplied alpha (no halo), then re-threshold the alpha
+                # for a solid pixel-art edge.
+                size = (max(int(fig.width * scale), 1), max(int(fig.height * scale), 1))
+                fig = fig.convert("RGBa").resize(size, Image.LANCZOS).convert("RGBA")
+                fig.putalpha(fig.getchannel("A").point(lambda v: 255 if v >= 96 else 0))
                 frames.append(fig)
                 cell = max(cell, fig.width, fig.height)
             scaled[anim] = frames

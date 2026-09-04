@@ -5,9 +5,15 @@ extends Node2D
 ## physics exists exactly where the player is — Terraria-style). Creates its
 ## three layers (back walls, solid blocks, climbables) as children.
 
-const TILESET := preload("res://assets/tiles/placeholder_blocks.tres")
-const MARGIN := 14        # cells beyond the view kept painted
-const SHRINK_SLACK := 10  # how far the view must move before erasing
+## Tile art density (2026-09-04, half-size blocks): 24 px tiles drawn at 1/3
+## scale onto the 8 px cell grid — 1 texel per monitor pixel at the default
+## zoom (3.0) on a 1080p screen. Physics rides the scaled layers (+-12
+## polygons -> +-4). Atlas + tres come from tools/gen_tiles_24.py. (History:
+## 16 px tiles at 1.0 until 2026-09-02, then 32 px at 0.5 on 16 px cells.)
+const TILESET := preload("res://assets/tiles/placeholder_blocks_24.tres")
+const TILE_ART_SCALE := float(Constants.BLOCK_SIZE) / 24.0
+const MARGIN := 28        # cells beyond the view kept painted
+const SHRINK_SLACK := 20  # how far the view must move before erasing
 
 var back_layer: TileMapLayer
 var blocks_layer: TileMapLayer
@@ -28,7 +34,9 @@ func _ready() -> void:
 	climb_layer.tile_set = TILESET
 	climb_layer.collision_enabled = false
 	add_child(climb_layer)
-	add_child(_CrackLayer.new()) # after the tile layers: cracks draw on top
+	for layer: TileMapLayer in [back_layer, blocks_layer, climb_layer]:
+		layer.scale = Vector2(TILE_ART_SCALE, TILE_ART_SCALE)
+	add_child(_CrackLayer.new()) # after the tile layers: cracks draw on top; NOT scaled (draws in world px)
 
 ## Damage cracks (WS-22, user request): any damaged block — structure or
 ## player-placed — shows progressively larger cracks at 25/50/75% damage,

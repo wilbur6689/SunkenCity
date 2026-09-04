@@ -21,8 +21,7 @@ hframes = 7
 vframes = 2
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position_smoothing_enabled = true
-position_smoothing_speed = 8.0
+process_callback = 0
 
 [node name="Interaction" type="Node2D" parent="."]
 script = ExtResource("3_interaction")

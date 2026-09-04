@@ -76,6 +76,7 @@ func _ready() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE # the game stays visible around the popup
 	root.visible = false
 	add_child(root)
+	UIScale.register(root) # UI size scaling (2026-09-02)
 
 	# A fixed 640x360 design frame, centred: on wide screens (expand stretch)
 	# the viewport is wider than the design space, so absolute positions
@@ -236,7 +237,7 @@ func _build_inventory_screen() -> void:
 		var g := TextureRect.new()
 		var gat := AtlasTexture.new()
 		gat.atlas = glyphs
-		gat.region = Rect2(EQUIP_GLYPH[slot_name] * 16, 0, 16, 16)
+		gat.region = Rect2(EQUIP_GLYPH[slot_name] * Data.ICON_PX, 0, Data.ICON_PX, Data.ICON_PX)
 		g.texture = gat
 		g.position = Vector2(4, 4)
 		g.mouse_filter = Control.MOUSE_FILTER_IGNORE

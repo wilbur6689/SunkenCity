@@ -3,7 +3,9 @@
 Style law (docs/technical/TileArt.md): each material is a ramp of ~5-7
 colors — a hue-tinted near-black outline, 3-4 body tones ~25-30 luminance
 apart, one highlight. Texture comes from small shaded shapes (light
-top-left, dark bottom-right), never per-pixel noise. 1 block = 16 px.
+top-left, dark bottom-right), never per-pixel noise. 1 module block = 16 px
+(= 2 world cells since the 8 px cell of 2026-09-04; build_room_packs doubles
+`size` when it writes objects.json, so modules keep authoring in 16 px units).
 """
 
 OUT = (24, 18, 14)          # universal hue-tinted outline

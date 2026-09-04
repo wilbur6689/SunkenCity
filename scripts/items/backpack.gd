@@ -28,14 +28,14 @@ func _physics_process(delta: float) -> void:
 			var cell := World.cell_at(global_position + Vector2(0, -7.0))
 			global_position.y = (cell.y + 1) * Constants.BLOCK_SIZE + 6.0
 		else:
-			velocity.y = move_toward(velocity.y, -Constants.ITEM_BUOYANCY_RISE, 6.0 * Constants.BLOCK_SIZE * delta)
+			velocity.y = move_toward(velocity.y, -Constants.ITEM_BUOYANCY_RISE, 12.0 * Constants.BLOCK_SIZE * delta)
 			var surface := World.water_surface_y(global_position)
 			if global_position.y + velocity.y * delta < surface + 4.0:
 				global_position.y = surface + 4.0
 				velocity.y = 0.0
 	else:
-		velocity.y = minf(velocity.y + Constants.gravity * delta, 20.0 * Constants.BLOCK_SIZE)
-	velocity.x = move_toward(velocity.x, 0.0, (8.0 if in_water else 3.0) * Constants.BLOCK_SIZE * delta)
+		velocity.y = minf(velocity.y + Constants.gravity * delta, 40.0 * Constants.BLOCK_SIZE)
+	velocity.x = move_toward(velocity.x, 0.0, (16.0 if in_water else 6.0) * Constants.BLOCK_SIZE * delta)
 	var next := global_position + velocity * delta
 	if velocity.y > 0.0 and World.is_solid(next + Vector2(0, 5)):
 		next.y = World.cell_top_y(World.cell_at(next + Vector2(0, 5))) - 5.0
@@ -50,7 +50,7 @@ func _physics_process(delta: float) -> void:
 ## Recover-on-touch: stacks go back whole (mods intact); leftovers stay.
 func _try_recover() -> void:
 	for p in get_tree().get_nodes_in_group("player"):
-		if p.global_position.distance_to(global_position) > 1.5 * Constants.BLOCK_SIZE:
+		if p.global_position.distance_to(global_position) > 3.0 * Constants.BLOCK_SIZE: # 24 px
 			continue
 		var kept: Array = []
 		for s in slots:

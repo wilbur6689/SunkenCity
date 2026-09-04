@@ -14,7 +14,7 @@ station, credits + freeplay — stays canon as the story's end goal but ships as
 
 | | |
 |---|---|
-| **Band** | The Crush — rows 220+ below the waterline to ground (`BAND_DARK_DEPTH` → city floor; centre towers reach ≈ 300 rows, CT-01) |
+| **Band** | The Crush — rows 440+ below the waterline to ground (`BAND_DARK_DEPTH` → city floor; centre towers reach ≈ 600 rows of 8 px, CT-01; 220+/300 before 2026-09-04) |
 | **Target time** | ~15–25 h (GL-27) |
 | **Entry state** | Hard suit (cold 2, crush 1), iron tank or rebreather, cutting torch, deep camp |
 | **Exit (MVP)** | Standing on the **bare concrete roads** at ground level (CT-08), hard suit on, zero debug — the M6 gate |
@@ -64,7 +64,7 @@ watch in 3–4 accessory slots, a Dark forward camp, learned modifiers, Scrappin
 3. **Perfect the kit** — every safe (torch/`vault_key`) is a modifier lottery; the Bench turns
    the haul into purple crafted gear: *Sharp Swift* weapons, a hard suit *of Warmth* / *of
    Currents*. Rarity colours (gray → green → blue → purple, LT-08) are the visible score.
-4. **Chain camps to the floor** — pump-out rooms at rows 240, 270, 300. Each is a refuel stop
+4. **Chain camps to the floor** — pump-out rooms at rows 480, 540, 600 (8 px cells). Each is a refuel stop
    (tanks refill in air, LT-17), a bed (spawn), lights. The elevator shaft, drained end to end,
    is the highway home (CT-06).
 5. **Touch the ground** — the concrete roads, the pump station shell. In the MVP that is the run's
@@ -146,9 +146,37 @@ watch in 3–4 accessory slots, a Dark forward camp, learned modifiers, Scrappin
 - [ ] **S5-20.** Should ground level carry a unique ambient danger tied to the future relay (a live station hum, a guardian's shadow) as a teaser?
 - [ ] **S5-21.** How lethal should a late red moon be at a *surface* base — is abandoning the surface the intended arc?
 
+## Hazards, puzzles & water management
+
+The Crush runs every hazard system at maximum and asks the player to answer with engineering.
+Nothing new gates them; everything old compounds:
+
+- **Monster texture**: Drowned at 7.0 b/s in the interiors, sharks at 6.0 outside, 90-HP
+  walkers in the pockets — nearly double a hard-suited swimmer's speed. Every fight is won
+  before contact: at a doorway, behind a drained threshold, or not at all.
+- **Complacency is the killer**: three-plus minutes of air, gear that can't be lost, camps
+  everywhere — the band's deaths come from treating the deepest city like the Shallows.
+- **Puzzles become projects**: the drained shaft, the dry floor, the camp chain to the
+  concrete. The band's "puzzles" are self-set engineering goals — the design question is
+  whether the toolbox (pumps, currents, one-ways) is deep enough to make them interesting.
+- **Water management is the endgame**: the pump networks a player builds here are the
+  rehearsal for the Drain. The MVP's ceiling is how much *deliberate dryness* one player can
+  carve out of the deepest band.
+
+**Open questions**
+
+- [ ] **S5-35.** Should the Crush have one signature ambusher of its own — something that lairs in parking structures and lobbies, distinct in silhouette from the scaled rosters — so the deepest band has a face, not just bigger numbers?
+- [ ] **S5-36.** Do silt-outs belong here — a collapse or thrash that zeroes visibility in a room for a minute — as the Crush's recoverable panic-trap, and can fog + lighting sell the effect today?
+- [ ] **S5-37.** Should Drowned at this tier coordinate loosely (converging on pump noise, cutting off the lit route out) as a soft pack behaviour — or does the proximity-only aggro rule (GD-06) stay absolute to the floor?
+- [ ] **S5-38.** What authored puzzle should ground level hold in the MVP — a pump-station antechamber openable by restoring one local breaker, a flooded plaza with a single drainable vault — so touching bottom has one *solved* thing in it, not just a view?
+- [ ] **S5-39.** Are parking structures and lobbies (S5-03) the band's puzzle-boxes — car stacks as terrain, torch-cut shortcuts, one-way collapses — and how much of that can generation express with current pieces?
+- [ ] **S5-40.** Does deep water need new rules to make Crush engineering distinct — pump rate falling with depth, outlets that must vent *upward*, pressure differences across doors — or is uniform water the right simplicity to ship?
+- [ ] **S5-41.** What are the sim's real limits on mega-drains (a full tower, a street's connected volume) — and should Stage Five's advertised projects bend to those limits, or drive the sim's next iteration?
+- [ ] **S5-42.** Should the player be able to build *deliberate* traps by now — one-way doors that let a Drowned in but not out, drop-flood chambers triggered from a breaker — as the sandbox's answer to the band's monsters?
+
 ## Base & water
 
-- **The deep base** at rows 220–300: everything the surface base had, unreachable by walkers,
+- **The deep base** at rows 440–600 (8 px cells): everything the surface base had, unreachable by walkers,
   lit by beacons, fed by a drained shaft. GL-14's emergent base at its fullest.
 - **Water engineering as endgame play**: pump networks that keep a whole floor dry, displacement
   traps, currents (engineered flow pushes entities — WS-16) as lifts. This is the MVP's sandbox
@@ -220,3 +248,24 @@ LT-08/09/14/16/17/18/19/27 · CT-01/06/07/08/20/25/26.
 - [ ] **S5-33.** What is the minimum endgame content for the demo to feel finished — is a landmark plus a run summary enough?
 - [ ] **S5-34.** Which post-release Drain pieces (relay shells, waterline tint bands) can be placed but inert in the MVP to prepare the world?
 
+## Transition — Stage Five → endgame & The Drain
+
+Stage Five doesn't hand off to a Stage Six — it hands off to **the player's own goals** (MVP
+freeplay) and, post-release, to the Drain. The transition design problem is unique: the
+summit must feel like an ending *now* and like a beginning *later*, when relays go live in a
+world the player already finished.
+
+Expected state at the summit: hard suit + rebreather; a purple-modded core kit; a camp chain
+from waterline to floor; every band's locks answerable; the pump-station shell found and
+walked.
+
+**Open questions**
+
+- [ ] **S5-43.** What defines "run complete" beyond boots on concrete — is touching the floor the flag, or a kit state (rebreather worn), or a place (inside the pump-station shell) — and which one does the M6 gate formally test?
+- [ ] **S5-44.** Should the summit set a world flag with visible effects (a marker on the map, a badge on that save in the world picker) so completion persists somewhere other than memory?
+- [ ] **S5-45.** What should a completed run leave the player *holding* for the future Drain patch — banked repair materials, mapped relay shells, a camp near each — and should the MVP quietly hint at that shopping list without promising the content?
+- [ ] **S5-46.** Which capabilities keep paying in freeplay — is there any post-summit progression (tree completion, collection, mega-projects) or does the game honestly say "you've won, build for joy"?
+- [ ] **S5-47.** When the Drain ships, what does *re-entry* look like for a summited world — do relays demand resources the old world still contains, and does a depleted (LT-27) world hold enough to finish the Drain it was saving for?
+- [ ] **S5-48.** Should these stage docs eventually gain a Stage Six (the Drain as a playable stage with its own bands-in-reverse structure), and which Stage Five systems (camps, pump networks, red moons over drained streets) carry into it unchanged?
+- [ ] **S5-49.** What is the *last new thing* a player should learn in Stage Five — ideally within sight of the floor — so the game is still teaching at hour 60, not coasting?
+- [ ] **S5-50.** How does the game invite the next seed at the summit — a run summary contrasted with world quirks the player never saw, a seed to share — without cheapening the world they just finished?

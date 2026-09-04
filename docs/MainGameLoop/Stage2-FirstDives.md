@@ -8,7 +8,7 @@ stage: time underwater is the constraint, and drained rooms are the first real p
 
 | | |
 |---|---|
-| **Band** | The Shallows — rows 0–40 below the waterline (`BAND_SHALLOWS_DEPTH`), ≈ 6–7 floors |
+| **Band** | The Shallows — rows 0–80 below the waterline (`BAND_SHALLOWS_DEPTH`; 0–40 before the 8 px cell of 2026-09-04), ≈ 6–7 floors |
 | **Target time** | ~15 h (GL-27) |
 | **Entry state** | Scrap tools, workbench base, first `tank_scrap` (60 s total air) |
 | **Exit capability** | **Wetsuit** (cold rating 1) + a Forge fed by Shallows stone — ready to enter The Cold |
@@ -158,6 +158,36 @@ only (GD-18) — glowsticks and the `helmet_lamp` (light 9, head slot) solve it.
 - [ ] **S2-20.** Is there room for one passive hazard (a live cable in a flooded office, harmless until the breaker is flipped) that ties power and water together early?
 - [ ] **S2-21.** How should almost-drowning feel — is a last-second "surface grab" lunge worth adding, or does the 10 s dash already do the job?
 
+## Hazards, puzzles & water management
+
+Stage Two's antagonist is the water and its toy is also the water. This section covers the
+hazard space around the Dangers table: the puzzles the sim generates, the traps the odds
+tables spring, and the management loop (patch → pump → hold) that defines the band.
+
+- **Monster texture**: floaters guard the surface exits, crawlers thread the vents around
+  stairwells, walkers wait in the dry pockets you're about to drain. Nothing hunts you *in*
+  the water yet (GD-11) — the Shallows are where swimming is learned safely.
+- **The trap that matters is the round trip**: 60 s of air reads as plenty on the way in and
+  as nothing on the way out with a full bag. Every Shallows corridor is implicitly a trap
+  armed by the player's own greed.
+- **Puzzles are connectivity**: which breach feeds this room? where did the air pocket come
+  from? why won't this room drain? The sim's honesty (CT-12/13) is what makes these solvable
+  by observation — bubbles, flow, and the tide line are the clue set.
+- **Patch-and-pump is the puzzle *and* the reward**: reading a room's breaches, sealing in
+  the right order, and siting the pump well is Stage Two's skill expression; the drained,
+  breathable, buildable room is its trophy (GL-16/17).
+
+**Open questions**
+
+- [ ] **S2-35.** Should some rooms be lightly authored as *pump puzzles* — breach counts and positions that reward reading the room (seal the ceiling hole first or the drain refills) — or does generation already produce enough of these on its own?
+- [ ] **S2-36.** Should generation guarantee an occasional *air-pocket chain* — sealed rooms at swimmable intervals forming a natural breathing route deeper — so dive-planning has terrain to express itself on?
+- [ ] **S2-37.** The stuck elevator cab (S2-03): could it be a movable object — pry it open for loot, or flood/drain the shaft to float it like a piston — making the shaft the band's physics toy?
+- [ ] **S2-38.** What happens when a door opens against a full room — a surge that shoves the player, a brief current, debris damage — and how strongly should loaded doors telegraph (seeping seams, groaning)?
+- [ ] **S2-39.** Should breaches visibly *breathe* (slosh, particulate drift) when connected to the open ocean, so sealed-vs-connected reads at a glance before the first patch is placed?
+- [ ] **S2-40.** Fill-to-drain with blocks versus patch-and-pump: what material/effort pricing keeps both legitimate at this tier without blocks trivially outcompeting the pump the player just learned?
+- [ ] **S2-41.** Should moving water move *things* — loose loot drifting toward breaches, dropped bags nudged by a drain in progress — so managing water visibly rearranges the world (and occasionally hides your own glowsticks)?
+- [ ] **S2-42.** When a player accidentally re-floods their forward camp (opened the wrong door, broke their own patch), what tells them *why* — a visible inrush from the culprit breach, a camera hint — so the failure trains the skill instead of feeling random?
+
 ## Base & water
 
 - **Forward camps** emerge from the sim (GL-17): drain a room → breathable, buildable, safe from
@@ -207,7 +237,7 @@ future fins/watch).
 
 **Open questions**
 
-- [ ] **S2-31.** Is 40 rows (≈ 6–7 floors) enough Shallows for ~15 h, or should band depth scale with tower height?
+- [ ] **S2-31.** Is 80 rows of 8 px (≈ 6–7 floors) enough Shallows for ~15 h, or should band depth scale with tower height?
 - [ ] **S2-32.** Should pump rate scale by tier so a scrap pump is slow enough that patching first matters?
 
 ## Design references
@@ -229,3 +259,25 @@ LT-17/23/27 · CT-06/12/13/15 · `technical/WaterPhysics.md` (M2 implementation 
 - [ ] **S2-33.** What does a *bad* Stage Two look like (drowning loops, bags pinned on ceilings) and what safety valve prevents a quit?
 - [ ] **S2-34.** Is a raft in scope purely as the cargo answer for this stage?
 
+## Transition — Stage Two → Stage Three
+
+The move into The Cold is the game's first *gear* door (the wetsuit) and its first *economy*
+door (a built Forge starving for iron). Done right, the player crosses with the Shallows
+mastered — pumping is routine, routes home are rigged, and the cold peek (S2-29) has shown
+them exactly what they're saving for.
+
+Expected state at the boundary: wetsuit worn (cold 1); Forge built and idle; a drained forward
+camp below the waterline with a bed and chest; speargun + a bolt bundle; a Med Station and
+banked medkits; ladders re-rigged on at least one route home; Free Diver or a second tank's
+worth of O2 discipline.
+
+**Open questions**
+
+- [ ] **S2-43.** Which of those should the design *require* versus merely reward — is the wetsuit alone (as the data currently prices it) too thin a bar for a band with sharks and a speed tax?
+- [ ] **S2-44.** Should a functioning forward camp be a soft prerequisite for The Cold — e.g. Cold dive math that only works from a below-waterline refill stop — so the pump skill is proven before entering the band that punishes skipping it?
+- [ ] **S2-45.** What resource stockpile should Stage Three assume on entry (stone banked toward steel, glowsticks, bolts, bandages/medkits, spare pump materials) — and where does a player *see* that they're provisioned?
+- [ ] **S2-46.** What technology audit belongs at this boundary — all five stations built? the Med Station specifically, given shark bites and bleeding — and is any station allowed to still be unbuilt without Stage Three failing?
+- [ ] **S2-47.** How does the first shark sighting get staged — ideally *seen from cover* before ever being fought — so open water's new rules are learned by observation, not death?
+- [ ] **S2-48.** What skill floor does The Cold assume (Swimming level, Scrapping 2 approaching for iron furniture) — and if a player arrives under it, does the band merely slow them or actually stonewall them?
+- [ ] **S2-49.** What still pulls the player *back up* through Stage Two spaces afterwards — Shallows camps as waystations, the surface base as warehouse — and does the hauling loop keep those spaces alive?
+- [ ] **S2-50.** Which Stage Two lesson must be *certain* before Stage Three (round-trip O2 math? patch-before-pump? door discipline?) — and which failure in The Cold would tell us it wasn't learned?

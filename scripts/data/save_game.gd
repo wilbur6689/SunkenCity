@@ -10,7 +10,7 @@ const WORLD_DIR := "user://saves/worlds/"
 const CHAR_DIR := "user://saves/chars/"
 const WORLD_EXT := ".world"
 const CHAR_EXT := ".char"
-const VERSION := 1
+const VERSION := 2 # 2 = 8 px cells (2026-09-04); v1 worlds/characters are refused, not migrated
 
 ## Handoff into the city scene's next boot (set by the title screen or the
 ## quick-load key before a scene change/reload).
@@ -56,6 +56,10 @@ static func save_world(world_name: String, seed_value: int) -> void:
 			"outlet": rec.outlet}
 		if rec.has("link"): # interior doorway twin
 			st["link"] = rec.link
+		if rec.has("door"): # release button -> barred door cell
+			st["door"] = rec.door
+		if rec.has("grow_day"): # tree growth clock
+			st["grow_day"] = rec.grow_day
 		if rec.storage != null:
 			st["storage"] = rec.storage.slots.duplicate(true)
 		objs.append(st)
@@ -102,7 +106,12 @@ static func read_world(world_name: String) -> Dictionary:
 		return {}
 	var data = f.get_var()
 	f.close()
-	return data if data is Dictionary else {}
+	return data if data is Dictionary and int(data.get("version", 0)) == VERSION else {}
+
+## True when a save file exists but was written by an older, incompatible build
+## (the title picker greys those out instead of loading half a world).
+static func world_is_stale(world_name: String) -> bool:
+	return FileAccess.file_exists(WORLD_DIR + world_name + WORLD_EXT) and read_world(world_name).is_empty()
 
 ## Rebuild a WorldGrid from a world-save dict.
 static func build_grid(data: Dictionary) -> WorldGrid:
@@ -143,7 +152,7 @@ static func read_character(char_name: String) -> Dictionary:
 		return {}
 	var data = f.get_var()
 	f.close()
-	return data if data is Dictionary else {}
+	return data if data is Dictionary and int(data.get("version", 0)) == VERSION else {}
 
 ## Apply a character-save dict to a live player (inventory, skills, vitals,
 ## and — when this world was visited before — map reveal and position).
@@ -171,3 +180,4 @@ static func apply_character(data: Dictionary, player, world_key: String) -> void
 		if bool(data.get("compact", false)):
 			player.begin_loaded_crawl()
 		player.unstick()
+		player.reset_physics_interpolation()

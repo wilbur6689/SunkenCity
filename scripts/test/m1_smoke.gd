@@ -115,80 +115,97 @@ func inv_count(id: String) -> int:
 
 func _run() -> void:
 	var inv := player.inventory
-	var row := 5 # floor 1 standing row
+	var row := 11 # floor 1 standing row (8 px cells)
 	print("== A. wake in the medical room")
 	check(await until(func(): return player.state == Player.State.GROUNDED, 60), "on the floor")
 	check(inv_count("bandage") == 2 and inv_count("food_can") == 1, "starting kit: 2 bandages + 1 food (LT-30)")
 	var scrap_count := 0
 	for o in tower.get_node("Objects").get_children():
-		if o.def.kind == "scrap" and o.cell.y <= 5: # the medical room only
+		if o.def.kind == "scrap" and o.cell.y <= 11: # the medical room only
 			scrap_count += 1
 	check(scrap_count == 8, "medical room furnished with 8 scrappable objects (%d)" % scrap_count)
-	check(obj_at(Vector2i(12, row)) != null and obj_at(Vector2i(12, row)).id == "chair", "chair registered on its cells")
+	check(obj_at(Vector2i(24, row)) != null and obj_at(Vector2i(24, row)).id == "chair", "chair registered on its cells")
 
 	print("== B. hand-scrap a chair (hold-to-scrap)")
-	await goto(14)
-	var chair := obj_at(Vector2i(12, row))
-	check(await hold_scrap(Vector2i(12, row), func(): return player.interaction.scrap_progress > 0.2, 60), "progress builds while holding scrap (RMB)")
+	await goto(28)
+	var chair := obj_at(Vector2i(24, row))
+	check(await hold_scrap(Vector2i(24, row), func(): return player.interaction.scrap_progress > 0.2, 60), "progress builds while holding scrap (RMB)")
 	var t0 := Time.get_ticks_msec()
-	check(await hold_scrap(Vector2i(12, row), func(): return obj_at(Vector2i(12, row)) == null, 300), "chair scrapped and removed")
-	check(inv_count("wood") >= 3, "field yield ~half (wood %d)" % inv_count("wood"))
+	check(await hold_scrap(Vector2i(24, row), func(): return obj_at(Vector2i(24, row)) == null, 300), "chair scrapped and removed")
+	# Resources pop OUT as bobbing world items now (2026-09-02), not straight
+	# into the bag: they must be collected by walking over them.
+	var popped := 0
+	for it in World.items_root.get_children():
+		if it is WorldItem and it.id == "wood":
+			popped += it.count
+	check(popped >= 3, "field yield ~half pops out as world items (wood %d)" % popped)
+	await goto(24) # stand on the drop; the 1 s pickup delay then elapses
+	check(await until(func(): return inv_count("wood") >= 3, 180), "walking over collects the wood (%d)" % inv_count("wood"))
 	check(player.skills.xp["scrapping"] >= 3.0, "scrapping XP awarded")
 
 	print("== C. gates: tool tier and skill")
-	await goto(25)
-	await hold_scrap(Vector2i(27, row), func(): return false, 10)
-	check(obj_at(Vector2i(27, row)) != null and player.interaction.message.begins_with("Needs a tool"), "fridge refuses bare hands (%s)" % player.interaction.message)
+	await goto(50)
+	await hold_scrap(Vector2i(54, row), func(): return false, 10)
+	check(obj_at(Vector2i(54, row)) != null and player.interaction.message.begins_with("Needs a tool"), "fridge refuses bare hands (%s)" % player.interaction.message)
 
 	print("== D. scrap the room by hand")
-	await goto(19)
-	check(await hold_scrap(Vector2i(18, row), func(): return obj_at(Vector2i(18, row)) == null, 400), "desk scrapped")
-	await goto(8)
-	check(await hold_scrap(Vector2i(9, row), func(): return obj_at(Vector2i(9, row)) == null, 400), "cabinet scrapped")
-	check(await hold_scrap(Vector2i(6, row), func(): return obj_at(Vector2i(6, row)) == null, 400), "med cart scrapped")
-	await goto(5)
-	check(await hold_scrap(Vector2i(3, row), func(): return obj_at(Vector2i(3, row)) == null, 400), "bed frame scrapped")
+	await goto(38)
+	check(await hold_scrap(Vector2i(36, row), func(): return obj_at(Vector2i(36, row)) == null, 400), "desk scrapped")
+	await goto(16)
+	check(await hold_scrap(Vector2i(18, row), func(): return obj_at(Vector2i(18, row)) == null, 400), "cabinet scrapped")
+	check(await hold_scrap(Vector2i(12, row), func(): return obj_at(Vector2i(12, row)) == null, 400), "med cart scrapped")
+	await goto(10)
+	check(await hold_scrap(Vector2i(6, row), func(): return obj_at(Vector2i(6, row)) == null, 400), "bed frame scrapped")
 	check(player.skills.level("scrapping") >= 1, "Scrapping reached level 1 (xp %.0f)" % player.skills.xp["scrapping"])
 
 	print("== E. the workbench gate (2026-09-01 economy): no scrap tools by hand")
+	# Scrapping pops drops OUT for the player to collect now (2026-09-02); the
+	# room's yield is no longer in the bag, so set the gate state directly -
+	# enough for the hand wood axe (8 wood + 1 scrap) but not the workbench-only
+	# scrap knife (10 scrap + 5 cloth).
+	inv.add("wood", 60)
+	inv.add("scrap_metal", 9)
 	check(not player.can_craft(Data.recipes.scrap_knife), "scrap tools refuse hand crafting (workbench-gated)")
 	check(player.can_craft(Data.recipes.wood_axe), "the wooden axe stays hand-craftable (wood tier)")
-	# The workbench is deliberately a multi-run project (30 wood + 15 scrap);
-	# the gate tests mechanics, not grind, so stock the remainder here.
-	inv.add("wood", 40)
-	inv.add("scrap_metal", 50)
-	inv.add("cloth", 10)
+	# Stock the rest for the workbench + tool crafts below.
+	inv.add("scrap_metal", 80)
+	inv.add("cloth", 15)
+	inv.add("plastic", 8)
 	check(craft("workbench"), "workbench crafted by hand")
-	await goto(13)
+	await goto(26)
 	check(hold_item("workbench"), "workbench in hand")
-	await press_use(Vector2i(10, row))
-	var wb := obj_at(Vector2i(10, row))
-	check(wb != null and wb.id == "workbench" and inv_count("workbench") == 0, "workbench placed at (10,5)")
+	await press_use(Vector2i(20, row))
+	var wb := obj_at(Vector2i(20, row))
+	check(wb != null and wb.id == "workbench" and inv_count("workbench") == 0, "workbench placed at (20,11)")
 	check(World.stations_near(player.global_position, Constants.REACH_BLOCKS * B * 1.5).has("workbench"), "workbench in crafting range")
 	check(player.can_craft(Data.recipes.scrap_knife), "the bench unlocks the scrap knife")
 	check(craft("scrap_knife") and inv_count("scrap_knife") == 1, "scrap knife crafted")
 	check(hold_item("scrap_knife"), "knife in hand")
-	await goto(25)
-	check(await hold_scrap(Vector2i(24, row), func(): return obj_at(Vector2i(24, row)) == null, 300), "locker scrapped with knife")
-	check(await hold_scrap(Vector2i(27, row), func(): return obj_at(Vector2i(27, row)) == null, 400), "fridge scrapped (tool + skill gate passed)")
-	check(inv_count("scrap_metal") >= 10 and inv_count("plastic") >= 2, "metal %d plastic %d" % [inv_count("scrap_metal"), inv_count("plastic")])
+	await goto(50)
+	var metal0 := inv_count("scrap_metal")
+	var plastic0 := inv_count("plastic")
+	check(await hold_scrap(Vector2i(48, row), func(): return obj_at(Vector2i(48, row)) == null, 300), "locker scrapped with knife")
+	check(await hold_scrap(Vector2i(54, row), func(): return obj_at(Vector2i(54, row)) == null, 400), "fridge scrapped (tool + skill gate passed)")
+	# Their metal + plastic pop OUT and the gentle magnet draws them in.
+	check(await until(func(): return inv_count("scrap_metal") > metal0 and inv_count("plastic") > plastic0, 240),
+			"locker+fridge yield metal + plastic, drawn in (%d/%d -> %d/%d)" % [metal0, plastic0, inv_count("scrap_metal"), inv_count("plastic")])
 
 	print("== F. three starter tools at the bench (GL-03, costs run 5x)")
-	await goto(13)
+	await goto(26)
 	check(craft("hammer") and craft("pry_bar"), "hammer + pry bar crafted at the bench")
 	check(inv_count("scrap_knife") == 1 and inv_count("hammer") == 1 and inv_count("pry_bar") == 1, "all three tools in the bag")
 
 	print("== G. station crafting + full-yield scrapping")
 	var wood_before := inv_count("wood")
-	await goto(21)
+	await goto(42)
 	# Long LMB press picks furniture up whole (short click only hints)
-	aim(Vector2i(22, row))
+	aim(Vector2i(44, row))
 	player.wants_use = true
 	await ticks(40)
 	player.wants_use = false
 	await ticks(2)
-	check(inv_count("chair") == 1 and obj_at(Vector2i(22, row)) == null, "long press picked up the second chair whole")
-	await goto(13)
+	check(inv_count("chair") == 1 and obj_at(Vector2i(44, row)) == null, "long press picked up the second chair whole")
+	await goto(26)
 	check(player.scrap_item("chair", 1) and inv_count("wood") >= wood_before + 5, "station scrap = full yield (wood %d -> %d)" % [wood_before, inv_count("wood")])
 	var stations := World.stations_near(player.global_position, Constants.REACH_BLOCKS * B * 1.5)
 	var bed_recipe: Dictionary = Data.recipes.bed
@@ -196,11 +213,11 @@ func _run() -> void:
 
 	print("== H. bed -> spawn point")
 	check(craft("bed") and hold_item("bed"), "bed crafted")
-	await goto(5)
-	await press_use(Vector2i(2, row))
-	var bed := obj_at(Vector2i(2, row))
+	await goto(10)
+	await press_use(Vector2i(4, row))
+	var bed := obj_at(Vector2i(4, row))
 	check(bed != null and bed.id == "bed", "bed placed at (2,5)")
-	await interact(Vector2i(3, row))
+	await interact(Vector2i(6, row))
 	check(absf(World.spawn_position.x - bed.bottom_center().x) < 0.5, "bed set the spawn point (GL-23)")
 	player.apply_damage(999.0)
 	await ticks(5)
@@ -212,14 +229,14 @@ func _run() -> void:
 	check(await until(func(): return not player.dying and player.health == Constants.MAX_HEALTH, 260), "the scene ends in a respawn")
 	await ticks(10)
 	check(absf(player.global_position.x - bed.bottom_center().x) < 0.5 and player.health == Constants.MAX_HEALTH, "died and respawned at the bed")
-	await goto(5)
+	await goto(10)
 	check(await until(func(): return get_tree().get_nodes_in_group("backpacks").is_empty(), 240), "backpack recovered on touch")
 
 	print("== I. light the base")
 	check(craft("standing_lamp") and hold_item("standing_lamp"), "lamp crafted")
-	await goto(6)
-	await press_use(Vector2i(7, row))
-	var lamp := obj_at(Vector2i(7, row))
+	await goto(12)
+	await press_use(Vector2i(14, row))
+	var lamp := obj_at(Vector2i(14, row))
 	check(lamp != null and lamp.id == "standing_lamp", "lamp placed")
 	var has_light := false
 	if lamp != null:
@@ -230,31 +247,31 @@ func _run() -> void:
 
 	print("== J. blocks: place, HP + tool-gated break, structure unbreakable")
 	check(craft("wood_block") and hold_item("wood_block"), "wood blocks crafted")
-	await goto(17)
-	await press_use(Vector2i(20, row))
-	await press_use(Vector2i(20, row - 1))
-	check(World.has_block_cell(Vector2i(20, row)) and World.is_player_block(Vector2i(20, row - 1)), "two blocks placed (adjacency ok)")
-	check(not World.can_place_block("wood_block", Vector2i(45, 2), player), "no floating placement without a neighbour (outside the tower)")
+	await goto(34)
+	await press_use(Vector2i(40, row))
+	await press_use(Vector2i(40, row - 1))
+	check(World.has_block_cell(Vector2i(40, row)) and World.is_player_block(Vector2i(40, row - 1)), "two blocks placed (adjacency ok)")
+	check(not World.can_place_block("wood_block", Vector2i(90, 5), player), "no floating placement without a neighbour (outside the tower)")
 	check(hold_item("hammer"), "hammer in hand")
-	check(await hold_use(Vector2i(20, row - 1), func(): return not World.has_block_cell(Vector2i(20, row - 1)), 120), "hammer breaks the placed block after several hits")
+	check(await hold_use(Vector2i(40, row - 1), func(): return not World.has_block_cell(Vector2i(40, row - 1)), 120), "hammer breaks the placed block after several hits")
 	var dropped := tower.get_node("Items").get_child_count()
 	check(dropped >= 1, "broken block dropped as an item")
-	await hold_use(Vector2i(20, row), func(): return not World.has_block_cell(Vector2i(20, row)), 120)
+	await hold_use(Vector2i(40, row), func(): return not World.has_block_cell(Vector2i(40, row)), 120)
 	# Mined drops toss toward the miner and magnet home once grabbable.
 	check(await until(func(): return inv_count("wood_block") >= 2, 240), "mined drops home to the miner and are picked up (%d)" % inv_count("wood_block"))
-	await goto(17)
-	await hold_use(Vector2i(17, row + 1), func(): return false, 5)
-	check(World.has_block_cell(Vector2i(17, row + 1)) and player.interaction.message.begins_with("Needs a better tool"),
+	await goto(34)
+	await hold_use(Vector2i(34, row + 1), func(): return false, 5)
+	check(World.has_block_cell(Vector2i(34, row + 1)) and player.interaction.message.begins_with("Needs a better tool"),
 			"metal slab shrugs off a scrap-tier hammer (GL-01 amended: metal needs steel)")
 
 	print("== K. background walls (WS-21)")
-	await goto(19)
+	await goto(38)
 	await ticks(20) # let the hammer's hit cooldown from the slab test expire
-	await press_secondary(Vector2i(21, row - 2))
-	check(not World.has_back_wall_cell(Vector2i(21, row - 2)), "hammer knocks out a back wall")
+	await press_secondary(Vector2i(42, row - 2))
+	check(not World.has_back_wall_cell(Vector2i(42, row - 2)), "hammer knocks out a back wall")
 	check(craft("wood_wall") and hold_item("wood_wall"), "wood walls crafted")
-	await press_secondary(Vector2i(21, row - 2))
-	check(World.has_back_wall_cell(Vector2i(21, row - 2)) and inv_count("wood_wall") == 3, "wood wall placed with secondary use")
+	await press_secondary(Vector2i(42, row - 2))
+	check(World.has_back_wall_cell(Vector2i(42, row - 2)) and inv_count("wood_wall") == 3, "wood wall placed with secondary use")
 
 	print("== L. consumables + schematic")
 	player.apply_damage(30.0)
@@ -269,26 +286,26 @@ func _run() -> void:
 	print("== M. chest + quick stack (LT-23)")
 	inv.add("chest", 1) # test grant: the chest UI path, not part of the gate
 	check(hold_item("chest"), "chest in hand")
-	await goto(15)
-	await press_use(Vector2i(13, row))
-	var chest := obj_at(Vector2i(13, row))
+	await goto(30)
+	await press_use(Vector2i(26, row))
+	var chest := obj_at(Vector2i(26, row))
 	check(chest != null and chest.storage != null, "chest placed with storage")
 	var opened: Array = []
 	player.container_opened.connect(func(o): opened.append(o))
-	await interact(Vector2i(13, row))
+	await interact(Vector2i(26, row))
 	check(opened.size() == 1 and opened[0] == chest, "E opens the chest")
 	chest.storage.add("scrap_metal", 1)
 	var metal := inv_count("scrap_metal")
 	var moved: int = inv.quick_stack_into(chest.storage)
 	check(moved == metal and inv_count("scrap_metal") == 0 and chest.storage.count("scrap_metal") == metal + 1, "quick-stack moved all matching metal")
 	check(hold_item("hammer"), "hammer in hand")
-	await press_use(Vector2i(13, row))
-	check(obj_at(Vector2i(13, row)) == chest and player.interaction.message.begins_with("Empty the chest"), "hammer refuses to pick up a full chest")
+	await press_use(Vector2i(26, row))
+	check(obj_at(Vector2i(26, row)) == chest and player.interaction.message.begins_with("Empty the chest"), "hammer refuses to pick up a full chest")
 	chest.storage.remove("scrap_metal", metal + 1)
 	inv.add("scrap_metal", metal + 1)
 
 	print("== N. drop + pickup, weight -> swim slowdown (WS-10/14)")
-	await goto(19) # clear floor to the right (the rope hole at x=15 would swallow the throw)
+	await goto(38) # clear floor to the right (the rope hole at x=15 would swallow the throw)
 	check(hold_item("wood"), "wood in hand")
 	var wood := inv_count("wood")
 	player.drop_held(1)
@@ -299,6 +316,11 @@ func _run() -> void:
 	await ticks(75) # thrown item lands; pickup delay expires
 	await goto(int(drop.global_position.x / B))
 	check(await until(func(): return inv_count("wood") == wood, 120), "walked over the thrown item and picked it back up")
+	# Normalise the bag first: stocking + collected harvest drops (2026-09-02)
+	# left it heavy enough to already sit at the swim floor, so measure from a
+	# light bag and then pile on stone to prove weight slows swimming.
+	for mid: String in ["wood", "scrap_metal", "plastic", "cloth", "stone", "iron"]:
+		inv.remove(mid, 999)
 	var f0 := player.swim_factor()
 	inv.add("stone", 200)
 	check(player.swim_factor() < f0 and player.swim_factor() >= Constants.WEIGHT_SWIM_MIN_FACTOR, "heavy bag slows swimming (%.2f -> %.2f), never below the floor" % [f0, player.swim_factor()])
@@ -307,11 +329,11 @@ func _run() -> void:
 	print("== O. door")
 	inv.add("wood_door", 1)
 	check(hold_item("wood_door"), "door in hand")
-	await goto(23)
-	await press_use(Vector2i(26, row))
-	check(obj_at(Vector2i(26, row - 1)) != null and World.is_solid_cell(Vector2i(26, row - 1)), "closed door is solid")
-	await interact(Vector2i(26, row - 1))
-	check(not World.is_solid_cell(Vector2i(26, row - 1)), "E opens the door")
+	await goto(46)
+	await press_use(Vector2i(52, row))
+	check(obj_at(Vector2i(52, row - 1)) != null and World.is_solid_cell(Vector2i(52, row - 1)), "closed door is solid")
+	await interact(Vector2i(52, row - 1))
+	check(not World.is_solid_cell(Vector2i(52, row - 1)), "E opens the door")
 
 	print("== P. skills summary")
 	var s := player.skills

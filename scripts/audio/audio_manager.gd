@@ -147,7 +147,7 @@ func play_sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 
 	p.bus = "SFX"
 	p.stream = load(path)
 	p.volume_db = volume_db
-	p.max_distance = 30 * Constants.BLOCK_SIZE
+	p.max_distance = 60 * Constants.BLOCK_SIZE
 	p.pitch_scale = randf_range(0.95, 1.05)
 	add_child(p)
 	p.global_position = pos

@@ -9,7 +9,7 @@ Forge, and the tool ladder (GL-09) starts opening what the pry bar could not —
 
 | | |
 |---|---|
-| **Band** | The Cold — rows 40–120 below the waterline (`BAND_SHALLOWS_DEPTH`…`BAND_COLD_DEPTH`), ≈ 13 floors |
+| **Band** | The Cold — rows 80–240 below the waterline (`BAND_SHALLOWS_DEPTH`…`BAND_COLD_DEPTH`; 40–120 before the 8 px cell of 2026-09-04), ≈ 13 floors |
 | **Target time** | ~20–25 h (GL-27, "fat middle") |
 | **Entry state** | Wetsuit (cold 1), scrap tank, speargun, Forge built |
 | **Exit capability** | **Steel** at the Forge (2 iron + stone) → `cutting_torch`; iron tank; hard-suit schematic in hand |
@@ -148,6 +148,38 @@ usually two or three ability points.
 - [ ] **S3-20.** Should Cold walkers be visibly cold-adapted (frost, slower, tougher) to sell the band?
 - [ ] **S3-21.** Is there a place for a telegraphed, recoverable trap (debris collapsing when a metal door is cut)?
 
+## Hazards, puzzles & water management
+
+The Cold layers a new predator (sharks), a new tax (the slow), and a new puzzle language
+(lock tiers) onto a band twice the Shallows' depth. The hazard space:
+
+- **Monster texture**: sharks own the open water between towers; walkers and crawlers hold
+  the dry pockets — the water *inside* buildings is, notably, still empty (the Drowned wait a
+  band down). Stage Three's tension is crossings and thresholds, not pursuit.
+- **The slow is a trap multiplier**: at ×0.65, every hazard is a third worse. A suit-less
+  peek that meets a shark is the band's signature death; the wetsuit doesn't remove danger,
+  it restores the player's baseline.
+- **Locks are puzzles with a tool answer**: pry 1 → cut 2 → torch 3 is a legible hierarchy,
+  and every locked thing seen is a promise. The band works when players keep a mental (or
+  map) list of doors they owe a return visit.
+- **Demolition opens routing puzzles**: tier-2 tools break stone, so "the door" stops being
+  the only answer — go through the wall, the floor, the neighbouring shaft. Route choice
+  becomes self-expression.
+- **Water management scales up**: the elevator-shaft drain (CT-06) is the first multi-room,
+  multi-pump project — sealing doors floor by floor, pumping in sequence, building the band's
+  highway home.
+
+**Open questions**
+
+- [ ] **S3-35.** Should locked archetypes (S3-02) carry authored micro-puzzles beyond the lock — a server room whose loot terminal needs the floor's breaker found and powered, a pharmacy cage with a second, hidden way in — so "opening" isn't always just the tool check?
+- [ ] **S3-36.** How should locked sections *show their prize* (glass walls into the armoury, loot silhouettes through the cage) so a lock is a promise the player logs rather than an obstacle they forget?
+- [ ] **S3-37.** Demolition routing: what makes "through the wall" a considered choice instead of the default — slower but shark-free? stone yields as payment? structure that matters to a future drain?
+- [ ] **S3-38.** Should decay set booby-traps at this tier — a rusted door that collapses when cut (telegraphed by rust streaks), a debris slide behind a pried hatch — as the band's recoverable authored traps (GL-29)?
+- [ ] **S3-39.** Should sharks patrol *learnable* circuits (a lap of the tower gap, visible from windows) so crossings become timeable puzzles — or does predictable patrolling defang open water?
+- [ ] **S3-40.** What turns the shaft drain into a *puzzle* rather than a wait — door-sealing order that matters, pump placement height, a cab in the way (S2-37) — and should one tower per world be authored to teach it?
+- [ ] **S3-41.** Should pumping gain a depth constraint here (lift height per pump, relays in series for deep outlets) so water engineering grows a tech curve of its own — or does one-pump-drains-all hold until post-MVP?
+- [ ] **S3-42.** When a big drain lowers a connected body across several rooms, how much of that spread should the player be able to *predict* — is there room for a water-reading affordance (flow hints at breaches, an outlet's reach preview) at this tier?
+
 ## Base & water
 
 - **Forward camp in The Cold**: drain a room at row ~60–100, mount a Dive Station and a chest,
@@ -222,3 +254,24 @@ LT-05…LT-11/14/16/18/20/25/26 · CT-06/18.
 - [ ] **S3-33.** Which Cold tower should be Stage Three's set piece (a mall? a police station — CT-02 expansion) and what does it teach?
 - [ ] **S3-34.** What data would confirm "fat middle" pacing — iron per hour, doors opened per session, time between camps?
 
+## Transition — Stage Three → Stage Four
+
+The Cold ends in a shopping list: steel. The transition is less a door than a **budget** —
+18 iron + 9 stone covers torch, hard suit, and rebreather, and the Cold's one-time iron cannot
+cover it all (GL-28), so the player descends *while still incomplete*. That is deliberate:
+Stage Four opens with the torch and the schematic hunt, not with a finished kit.
+
+Expected state at the boundary: `tank_iron` (90 s); wetsuit; bolt cutters; iron sword or
+knife; 2 steel banked (the torch) with more owed; a Cold camp around rows 120–200; Scrapping 3
+in reach; the map dotted with tier-3 locks the player already wants open.
+
+**Open questions**
+
+- [ ] **S3-43.** Should the steel shopping list be *visible* — the Forge showing "steel: 2/9 toward known recipes", schematic costs listed before they're learned — or is discovering the budget part of the stage?
+- [ ] **S3-44.** What is the minimum technology set for surviving The Dark's 2 HP/s clock on entry day — iron tank + a boundary camp? — and should the design guarantee any of it before the band lets you deep enough to die badly?
+- [ ] **S3-45.** Which resources should the player be *hauling down* rather than finding below — stone for deep Forges, cloth for the hard suit, wood for ladders — and does the weight economy make that hauling a real logistics stage?
+- [ ] **S3-46.** Where should the hard-suit schematic hunt *begin* — should late Cold tables carry a whisper of it (a torn page, a diver's log naming a vault) so Stage Four opens with a heading, not a blank?
+- [ ] **S3-47.** What ability/skill audit does the boundary assume — Scrapping 3 for steel harvest, a decision made on the Cold Blood path — and what happens to a player who invested purely in Swimming?
+- [ ] **S3-48.** Is the torch a Stage Three exit purchase or a Stage Four opener (S3-29 asks the order) — and whichever way, what should the *first* torch use be aimed at so the purchase lands as power, not chore?
+- [ ] **S3-49.** What tells a player The Cold is *done with them* — iron-per-dive falling, every metal door on the map opened — and is that depletion signal legible enough to steer descent without a prompt?
+- [ ] **S3-50.** How should the first Dark peek be survivable by design — a boundary camp row that generation guarantees, the 2 HP/s clock readable on the HUD before it starts — so the stage transition is a plan, not a surprise dip into damage?

@@ -9,7 +9,7 @@ city's fastest swimmers live.
 
 | | |
 |---|---|
-| **Band** | The Dark — rows 120–220 below the waterline (`BAND_COLD_DEPTH`…`BAND_DARK_DEPTH`), ≈ 16 floors |
+| **Band** | The Dark — rows 240–440 below the waterline (`BAND_COLD_DEPTH`…`BAND_DARK_DEPTH`; 120–220 before the 8 px cell of 2026-09-04), ≈ 16 floors |
 | **Target time** | ~20–25 h (GL-27) |
 | **Entry state** | Iron tank (90 s), wetsuit, bolt cutters, steel trickling from the Forge |
 | **Exit capability** | **Hard suit** (cold 2, **crush 1**) — the only thing that survives The Crush |
@@ -155,6 +155,33 @@ and pulls the player into Dark and Crush iron (2–5 per container).
 - [ ] **S4-20.** Should cold damage have a warning stage (shivering, screen frost) before HP loss so the 2 HP/s clock is readable?
 - [ ] **S4-21.** How does darkness create tension without buffs — enemy eyeshine, sounds that carry, light that attracts?
 
+## Hazards, puzzles & water management
+
+The Dark is the first band where the *water* hunts back (the Drowned) and the environment
+itself damages (cold DPS). Its hazard design is about light, time, and drainage as tactics:
+
+- **Monster texture**: the Drowned move through flooded interiors — a corridor is no longer
+  safe just because it's inside; sharks still own the crossings; walkers hold the dry pockets
+  where guns work. Three combat rulesets keyed to water state — the band teaches loadout
+  thinking.
+- **The clock is the trap**: 2 HP/s submerged (without rating 2) turns every route into
+  arithmetic. Most Dark deaths should be *plans that ran long*, not ambushes.
+- **Light is the puzzle medium**: fog beacons turn lighting a floor into mapping it; darkness
+  hides both loot and Drowned. The glowstick trail out is as load-bearing as the tank.
+- **Drainage is a weapon**: the Drowned are water-only — pumping a ward dry strands them
+  (S4-22). Water management graduates from logistics to *combat engineering*.
+
+**Open questions**
+
+- [ ] **S4-35.** Should some Dark floors be authored *light puzzles* — a breaker chain that lights the whole floor if two or three flooded junction rooms are drained in order — fusing the power, water, and fog systems into one setpiece?
+- [ ] **S4-36.** Can drain-to-strand be staged as a *puzzle* rather than a trick — a ward where the Drowned patrols between two pools and the order you cut the water decides whether it's stranded or cornered *with* you?
+- [ ] **S4-37.** What are fair warnings at lamp radius — Drowned eyeshine at the light's edge, audio that carries through water, a wake ripple — so black-water ambushes read as "I missed the tell", never "unknowable"?
+- [ ] **S4-38.** Should some vaults and safes sit *behind* water — torch-cutting a vault door releases the flooded room beyond (and anything living in it) into your drained staging area — as the band's telegraphed authored trap?
+- [ ] **S4-39.** Do pressure leaks (S4-11) belong at this depth — drained rooms weeping at the seams, needing an occasional patch patrol — or does that violate the "drained stays dry" promise (S2-09) that camps are built on?
+- [ ] **S4-40.** Should a room's *mid-drain* state be a designed fight arena — the water level falling live, a Drowned's pool shrinking toward a corner — and does the sim's drain rate make that a usable window today?
+- [ ] **S4-41.** Is there room for water-reading depth here — colder layers near breaches, sediment clouds when blocks break acting as smoke — so experienced players read a flooded room like a tracker reads ground?
+- [ ] **S4-42.** What is the band's recoverable *environmental* trap (no monster involved) — a false ceiling that dumps silt and kills the lights, a floor that gives into a flooded shaft — and how does it telegraph in low light?
+
 ## Base & water
 
 - **The deep camp is the base**: Dive Station, Mod Bench, Forge (10 stone + 4 scrap — cheap by
@@ -228,3 +255,25 @@ LT-03/05…LT-11/14/18/19/21/29 · CT-24 (band wear visuals post-MVP).
 - [ ] **S4-33.** What single guaranteed schematic placement per world (an authored safe) removes the dead-end risk at least design cost?
 - [ ] **S4-34.** Is the Dark the right band for the first mini set-piece (a flooded surgery with a locked-in Drowned)?
 
+## Transition — Stage Four → Stage Five
+
+The Crush wall is the game's only binary gate: crush rating 1 or 25 HP/s. The transition is
+therefore the cleanest of the five — **the hard suit is the ticket** — and the design work is
+everything *around* that fact: making the suit hunt fair, the boundary legible, and the
+player's kit genuinely ready for the band where every system runs at full strength.
+
+Expected state at the boundary: hard suit crafted (schematic found, 4 steel paid), ideally
+modded *before* its single apply locks it; torch and cutters carried; a camp near rows
+200–220; steel banked toward the rebreather; a working answer to the Drowned (speargun
+discipline or avoidance); Scrapping 3; most of an accessory row filled.
+
+**Open questions**
+
+- [ ] **S4-43.** Beyond the schematic RNG (S4-33) — what should the *moment* of first wearing the hard suit feel like (the tint change, the swim weight, the sound), given it is the run's single biggest promotion?
+- [ ] **S4-44.** Should the player be nudged to mod the suit before its one apply is spent — a Bench warning, a "still modifiable" glint — or is a locked plain suit the fair price of impatience?
+- [ ] **S4-45.** Is descending on the iron tank (90 s) a supported line, with the rebreather found *in* the Crush — or should the air budget make waiting for the rebreather schematic the real boundary, and if so does Stage Five open too slowly?
+- [ ] **S4-46.** What consumable loadout should the first Crush dive assume (medkits against 24-dmg hits, bolts, glowsticks, seal blocks, a spare pump) — and does the weight economy let it all through a 0.75× swim penalty?
+- [ ] **S4-47.** What should a player have *finished* in the Dark before leaving — every tier-3 lock they've mapped, a boundary camp bed, the SMG ammo chain — and what is deliberately fine to leave undone?
+- [ ] **S4-48.** How does a player safely *test* the wall — a pressure gauge at the boundary rows, a damage tick that visibly starts shallow enough to retreat from — so the one binary gate never reads as a gotcha kill?
+- [ ] **S4-49.** Should the boundary-camp pattern be guaranteed by generation (a sealable room near row 220 in every district), since Stage Five's camp-chain loop depends on it existing?
+- [ ] **S4-50.** What skill/ability state does Crush balance assume (Cold Blood or hard suit only? Master Scrapper for the steel debt?) — and is a respec (S4-26) needed *because* of this boundary specifically?

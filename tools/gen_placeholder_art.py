@@ -404,13 +404,15 @@ ICONS = {
     # row 5: accessories, vault key, steel
     (0, 5): ("band", None), (1, 5): ("watch", None), (2, 5): ("key", None), (3, 5): ("ingot2", None),
     (4, 5): ("heavy", None),
-    # row 6: firearms (found-only pool, LT-18)
+    # row 6: firearms (found-only pool, LT-18), then the wooden tripod (2026-09-02)
     (0, 6): ("gun", "pistol"), (1, 6): ("gun", "smg"), (2, 6): ("gun", "rifle"),
+    (3, 6): ("tripod", None),
     # row 7: M4 combat — melee tiers, speargun + bolt, pistol rounds
     (0, 7): ("sword", "scrap"), (1, 7): ("sword", "iron"), (2, 7): ("axe", None),
     (3, 7): ("speargun", None), (4, 7): ("bolt", None), (5, 7): ("rounds", "pistol"),
-    # row 8: rifle rounds, medkit, fish meat
+    # row 8: rifle rounds, medkit, fish meat, then farm items (2026-09-02)
     (0, 8): ("rounds", "rifle"), (1, 8): ("medkit", None), (2, 8): ("fish", None),
+    (3, 8): ("seed", None), (4, 8): ("bucket", "empty"), (5, 8): ("bucket", "full"),
 }
 
 
@@ -565,6 +567,29 @@ def _draw_icon(d, kind, arg, ox, oy, rng):
                   fill=(140, 170, 190), outline=OUT)
         d.polygon([(ox + 11, oy + 8), (ox + 14, oy + 5), (ox + 14, oy + 11)], fill=(110, 140, 160), outline=OUT)
         d.point((ox + 5, oy + 7), fill=OUT)
+    elif kind == "tripod":  # a wooden A-frame hoist with a rope + hook (2026-09-02)
+        wood_c = (122, 86, 54)
+        apex = (ox + 8, oy + 3)
+        for foot in [(ox + 3, oy + 13), (ox + 8, oy + 14), (ox + 13, oy + 13)]:
+            d.line([apex[0], apex[1], foot[0], foot[1]], fill=wood_c)
+        d.line([ox + 8, oy + 3, ox + 8, oy + 8], fill=(150, 120, 70))  # hanging rope
+        d.rectangle([ox + 7, oy + 8, ox + 9, oy + 10], fill=(150, 152, 158), outline=OUT)  # hook
+        d.ellipse([ox + 7, oy + 2, ox + 9, oy + 4], fill=(88, 62, 40))  # apex lashing
+    elif kind == "seed":  # a seed with a green sprout (2026-09-02)
+        cx, cy = ox + 8, oy + 10
+        d.ellipse([cx - 3, cy - 4, cx + 3, cy + 4], fill=(126, 84, 46), outline=(58, 38, 24))
+        d.point((cx - 1, cy - 1), fill=(168, 122, 76))
+        d.line([cx, cy - 4, cx, cy - 8], fill=(66, 128, 66))
+        d.point((cx - 1, cy - 7), fill=(96, 168, 96)); d.point((cx + 1, cy - 8), fill=(96, 168, 96))
+    elif kind == "bucket":  # wooden bucket, empty or full of water
+        top, bot = oy + 5, oy + 13
+        d.polygon([(ox + 4, top), (ox + 12, top), (ox + 11, bot), (ox + 5, bot)],
+                  fill=(122, 86, 56), outline=(58, 38, 24))
+        for x in range(ox + 6, ox + 12, 2):
+            d.line([x, top, x, bot], fill=(94, 64, 42))
+        d.arc([ox + 4, oy + 1, ox + 12, oy + 8], 180, 360, fill=(70, 50, 34))
+        if arg == "full":
+            d.rectangle([ox + 5, top + 1, ox + 11, top + 3], fill=(72, 122, 192))
 
 
 def build_icons():
@@ -590,8 +615,14 @@ OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
     "room_door_locked": (1, 3), # deadbolted variant (pry bar or better)
     "room_door_metal": (1, 3),  # chained metal variant below the Shallows (bolt cutters)
     "room_door_metal_open": (1, 3),
+    "room_door_barred": (1, 3),  # wood door with metal bars, opened by a hidden button
+    "door_button": (1, 1),       # the release button (hidden behind room clutter)
     "safe": (1, 1),
     "broken_ladder": (1, 1),
+    "planter": (1, 1),           # farm pot: plant a tree seed, grows under sky
+    # Tiered scrap benches (2026-09-02): bulk-melt a stage's objects to material
+    "wood_scrap_bench": (2, 2), "metal_scrap_bench": (2, 2), "iron_scrap_bench": (2, 2),
+    "steel_scrap_bench": (2, 2), "master_scrap_bench": (2, 2),
 }
 
 
@@ -720,6 +751,50 @@ def _draw_object(d, oid, W, H):
         d.rectangle([0, 0, W - 1, H - 1], fill=frame[1][1], outline=OUT)
         d.rectangle([2, 2, W - 3, H - 1], fill=(8, 8, 12))            # the dark room beyond
         d.rectangle([2, 2, 5, H - 1], fill=metal[1][1], outline=metal[1][0])  # leaf swung inward
+    elif oid.endswith("_scrap_bench"):
+        # A grinder bench, tinted by its material tier (2026-09-02).
+        tint = {
+            "wood_scrap_bench": (128, 90, 56), "metal_scrap_bench": (96, 106, 118),
+            "iron_scrap_bench": (110, 122, 140), "steel_scrap_bench": (156, 164, 176),
+            "master_scrap_bench": (206, 172, 84),
+        }.get(oid, (120, 120, 120))
+        _box(d, 1, H - 9, W - 2, H - 3, metal)                                    # tabletop/base
+        d.rectangle([2, H - 3, 5, H - 1], fill=OUT); d.rectangle([W - 6, H - 3, W - 3, H - 1], fill=OUT)  # legs
+        d.polygon([(5, 3), (W - 6, 3), (W - 9, H - 10), (8, H - 10)], fill=tint, outline=OUT)  # hopper
+        d.rectangle([2, H - 9, W - 3, H - 8], fill=tint)                          # tier stripe
+        cx, cy = W // 2, H - 13                                                    # grinder gear
+        d.ellipse([cx - 4, cy - 4, cx + 4, cy + 4], fill=(58, 62, 72), outline=(210, 215, 225))
+        for (tx, ty) in ((cx, cy - 5), (cx, cy + 5), (cx - 5, cy), (cx + 5, cy)):
+            d.point((tx, ty), fill=(210, 215, 225))
+        d.point((cx, cy), fill=(210, 215, 225))
+    elif oid == "planter":
+        # Terracotta pot with soil and a tiny sprout (user request 2026-09-02).
+        terra, terra_l = (108, 62, 38), (150, 92, 56)
+        d.rectangle([3, H - 7, W - 4, H - 1], fill=terra, outline=OUT)      # pot body
+        d.rectangle([2, H - 9, W - 3, H - 6], fill=terra_l, outline=OUT)    # rim
+        d.rectangle([4, H - 8, W - 5, H - 7], fill=(58, 42, 30))            # soil
+        d.line([W // 2, H - 8, W // 2, H - 11], fill=(64, 122, 64))         # sprout
+        d.point((W // 2 - 1, H - 10), fill=(96, 168, 96)); d.point((W // 2 + 1, H - 11), fill=(96, 168, 96))
+    elif oid == "room_door_barred":
+        # Wood door faced with riveted metal bars (user request 2026-09-02).
+        frame = (OUT, [(52, 40, 30), (70, 54, 40), (88, 68, 50), (104, 82, 60)], (124, 100, 74))
+        d.rectangle([0, 0, W - 1, H - 1], fill=frame[1][1], outline=OUT)
+        _box(d, 2, 2, W - 3, H - 1, wood)
+        for y in range(6, H - 8, 12):
+            d.rectangle([4, y, W - 5, y + 7], fill=wood[1][3], outline=wood[1][1])
+        # vertical + horizontal metal bars with rivets
+        for x in (W // 2 - 4, W // 2 + 3):
+            d.rectangle([x, 3, x + 1, H - 3], fill=metal[1][2], outline=metal[1][0])
+        for y in (H // 3, 2 * H // 3):
+            d.rectangle([3, y, W - 4, y + 1], fill=metal[1][2], outline=metal[1][0])
+        for (rx, ry) in ((W // 2 - 4, H // 3), (W // 2 + 3, H // 3), (W // 2 - 4, 2 * H // 3), (W // 2 + 3, 2 * H // 3)):
+            d.point((rx, ry), fill=metal[2])
+    elif oid == "door_button":
+        # A small wall release button: metal plate, red dome.
+        _box(d, 3, 3, W - 4, H - 4, metal)
+        cx, cy = W // 2, H // 2
+        d.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=RED, outline=OUT)
+        d.point((cx - 1, cy - 1), fill=(255, 200, 190))
     elif oid == "broken_ladder":
         for x in (3, 11):
             d.line([x, 0, x, H - 1], fill=wood[1][1])

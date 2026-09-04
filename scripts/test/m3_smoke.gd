@@ -31,14 +31,14 @@ func until(pred: Callable, n: int) -> bool:
 func _ready() -> void:
 	print("== A. determinism (CT-21)")
 	var t0 := Time.get_ticks_msec()
-	var r1 := CityGen.generate(101, 800)
+	var r1 := CityGen.generate(101, 1600)
 	var gen_ms := Time.get_ticks_msec() - t0
-	var r2 := CityGen.generate(101, 800)
-	var r3 := CityGen.generate(202, 800)
-	check(r1.grid.content_hash() == r2.grid.content_hash(), "same seed = same grid (%d ms per 800-wide gen)" % gen_ms)
+	var r2 := CityGen.generate(101, 1600)
+	var r3 := CityGen.generate(202, 1600)
+	check(r1.grid.content_hash() == r2.grid.content_hash(), "same seed = same grid (%d ms per 1600-wide gen)" % gen_ms)
 	check(hash(str(r1.objects)) == hash(str(r2.objects)) and hash(str(r1.doors)) == hash(str(r2.doors)), "same seed = same objects and doors")
 	check(r1.grid.content_hash() != r3.grid.content_hash(), "different seed = different city")
-	check(r1.towers >= 6, "800-wide slice holds %d towers (double-wide)" % r1.towers)
+	check(r1.towers >= 6, "1600-wide slice holds %d towers (double-wide)" % r1.towers)
 
 	print("== B. the full city")
 	SaveGame.pending_character = "__m3_smoke__" # never inherit a real save
@@ -49,24 +49,25 @@ func _ready() -> void:
 	await get_tree().physics_frame
 	var gen: Dictionary = city.gen
 	check(gen.towers >= 20, "city holds %d double-wide towers" % gen.towers)
-	check(World.spawn_position.y < CityGen.WATERLINE * B, "hospital spawn is above the waterline (GL-02)")
-	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands on the hospital roof (drop-off start)")
+	check(World.spawn_position.y < CityGen.WATERLINE * B, "roof drop-off spawn is above the waterline")
+	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands on the drop-off roof")
 	check(World.band_at(World.cell_at(player.global_position)) == "dry", "spawn floor is in The Dry")
 	var ground_ok := true
-	for gx in [10, 400, 1200, 2000, 2390]:
+	for gx in [20, 800, 2400, 4000, 4780]:
 		if not World.has_block_cell(Vector2i(gx, CityGen.GROUND)):
 			ground_ok = false
 	check(ground_ok, "bare concrete ground spans the city (CT-07)")
 
 	print("== C. connectivity flooding (CT-12/13)")
 	var sim := World.water_sim
-	check(sim.level_at(Vector2i(6, CityGen.WATERLINE + 20)) == WaterSim.MAX_LEVEL, "open ocean is flooded")
-	check(sim.level_at(Vector2i(6, CityGen.WATERLINE - 4)) == 0, "no water above the waterline")
-	# Tower interiors must flood to the waterline (user bug 2026-09-01:
-	# fully vent-sealed towers stayed dry inside - a 50-block air fall).
-	var hosp3: Dictionary = gen.hospital
-	check(sim.level_at(Vector2i(int(hosp3.x0) + 4, CityGen.WATERLINE + 10)) > 0,
-		"the tallest tower's stairwell holds water below the waterline")
+	check(sim.level_at(Vector2i(12, CityGen.WATERLINE + 40)) == WaterSim.MAX_LEVEL, "open ocean is flooded")
+	check(sim.level_at(Vector2i(12, CityGen.WATERLINE - 8)) == 0, "no water above the waterline")
+	# Tower interiors must flood BELOW their dry top pocket (user bug
+	# 2026-09-01: fully vent-sealed towers stayed dry inside - a 50-block air
+	# fall). Check deep enough to clear the 4-8 floor dry pocket (2026-09-02).
+	var spawn3: Dictionary = gen.spawn_tower
+	check(sim.level_at(Vector2i(int(spawn3.x0) + 8, CityGen.WATERLINE + 200)) > 0,
+		"the spawn tower's stairwell holds water deep below the dry pocket")
 	var dry_rooms := 0
 	for rect: Rect2i in gen.sealed:
 		var has_water := false
@@ -83,20 +84,20 @@ func _ready() -> void:
 	check(dry_rooms >= gen.sealed.size() / 3, "%d/%d sealed floors kept their air (wear breached the rest)" % [dry_rooms, gen.sealed.size()])
 
 	print("== D. depth bands (GD-16)")
-	check(World.band_at(Vector2i(6, CityGen.WATERLINE - 10)) == "dry", "above waterline: dry")
-	check(World.band_at(Vector2i(6, CityGen.WATERLINE + 10)) == "shallows", "shallows band")
-	check(World.band_at(Vector2i(6, CityGen.WATERLINE + 60)) == "cold", "cold band")
-	check(World.band_at(Vector2i(6, CityGen.WATERLINE + 150)) == "dark", "dark band")
-	check(World.band_at(Vector2i(6, CityGen.WATERLINE + 260)) == "crush", "crush band")
+	check(World.band_at(Vector2i(12, CityGen.WATERLINE - 20)) == "dry", "above waterline: dry")
+	check(World.band_at(Vector2i(12, CityGen.WATERLINE + 20)) == "shallows", "shallows band")
+	check(World.band_at(Vector2i(12, CityGen.WATERLINE + 120)) == "cold", "cold band")
+	check(World.band_at(Vector2i(12, CityGen.WATERLINE + 300)) == "dark", "dark band")
+	check(World.band_at(Vector2i(12, CityGen.WATERLINE + 520)) == "crush", "crush band")
 
 	print("== E. cold and crush gates (CC-16, GL-12)")
-	player.global_position = Vector2(8 * B, (CityGen.WATERLINE + 150) * B)
+	player.global_position = Vector2(16 * B, (CityGen.WATERLINE + 300) * B)
 	player.velocity = Vector2.ZERO
 	await ticks(60)
 	check(player.band == "dark" and player.env_slow < 1.0, "The Dark slows an unsuited diver (x%.2f)" % player.env_slow)
 	check(player.health < Constants.MAX_HEALTH, "and chills them (hp %.1f)" % player.health)
 	var hp_before := player.health
-	player.global_position = Vector2(8 * B, (CityGen.WATERLINE + 260) * B)
+	player.global_position = Vector2(16 * B, (CityGen.WATERLINE + 520) * B)
 	await ticks(30)
 	check(player.health < hp_before - 8.0, "The Crush hurts fast without a hard suit (hp %.1f)" % player.health)
 	player.respawn()
@@ -117,18 +118,30 @@ func _ready() -> void:
 	var gurney_tex := Data.object_texture("hos_gurney")
 	check(gurney_tex is AtlasTexture and gurney_tex.get_size() == Vector2(48, 32),
 			"pack sprite loads as an AtlasTexture region (hos_gurney 48x32)")
-	# Wall art needs back walls behind every cell (WS-20/21): a spot inside
-	# the medical room has them; the open sky above the city does not.
-	var med := Vector2i(int(city.gen.hospital.zones[0][0]) + 3, int(city.gen.hospital.top) + CityGen.FLOOR_H - 1)
-	var sc := med + Vector2i(0, -3) # above the medical room, one floor under the spawn roof
-	check(World.has_back_wall_cell(sc) and World.can_place_object("hos_eye_chart", sc),
+	# Wall art needs back walls behind every cell (WS-20/21): interior cells a
+	# few floors down the spawn tower have them; the open sky does not. (No
+	# medical room is authored any more, so scan the dry top floors for an
+	# open, back-walled spot instead of a known one.)
+	var st: Dictionary = city.gen.spawn_tower
+	var sc := Vector2i(-1, -1)
+	var floor_spot := Vector2i(-1, -1)
+	for f in range(1, 4):
+		var srr := int(st.top) + f * CityGen.FLOOR_H + CityGen.FLOOR_H - 1
+		for fx in range(int(st.zones[0][0]) + 1, int(st.zones[0][1])):
+			if sc.x < 0 and World.has_back_wall_cell(Vector2i(fx, srr - 6)) \
+					and World.can_place_object("hos_eye_chart", Vector2i(fx, srr - 6)):
+				sc = Vector2i(fx, srr - 6)
+			if floor_spot.x < 0 and World.has_back_wall_cell(Vector2i(fx, srr)) \
+					and World.can_place_object("res_sofa", Vector2i(fx, srr)):
+				floor_spot = Vector2i(fx, srr)
+	check(sc.x >= 0 and World.has_back_wall_cell(sc) and World.can_place_object("hos_eye_chart", sc),
 			"wall art hangs on an interior back wall")
-	check(not World.can_place_object("hos_eye_chart", Vector2i(6, 10)), "but not on open sky")
-	var sofa := World.place_object("res_sofa", med + Vector2i(6, 0), true)
+	check(not World.can_place_object("hos_eye_chart", Vector2i(12, 20)), "but not on open sky")
+	var sofa: WorldObject = World.place_object("res_sofa", floor_spot, true) if floor_spot.x >= 0 else null
 	check(sofa != null and sofa.sprite.texture != null, "a pack item places with its sheet sprite")
 
 	print("== H. edge walls, stations, debris, two-jump (CT-22/08/23, WS-04)")
-	player.global_position = Vector2(-40 * B, (CityGen.WATERLINE - 6) * B)
+	player.global_position = Vector2(-80 * B, (CityGen.WATERLINE - 12) * B)
 	player.velocity = Vector2.ZERO
 	await ticks(2)
 	check(player.global_position.x >= 0.0, "invisible west edge wall clamps the player (x=%.0f)" % player.global_position.x)
@@ -139,7 +152,7 @@ func _ready() -> void:
 		var relay_ok := true
 		for i in 3:
 			var shell: Rect2i = gen.relays[i]
-			var interior := Vector2i(shell.position.x + 5, shell.end.y - 1)
+			var interior := Vector2i(shell.position.x + 10, shell.end.y - 1)
 			if World.has_block_cell(interior) or not World.has_back_wall_cell(interior):
 				relay_ok = false
 		check(relay_ok, "relay machine rooms are hollow with back walls")
@@ -151,8 +164,8 @@ func _ready() -> void:
 	# Twin-wing towers: ladders on both sides, shaft down the middle, and
 	# submerged ladder runs broken into repairable gaps (user request).
 	var tw0: Dictionary = gen.tower_list[gen.tower_list.size() / 2]
-	check(World.is_climbable_cell(Vector2i(int(tw0.x0) + 4, int(tw0.top) + 2)) \
-			and World.is_climbable_cell(Vector2i(int(tw0.x1) - 4, int(tw0.top) + 2)),
+	check(World.is_climbable_cell(Vector2i(int(tw0.x0) + 8, int(tw0.top) + 4)) \
+			and World.is_climbable_cell(Vector2i(int(tw0.x1) - 9, int(tw0.top) + 4)),
 			"ladders run on both sides of a tower (hugging the room-side wall)")
 	check(not World.has_block_cell(Vector2i(int(tw0.mid), int(tw0.top) + CityGen.FLOOR_H)),
 			"the central elevator shaft is open through the slabs")
@@ -166,7 +179,7 @@ func _ready() -> void:
 	check(AudioServer.get_bus_index("Music") >= 0 and AudioServer.get_bus_index("Ambient") >= 0 \
 			and AudioServer.get_bus_index("SFX") >= 0, "Music/Ambient/SFX buses exist")
 	check(Audio.desired_pool() == "adventure", "safe band scores adventure music")
-	player.global_position = Vector2(8 * B, (CityGen.WATERLINE + 150) * B)
+	player.global_position = Vector2(16 * B, (CityGen.WATERLINE + 300) * B)
 	player.velocity = Vector2.ZERO
 	await ticks(3)
 	check(Audio.desired_pool() == "threat", "The Dark calls up threat music")

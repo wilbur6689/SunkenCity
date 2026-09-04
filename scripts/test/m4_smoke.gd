@@ -49,6 +49,8 @@ func until(pred: Callable, n: int) -> bool:
 func place(cx: int, row: int) -> void:
 	player.velocity = Vector2.ZERO
 	player.global_position = Vector2((cx + 0.5) * B, (row + 1) * B - Player.FEET_Y)
+	player.state = Player.State.AIRBORNE # re-evaluate from the new spot (a stale SURFACE_SWIM would tread upward)
+	player.fall_start_y = player.global_position.y
 	await ticks(3)
 
 func aim(pos: Vector2) -> void:
@@ -92,7 +94,7 @@ func items_of(id: String) -> int:
 
 func _run() -> void:
 	World.time_of_day = 0.5 # broad daylight unless a check says otherwise
-	var row := 11 # floor 2 standing row (dry band)
+	var row := 23 # floor 2 standing row (dry band; 8 px cells)
 
 	print("== A. data + framework (GD-01/16/23)")
 	check(Data.enemies.size() == 6, "6 enemy types loaded (roster + fish)")
@@ -106,8 +108,8 @@ func _run() -> void:
 		"the Drowned out-swim the player (GD-14)")
 
 	print("== B. proximity aggro — the one shared sense (GD-06/29)")
-	await place(10, row)
-	var w1 := spawn("walker", 23, row) # 13 blocks: outside the day radius (10)
+	await place(20, row)
+	var w1 := spawn("walker", 46, row) # 26 cells: outside the day radius (20)
 	await ticks(3)
 	var wnode: Enemy = w1.node
 	check(wnode != null, "record inside the window runs as a node")
@@ -121,16 +123,16 @@ func _run() -> void:
 	print("== C. walker: chase, contact damage, bleeding (GD-04/21)")
 	# Same side of the floor-2 rope hole (x15) — with edge sense the walker
 	# rightly refuses to cross a 1-block pit its body would fall through.
-	await place(18, row)
+	await place(36, row)
 	var hp0 := player.health
-	check(await until(func(): return wnode.global_position.x < 22.0 * B, 240), "walker chases toward the player")
+	check(await until(func(): return wnode.global_position.x < 44.0 * B, 240), "walker chases toward the player")
 	check(await until(func(): return player.health < hp0, 600), "contact does damage")
 	check(player.combat_timer < 1.0, "taking damage resets the regen delay (GL-21)")
 	await clear_enemies()
 	# Forward swipe (user request 2026-09-01): a bite lands up to
 	# ENEMY_ATTACK_REACH_BLOCKS in FRONT of the facing, not just on overlap.
 	player.health = Constants.MAX_HEALTH
-	var wf := spawn("walker", 19, row) # one block to the player's right
+	var wf := spawn("walker", 38, row) # one block to the player's right
 	await ticks(2)
 	var wfn: Enemy = wf.node
 	wfn.set_physics_process(false) # frozen: reach itself must land the hit
@@ -148,38 +150,38 @@ func _run() -> void:
 
 	print("== D. pound player-placed blocks only (GD-04)")
 	player.health = Constants.MAX_HEALTH
-	await place(12, row)
-	for dy in 3: # a wall between player and zombie
-		World.place_block("wood_block", Vector2i(16, row - dy))
-	var wall_key := Vector2i(16, row)
+	await place(24, row)
+	for dy in 6: # a wall between player and zombie (walker 3 cells tall, hops 4.4)
+		World.place_block("wood_block", Vector2i(32, row - dy))
+	var wall_key := Vector2i(32, row)
 	var wall_hp: float = World.placed_blocks[wall_key].hp
-	var w2 := spawn("walker", 19, row)
+	var w2 := spawn("walker", 38, row)
 	check(await until(func(): return not World.placed_blocks.has(wall_key) \
 		or World.placed_blocks[wall_key].hp < wall_hp, 600), "blocked walker pounds the placed block")
-	check(World.grid.structure_at(Vector2i(16, row + 1)) != WorldGrid.M.AIR, "building structure is never pounded")
-	for dy in 3:
-		World.remove_block(Vector2i(16, row - dy))
+	check(World.grid.structure_at(Vector2i(32, row + 1)) != WorldGrid.M.AIR, "building structure is never pounded")
+	for dy in 6:
+		World.remove_block(Vector2i(32, row - dy))
 	await clear_enemies()
 
 	print("== D2. edge sense (GD-04 amended): never walk off a ledge")
 	# A platform in floor 2's cavity; the player stands across the drop.
-	for x in [8, 9, 10]:
-		World.place_block("wood_block", Vector2i(x, 8))
-	await place(14, row) # below and to the right of the platform
-	var wh := spawn("walker", 9, 7)
+	for x in range(16, 22):
+		World.place_block("wood_block", Vector2i(x, 16))
+	await place(28, row) # below and to the right of the platform
+	var wh := spawn("walker", 18, 15)
 	var wh_y: float = wh.pos.y # rec.pos re-banks every tick; keep the spawn height
 	await ticks(180) # plenty of time to have blundered off
-	check(wh.node != null and wh.node.global_position.x < 11.0 * B 		and absf(wh.node.global_position.y - wh_y) < 12.0,
+	check(wh.node != null and wh.node.global_position.x < 22.0 * B 		and absf(wh.node.global_position.y - wh_y) < 12.0,
 		"chasing walker holds the ledge instead of falling")
 	await clear_enemies()
-	for x in [8, 9, 10]:
-		World.remove_block(Vector2i(x, 8))
+	for x in range(16, 22):
+		World.remove_block(Vector2i(x, 16))
 
 	print("== E. melee (GD-07/08)")
 	player.inventory.add("scrap_sword", 1)
 	check(hold_item("scrap_sword"), "scrap sword in hand")
-	var w3 := spawn("walker", 14, row)
-	await place(12, row)
+	var w3 := spawn("walker", 28, row)
+	await place(24, row)
 	var killed := false
 	for i in 900:
 		if not World.enemy_records.has(w3):
@@ -199,7 +201,7 @@ func _run() -> void:
 	await ticks(1)
 	player.wants_use = false
 	var dry_cd := player.interaction.attack_cooldown
-	await place(8, 21) # flooded floor 4
+	await place(8, 41) # flooded floor 4
 	check(player.in_water, "standing in the flooded floor")
 	player.interaction.attack_cooldown = 0.0
 	player.wants_use = true
@@ -212,10 +214,10 @@ func _run() -> void:
 	player.inventory.add("pistol", 1)
 	player.inventory.add("pistol_rounds", 12)
 	check(hold_item("pistol"), "pistol in hand")
-	await place(15, row) # clear lane: no authored blocks between 15 and 19
-	var w4 := spawn("walker", 19, row)
+	await place(30, row) # clear lane: no authored blocks between 15 and 19
+	var w4 := spawn("walker", 38, row)
 	var whp: float = w4.hp
-	aim(Vector2(19.5 * B, (row + 1) * B - 12.0))
+	aim(Vector2(39.0 * B, (row + 1) * B - 12.0))
 	player.interaction.attack_cooldown = 0.0
 	player.wants_use = true
 	await ticks(2)
@@ -223,7 +225,7 @@ func _run() -> void:
 	check(float(w4.hp) < whp, "hitscan shot lands (walker hp %d -> %d)" % [int(whp), int(w4.hp)])
 	check(inv_count("pistol_rounds") == 11, "one round consumed")
 	await clear_enemies()
-	await place(8, 21) # submerged
+	await place(8, 41) # submerged
 	check(player.submerged, "head under water")
 	player.interaction.attack_cooldown = 0.0
 	player.wants_use = true
@@ -235,8 +237,8 @@ func _run() -> void:
 	player.inventory.add("speargun", 1)
 	player.inventory.add("speargun_bolt", 20)
 	check(hold_item("speargun"), "speargun in hand")
-	var d1 := spawn("drowned", 16, 21)
-	await place(8, 21)
+	var d1 := spawn("drowned", 32, 41)
+	await place(8, 41)
 	var d_killed := false
 	for i in 900:
 		if not World.enemy_records.has(d1):
@@ -254,7 +256,7 @@ func _run() -> void:
 	await clear_enemies()
 
 	print("== H. shark drops + light loot (GD-11/24)")
-	var s1 := spawn("shark", 6, 20)
+	var s1 := spawn("shark", 12, 39)
 	await ticks(2)
 	check(s1.node != null, "shark spawned in open water")
 	while World.enemy_records.has(s1):
@@ -280,11 +282,11 @@ func _run() -> void:
 	var wood_held := inv_count("wood")
 	# A flooded column with the waterline slab overhead and open water below.
 	var death_x := -1
-	for x in range(12, 32):
-		if not World.is_solid_cell(Vector2i(x, 18)):
+	for x in range(24, 64):
+		if not World.is_solid_cell(Vector2i(x, 36)):
 			continue
 		var open := true
-		for y in range(19, 23):
+		for y in range(38, 48): # the whole cavity: clear of the crates at cols 24-27
 			if World.is_solid_cell(Vector2i(x, y)) or not World.is_water_cell(Vector2i(x, y)):
 				open = false
 				break
@@ -292,7 +294,7 @@ func _run() -> void:
 			death_x = x
 			break
 	check(death_x > 0, "found an open flooded column under the slab (x=%d)" % death_x)
-	await place(death_x, 21)
+	await place(death_x, 43)
 	player.apply_damage(9999.0)
 	await ticks(2)
 	var packs := get_tree().get_nodes_in_group("backpacks")
@@ -302,16 +304,16 @@ func _run() -> void:
 	check(await until(func(): return not player.dying, 260), "the 3 s death scene plays out (2026-09-01)")
 	await ticks(5)
 	check(player.health == Constants.MAX_HEALTH and player.global_position.distance_to(
-		World.spawn_position) < 8.0 * B, "respawned at the spawn point")
+		World.spawn_position) < 16.0 * B, "respawned at the spawn point")
 	var pack: Node2D = packs[0]
-	check(await until(func(): return pack.global_position.y < 19.5 * B and pack.velocity == Vector2.ZERO, 300),
+	check(await until(func(): return pack.global_position.y < 39.0 * B and pack.velocity == Vector2.ZERO, 300),
 		"unobstructed pack floats up and pins under the flooded ceiling")
 	player.global_position = pack.global_position + Vector2(0, 8) # dive back to it
 	player.velocity = Vector2.ZERO
 	check(await until(func(): return inv_count("wood") == wood_held, 240), "recover-on-touch returns everything")
 
 	print("== K. red moon (CC-14, GL-15, GD-23)")
-	await place(10, row)
+	await place(20, row)
 	player.health = Constants.MAX_HEALTH
 	await clear_enemies()
 	World.day_count = 6
@@ -337,20 +339,20 @@ func _run() -> void:
 	print("== L. night floaters disperse at dawn (GD-29)")
 	World.time_of_day = 0.0
 	await ticks(2)
-	var nf := World.add_enemy_record("floater", Vector2(6.5 * B, 18.5 * B), 1.0, true)
+	var nf := World.add_enemy_record("floater", Vector2(13.0 * B, 37.0 * B), 1.0, true)
 	check(not nf.is_empty(), "night floater spawned on the surface")
 	World.time_of_day = 0.5
 	await ticks(2)
 	check(not World.enemy_records.has(nf), "night extras disperse at dawn")
 
 	print("== M. fish: swim close + interact (GD-09/28)")
-	var fish := World.add_enemy_record("fish_school", Vector2(6.5 * B, 20.5 * B))
+	var fish := World.add_enemy_record("fish_school", Vector2(13.0 * B, 41.0 * B))
 	World.refresh_objects_around(player.global_position)
 	var stock0: int = fish.stock
-	player.global_position = Vector2(6.5 * B, 20.5 * B) + Vector2(16, 0)
+	player.global_position = Vector2(13.0 * B, 41.0 * B) + Vector2(16, 0)
 	player.velocity = Vector2.ZERO
 	await ticks(2)
-	aim(Vector2(6.5 * B, 20.5 * B))
+	aim(Vector2(13.0 * B, 41.0 * B))
 	player.wants_interact = true
 	await ticks(2)
 	check(inv_count("fish_meat") >= 1, "grabbed a fish by hand")

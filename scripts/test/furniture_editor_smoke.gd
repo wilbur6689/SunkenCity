@@ -13,7 +13,7 @@ func _ready() -> void:
 	ed.sprites_dir = "user://"
 	add_child(ed)
 	await get_tree().process_frame
-	check(ed.image.get_width() == 32 and ed.image.get_height() == 32, "default canvas is 2x2 blocks (32px)")
+	check(ed.image.get_width() == 32 and ed.image.get_height() == 32, "default canvas is 4x4 cells (32px)")
 	# Esc menu (user request): the in-game pause menu mounted with editor bindings.
 	var pm = ed.get_tree().get_first_node_in_group("pause_menu")
 	check(pm != null and not pm.open, "pause menu mounted, closed at start")
@@ -45,7 +45,7 @@ func _ready() -> void:
 	mev.position = Vector2(5 * ed.PX + 2, 5 * ed.PX + 2)
 	ed._canvas_input(mev)
 	check(ed.image.get_pixel(5, 5).a < 0.1, "MMB click clears the pixel")
-	ed.w_spin.value = 3 # widen; existing pixels preserved
+	ed.w_spin.value = 6 # widen; existing pixels preserved
 	check(ed.image.get_width() == 48 and ed.image.get_pixel(3, 3).a > 0.9, "resize keeps painted content")
 	ed.def.yields = [{"item": "scrap_metal", "min": 2, "max": 4}]
 	ed._save()
@@ -53,7 +53,7 @@ func _ready() -> void:
 	check(lib.objects.size() == 1 and lib.objects[0].id == "smoke_shelf", "furniture exported to the library")
 	var o = lib.objects[0]
 	check(o.zones.has("commercial") and o.zones.has("residential"), "zone applicability exported")
-	check(int(o.size[0]) == 3 and o.yields[0].item == "scrap_metal", "size + yields exported")
+	check(int(o.size[0]) == 6 and o.yields[0].item == "scrap_metal", "size + yields exported")
 	check(FileAccess.file_exists("user://smoke_shelf.png"), "sprite PNG exported")
 	ed._save()
 	lib = JSON.parse_string(FileAccess.get_file_as_string("user://objects_test.json"))

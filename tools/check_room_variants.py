@@ -51,7 +51,7 @@ def check_room(r, errors, seen_ids):
         errors.append(f"{rid}: id already exists in data/rooms.json")
     seen_ids.add(rid)
     W, H = int(r.get("width", 0)), int(r.get("height", 5))
-    if not (8 <= W <= 14) or H != 5:
+    if not (16 <= W <= 28) or H != 10:  # cells (8 px); tower floors hold 10 open rows
         errors.append(f"{rid}: size {W}x{H} — width must be 8..14 and height 5")
     cells = {}
     for b in r.get("blocks", []):

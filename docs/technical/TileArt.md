@@ -2,8 +2,8 @@
 
 How blocks and characters should be drawn. Source: study of Terraria's block art
 (`docs/Examples/terrariaBlocks.png` and close-ups of stone, brick, and wood — 2026-08-31) against
-the canon in [../GameOverview.md](../GameOverview.md) (16×16 blocks, 24px character, WS-25/28/29,
-CC-22 palette).
+the canon in [../GameOverview.md](../GameOverview.md) (8×8 blocks drawn from 24×24-texel tiles since
+2026-09-04 — 16×16 before — 30px character, WS-25/28/29, CC-22 palette).
 
 ## What makes a Terraria block read as textured
 
@@ -66,15 +66,21 @@ surface. Assembled by `scripts/world/backdrop.gd`; deeper bands get their own st
 
 ## Atlas layout (current placeholder → real art)
 
-`assets/tiles/placeholder_blocks.png`: rows = materials (stone, wood, metal, plastic, water,
-ladder, rope), **columns = 5 pattern variants of the same material**, picked per cell by a
-position hash in `test_tower.gd`. The placeholder is generated procedurally from the recipes
-above by `tools/gen_placeholder_art.py` (deterministic; also emits the 24px character sheet
-`assets/sprites/player_placeholder.png`: frame 0 standing, frame 1 prone for crawl/swim). Real
-art keeps the same layout so the TileSet resource and variant pick carry over unchanged.
+**World tiles (2026-09-04, half-size blocks):** `assets/tiles/placeholder_blocks_24.png` +
+`.tres` from `tools/gen_tiles_24.py` — **24×24 texels per 8 px block**, rows = materials (stone,
+wood, metal, plastic, water, ladder, rope, void, woodwall), **columns = 5 pattern variants**,
+picked per cell by a position hash in `StructureRenderer`, which draws the layers at 1/3 scale
+(`TILE_ART_SCALE`; physics polygons ±12 texels = ±4 px). At the default zoom (3.0) on a 1080p
+screen one texel is one monitor pixel. The recipes above are applied at 24 px: stone is a 4×4
+field of 5–6-texel pebbles (~2 world px), wood three 7–9-texel boards, metal 12/24-texel plates.
+Real art keeps the same layout so the TileSet resource and variant pick carry over unchanged.
+
+`assets/tiles/placeholder_blocks.png` (16 px, `tools/gen_placeholder_art.py`) is now only the
+**block icon sheet** (`Data.ICON_PX = 16`), like `items.png`; the 32 px `placeholder_blocks_hd`
+set from the 2026-09-02 resolution prototype is unused.
 
 Edge outlines: plan for a Godot **terrain set** (autotile) so exposed faces get the 1px dark
-edge automatically; the base 16×16 textures stay outline-free and seamless (patterns wrap at 16px).
+edge automatically; the base textures stay outline-free and seamless (patterns wrap at 24 texels).
 
 ## Character (WS-02/25)
 
@@ -86,10 +92,11 @@ mirrored**, so the player script picks the row by facing instead of `flip_h`. Th
 "east"/"west" cells face the opposite way from their walk rows; the tool swaps them. Crawl and
 swim reuse the same frames rotated 90° along the compact hitbox until dedicated poses exist.
 
-**Scale note:** this character is **~30px tall (≈1.9 blocks)**, taller than the 24px canon
-(WS-02: 24px with hair, 21 without). The 12×22 standing hitbox is unchanged — the head overhangs
-it by ~8px, which reads fine — but the canon height should be amended to 30px (and the WS-05
-gap sizes reconsidered) if this art is kept.
+**Scale note:** this character is **~30px tall (≈3.75 blocks of 8 px; ≈1.9 of the old 16 px
+blocks)**, taller than the 24px canon (WS-02: 24px with hair, 21 without). The 12×22 standing
+hitbox is unchanged — the head overhangs it by ~8px, which reads fine. The canon table in
+GameOverview.md was amended to the 30 px sprite on 2026-09-04; gap sizes are now 2 blocks
+(crawl) / 3 blocks (stand).
 
 `docs/Examples/Character/MainCharacter.png` is the earlier **style reference**: ~327px figures,
 ~13.6× canon, used only for palette and silhouette.

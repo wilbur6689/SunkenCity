@@ -4,7 +4,7 @@ Living tracker for the M0–M6 build order defined in [MVP-overview.md](MVP-over
 The Drain endgame (relay stations, waterline drops, ending) is **deferred to after the Steam
 release** — it stays in the story; see "Post-release — The Drain" at the bottom.
 Check items as they land; each milestone ends with its **GATE** — a demonstrable in-build test.
-Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
+Constants live in blocks (`BLOCK_SIZE = 8` since 2026-09-04; 16 before) per WS-30.
 
 ---
 
@@ -12,7 +12,7 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 
 ### Project & rendering
 - [x] Godot 4.8 project created (`project.godot` at repo root)
-- [x] Viewport 640×360, stretch mode `canvas_items` (world pixel-perfect at integer scale, UI text rasterized at window resolution), aspect `keep`
+- [x] Viewport 1920×1080 (2026-09-04; was 1280×720 from 2026-09-02, 640×360 originally), stretch mode `canvas_items`, aspect `expand`, fractional scale; `UIScale.BASE_SCALE` 1.5 keeps the UI laid out in its 1280×720 / 640×360 design frames at the same on-screen size, and the camera divides its zoom by the total content scale
 - [x] Default texture filter = Nearest project-wide
 - [x] 2D transform + vertex pixel snapping enabled
 - [x] Folder layout: `scenes/`, `scripts/`, `assets/`, `data/`, `scenes/test/`
@@ -30,8 +30,8 @@ Constants live in blocks (`BLOCK_SIZE = 16`) per WS-30.
 ### Character controller (`CharacterBody2D` + state machine, WS-19)
 - [x] State machine scaffold with debug state readout (HUD bottom-left)
 - [x] Grounded: walk 5 bl/s, sprint 7 bl/s, accel/friction tuned
-- [x] Jump 3 blocks exactly; coyote time + jump buffer
-- [x] Fall + fall damage (safe ≤8 blocks, scaling after); water entry always safe (WS-15)
+- [x] Jump 3 blocks exactly (6 blocks of 8 px since 2026-09-04); coyote time + jump buffer
+- [x] Fall + fall damage (safe ≤8 blocks — ≤16 blocks of 8 px since 2026-09-04 — scaling after); water entry always safe (WS-15)
 - [x] Crouch/crawl through low gaps; can't stand where blocked (WS-05) *(see the WS-05 note: the 22px hitbox already fits 2-block gaps standing; crawl is what fits 1-block gaps)*
 - [x] Climb state: ropes and ladders (walk anim reuse, WS-27); ladder tops are stand-able one-way platforms (walk off, jump, down input climbs through — ropes stay pass-through)
 - [x] Surface-swim: auto-tread, lateral 5 bl/s, ~2-block water-jump, down input dives (WS-07)
@@ -108,7 +108,7 @@ small base with a working bed spawn — no debug commands.
 - [x] Flow rules: down → spread (diff ≥ 2, half-difference) → settle; awake-set dormancy (a settled ocean costs zero)
 - [x] Wake-on-change: block place/remove, door toggle, water add/remove all wake the neighbourhood
 - [x] Displace-or-destroy on block placement into water (WS-24): bounded BFS raises the connected body's surface; enclosed pockets destroy
-- [x] Awake-cell budget per tick (3000); *instant-settle for distant regions deferred to M3 chunking*
+- [x] Awake-cell budget per tick (3000; 12000 since the 8 px cell of 2026-09-04); *instant-settle for distant regions deferred to M3 chunking*
 - [x] Water rendering (`water_renderer.gd`): per-cell fill heights, animated surface line, depth colour-grade bands
 
 ### Player & water
@@ -118,7 +118,7 @@ small base with a working bed spawn — no debug commands.
 - [x] Dropped-item buoyancy: floats up, bobs at the surface, pins to ceilings (CC-07 physics, ready for M4 backpacks); `sinks: true` items (glowsticks) sink
 
 ### Pumps & draining (GL-16/17)
-- [x] Pump: **decided — targeted outlet** (E on pump → click a cell within 24 blocks; a hose, not pipes). Fixed rate; suction/insertion go through the connected body/airspace (BFS) so rooms drain fully — the diff≥2 rule alone freezes slope-1 wedges
+- [x] Pump: **decided — targeted outlet** (E on pump → click a cell within 24 blocks — 48 blocks of 8 px since 2026-09-04; a hose, not pipes). Fixed rate; suction/insertion go through the connected body/airspace (BFS) so rooms drain fully — the diff≥2 rule alone freezes slope-1 wedges
 - [x] Patch-and-pump loop: sealed room drains bone dry and stays dry (m2 gate test)
 - [x] Breathable = any air cell: O2 refills instantly (tank refills arrive with tanks in M5)
 - [x] Stations/bed function in drained rooms (forward camps, GL-17); shallow films (level ≤ 2) don't block placement
@@ -128,7 +128,7 @@ small base with a working bed spawn — no debug commands.
 - [x] Tile light propagation (`scripts/world/light_map.gd`): 0–15 levels, sun seeds sky columns, cost 1/air · 2/water · 4/solid — light spills through openings, dies in walls
 - [x] Carried light (held glowstick glows), placed lamps, dropped glowsticks sink and glow
 - [x] Godot 2D light accents (PointLight2D on lamps/glowsticks) as warm glow inside lit areas *(render at window res since the canvas_items stretch change — chunky low-res glow is a revisit)*
-- [x] Building power: breaker objects (fixed infrastructure, E to flip) power wired ceiling lamps within 24 blocks; flooding a breaker trips it off (WS-17)
+- [x] Building power: breaker objects (fixed infrastructure, E to flip) power wired ceiling lamps within 24 blocks (48 of 8 px since 2026-09-04); flooding a breaker trips it off (WS-17)
 - [x] **Fog of war** (user request): applies **inside buildings only** (back-wall cells, WS-20) with **raycast line of sight** — structure (stone/metal: walls, floors) blacks out fully, no seeing around corners or into rooms below, while obstacle materials (wood shelves, plastic crates) only attenuate (~45%/cell) so sight bleeds dimly around and through small cover; everything in sight range and line of sight is **fully illuminated** (sight is the light source; tile light stays for lamp accents and gameplay queries), fading beyond; rendered as a bilinear visibility texture quantized to **1/4-block steps** (soft edges, no full-block squares); the exterior (sky, open water, backdrop, facades) stays fully revealed with the depth grade carrying deep-water mood
 
 **GATE:** breach-flood a dry room, then patch it, pump it dry, and move in — bed, station, and
@@ -149,19 +149,19 @@ refilling tanks all working in the reclaimed room.
 - [x] Starter library: 12 rooms × 3 types (residential, office, hospital)
 - [x] **Zone item packs** (user request, 2026-08-31): 5 worker-agent art packs — residential/apartment, commercial/office, commercial/retail, industrial/utility, hospital/ward — 70 items (furniture, storage, clutter, `wall_mounted` wall art) authored as `tools/rooms_pack/<module>.py`, validated by `render_check.py`, packed by `tools/build_room_packs.py` into sprite sheets (`assets/sprites/sets/*.png`) and merged into `data/objects.json` with `sheet`+`rect` (loaded as AtlasTextures). Wall art hangs on back walls (no floor), placeable at height in the Room Editor (`dy`), honoured by CityGen; 5 new pack-furnished room templates incl. the first industrial rooms
 - [x] Floor assembler: rooms stitched with doorway partitions; west stairwell (ladder + landings) and east elevator shaft guaranteed per tower (CT-06)
-- [x] Two-jump rule validator on assembled floors (WS-04): `CityGen.floor_blockages` flags any authored obstacle ≥4 tall from the standing row (jump = 3 blocks, crawl fits a 1-block gap); gen repairs by carving a 3-tall doorway — checked per tower in m3 smoke
+- [x] Two-jump rule validator on assembled floors (WS-04): `CityGen.floor_blockages` flags any authored obstacle taller than the jump from the standing row (jump = 3 blocks, crawl fits a 1-block gap; since 2026-09-04: `JUMP_CELLS` 6, `CRAWL_GAP` 2 of 8 px); gen repairs by carving a `DOOR_H`-tall doorway — checked per tower in m3 smoke
 - [x] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve (4–56 floors; the tallest crowns break the surface)
-- [x] City layout: ~26 double-wide towers over 2400×400 cells, open ocean at the edges (CT-01); invisible edge walls clamp the player at the grid's x extents (CT-22). *Amended 2026-09-01 (user request): the old centre-out bell curve left mid-city towers at half the crown — now the central 80 % rolls a uniform 50-floor base (~39–56, similar heights with variance) and only the edge 20 % is all shorter (4–34, tapering out)*
+- [x] City layout: ~26 double-wide towers over 2400×400 cells (4800×800 of 8 px since 2026-09-04, same pixel extent), open ocean at the edges (CT-01); invisible edge walls clamp the player at the grid's x extents (CT-22). *Amended 2026-09-01 (user request): the old centre-out bell curve left mid-city towers at half the crown — now the central 80 % rolls a uniform 50-floor base (~39–56, similar heights with variance) and only the edge 20 % is all shorter (4–34, tapering out)*
 - [x] Wear pass: exterior breaches scaling with depth + occasional slab collapses (CT-11)
 - [x] Flood pass: connectivity flooding from the ocean at/below the waterline after doors exist (CT-12/13); ~85% of sealed floors keep their air, wear breaches the rest
 - [x] Authored inserts: starting medical room atop the tallest tower (bed spawn, med kit furniture) + bare concrete ground (CT-20/07); mega-pump shells (CT-08/CC-26, non-functional until endgame): central station hall in the widest centre gap on the ground + 3 relay pylons at the band boundaries (metal machine rooms with pump/breaker/lamp kits, legs dropping to the first solid cell)
 - [x] Surface debris pass (light, CT-23): floating wood rafts scattered on open water (~25-30 per city, occasional cardboard box aboard)
-- [x] Deterministic seeds (CT-21): same seed = identical grid + object hashes (m3 smoke); `--seed=N` on the command line; ~1.5 s per full generation
+- [x] Deterministic seeds (CT-21): same seed = identical grid + object hashes (m3 smoke); `--seed=N` on the command line; ~1.5 s per full generation (2026-09-04, 4x cells: ~2.5 s incl. a scanline flood; the cell-by-cell flood took 5.5 s)
 - [x] **Interior pockets** (user request, 2026-09-01): apartment doorways on wing back walls beside the stairwell — ~30 % of floors, one per floor (random wing, never the top; a 3–4-floor countdown was tried and reverted, rolls play better); wood `room_door` through The Shallows (40 % standing open, 20 % deadbolted `room_door_locked` — pry bar+), chained `room_door_metal` below (bolt cutters+, GL-09 ladder); open ones step straight through, closed ones open on the first click; each leads to a room of its own carved in a solid-black `VOID` annex east of the city on the doorway's own rows (stone shell, metal slabs, one zone template, the return doorway inside; doorways link by cell and share their open state; 40 % of submerged pockets sealed dry, the rest drowned; loot/depth bands honest). Maps/minimap anchor on the doorway while inside; the annex is off the map and off-limits to spawns. Gate: `pocket_smoke.tscn` (43 checks); `save_smoke` covers the round trip
 
 ### World runtime
 - [x] Full grid in RAM (`WorldGrid` byte layers); rendering, collision tiles, lighting, and water drawing all window around the camera (CT-28) — *instant-settle for far water regions still open*
-- [x] **Object streaming** (user perf request, 2026-08-31): `World.object_records` is the canonical store for all ~6k city objects; only records inside `OBJECT_WINDOW` (200×160 cells around the player) are instantiated as nodes — solidity/sight read the record so far doors still seal water. Window relight and fog raycasts are also change-gated/cached now. Spawn framerate went 2 → ~118 FPS
+- [x] **Object streaming** (user perf request, 2026-08-31): `World.object_records` is the canonical store for all ~6k city objects; only records inside `OBJECT_WINDOW` (200×160 cells around the player; 400×320 of 8 px since 2026-09-04) are instantiated as nodes — solidity/sight read the record so far doors still seal water. Window relight and fog raycasts are also change-gated/cached now. Spawn framerate went 2 → ~118 FPS
 - [x] Debug tooling: always-on FPS counter (top right) + **F3 overlay** — build/version/GPU, frame/physics/draw-call/node stats, position/depth/band, water/light/fog costs, object window counts (`--f3` arg pre-opens it for screenshots)
 - [x] Depth bands (GD-16): `World.band_at` from the waterline row — Dry/Shallows/Cold/Dark/Crush
 - [x] Cold gates while submerged: Cold slows, The Dark slows + chills, The Crush hurts fast (CC-16/GL-12); suit stats lift them from M5; drained rooms are safe (GL-17)
@@ -171,7 +171,7 @@ refilling tanks all working in the reclaimed room.
 - [x] World save: `SaveGame.save_world` — zstd-compressed grid layers + water levels, object states (doors/breakers/pump outlets/storage contents), dropped items, placed-blocks ledger, clock, spawn — binary store_var files under `user://saves/worlds/`
 - [x] Character save separate (`user://saves/chars/`): inventory, equipment, skills, vitals, selected slot, plus per-world map reveal + position (Terraria model — any character can join any world)
 - [x] Save/load mid-run anywhere: **F5** saves world + character, **F9** reboots from the files; **Esc** saves and returns to the title (quit from there; closing the window also autosaves) — new worlds/characters only become picker rows once saved, which used to make them look un-creatable; title screen (`scenes/ui/title.tscn`, now the main scene) is the world picker ↔ character picker — saved worlds / fresh seed on one side, saved characters / new name on the other; dev runs passing `--seed`/`--shot` skip straight into the city
-- [x] Fog-of-war map data per character (`MapReveal` bitset, revealed by proximity r=14, zstd into the character save) + top-right minimap UI (CC-25): 96×56-cell window, material/water/sky/interior colors, redrawn 4×/s
+- [x] Fog-of-war map data per character (`MapReveal` bitset, revealed by proximity r=14, zstd into the character save) + top-right minimap UI (CC-25): 96×56-cell window (since 2026-09-04 the map side counts 2×2 macro cells — `Constants.MAP_CELL` — so the radius, window and save bytes are unchanged), material/water/sky/interior colors, redrawn 4×/s
 
 **GATE:** a fresh seed generates a full explorable city — bands, gates, minimap — that saves and
 loads reliably. ✔ `save_smoke.tscn` (19 checks): full round trip — grid bit-for-bit, water exact,
@@ -256,7 +256,7 @@ target pacing (GL-27). ✔ chain + mods + bench + tree + gates + depletion cover
 shared the section stays here.)*
 
 - [ ] Full-run integrity pass: fresh seed, medical room → hard suit on the city floor (The Crush), no debug
-- [ ] Performance pass: frame budget with full city + active sim
+- [x] Performance pass (2026-09-04, half-size blocks): light relight on direct byte arrays with a cached per-column sky row (105 → ~37 ms per relight, player glow quantized to the macro grid so it fires per 16 px as before), scanline connectivity flood (5.5 s → 0.55 s), fog sampled on the 2×2 macro grid. Interior 38 → 114 fps at seed 1. *Frame budget with an active water sim still to be profiled in play*
 - [ ] LAN smoke test: second player joins a listen server and moves/interacts (architecture validation only — full LAN is phase 2)
 
 **GATE (= MVP Definition of Done):** one player, one seed, zero debug commands — medical room to
@@ -266,7 +266,7 @@ a hard suit on the floor of The Crush, saving/loading along the way.
 
 ## Cross-cutting (ongoing, any milestone)
 
-- [ ] Placeholder-art discipline: 16×16 tiles + 24px paper-doll rig with tint layers (WS-25); real art passes later
+- [ ] Placeholder-art discipline: 24×24-texel tiles per 8 px block (16×16 icons) + the 30px paper-doll rig with tint layers (WS-25); real art passes later
 - [ ] Lean 7-state animation set as sprites replace placeholders (WS-27)
 - [ ] Audio stubs: bus layout per GameAudioPrinciples (Music/SFX/Ambient/UI), underwater low-pass; real audio post-MVP (CC-23)
 - [ ] Character creation: name + shirt/pants/hair color (CC-17) — needed by first release, trivial any time

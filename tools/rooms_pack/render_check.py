@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw  # noqa: E402
 VALID_YIELD_ITEMS = {"wood", "scrap_metal", "plastic", "cloth", "stone", "iron"}
 VALID_CATEGORIES = {"furniture", "clutter", "wall_art", "wall_detail", "statement", "roof", "tree", "flora"}
 # Per-category size caps (w, h); default is ordinary furniture.
-SIZE_CAPS = {"roof": (8, 16), "tree": (8, 16), "flora": (8, 16), "wall_detail": (4, 4), "statement": (4, 4)}
+SIZE_CAPS = {"roof": (8, 16), "tree": (8, 16), "flora": (8, 16), "wall_detail": (4, 4), "statement": (4, 4)}  # in 16 px module blocks (2 cells each)
 REQUIRED = ["id", "name", "category", "size", "zones", "room_type", "weight",
             "tool_tier", "skill", "scrap_time", "xp", "yields", "draw"]
 

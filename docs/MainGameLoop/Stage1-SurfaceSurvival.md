@@ -97,8 +97,12 @@ furniture up, RMB hold-to-scrap; **Q** = bare hands. Field scrapping returns
   revealed. Some dry sections have working wiring: find the **breaker**, flip it, lights come on;
   flooding trips it (WS-17).
 - **Map**: fog-of-war minimap (top-right, reveal r=14) and **M** for the full map (CC-25).
-- **Day/night**: 600 s cycle (`DAY_LENGTH_SECONDS`). At night surface aggro radii grow ×1.5 and
-  extra floaters drift in (up to 5 near a player), dispersing at dawn (GD-29).
+- **Day/night**: 600 s cycle (`DAY_LENGTH_SECONDS`), now **visible and dark** (2026-09-02). At
+  night the surface falls to near-black silhouettes — you need a light to see: a placed
+  `standing_lamp`, a dropped `glowstick`, or a worn `helmet_lamp` (a tight moonlit radius keeps you
+  from being blind at your feet, but working, harvesting, or fighting after dark wants a real
+  light). Aggro radii also grow ×1.5 and extra floaters drift in (up to 5 near a player),
+  dispersing at dawn (GD-29) — so the first nights push the player to craft light *and* a wall.
 
 **Open questions**
 
@@ -110,7 +114,30 @@ furniture up, RMB hold-to-scrap; **Q** = bare hands. Field scrapping returns
 
 Hand (known from the start): `pry_bar`, `scrap_knife`, `hammer`, `rope` (2 cloth), `ladder`
 (3 wood), `glowstick` (1 plastic), `bandage` (2 cloth), `standing_lamp`, `wood_block`,
-`wood_wall`, `workbench`.
+`wood_wall`, `workbench`, **`planter`** (20 wood + 5 plastic), **`wood_bucket`** (15 wood),
+**`wood_tripod`** (30 wood + 4 rope).
+
+**Wood is the key, not just the material** (2026-09-02, design canon — see GameOverview "Main Game
+Loop"): Stage One is the **wood-mastery** stage. The run starts roof-locked, the shaft mouth sealed
+by the `roof_hatch` (a tier-1 door). The intended opener is the **`wood_tripod`** — a lashed
+wood-and-rope A-frame hoist that levers the hatch out, crafted entirely from farmed wood and cloth
+with **no metal at all**. So the whole first arc is wood: fell and farm trees → craft wood tools,
+a base, and the tripod → hoist the hatch → drop into the top dry floors, where scrap metal (and the
+path to everything below) finally begins. (A scrap `pry_bar` still opens the hatch too, for players
+who go the metal route — but the tripod is the pure-wood path the stage is built around.)
+
+**The farm loop** (2026-09-02, implemented): the roof-locked start hands the player a stand of
+trees. Fell them with the `wood_axe` and they now drop **`tree_seed`** (1–3 from a mature tree,
+0–1 from smaller stages) alongside the wood. Craft a **planter pot**, place it under open sky, and
+**plant a seed** in it (hold the seed, click the pot) — a sapling sprouts on the rim and advances
+one stage each **dawn** (`World._grow_trees`, deterministic): plant on day *N* and it is a full
+5×15 **mature tree** on the morning of day *N+2* — a **two-day** grow, and only where the sky is
+clear above it (a roof; indoors it stalls at a small stage). Fell the grown tree for 25–40 wood
+plus fresh seeds, and the planter stays for the next crop. That closes the renewable-wood loop the
+early game needs: **wood is now farmable, so building a base no longer competes with the one-time
+scrap pool.** The **`wood_bucket`** carries water by hand — click water to fill it, click an open
+cell to pour — for early moats, filling a flooded doorway, or watering the look of a rooftop
+garden.
 
 Workbench (Stage One-affordable): `chest`, `bed`, `wood_door`, `scrap_block`, `scrap_sword`
 (3 scrap + wood + cloth), `fire_axe` (3 scrap + 2 wood), `speargun` (3 scrap + 2 plastic + cloth),
@@ -123,7 +150,8 @@ scrap pieces — scrap them for wood, craft and place ladders to climb back up.
 
 **Open questions**
 
-- [ ] **S1-13.** Which one or two extra hand recipes (a torch, a crude raft, a wooden platform, a bucket) would most widen Stage One play without touching the station tiers?
+- [x] **S1-13.** Which one or two extra hand recipes (a torch, a crude raft, a wooden platform, a bucket) would most widen Stage One play without touching the station tiers?
+    **A:** Added the **planter pot** + **tree seed** farm loop and the **wooden bucket** (2026-09-02) — see "The farm loop" above. The planter makes wood renewable (harvest → seeds → replant); the bucket carries water by hand. Both are hand recipes, no new station. Starting a farm + base is now the intended gate before diving (LT-27 depletion still holds for scrap metal / stone).
 - [ ] **S1-14.** Should the Workbench show a "next thing you could make" hint so harvest → craft pulls forward, or does that spoil discovery?
 - [ ] **S1-15.** How should recipe visibility be paced — everything tier-1 listed at once, or entries revealed the first time an ingredient is held?
 
@@ -166,6 +194,39 @@ tables. No stealth, no noise — proximity aggro only (GD-06/25/26).
 - [ ] **S1-20.** Should walkers have surface behaviours — stumbling into water and becoming floaters — that link the two rosters and make ledges tactical?
 - [ ] **S1-21.** How does the first red moon announce itself (sky colour hours ahead, a distant moan, a HUD countdown) so the player prepares instead of being ambushed?
 
+## Hazards, puzzles & water management
+
+The Dangers table above is the combat roster; this section is the wider **hazard design
+space** — what can block, trick, teach, or soak a Stage One player besides a bite.
+
+- **Monster texture**: three silhouettes own three spaces — walkers the dry floors, crawlers
+  the vents and 2-block gaps, floaters the waterline. Stage One should teach the read: *where
+  you are* decides *what hunts you*, before deeper bands complicate it.
+- **Environmental danger is the water itself**: a mistimed peek, a flooded stairwell with the
+  ladder run decayed, a night swim through drifting floaters. Everything stays recoverable by
+  design (GL-29) — falls end in water, drownings end at the bed with a bag to recover.
+- **Puzzles at this tier are spatial**: the two-jump rule makes every gap a small problem
+  (stack furniture? place a block? craft a ladder?); jammed doors ask for the pry bar; the
+  breaker asks "where does this wire go?"; fog of war makes the layout itself the riddle.
+- **Traps are emergent, not authored**: the walker behind the unopened door, the floor that
+  looks dry above a flooded room, glass underfoot. Nothing is scripted — the odds tables are
+  the trap-maker.
+- **Water management starts as one block**: placing wood into a doorway to hold water back, or
+  into a broken window to keep a room's air, is the whole M2 sim taught with a hammer. The
+  first deliberate "I kept that room dry" is Stage One's quiet graduation — pumps make it
+  official in Stage Two.
+
+**Open questions**
+
+- [ ] **S1-35.** Should any Stage One puzzle be *authored* per world — a breaker two rooms from the lights it powers, a chest visible through an interior window with no direct door — or must all early puzzles stay emergent from generation?
+- [ ] **S1-36.** What teaches "sealed rooms keep their air" *before* the player needs it — a visibly dry room glimpsed below the waterline through glass, bubbles escaping a freshly breached wall?
+- [ ] **S1-37.** Which telegraphed environmental traps fit the Dry and stay recoverable (GL-29) — sagging floorboards over a flooded floor, debris piles that slide when climbed — and what is their visual warning language?
+- [ ] **S1-38.** Should closed doors carry fixed odds of a surprise (a walker, a wall of water) so the "open door" verb always has stakes — and can the player scout one (listen at the door, peer through a crack) without adding a stealth system?
+- [ ] **S1-39.** What is the intended *first* water-management act — sealing a window ahead of a red moon, blocking a doorway to keep a looted room dry — and should the starting tower guarantee one obvious spot to try it?
+- [ ] **S1-40.** When a new player floods their own floor by breaking the wrong window, what makes the mistake educational rather than base-ending — does the water find a level they can live with, and how do they learn what went wrong?
+- [ ] **S1-41.** Should the waterline ever move in Stage One (a storm surge raising it one row for a night) to teach that water is dynamic — or is a fixed line sacred until the Drain?
+- [ ] **S1-42.** Is there a Stage One primer for connectivity (the S2 patch-and-pump lesson) — e.g. a half-flooded floor in the starting tower where one placed block visibly stops the water — so Stage Two's core system is met, not introduced?
+
 ## Base & water
 
 - **First base = the medical room** for most players (bed already there). Fortify with wood
@@ -179,7 +240,8 @@ tables. No stealth, no noise — proximity aggro only (GD-06/25/26).
 **Open questions**
 
 - [ ] **S1-22.** What makes a first base *pretty* as well as functional — tintable back walls, salvaged furniture placed as decor, a window framing the skyline?
-- [ ] **S1-23.** Should players be able to carry water upward early (a bucket) to flood a doorway as a first moat, or is that a Stage Two pump privilege?
+- [x] **S1-23.** Should players be able to carry water upward early (a bucket) to flood a doorway as a first moat, or is that a Stage Two pump privilege?
+    **A:** Yes — the Stage One **`wood_bucket`** (2026-09-02) carries a cell of water by hand (fill on water, pour into an open cell). It's the manual, one-cell-at-a-time answer; the pump stays the Stage Two scaling tool (24-block reach, continuous drain). A first moat by bucket is slow but possible before diving.
 - [ ] **S1-24.** Where is the *ideal* first base — the medical room, a rooftop, a drained shallow room — and does world-gen guarantee an obvious candidate near spawn?
 
 ## Skills & abilities
@@ -237,3 +299,25 @@ GD-01/04/05/06/21/22/24/29 · LT-27/30 · CT-02/03/09/11/17/20/23.
 - [ ] **S1-33.** What single metric (time to first tank, deaths before first dive, red moons survived) best tells us Stage One is ~10 h and fun?
 - [ ] **S1-34.** Which parts of the medical room should be unscrappable so a new player can't strip their own bed and lose spawn?
 
+## Transition — Stage One → Stage Two
+
+The first real dive should feel **earned and chosen**, not stumbled into: the base is walled,
+the tools are made, the Dry has given all it usefully has, and the player *decides* to go
+under. Since stages are emergent (GL-01), this boundary is a capability checklist, not a
+gate — the questions below are about making that checklist legible and worth completing.
+
+Expected state at the boundary: Workbench + Dive Station built; `tank_scrap` (60 s of air);
+bed, chest, lamp, and a door behind player-placed walls; all three scrap tools plus a melee
+weapon; a first ability point spent; and enough banked wood/scrap/cloth to lose a backpack
+without losing the run.
+
+**Open questions**
+
+- [ ] **S1-43.** Which parts of that checklist should be *materially required* (the tank is; is anything else?) versus merely wise — and does anything currently force a base to exist at all before diving?
+- [ ] **S1-44.** What technologies should count as mandatory unlocks before Stage Two — is a Med Station pre-dive wise (bleeding on long swims), or is Dive Station + tank the honest minimum?
+- [ ] **S1-45.** What does a healthy Stage Two starting stockpile look like in numbers (wood, scrap, cloth, bandages, glowsticks, ladders) — and should the game surface that readiness anywhere (the Dive Station UI, a bed tooltip)?
+- [ ] **S1-46.** What skill/ability state should the transition assume — first ability point spent, Scrapping approaching 2 — and does Stage Two's balance hold if a player arrives with none of it?
+- [ ] **S1-47.** Should the first real dive be *marked* at all — a log line, a music shift, the character audibly steadying their breath — or does ceremony fight the emergent-stages rule (GL-01)?
+- [ ] **S1-48.** What makes a player linger in Stage One past the point of fun (loot-table dregs, red-moon anxiety, hoarding) — and what nudge short of a quest re-aims them at the water?
+- [ ] **S1-49.** What keeps Stage One spaces *relevant* after the transition — the dry base as red-moon shelter, roof trees as the wood farm, the surface as the fast lateral highway — so early investment compounds instead of expiring?
+- [ ] **S1-50.** If a player dives the moment they own a tank (no base, no bed moved, day 2), what actually breaks — and is that speedrun line a style we support or a trap we soften?

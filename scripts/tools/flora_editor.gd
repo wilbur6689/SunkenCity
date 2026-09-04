@@ -15,8 +15,8 @@ extends Control
 const FLORA_TYPES := ["tree", "bush", "grass", "shrub"]
 const YIELD_ITEMS := ["wood", "scrap_metal", "plastic", "cloth", "stone", "iron"]
 const PX := 4 # canvas zoom
-const MAX_W := 8
-const MAX_H := 16
+const MAX_W := 16 # cells (8 px each) = the old 8 blocks
+const MAX_H := 32
 
 ## TileArt ramps (outline, tones..., highlight) — leaves first, then bark.
 const PALETTE := [
@@ -75,12 +75,12 @@ func _ready() -> void:
 
 func _default_def() -> Dictionary:
 	return {"id": "new_flora", "name": "New Flora", "kind": "scrap", "category": "flora",
-		"room_type": "tree", "size": [2, 3], "weight": 4, "tool_tier": 0, "skill": 0,
+		"room_type": "tree", "size": [4, 6], "weight": 4, "tool_tier": 0, "skill": 0,
 		"scrap_time": 1.5, "xp": 2, "zones": ["roof"], "flora_weight": 1,
 		"yields": [{"item": "wood", "min": 1, "max": 2}]}
 
 func _new_image() -> void:
-	image = Image.create(int(def.size[0]) * 16, int(def.size[1]) * 16, false, Image.FORMAT_RGBA8)
+	image = Image.create(int(def.size[0]) * Constants.BLOCK_SIZE, int(def.size[1]) * Constants.BLOCK_SIZE, false, Image.FORMAT_RGBA8) # size is in 8 px cells
 	texture = null
 
 # --- UI ---
@@ -92,7 +92,7 @@ func _mount_pause_menu() -> void:
 		["Erase pixel", "Eraser tool · or MMB click"],
 		["Fill", "Fill tool · LMB on a region"],
 		["Pick colour", "Swatches · Custom… opens a picker"],
-		["Sprite size", "Width / Height spinners (blocks, up to 8x16)"],
+		["Sprite size", "Width / Height spinners (cells, up to 16x32)"],
 		["Growth chain", "Grows-into id + nightly chance"],
 		["Save", "SAVE / EXPORT → data/objects.json + PNG"],
 		["Select / move", "Select drag · Copy / Cut / Paste (LMB stamps, RMB stops)"],
@@ -156,8 +156,8 @@ func _build_ui() -> void:
 	var g := GridContainer.new()
 	g.columns = 4
 	g.add_theme_constant_override("h_separation", 2)
-	w_spin = _spin(1, MAX_W, 2, "Sprite width in blocks (16 px each).")
-	h_spin = _spin(1, MAX_H, 3, "Sprite height in blocks - a mature tree runs up to 16.")
+	w_spin = _spin(1, MAX_W, 4, "Sprite width in cells (8 px each).")
+	h_spin = _spin(1, MAX_H, 6, "Sprite height in cells - a mature tree runs up to 32.")
 	weight_spin = _spin(0, 99, 4, "Carry weight when the item form is hauled in the bag.")
 	tier_spin = _spin(0, 3, 0, "Minimum tool tier to harvest (0 = bare hands, 1 = scrap tools / axe).")
 	skill_spin = _spin(0, 5, 0, "Minimum Scrapping skill level to harvest.")
@@ -231,7 +231,7 @@ func _build_ui() -> void:
 	cscroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mid.add_child(cscroll)
 	canvas = Control.new()
-	canvas.custom_minimum_size = Vector2(MAX_W * 16 * PX, MAX_H * 16 * PX)
+	canvas.custom_minimum_size = Vector2(MAX_W * Constants.BLOCK_SIZE * PX, MAX_H * Constants.BLOCK_SIZE * PX)
 	canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	canvas.draw.connect(_draw_canvas)
 	canvas.gui_input.connect(_canvas_input)
@@ -527,10 +527,10 @@ func _draw_canvas() -> void:
 	canvas.draw_rect(Rect2(0, 0, w * PX, h * PX), Color(0.5, 0.08, 0.38), false)
 	if texture != null:
 		canvas.draw_texture_rect(texture, Rect2(0, 0, w * PX, h * PX), false)
-	for bx in range(0, w + 1, 16):
-		canvas.draw_line(Vector2(bx * PX, 0), Vector2(bx * PX, h * PX), Color(1, 1, 1, 0.18))
-	for by in range(0, h + 1, 16):
-		canvas.draw_line(Vector2(0, by * PX), Vector2(w * PX, by * PX), Color(1, 1, 1, 0.18))
+	for bx in range(0, w + 1, Constants.BLOCK_SIZE): # cell grid (8 px); the old 16 px lattice a touch brighter
+		canvas.draw_line(Vector2(bx * PX, 0), Vector2(bx * PX, h * PX), Color(1, 1, 1, 0.22 if bx % 16 == 0 else 0.10))
+	for by in range(0, h + 1, Constants.BLOCK_SIZE):
+		canvas.draw_line(Vector2(0, by * PX), Vector2(w * PX, by * PX), Color(1, 1, 1, 0.22 if by % 16 == 0 else 0.10))
 	var _sr := _sel_rect()
 	if _sr.size.x > 0:
 		canvas.draw_rect(Rect2(Vector2(_sr.position) * PX, Vector2(_sr.size) * PX), Color(1, 1, 0.4, 0.9), false)

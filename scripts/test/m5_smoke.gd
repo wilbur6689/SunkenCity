@@ -81,7 +81,7 @@ func _ready() -> void:
 	player.set_equipment("accessory2", null)
 
 	print("== B. suits lift the depth gates (GL-09/12)")
-	player.global_position = Vector2(8 * B, (World.waterline_row + 60) * B)
+	player.global_position = Vector2(16 * B, (World.waterline_row + 120) * B)
 	player.velocity = Vector2.ZERO
 	await ticks(20)
 	check(player.env_slow < 1.0, "The Cold slows plain clothes")
@@ -90,7 +90,7 @@ func _ready() -> void:
 	check(player.env_slow == 1.0, "a wetsuit shrugs The Cold off")
 	player.set_equipment("suit", {"id": "hard_suit", "count": 1})
 	player.health = Constants.MAX_HEALTH
-	player.global_position = Vector2(8 * B, (World.waterline_row + 260) * B)
+	player.global_position = Vector2(16 * B, (World.waterline_row + 520) * B)
 	await ticks(30)
 	check(player.health >= Constants.MAX_HEALTH - 0.01, "a hard suit survives The Crush undamaged")
 	player.set_equipment("suit", {"id": "clothes", "count": 1})
@@ -98,7 +98,7 @@ func _ready() -> void:
 	await until(func(): return player.state == Player.State.GROUNDED, 120)
 
 	print("== C. locked doors (GL-09 ladder)")
-	var mdoor := World.place_object("metal_door", sc + Vector2i(9, -1), true)
+	var mdoor := World.place_object("metal_door", sc + Vector2i(18, -1), true)
 	player.inventory.slots.fill(null)
 	player.selected_slot = 0
 	mdoor.interact(player)
@@ -106,7 +106,7 @@ func _ready() -> void:
 	player.inventory.set_slot(0, {"id": "bolt_cutters", "count": 1})
 	mdoor.interact(player)
 	check(mdoor.open and mdoor.unlocked, "bolt cutters shear it open")
-	var vdoor := World.place_object("vault_door", sc + Vector2i(11, -1), true)
+	var vdoor := World.place_object("vault_door", sc + Vector2i(22, -1), true)
 	vdoor.interact(player)
 	check(not vdoor.open, "a vault door refuses bolt cutters")
 	player.inventory.add("vault_key", 1)
@@ -148,11 +148,11 @@ func _ready() -> void:
 	print("== F. the crafting chain to the deep (GATE: knife to hard suit)")
 	for obj_id in ["med_cart", "cabinet", "locker", "chair"]: # clear bench space
 		for rec: Dictionary in World.object_records.duplicate():
-			if rec.id == obj_id and rec.node != null and absi(rec.cell.x - sc.x) < 12:
+			if rec.id == obj_id and rec.node != null and absi(rec.cell.x - sc.x) < 24:
 				World.remove_object(rec.node)
-	World.place_object("workbench", sc + Vector2i(2, -1), true)
-	World.place_object("forge", sc + Vector2i(6, -1), true)
-	World.place_object("dive_station", sc + Vector2i(13, -1), true)
+	World.place_object("workbench", sc + Vector2i(4, -1), true)
+	World.place_object("forge", sc + Vector2i(12, -1), true)
+	World.place_object("dive_station", sc + Vector2i(26, -1), true)
 	player.inventory.slots.fill(null)
 	# Stocked for the 5x tool economy (2026-09-01): the torch alone eats
 	# 10 steel, the cutters 15 iron.
@@ -301,7 +301,7 @@ func _ready() -> void:
 	check(surface_iron < chain_iron, "iron above The Cold (%d) cannot cover the gear chain (%d) — you must dive" % [surface_iron, chain_iron])
 
 	print("== M. structure demolition (GL-01 amended: right tool tier breaks any block)")
-	var demo := sc + Vector2i(0, -10)
+	var demo := sc + Vector2i(0, -20)
 	while World.has_block_cell(demo): # find open air above the spawn room
 		demo.y -= 1
 	World.grid.set_structure(demo, WorldGrid.M.WOOD)
@@ -312,14 +312,14 @@ func _ready() -> void:
 	World.grid.set_structure(demo, WorldGrid.M.STONE)
 	check(World.damage_block(demo, 100.0, 1) == "too_hard", "stone refuses scrap tools")
 	var rev := World.damage_rev
-	check(World.damage_block(demo, 100.0, 2) == "damaged", "iron tools (tier 2) chip stone away slowly")
+	check(World.damage_block(demo, 25.0, 2) == "damaged", "iron tools (tier 2) chip stone away slowly") # per-cell HP is a quarter of the old block figure (8 px cells)
 	check(World.structure_damage.has(demo), "partial damage tracked (crack stages + save)")
 	check(World.damage_rev > rev, "damage bumps the crack-overlay revision")
-	check(World.damage_block(demo, 150.0, 2) == "broken", "...and cracks through")
+	check(World.damage_block(demo, 40.0, 2) == "broken", "...and cracks through")
 	World.grid.set_structure(demo, WorldGrid.M.METAL)
 	check(World.damage_block(demo, 100.0, 2) == "too_hard", "metal refuses iron tools")
-	check(World.damage_block(demo, 100.0, 3) == "damaged", "steel (tier 3) cuts metal over many hits")
-	check(World.damage_block(demo, 200.0, 3) == "broken", "...and through")
+	check(World.damage_block(demo, 25.0, 3) == "damaged", "steel (tier 3) cuts metal over many hits")
+	check(World.damage_block(demo, 50.0, 3) == "broken", "...and through")
 	check(not World.has_block_cell(demo), "the demolished cell is open air")
 
 	print("\nM5 smoke: %d checks, %d failures" % [checks, failures.size()])

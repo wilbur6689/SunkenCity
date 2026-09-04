@@ -41,11 +41,11 @@ func _ready() -> void:
 	player.set_multiplayer_authority(2)
 	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands")
 	var sc := World.cell_at(World.spawn_position)
-	check(World.place_block("wood_block", sc + Vector2i(4, -1)), "player block placed")
-	var chest := World.place_object("chest", sc + Vector2i(7, -1), true)
+	check(World.place_block("wood_block", sc + Vector2i(8, -1)), "player block placed")
+	var chest := World.place_object("chest", sc + Vector2i(14, -1), true)
 	chest.storage.slots[0] = {"id": "scrap_metal", "count": 7}
-	World.spawn_item("plastic", 3, World.cell_center(sc + Vector2i(2, -1)))
-	var door := World.place_object("wood_door", sc + Vector2i(9, -1), true)
+	World.spawn_item("plastic", 3, World.cell_center(sc + Vector2i(4, -1)))
+	var door := World.place_object("wood_door", sc + Vector2i(18, -1), true)
 	door.interact(player)
 	check(door.open, "a door stands open")
 	player.inventory.add("wood", 9)
@@ -78,7 +78,7 @@ func _ready() -> void:
 	check(SaveGame.world_names().has(WNAME) and SaveGame.character_names().has(CNAME), "saves appear in the pickers' lists")
 
 	print("== C. wreck the live state")
-	World.remove_block(sc + Vector2i(4, -1))
+	World.remove_block(sc + Vector2i(8, -1))
 	player.inventory.slots.fill(null)
 	check(World.grid.content_hash() != grid_hash, "live world diverged from the save")
 
@@ -95,7 +95,7 @@ func _ready() -> void:
 	check(hash(World.water_sim.levels) == water_hash, "water levels restored exactly")
 	check(absf(World.time_of_day - 0.123) < 0.01, "clock restored (%.3f)" % World.time_of_day)
 	check(World.placed_blocks.size() >= 1, "placed-blocks ledger restored (GL-01)")
-	var chest2 := World.object_at(sc + Vector2i(7, -1))
+	var chest2 := World.object_at(sc + Vector2i(14, -1))
 	check(chest2 != null and chest2.storage != null and chest2.storage.slots[0] != null \
 			and chest2.storage.slots[0].id == "scrap_metal" and int(chest2.storage.slots[0].count) == 7,
 			"chest and its loot restored")

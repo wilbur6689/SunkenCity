@@ -29,11 +29,49 @@ var _hover_action: Label
 var _hover_shown: float = 0.0 # 0 = fully hidden, 1 = fully up
 var _hover_obj: WorldObject = null
 var _hover_mats: HBoxContainer
+var _hover_badge: _TierBadge
+
+## Tier badge (user request 2026-09-02): a little shield with the required
+## tool-tier number, colour-coded, shown on a harvestable object's card.
+class _TierBadge extends Control:
+	var tier: int = -1
+	const COLORS := {
+		0: Color(0.52, 0.54, 0.58), # hands - grey
+		1: Color(0.40, 0.74, 0.36), # pry/basic - green
+		2: Color(0.34, 0.62, 0.93), # iron - blue
+		3: Color(0.93, 0.60, 0.24), # steel/torch - orange
+	}
+	func _init() -> void:
+		custom_minimum_size = Vector2(13, 15)
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+	func set_tier(t: int) -> void:
+		if t == tier:
+			return
+		tier = t
+		queue_redraw()
+	func _draw() -> void:
+		var col: Color = COLORS.get(tier, COLORS[1])
+		var w := size.x
+		var h := size.y
+		var pts := PackedVector2Array([
+			Vector2(1, 1), Vector2(w - 1, 1), Vector2(w - 1, h * 0.52),
+			Vector2(w * 0.5, h - 1), Vector2(1, h * 0.52)])
+		draw_colored_polygon(pts, col)
+		var border := PackedVector2Array(pts)
+		border.append(pts[0])
+		draw_polyline(border, col.darkened(0.45), 1.0, true)
+		var fnt := ThemeDB.fallback_font
+		var s := str(tier)
+		var fs := 9
+		var tw: float = fnt.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+		var ink := Color(1, 1, 1) if col.get_luminance() < 0.62 else Color(0.08, 0.09, 0.1)
+		draw_string(fnt, Vector2((w - tw) * 0.5, h * 0.66), s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, ink)
 var _gain_box: VBoxContainer
 var _gain_rows: Dictionary = {} # item id -> {row, count_label, count, t}
 var _weight_icon: TextureRect
 
 func _ready() -> void:
+	UIScale.register($Root) # UI size scaling (2026-09-02)
 	for i in Constants.HOTBAR_SLOTS:
 		var panel := PanelContainer.new()
 		panel.custom_minimum_size = Vector2(20, 20)
@@ -65,7 +103,7 @@ func _ready() -> void:
 	_weight_icon = TextureRect.new()
 	var wat := AtlasTexture.new()
 	wat.atlas = load("res://assets/sprites/items.png")
-	wat.region = Rect2(4 * 16, 5 * 16, 16, 16)
+	wat.region = Rect2(4 * Data.ICON_PX, 5 * Data.ICON_PX, Data.ICON_PX, Data.ICON_PX)
 	_weight_icon.texture = wat
 	_weight_icon.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	_weight_icon.position = Vector2(116, -26)
@@ -100,15 +138,23 @@ func _build_hover_panel() -> void:
 	_hover_title = Label.new()
 	_hover_title.add_theme_font_size_override("font_size", 10)
 	_hover_title.add_theme_color_override("font_color", Color(0.95, 0.9, 0.7))
+	# Category line: a tier badge (shield with the required tool tier) + label.
+	var descrow := HBoxContainer.new()
+	descrow.add_theme_constant_override("separation", 3)
+	descrow.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_hover_badge = _TierBadge.new()
 	_hover_desc = Label.new()
 	_hover_desc.add_theme_font_size_override("font_size", 8)
 	_hover_desc.add_theme_color_override("font_color", Color(0.75, 0.8, 0.82))
+	_hover_desc.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	descrow.add_child(_hover_badge)
+	descrow.add_child(_hover_desc)
 	_hover_action = Label.new()
 	_hover_action.add_theme_font_size_override("font_size", 8)
 	_hover_action.add_theme_color_override("font_color", Color(0.55, 0.8, 0.95))
 	_hover_mats = HBoxContainer.new()
 	_hover_mats.add_theme_constant_override("separation", 4)
-	for c: Control in [_hover_title, _hover_desc, _hover_mats, _hover_action]:
+	for c: Control in [_hover_title, descrow, _hover_mats, _hover_action]:
 		box.add_child(c)
 	_hover_panel.add_child(box)
 	get_node("Root").add_child(_hover_panel)
@@ -135,6 +181,14 @@ func _hover_lines(obj: WorldObject) -> Array:
 		"station":
 			what = "Crafting station (%s)" % def.get("station", "")
 			how = "LMB: craft here"
+		"scrapper":
+			var st: int = int(def.get("scrap_stage", 1))
+			var tier: String = {1: "wood", 2: "scrap & stone", 3: "iron", 4: "steel", 5: "any-tier"}.get(st, "")
+			what = "Scrap bench (%s) — melts collected furniture to materials" % tier
+			how = "LMB: grind all %s furniture in your bag" % ("scrappable" if st == 5 else tier)
+		"planter":
+			what = "Planter — grows a tree for wood under open sky"
+			how = "LMB: plant a held seed · pour a full bucket to water it up a stage"
 		"chest":
 			what = "Container — %d slots" % obj.storage.slots.size()
 			how = "LMB: open · hold LMB: pick up (when empty) · RMB: scrap"
@@ -161,6 +215,12 @@ func _update_hover_panel(delta: float) -> void:
 			_hover_title.text = lines[0]
 			_hover_desc.text = lines[1]
 			_hover_action.text = lines[2]
+			# Tier badge on harvestable furniture only (user request 2026-09-02).
+			if obj.def.get("kind", "") == "scrap":
+				_hover_badge.set_tier(int(obj.def.get("tool_tier", 0)))
+				_hover_badge.visible = true
+			else:
+				_hover_badge.visible = false
 			_fill_hover_mats(obj)
 		_hover_shown = minf(_hover_shown + delta * 6.0, 1.0)
 	else:
@@ -232,7 +292,7 @@ func _refresh_debug() -> void:
 			Performance.get_monitor(Performance.OBJECT_NODE_COUNT)],
 		"pos (%.0f, %.0f) px · cell (%d, %d) · depth %+d blk (%+d ft) · band %s" % [
 			player.global_position.x, player.global_position.y, cell.x, cell.y,
-			depth, depth * 2, World.band_at(cell)],
+			depth, depth, World.band_at(cell)],
 		"water: awake %d · processed %d · tick %.2f ms" % [
 			World.water_sim.awake.size(), World.water_sim.processed_last_tick, World.perf.water_ms],
 		"light: window %dx%d · compute %.2f ms · fog raycast %.2f ms" % [
@@ -282,7 +342,7 @@ func _redraw_minimap() -> void:
 	var w: Vector2i = Constants.MINIMAP_WINDOW
 	# Inside an interior pocket the minimap stays on the city: it centres on
 	# the doorway you came through (the pocket itself is off the map).
-	var center := World.map_cell_for(player.global_position)
+	var center := World.map_macro_for(player.global_position)
 	var org := center - w / 2
 	for py in w.y:
 		for px in w.x:

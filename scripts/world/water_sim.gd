@@ -174,7 +174,7 @@ func _flatten_body(seed: Vector2i, visited: Dictionary) -> void:
 	var searched := 0
 	while not queue.is_empty():
 		searched += 1
-		if searched > 1200:
+		if searched > 4800:
 			return # body too large to flatten in one pass (ocean-scale: already flat)
 		var c: Vector2i = queue.pop_front()
 		if not in_bounds(c):
@@ -315,7 +315,7 @@ func remove_water_spread(start: Vector2i, units: int) -> int:
 	var queue: Array[Vector2i] = [start]
 	var body: Array[Vector2i] = []
 	var searched := 0
-	while not queue.is_empty() and searched < 1200:
+	while not queue.is_empty() and searched < 4800:
 		searched += 1
 		var n: Vector2i = queue.pop_front()
 		if _blocked(n) or visited.has(_idx(n)):
@@ -350,7 +350,7 @@ func _insert_spread(start: Vector2i, units: int, skip_start: bool) -> int:
 	else:
 		queue = [start]
 	var searched := 0
-	while units > 0 and not queue.is_empty() and searched < 1200:
+	while units > 0 and not queue.is_empty() and searched < 4800:
 		searched += 1
 		var n: Vector2i = queue.pop_front()
 		if _blocked(n) or visited.has(_idx(n)):

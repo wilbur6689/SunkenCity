@@ -12,7 +12,7 @@ const ZONES := ["residential", "business", "commercial", "industrial", "civil", 
 const KINDS := ["scrap", "chest", "bed", "light", "door", "pump", "breaker", "station"]
 const YIELD_ITEMS := ["wood", "scrap_metal", "plastic", "cloth", "stone", "iron"]
 const PX := 5 # canvas zoom
-const MAX_BLOCKS := 4
+const MAX_BLOCKS := 8 # cells (8 px each) = the old 4 blocks
 
 ## TileArt material ramps (outline, tones..., highlight).
 const PALETTE := [
@@ -71,12 +71,12 @@ func _ready() -> void:
 	_prefill_box()
 
 func _default_def() -> Dictionary:
-	return {"id": "new_furniture", "name": "New Furniture", "kind": "scrap", "size": [2, 2],
+	return {"id": "new_furniture", "name": "New Furniture", "kind": "scrap", "size": [4, 4],
 		"weight": 10, "tool_tier": 0, "skill": 0, "scrap_time": 2.5, "xp": 4,
 		"zones": ["residential"], "yields": [{"item": "wood", "min": 3, "max": 5}]}
 
 func _new_image() -> void:
-	image = Image.create(int(def.size[0]) * 16, int(def.size[1]) * 16, false, Image.FORMAT_RGBA8)
+	image = Image.create(int(def.size[0]) * Constants.BLOCK_SIZE, int(def.size[1]) * Constants.BLOCK_SIZE, false, Image.FORMAT_RGBA8) # size is in 8 px cells
 	texture = null
 
 # --- UI ---
@@ -168,8 +168,8 @@ func _build_ui() -> void:
 	var g := GridContainer.new()
 	g.columns = 4
 	g.add_theme_constant_override("h_separation", 2)
-	w_spin = _spin(1, MAX_BLOCKS, 2, "Sprite width in blocks (16 px each).")
-	h_spin = _spin(1, MAX_BLOCKS, 2, "Sprite height in blocks.")
+	w_spin = _spin(1, MAX_BLOCKS, 4, "Sprite width in cells (8 px each).")
+	h_spin = _spin(1, MAX_BLOCKS, 4, "Sprite height in cells.")
 	weight_spin = _spin(1, 99, 10, "Carry weight when hauled in the bag (heavy bags slow swimming).")
 	tier_spin = _spin(0, 3, 0, "Minimum tool tier to scrap (0 = hands, 1 = scrap tools, 2 = iron, 3 = steel).")
 	skill_spin = _spin(0, 5, 0, "Minimum Scrapping skill level to scrap.")
@@ -224,7 +224,7 @@ func _build_ui() -> void:
 	tool_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mid.add_child(tool_label)
 	canvas = Control.new()
-	canvas.custom_minimum_size = Vector2(MAX_BLOCKS * 16 * PX, MAX_BLOCKS * 16 * PX)
+	canvas.custom_minimum_size = Vector2(MAX_BLOCKS * Constants.BLOCK_SIZE * PX, MAX_BLOCKS * Constants.BLOCK_SIZE * PX)
 	canvas.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	canvas.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	canvas.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -530,11 +530,11 @@ func _draw_canvas() -> void:
 	canvas.draw_rect(Rect2(0, 0, w * PX, h * PX), Color(0.5, 0.08, 0.38), false)
 	if texture != null:
 		canvas.draw_texture_rect(texture, Rect2(0, 0, w * PX, h * PX), false)
-	# block grid (16px cells) + hover
-	for bx in range(0, w + 1, 16):
-		canvas.draw_line(Vector2(bx * PX, 0), Vector2(bx * PX, h * PX), Color(1, 1, 1, 0.18))
-	for by in range(0, h + 1, 16):
-		canvas.draw_line(Vector2(0, by * PX), Vector2(w * PX, by * PX), Color(1, 1, 1, 0.18))
+	# cell grid + hover
+	for bx in range(0, w + 1, Constants.BLOCK_SIZE): # cell grid (8 px); the old 16 px lattice a touch brighter
+		canvas.draw_line(Vector2(bx * PX, 0), Vector2(bx * PX, h * PX), Color(1, 1, 1, 0.22 if bx % 16 == 0 else 0.10))
+	for by in range(0, h + 1, Constants.BLOCK_SIZE):
+		canvas.draw_line(Vector2(0, by * PX), Vector2(w * PX, by * PX), Color(1, 1, 1, 0.22 if by % 16 == 0 else 0.10))
 	var _sr := _sel_rect()
 	if _sr.size.x > 0:
 		canvas.draw_rect(Rect2(Vector2(_sr.position) * PX, Vector2(_sr.size) * PX), Color(1, 1, 0.4, 0.9), false)

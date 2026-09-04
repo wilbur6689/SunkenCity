@@ -35,7 +35,7 @@ func _ready() -> void:
 				got = true
 		wood_ok = wood_ok and got
 	check(wood_ok, "every tree stage yields wood")
-	check(int(Data.objects.tree_mature.size[1]) >= 12, "a mature tree stands 2x-3x a room tall (%d blocks)" % int(Data.objects.tree_mature.size[1]))
+	check(int(Data.objects.tree_mature.size[1]) >= 24, "a mature tree stands 2x-3x a room tall (%d cells)" % int(Data.objects.tree_mature.size[1]))
 	check(Data.objects.decal_broken_wall_a.get("kind", "") == "decal" \
 			and Data.objects.decal_broken_wall_a.get("no_item", false) \
 			and (Data.objects.decal_broken_wall_a.get("yields", []) as Array).is_empty(),
@@ -68,8 +68,8 @@ func _ready() -> void:
 			"bigger trees take longer to fell")
 	check(Data.blocks.wood_wall.atlas_row == 8, "the wood wall has its own dark plank tile row")
 	print("== B. generation")
-	var r := CityGen.generate(101, 800)
-	var r2 := CityGen.generate(101, 800)
+	var r := CityGen.generate(101, 1600)
+	var r2 := CityGen.generate(101, 1600)
 	check(r.grid.content_hash() == r2.grid.content_hash() and hash(str(r.objects)) == hash(str(r2.objects)),
 			"roofed city stays seed-deterministic (CT-21)")
 	var roof_rows := {} # roof standing row -> [[x0, x1], ...] (equal-height towers share it)
@@ -183,24 +183,24 @@ func _ready() -> void:
 	for o in r.objects:
 		if o.id == "side_vent":
 			vents += 1
-			for dy in 2: # the grate exactly fills its 2x2 breach
-				for dx in 2:
+			for dy in CityGen.BREACH: # the grate exactly fills its BREACH x BREACH breach
+				for dx in CityGen.BREACH:
 					if r.grid.structure_at(Vector2i(o.cell.x + dx, o.cell.y - dy)) != WorldGrid.M.AIR:
 						vent_sealed = false
 	check(vents >= 3, "%d Shallows-band breaches wear vent grates (deeper ones stay open as flood inlets)" % vents)
-	check(vent_sealed, "every grate sits in a fully carved 2x2 breach")
+	check(vent_sealed, "every grate sits in a fully carved 4x4 breach")
 	# Central 20%: towers crowd to <= 5 blocks apart (user request).
 	var tight_pairs := 0
 	var tight_ok := true
 	for i in range(r.tower_list.size() - 1):
 		var a: Dictionary = r.tower_list[i]
-		var cfa := 1.0 - absf((float(a.x0 + a.x1) * 0.5) - 400.0) / 400.0
+		var cfa := 1.0 - absf((float(a.x0 + a.x1) * 0.5) - 800.0) / 800.0
 		if cfa > 0.8:
 			var gap: int = int(r.tower_list[i + 1].x0) - int(a.x1) - 1
 			tight_pairs += 1
-			if gap > 5:
+			if gap > CityGen.CLUSTER_GAP_MAX:
 				tight_ok = false
-	check(tight_pairs >= 1 and tight_ok, "central towers sit <= 5 blocks apart (%d tight gaps)" % tight_pairs)
+	check(tight_pairs >= 1 and tight_ok, "central towers sit <= %d cells apart (%d tight gaps)" % [CityGen.CLUSTER_GAP_MAX, tight_pairs])
 	var hatch_def: Dictionary = Data.objects.roof_hatch
 	check(hatch_def.kind == "door" and hatch_def.get("fixed", false) and hatch_def.get("no_item", false) 			and int(hatch_def.get("lock_tier", 0)) == 1, "the roof hatch is a fixed, padlocked door (pry tier 1)")
 	var hatch_cells := {}
@@ -210,7 +210,7 @@ func _ready() -> void:
 	var dry_missing := 0
 	var wet_hatched := 0
 	for t in r.tower_list:
-		var has := hatch_cells.has(Vector2i(int(t.mid) - 1, int(t.top)))
+		var has := hatch_cells.has(Vector2i(int(t.mid) - CityGen.SHAFT_W / 2, int(t.top) + CityGen.SLAB_T - 1))
 		if int(t.top) - 1 < CityGen.WATERLINE:
 			if not has:
 				dry_missing += 1
@@ -219,57 +219,70 @@ func _ready() -> void:
 	check(dry_missing == 0 and hatch_cells.size() > 0,
 			"every dry crown seals its shaft mouth with a vent hatch (%d hatches)" % hatch_cells.size())
 	check(wet_hatched == 0, "submerged towers stay open (no hatch)")
-	var hosp: Dictionary = r.hospital
-	check(r.spawn_feet.y == float(hosp.top) * B, "spawn is on the very top of the hospital roof")
+	var spawn_t: Dictionary = r.spawn_tower
+	check(r.spawn_feet.y == float(spawn_t.top) * B, "spawn is on the very top of the drop-off roof")
 	check(r.spawn_feet.y / B - 1 < CityGen.WATERLINE, "the drop-off roof is above the waterline")
 
 	print("== C. growth")
-	var g := WorldGrid.new(Rect2i(0, 0, 60, 40))
-	for x in 60:
-		g.set_structure(Vector2i(x, 30), WorldGrid.M.METAL)
+	var g := WorldGrid.new(Rect2i(0, 0, 120, 80))
+	for x in 120:
+		g.set_structure(Vector2i(x, 60), WorldGrid.M.METAL)
+		g.set_structure(Vector2i(x, 61), WorldGrid.M.METAL)
 	var items_root := Node2D.new()
 	var objects_root := Node2D.new()
 	add_child(items_root)
 	add_child(objects_root)
-	World.register(g, Vector2(30 * B, 30 * B), items_root, objects_root, null, 35)
-	World.add_object_record("tree_sapling", Vector2i(20, 29), false)
+	World.register(g, Vector2(60 * B, 60 * B), items_root, objects_root, null, 70)
+	World.add_object_record("tree_sapling", Vector2i(40, 59), false)
 	for i in 60:
+		World.day_count += 1 # deterministic growth advances one stage per day (2026-09-02)
 		World._grow_trees()
-	check(World.object_record_at(Vector2i(20, 29)).get("id", "") == "tree_mature",
+	check(World.object_record_at(Vector2i(40, 59)).get("id", "") == "tree_mature",
 			"a sapling grows to maturity over enough midnights")
-	check(World.object_record_at(Vector2i(20, 29)) == World.object_record_at(Vector2i(20, 17)),
+	check(World.object_record_at(Vector2i(40, 59)) == World.object_record_at(Vector2i(40, 59 - int(Data.objects.tree_mature.size[1]) + 1)),
 			"the grown canopy registers its cells")
-	World.add_object_record("tree_sapling", Vector2i(40, 29), false)
+	World.add_object_record("tree_sapling", Vector2i(80, 59), false)
 	# hem the young stage in: wall off its projected footprint row (computed
 	# from the live defs - the trees are editor-authored and resizable)
 	var yw := int(Data.objects.tree_young.size[0])
-	var hx := 40 - (yw - int(Data.objects.tree_sapling.size[0])) / 2
-	var hem_y := 29 - mini(int(Data.objects.tree_young.size[1]) - 1, 3)
+	var hx := 80 - (yw - int(Data.objects.tree_sapling.size[0])) / 2
+	var hem_y := 59 - mini(int(Data.objects.tree_young.size[1]) - 1, 6)
 	for hdx in yw:
 		g.set_structure(Vector2i(hx + hdx, hem_y), WorldGrid.M.STONE)
 	for i in 60:
+		World.day_count += 1 # deterministic growth advances one stage per day (2026-09-02)
 		World._grow_trees()
-	check(World.object_record_at(Vector2i(40, 29)).get("id", "") == "tree_sapling", "a hemmed-in tree waits")
-	World.add_object_record("tree_sapling", Vector2i(10, 29), false)
-	World.water_sim.seed_cell(Vector2i(10, 29), WaterSim.MAX_LEVEL)
+	check(World.object_record_at(Vector2i(80, 59)).get("id", "") == "tree_sapling", "a hemmed-in tree waits")
+	World.add_object_record("tree_sapling", Vector2i(20, 59), false)
+	World.water_sim.seed_cell(Vector2i(20, 59), WaterSim.MAX_LEVEL)
 	for i in 60:
+		World.day_count += 1 # deterministic growth advances one stage per day (2026-09-02)
 		World._grow_trees()
-	check(World.object_record_at(Vector2i(10, 29)).get("id", "") == "tree_sapling", "a drowned tree never grows")
+	check(World.object_record_at(Vector2i(20, 59)).get("id", "") == "tree_sapling", "a drowned tree never grows")
+	# Deterministic 2-day growth (user request 2026-09-02): fully grown on the
+	# 2nd morning after planting; no growth the day it is planted.
+	World.add_object_record("tree_sapling", Vector2i(100, 59), false)
+	World._grow_trees()
+	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_sapling", "no growth the day it's planted")
+	World.day_count += 1; World._grow_trees()
+	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_young", "1st morning: sapling -> young")
+	World.day_count += 1; World._grow_trees()
+	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_mature", "2nd morning: young -> mature (fully grown)")
 	# Room draw planes (user request 2026-09-01): decals under wall pieces
 	# under furniture (the player wins by tree order).
-	for y2 in range(24, 30):
-		g.set_back(Vector2i(30, y2), WorldGrid.M.STONE)
-		g.set_back(Vector2i(31, y2), WorldGrid.M.STONE)
-	var deco := World.place_object("decal_broken_wall_a", Vector2i(30, 29), false)
-	var vent2 := World.place_object("int_wall_vent", Vector2i(30, 27), false)
-	var desk2 := World.place_object("roof_comm_cabinet", Vector2i(33, 29), false)
+	for y2 in range(48, 60):
+		for x2 in range(60, 64):
+			g.set_back(Vector2i(x2, y2), WorldGrid.M.STONE)
+	var deco := World.place_object("decal_broken_wall_a", Vector2i(60, 59), false)
+	var vent2 := World.place_object("int_wall_vent", Vector2i(60, 55), false)
+	var desk2 := World.place_object("roof_comm_cabinet", Vector2i(66, 59), false)
 	check(deco.z_index == -2 and vent2.z_index == -1 and desk2.z_index == 0,
 			"draw planes: decal (-2) < wall piece (-1) < furniture (0)")
 	check(Data.enemies.walker.get("frames", 0) == 8 and Data.enemies.walker.get("sprite_variants", 0) == 11,
 			"walkers carry walk strips (11 looks: hand-made, procedural, urban pack)")
 	# A streamed-in tree swaps its node on growth.
-	World.refresh_objects_around(Vector2(30 * B, 29 * B))
-	var mature_node := World.object_at(Vector2i(20, 29))
+	World.refresh_objects_around(Vector2(60 * B, 58 * B))
+	var mature_node := World.object_at(Vector2i(40, 59))
 	check(mature_node != null and mature_node.id == "tree_mature", "the grown tree streams in as its new stage")
 
 	print("\nRoof smoke: %d checks, %d failures" % [checks, failures.size()])

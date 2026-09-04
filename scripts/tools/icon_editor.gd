@@ -393,7 +393,7 @@ func _load_id(id: String) -> void:
 			if it.id == id and it.has("icon"):
 				var sheet := Image.load_from_file(ProjectSettings.globalize_path(SHEET))
 				if sheet != null:
-					image = sheet.get_region(Rect2i(int(it.icon[0]) * 16, int(it.icon[1]) * 16, 16, 16))
+					image = sheet.get_region(Rect2i(int(it.icon[0]) * Data.ICON_PX, int(it.icon[1]) * Data.ICON_PX, Data.ICON_PX, Data.ICON_PX))
 					image.convert(Image.FORMAT_RGBA8)
 					image.resize(ICON, ICON, Image.INTERPOLATE_NEAREST)
 	texture = null

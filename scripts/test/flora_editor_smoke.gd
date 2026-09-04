@@ -14,7 +14,7 @@ func _ready() -> void:
 	ed.sprites_dir = "user://"
 	add_child(ed)
 	await get_tree().process_frame
-	check(ed.image.get_width() == 32 and ed.image.get_height() == 48, "default canvas is 2x3 blocks (32x48)")
+	check(ed.image.get_width() == 32 and ed.image.get_height() == 48, "default canvas is 4x6 cells (32x48)")
 	var pm = ed.get_tree().get_first_node_in_group("pause_menu")
 	check(pm != null and pm.quit_button == null or pm != null, "pause menu mounted")
 	var mid_a: bool = ed.image.get_pixel(16, 10).a > 0.9
@@ -40,7 +40,7 @@ func _ready() -> void:
 	mev.position = Vector2(5 * ed.PX + 2, 5 * ed.PX + 2)
 	ed._canvas_input(mev)
 	check(ed.image.get_pixel(5, 5).a < 0.1, "MMB click clears the pixel")
-	ed.h_spin.value = 5 # taller; painted pixels preserved
+	ed.h_spin.value = 10 # taller; painted pixels preserved
 	check(ed.image.get_height() == 80 and ed.image.get_pixel(16, 10).a > 0.9, "resize keeps painted content")
 	ed.grow_edit.text = "smoke_bush_big"
 	ed.grow_chance_spin.value = 0.25

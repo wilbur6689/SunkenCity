@@ -6,6 +6,11 @@ For every pack module in tools/rooms_pack (worker-agent deliverables), this:
   3. merges the item definitions into data/objects.json with sheet + rect
      references (replacing same-id entries, so re-runs are safe).
 
+Pack modules author art in ART_UNIT (16 px) blocks; since the 8 px cell
+(2026-09-04) an item's objects.json `size` is in cells, so the entry written
+here is `[w * CELLS_PER_UNIT, h * CELLS_PER_UNIT]` while the sprite pixels are
+unchanged (sprite px = cells * 8 = units * 16).
+
 Usage: python tools/build_room_packs.py
 """
 import importlib
@@ -20,12 +25,14 @@ sys.path.insert(0, str(PACK_DIR))
 from PIL import Image, ImageDraw  # noqa: E402
 
 SKIP = {"common", "render_check"}
+ART_UNIT = 16        # px per module block (the art contract; unchanged)
+CELLS_PER_UNIT = 2   # world cells per module block since the 8 px cell
 
 
 def render_item(item):
     w, h = item["size"]
-    img = Image.new("RGBA", (w * 16, h * 16), (0, 0, 0, 0))
-    item["draw"](ImageDraw.Draw(img), w * 16, h * 16)
+    img = Image.new("RGBA", (w * ART_UNIT, h * ART_UNIT), (0, 0, 0, 0))
+    item["draw"](ImageDraw.Draw(img), w * ART_UNIT, h * ART_UNIT)
     return img
 
 
@@ -54,7 +61,7 @@ def pack_sheet(renders):
 def entry_for(item, module_name, rect):
     e = {
         "id": item["id"], "name": item["name"], "kind": "scrap",
-        "size": item["size"], "weight": item["weight"],
+        "size": [int(item["size"][0]) * CELLS_PER_UNIT, int(item["size"][1]) * CELLS_PER_UNIT], "weight": item["weight"],
         "tool_tier": item["tool_tier"], "skill": item["skill"],
         "scrap_time": item["scrap_time"], "xp": item["xp"],
         "yields": item["yields"], "zones": item["zones"],

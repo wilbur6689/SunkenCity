@@ -95,10 +95,14 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
   fill-to-drain block placement — is a central strategy that opens otherwise-inaccessible areas.
   Engineered **water currents push the player**, doubling as a traversal system. SunkenCity's
   "dig" is *moving water*.
-- **Rendering & movement canon:** 640×360 design resolution, integer-scaled pixel art with UI
-  text at native resolution; camera centred on the player with wheel zoom. Walk 5 / sprint 7 / surface swim 5 / underwater 4 blocks/s; 3-block jump (two-jump rule
-  between floors); crawl through 2-block gaps; 12px hitbox fits 1-block holes; 6-block building
-  floors; 4-block reach; 30s baseline oxygen; neutral buoyancy; water always breaks falls.
+- **Rendering & movement canon:** 1920×1080 canvas, default camera zoom 3.0 (640×360 world px on
+  screen), pixel art with UI text at native resolution; camera centred on the player with wheel
+  zoom. *Blocks are 8 px = 1 ft since 2026-09-04 (the half-size block overhaul; every figure below
+  is in those blocks — pixel sizes of everything on screen are unchanged).* Walk 10 / sprint 14 /
+  surface swim 10 / underwater 10 blocks/s; 6-block jump (two-jump rule between floors); crawl
+  through 2-block (16 px) gaps, stand in 3; the 12×22 px hitbox is 1.5×2.75 blocks; 12-block
+  building floors (10 open + 2 slab); 8-block reach; 30s baseline oxygen; neutral buoyancy; water
+  always breaks falls.
 - **Inventory:** ~40 slots for organization; carried weight is a **soft cap** that progressively
   slows swimming — the player chooses when loot isn't worth the crawl home.
 - **Blocks & breakability:** **building structure (walls/floors/ceilings) is unbreakable** —
@@ -126,7 +130,7 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
 - **Building power:** some dry sections have working wiring — locate and flip the breaker to power
   lights (and more, TBD); flooding a powered area trips its breaker off.
 - **Controller architecture:** `CharacterBody2D` + explicit state machine, server-authoritative
-  for LAN. Blocks are the canonical unit in all docs and tuning (`BLOCK_SIZE = 16`).
+  for LAN. Blocks are the canonical unit in all docs and tuning (`BLOCK_SIZE = 8`).
 
 ---
 
@@ -134,11 +138,12 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
 
 | Measurement | Value |
 |---|---|
-| Block size | 16×16 pixels |
-| Block real-world scale | 2 feet per block |
-| Character height (with hair) | 24 pixels |
-| Character height (without hair) | 21 pixels |
-| Character height in blocks | ~2.5–3 blocks tall (~5–6 feet) |
+| Block size | **8×8 pixels** (2026-09-04; was 16×16 — every old block is a 2×2 group of cells, all sprites keep their pixel size) |
+| Block real-world scale | **1 foot per block** |
+| Character sprite height | ~30 pixels (the kept art; the original canon said 24 with hair / 21 without) |
+| Character hitbox | 12×22 px standing = 1.5×2.75 blocks; 12×12 compact fits a 2-block gap |
+| Character height in blocks | ~3.75 blocks tall (~4 feet of sprite; hitbox ≈ 5.5 ft with the head overhang) |
+| World tile art | 24×24 texels per block (`assets/tiles/placeholder_blocks_24.png`), drawn at 1/3 scale |
 
 These metrics drive tile map design, building floor heights, doorway sizes, and swim/dive hitboxes.
 (Details to live in `technical/` docs.)
@@ -147,7 +152,23 @@ These metrics drive tile map design, building floor heights, doorway sizes, and 
 
 ## Main Game Loop
 
-Progression is staged around **how deep the player can go** and **what they can open**:
+Progression is staged around **how deep the player can go** and **what they can open**. Each stage
+**centres on a single resource the player must master before the next stage opens** (design canon,
+2026-09-02): the stage's tools, base, and the very item that unseals the way down are all built
+from *that* resource, so mastery is the gate, not an arbitrary level. The resource ladder mirrors
+the depth bands:
+
+| Stage | Band | Resource to master | The item it unlocks |
+|---|---|---|---|
+| One | The Dry / roofs | **Wood** (farmed — trees, seeds, planters) | **Wooden tripod** → levers the roof vent hatch open, the metal-free way down |
+| Two | The Shallows | **Scrap & stone** (pumps, the Forge) | Drained camps, the Forge — the door to metalworking |
+| Three | The Cold | **Iron** | Bolt cutters, iron tools/tank — opens the metal doors left behind |
+| Four | The Dark | **Steel** | Cutting torch, hard suit — the only things that survive The Crush |
+| Five | The Crush | **Mastery** (all of it, at full strength) | The city floor |
+
+The Stage-One wooden tripod is the model: **wood is not just building material, it is the key** —
+you farm it, craft the hoist from wood and rope, and lift the roof hatch without ever touching
+metal. Only once you are *down* does metal become the next resource to master.
 
 1. **Stage One — Surface Survival**
    The player starts by swimming on the surface between buildings. Buildings are accessible only
@@ -222,9 +243,10 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 ## The City
 
 - **Dimensions:** ~26 double-wide towers; the central 80 % of the map is uniformly high-rise —
-  a ~50-floor base with variance (~39–56 floors, ~300 blocks ≈ 600 ft to ground), so the whole
+  a ~50-floor base with variance (~39–56 floors, ~600 blocks ≈ 600 ft to ground), so the whole
   city reads as one skyline with the starting tower merely its tallest point; only the edge 20 %
-  is all shorter (4–34 floors, tapering out). World ≈ 2,500 × 400 blocks.
+  is all shorter (4–34 floors, tapering out). World ≈ 4,800 × 800 blocks (8 px cells; the same
+  pixel extent as the old 2,400 × 400).
   *(2026-09-01: replaced the centre-out bell curve, which left mid-city at half the crown.)*
 - **Generation:** curated room templates, procedurally assembled — rooms are proc-generated
   during development, the keepers saved as templates, and the game stitches templates into
@@ -254,7 +276,7 @@ no environmental hazards in MVP (electrified water is on the ideas list).
   fast travel — the no-teleportation rule (Travel) still stands.
 - **Depth scaling:** the farther below the surface, the harder the enemies and the better the
   loot; the depth color grade differentiates the five bands visually in MVP.
-- **Tech model:** the whole ~1M-tile world lives in RAM on the host; chunks only schedule
+- **Tech model:** the whole ~4M-tile world lives in RAM on the host (3 byte layers + water); chunks only schedule
   rendering/simulation; no structural-integrity sim (placed blocks float).
 - **Endgame:** reach ground level and drain the whole city via the mega-pump relay network.
 
@@ -281,4 +303,4 @@ environmental storytelling (CT-27).
 - Building power/electrical systems (breakers, powered lights, water interaction)
 - Character controller (swimming, diving, platforming) and LAN networking model
 - Skills, player level, and the ability tech tree
-- [technical/TileArt.md](technical/TileArt.md) — tile/sprite specifications (16×16 blocks, 24px character, Terraria-style textured blocks) ✅
+- [technical/TileArt.md](technical/TileArt.md) — tile/sprite specifications (8×8 blocks from a 24 px atlas, 30px character, Terraria-style textured blocks) ✅

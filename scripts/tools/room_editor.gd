@@ -22,11 +22,11 @@ const ZONE_FURNITURE := {
 	"civil": ["med_cart", "bed_frame", "cabinet", "locker", "chair", "desk"],
 }
 const BLOCK_MATS := {"stone": 1, "wood": 2, "metal": 3, "plastic": 4}
-const CELL := 16
-const MIN_W := 6
-const MAX_W := 20
-const MIN_H := 4
-const MAX_H := 8
+const CELL := 16   # canvas px per world cell (8 px cells drawn at 2x)
+const MIN_W := 12
+const MAX_W := 40
+const MIN_H := 8
+const MAX_H := 16
 const ATLAS := preload("res://assets/tiles/placeholder_blocks.png")
 
 var rooms_path := "res://data/rooms.json"
@@ -59,7 +59,7 @@ func _ready() -> void:
 	_sync_settings_to_ui()
 
 func _default_room() -> Dictionary:
-	return {"id": "new_room", "zone": "residential", "type": "room", "width": 12, "height": 5,
+	return {"id": "new_room", "zone": "residential", "type": "room", "width": 24, "height": 10,
 		"depth_min": -9999, "depth_max": 9999, "objects": [], "blocks": []}
 
 # --- UI construction ---
@@ -146,9 +146,9 @@ func _build_ui() -> void:
 	dh.add_child(depth_max_spin)
 	sv.add_child(dh)
 	sv.add_child(UITheme.label("Size (width x height)", 8))
-	width_spin = _spin(MIN_W, MAX_W, 12, "Interior width in cells - rooms tile side by side across a tower wing.")
+	width_spin = _spin(MIN_W, MAX_W, 24, "Interior width in cells (8 px each) - rooms tile side by side across a tower wing.")
 	width_spin.value_changed.connect(func(_v): _apply_settings())
-	height_spin = _spin(MIN_H, MAX_H, 5, "Interior height in cells (tower floors hold 5).")
+	height_spin = _spin(MIN_H, MAX_H, 10, "Interior height in cells (tower floors hold 10).")
 	height_spin.value_changed.connect(func(_v): _apply_settings())
 	var sh := HBoxContainer.new()
 	sh.add_child(width_spin)
@@ -454,10 +454,10 @@ func _draw_canvas() -> void:
 		_draw_tile(org + Vector2(w, y) * CELL, WorldGrid.M.STONE, shell)
 	# Interior background + grid
 	canvas.draw_rect(Rect2(org, Vector2(w, h) * CELL), Color(0.16, 0.19, 0.25))
-	for x in range(w + 1):
-		canvas.draw_line(org + Vector2(x * CELL, 0), org + Vector2(x * CELL, h * CELL), Color(1, 1, 1, 0.07))
+	for x in range(w + 1): # cell grid; the old 16 px lattice (every 2nd line) drawn a touch brighter
+		canvas.draw_line(org + Vector2(x * CELL, 0), org + Vector2(x * CELL, h * CELL), Color(1, 1, 1, 0.14 if x % 2 == 0 else 0.06))
 	for y in range(h + 1):
-		canvas.draw_line(org + Vector2(0, y * CELL), org + Vector2(w * CELL, y * CELL), Color(1, 1, 1, 0.07))
+		canvas.draw_line(org + Vector2(0, y * CELL), org + Vector2(w * CELL, y * CELL), Color(1, 1, 1, 0.14 if (h - y) % 2 == 0 else 0.06))
 	# Blocks
 	for b in room.blocks:
 		var cy := _standing_row() - int(b.dy)
@@ -481,7 +481,7 @@ func _draw_canvas() -> void:
 func _draw_tile(pos: Vector2, mat: int, mod: Color) -> void:
 	var variant := posmod(hash(Vector2i(pos / CELL)), 5)
 	canvas.draw_texture_rect_region(ATLAS, Rect2(pos, Vector2(CELL, CELL)),
-		Rect2(variant * 16, (mat - 1) * 16, 16, 16), mod)
+		Rect2(variant * Data.ICON_PX, (mat - 1) * Data.ICON_PX, Data.ICON_PX, Data.ICON_PX), mod) # the 16 px icon atlas, one tile per cell (schematic)
 
 func _draw_object(org: Vector2, oid: String, x: int, mod: Color, dy: int = 0) -> void:
 	var def: Dictionary = Data.objects.get(oid, {})

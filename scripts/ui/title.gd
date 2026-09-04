@@ -219,7 +219,16 @@ func _refresh_lists() -> void:
 	world_list.add_item("+ New world")
 	for w in SaveGame.world_names():
 		world_list.add_item(w)
-	world_list.select(mini(1, world_list.item_count - 1))
+		if SaveGame.world_is_stale(w): # older save format (e.g. pre-8 px cells): shown, not loadable
+			var idx := world_list.item_count - 1
+			world_list.set_item_text(idx, w + "  (old format)")
+			world_list.set_item_disabled(idx, true)
+	var first_world := 0 # newest loadable world, else "+ New world" (old-format rows are disabled)
+	for i in range(1, world_list.item_count):
+		if not world_list.is_item_disabled(i):
+			first_world = i
+			break
+	world_list.select(first_world)
 	char_list.clear()
 	char_list.add_item("+ New character")
 	for c in SaveGame.character_names():

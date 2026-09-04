@@ -168,7 +168,17 @@ func _primary() -> void:
 	var it := Data.item(held)
 	match it.get("category", ""):
 		"placeable_block":
-			if target_in_reach and World.can_place_block(it.places_block, target_cell, player):
+			if it.get("places_block", "") == "rope":
+				# Ropes drop a run of up to ROPE_DROP cells / click, extending
+				# an existing line from its bottom (user request 2026-09-02).
+				if target_in_reach and World.can_place_rope(target_cell):
+					var slot = player.inventory.slots[player.selected_slot]
+					var want: int = mini(Constants.ROPE_DROP, slot.count if slot != null else 0)
+					var n := World.place_rope(target_cell, want)
+					if n > 0:
+						player.inventory.remove_from_slot(player.selected_slot, n)
+						player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK * n)
+			elif target_in_reach and World.can_place_block(it.places_block, target_cell, player):
 				if World.place_block(it.places_block, target_cell):
 					player.inventory.remove_from_slot(player.selected_slot, 1)
 					player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
@@ -180,10 +190,14 @@ func _primary() -> void:
 		"consumable", "schematic":
 			if not _used_last_tick:
 				player.use_item(player.selected_slot)
+		"seed":
+			_plant_seed()
+		"bucket":
+			_use_bucket()
 		"weapon":
 			var w: Dictionary = it.weapon
 			if w.get("melee", false):
-				_melee(float(w.damage), float(w.speed), float(w.get("knockback", 4.0)),
+				_melee(float(w.damage), float(w.speed), float(w.get("knockback", 8.0)),
 					float(w.get("water_factor", Constants.MELEE_WATER_FACTOR)))
 			elif w.has("projectile"):
 				_fire_spear(w)
@@ -202,6 +216,49 @@ func _primary() -> void:
 				# least slowed underwater (GD-08).
 				_melee(float(tool.get("damage", 2)), 1.0 + float(tool.get("speed", 1.0)), 3.0,
 					Constants.KNIFE_WATER_FACTOR)
+
+## Plant a tree seed in a planter (user request 2026-09-02): a sapling sprouts
+## on the pot and grows nightly - full-size only under open sky (a roof).
+func _plant_seed() -> void:
+	if _used_last_tick or not target_in_reach:
+		return
+	var obj := World.object_at(target_cell)
+	if obj == null or obj.def.get("kind", "") != "planter":
+		say("Plant seeds in a planter pot")
+		return
+	if World.plant_in_planter(obj):
+		player.inventory.remove_from_slot(player.selected_slot, 1)
+		player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
+		say("Planted a seed - give it open sky to grow")
+	else:
+		say("This planter already has something growing")
+
+## Wooden bucket (user request 2026-09-02): scoop a full cell of water, or
+## pour the carried water into an open cell - carry water by hand.
+func _use_bucket() -> void:
+	if _used_last_tick or not target_in_reach or World.water_sim == null:
+		return
+	var held := player.held_item()
+	if held == "wood_bucket":
+		if World.water_sim.level_at(target_cell) > 0:
+			World.water_sim.remove_water(target_cell, WaterSim.MAX_LEVEL)
+			_swap_held("wood_bucket_full")
+			Audio.play_sfx("splash", World.cell_center(target_cell), 4, -12.0)
+			say("Filled the bucket")
+		else:
+			say("No water to scoop there")
+	elif held == "wood_bucket_full":
+		if World.is_solid_cell(target_cell):
+			say("Can't pour into a solid block")
+		else:
+			World.water_sim.add_water(target_cell, WaterSim.MAX_LEVEL)
+			_swap_held("wood_bucket")
+			Audio.play_sfx("splash", World.cell_center(target_cell), 4, -10.0)
+			say("Poured out the bucket")
+
+func _swap_held(to_id: String) -> void:
+	player.inventory.remove_from_slot(player.selected_slot, 1)
+	player.inventory.add(to_id, 1)
 
 ## RMB: hold-to-scrap furniture (any non-tool or knife); walls with a wall
 ## item or the hammer.
@@ -377,6 +434,10 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		say("Needs an %s to cut down" % need_tool if need_tool == "axe" else "Needs a %s" % need_tool)
 		_stop_scrapping()
 		return
+	# Axes are tree tools only (user request 2026-09-02): dismantling anything
+	# that doesn't require an axe treats one as bare hands (tier and speed).
+	if tool.get("type", "") == "axe" and need_tool != "axe":
+		tool = {}
 	var tier: int = int(tool.get("tier", Constants.HAND_TOOL_TIER))
 	if tier < int(obj.def.get("tool_tier", 0)):
 		say("Needs a tool (tier %d)" % obj.def.tool_tier)
@@ -405,22 +466,62 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		var yields := obj.roll_yields(false, rng, player)
 		var pos := obj.center()
 		World.remove_object(obj)
+		# Resources pop OUT of the object and hover for the player to collect
+		# (user request 2026-09-02), instead of teleporting into the bag.
 		for y in yields:
-			var leftover: int = player.inventory.add(y.item, y.count)
-			player.notify_gain(y.item, int(y.count) - leftover)
-			if leftover > 0:
-				World.spawn_item(y.item, leftover, pos)
+			_pop_resource(y.item, int(y.count), pos)
+		World.spawn_break_puff(pos, yields[0].item if not yields.is_empty() else "")
 		player.skills.add_xp("scrapping", float(obj.def.get("xp", 3)))
 		say("Scrapped " + obj.def.name)
 		Audio.play_sfx("dismantle_rattle", pos)
 		scrapping = null
 		scrap_progress = 0.0
 
+## Pop a harvested resource out of the broken object as a few bobbing world
+## items (user request 2026-09-02): they scatter up-and-out, then hover for
+## the player to walk over and collect - no auto-magnet.
+func _pop_resource(item: String, count: int, pos: Vector2) -> void:
+	if count <= 0:
+		return
+	var n := clampi(count, 1, 3) # a few icons burst out, for feel
+	var base := count / n
+	var extra := count % n
+	for i in n:
+		var c := base + (1 if i < extra else 0)
+		if c <= 0:
+			continue
+		var vel := Vector2(rng.randf_range(-4.0, 4.0), rng.randf_range(-9.0, -6.0)) * Constants.BLOCK_SIZE
+		var it := World.spawn_item(item, c, pos, vel)
+		if it != null:
+			# Pop out, hover briefly, then drift gently toward the player
+			# (user request 2026-09-02).
+			it.magnet = true
+			it.gentle = true
+			it.pickup_delay = Constants.HARVEST_DROP_DELAY
+
 func _stop_scrapping() -> void:
 	if scrapping != null:
 		scrapping.scrap_progress = 0.0
 	scrapping = null
 	scrap_progress = 0.0
+
+## Can the player harvest this object right now (user request 2026-09-02:
+## don't highlight furniture that needs a higher-tier tool than the one held)?
+## Mirrors the _scrap gate exactly. Only kind=="scrap" is gated - doors,
+## chests, stations, beds, pumps, breakers stay actionable regardless.
+func can_harvest(obj: WorldObject) -> bool:
+	if obj == null or obj.def.get("kind", "") != "scrap":
+		return true
+	var tool: Dictionary = player.held_tool()
+	var need_tool: String = obj.def.get("requires_tool", "")
+	if need_tool != "" and tool.get("type", "") != need_tool:
+		return false
+	if tool.get("type", "") == "axe" and need_tool != "axe":
+		tool = {} # axes are tree-only when dismantling
+	var tier: int = int(tool.get("tier", Constants.HAND_TOOL_TIER))
+	if tier < int(obj.def.get("tool_tier", 0)):
+		return false
+	return player.skills.level("scrapping") >= int(obj.def.get("skill", 0))
 
 ## Interactables glow slightly while the mouse is over them and in reach
 ## (self_modulate, so door transparency and power dimming are untouched).
@@ -430,13 +531,16 @@ func _update_hover() -> void:
 		var obj := World.object_at(target_cell)
 		if obj != null and obj.is_interactable():
 			new_hover = obj
-	if new_hover == hovered:
-		return
+	if new_hover != hovered:
+		if hovered != null and is_instance_valid(hovered):
+			hovered.sprite.self_modulate = Color.WHITE
+		hovered = new_hover
+	# The glow marks "you can act on this NOW": only harvestable objects light
+	# up (user request 2026-09-02), refreshed each frame so switching to the
+	# right tool lights it. The info card still shows for un-harvestable ones,
+	# so the tier badge can explain the gate.
 	if hovered != null and is_instance_valid(hovered):
-		hovered.sprite.self_modulate = Color.WHITE
-	hovered = new_hover
-	if hovered != null:
-		hovered.sprite.self_modulate = Color(1.45, 1.42, 1.2)
+		hovered.sprite.self_modulate = Color(1.45, 1.42, 1.2) if can_harvest(hovered) else Color.WHITE
 
 ## Cursor swap (user request): a magnifying glass over a searchable
 ## container; the same glass with a green check once it has been emptied.
@@ -479,8 +583,8 @@ func _update_ghost() -> void:
 		_ghost_rect.position = origin
 		_ghost.texture = Data.icon(held)
 		_ghost.position = origin
-		_ghost.scale = Vector2.ONE if _ghost.texture == null or _ghost.texture.get_width() <= Constants.BLOCK_SIZE \
-				else Vector2.ONE * (float(Constants.BLOCK_SIZE) / _ghost.texture.get_width())
+		_ghost.scale = Vector2.ONE if _ghost.texture == null or _ghost.texture.get_width() <= Data.ICON_PX \
+				else Vector2.ONE * (float(Data.ICON_PX) / _ghost.texture.get_width())
 	else:
 		var d: Dictionary = Data.objects[it.places_object]
 		ok = target_in_reach and World.can_place_object(it.places_object, target_cell, player)

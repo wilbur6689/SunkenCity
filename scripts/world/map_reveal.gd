@@ -1,17 +1,23 @@
 class_name MapReveal
 extends RefCounted
-## Fog-of-war world map (CC-25): one bit per cell, revealed by proximity as
-## the player explores. Tracked per character — the bitset serializes into
-## the character save, not the world save.
+## Fog-of-war world map (CC-25): one bit per MAP cell (a Constants.MAP_CELL
+## square of world cells), revealed by proximity as the player explores.
+## Tracked per character — the bitset serializes into the character save,
+## not the world save. All coordinates here are map cells (World.map_macro_for).
 
 var bounds: Rect2i
 var bits := PackedByteArray()
 var revealed := 0 # running count (the bitset is too big to walk per frame)
 var dirty: PackedVector2Array = [] # newly revealed cells since last drain (map view)
 
-func _init(p_bounds: Rect2i) -> void:
-	bounds = p_bounds
+func _init(world_bounds: Rect2i) -> void:
+	bounds = MapReveal.macro_bounds(world_bounds)
 	bits.resize((bounds.size.x * bounds.size.y + 7) / 8)
+
+## World-cell rect -> the map-cell rect that covers it.
+static func macro_bounds(b: Rect2i) -> Rect2i:
+	var m: int = Constants.MAP_CELL
+	return Rect2i(b.position / m, (b.size + Vector2i(m - 1, m - 1)) / m)
 
 func _idx(cell: Vector2i) -> int:
 	return (cell.y - bounds.position.y) * bounds.size.x + (cell.x - bounds.position.x)

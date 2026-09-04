@@ -29,7 +29,8 @@ Design intent (from the overview):
 
 *(Proposed baseline — refine during prototyping.)*
 
-- **Water cells** occupy the same grid as blocks (16×16 px = 2 ft). A cell holds a fill level
+- **Water cells** occupy the same grid as blocks (8×8 px = 1 ft since 2026-09-04; 16×16 px = 2 ft
+  before — four times the cells for the same volume, `WATER_BUDGET_PER_TICK` scaled to match). A cell holds a fill level
   (e.g., 0–8 units) rather than a boolean, so partial tiles and smooth surfaces are possible.
 - **Flow rules, evaluated per simulation tick:**
   1. **Down:** water moves into an empty/partially-filled cell directly below, up to capacity.
