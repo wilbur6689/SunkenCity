@@ -813,15 +813,27 @@
       "inputs": [
         {
           "item": "wood",
-          "count": 20
-        },
-        {
-          "item": "plastic",
-          "count": 5
+          "count": 6
         }
       ],
       "output": {
         "item": "planter",
+        "count": 1
+      }
+    },
+    {
+      "id": "planter_box",
+      "station": "hand",
+      "known": true,
+      "tier": 1,
+      "inputs": [
+        {
+          "item": "wood",
+          "count": 15
+        }
+      ],
+      "output": {
+        "item": "planter_box",
         "count": 1
       }
     },

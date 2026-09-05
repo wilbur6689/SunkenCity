@@ -228,7 +228,7 @@ def draw_statue_lion(d, W, H):
 
 # -------------------------------------------------------------------- items
 
-_ALL_ZONES = ["residential", "business", "commercial", "industrial", "civil"]
+_ALL_ZONES = ["residential", "business", "commercial", "industrial", "civil", "construction"]
 
 ITEMS = [
     {

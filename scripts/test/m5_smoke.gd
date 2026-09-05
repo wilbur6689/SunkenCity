@@ -57,7 +57,7 @@ func _ready() -> void:
 	SaveGame.pending_character = "__m5_smoke__"
 	var city: Node2D = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
-	var player: Player = city.get_node("Player")
+	var player: Player = city.player
 	player.set_multiplayer_authority(2)
 	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands")
 	var sc := World.cell_at(World.spawn_position)

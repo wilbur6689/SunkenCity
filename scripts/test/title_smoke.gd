@@ -7,6 +7,9 @@ extends Node
 
 const WNAME := "world_424242"
 const CNAME := "__test_diver"
+const OLD_W := "__old_world"
+const OLD_W2 := "__old_world_2"
+const OLD_C := "__old_diver"
 
 var failures: PackedStringArray = []
 var checks := 0
@@ -48,7 +51,7 @@ func _ready() -> void:
 
 	var city: Node2D = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
-	var player: Player = city.get_node("Player")
+	var player: Player = city.player
 	player.set_multiplayer_authority(2)
 	check(city.seed_value == 424242 and city.world_name == WNAME, "city boots the picked seed")
 	check(city.character_name == CNAME, "as the picked character")
@@ -92,13 +95,50 @@ func _ready() -> void:
 	check(not SaveGame.character_names().has(CNAME), "characters delete the same way")
 	check(title2.world_list.get_item_text(0) == "+ New world", "lists refresh after deleting")
 
+	print("== D. old-format saves can be deleted (user request 2026-09-05)")
+	var st0: Dictionary = SaveGame.stale_saves() # the player's own old saves may sit beside the test's
+	var base: int = st0.worlds.size() + st0.chars.size()
+	_write_old(SaveGame.WORLD_DIR + OLD_W + SaveGame.WORLD_EXT)
+	_write_old(SaveGame.WORLD_DIR + OLD_W2 + SaveGame.WORLD_EXT)
+	_write_old(SaveGame.CHAR_DIR + OLD_C + SaveGame.CHAR_EXT)
+	check(SaveGame.world_is_stale(OLD_W) and SaveGame.character_is_stale(OLD_C), "v1 files read as stale")
+	var title3: Control = load("res://scenes/ui/title.tscn").instantiate()
+	add_child(title3)
+	var old_row := -1
+	for i in title3.world_list.item_count:
+		if title3.world_list.get_item_text(i).begins_with(OLD_W + " "):
+			old_row = i
+	check(old_row > 0 and title3.world_list.get_item_text(old_row).ends_with("(old format)") and not title3.world_list.is_item_disabled(old_row),
+			"old-format world is listed, tagged, and selectable")
+	check(title3.world_list.get_selected_items()[0] != old_row, "...but never preselected")
+	check(title3.clear_old.visible and title3.clear_old.text.ends_with("(%d)" % (base + 3)), "Clear old saves button shows the count (%s)" % title3.clear_old.text)
+	title3.world_list.select(old_row)
+	SaveGame.pending_world = ""
+	title3._play()
+	check(SaveGame.pending_world == "" and title3.hint.text.begins_with("That save is an old format"), "DIVE refuses an old-format pick and says why")
+	title3._delete_pressed("world")
+	title3._delete_pressed("world")
+	check(not SaveGame.world_names().has(OLD_W) and SaveGame.world_names().has(OLD_W2), "Delete removes the selected old-format world only")
+	title3._clear_old_pressed()
+	check(title3.clear_old.text == "Really?", "Clear old saves arms first")
+	title3._clear_old_pressed()
+	check(not SaveGame.world_names().has(OLD_W2) and not SaveGame.character_names().has(OLD_C), "...then deletes every old-format world and character")
+	check(not title3.clear_old.visible and title3.hint.text.begins_with("Removed %d" % (base + 2)), "button hides once nothing old is left (%s)" % title3.hint.text)
+	title3.queue_free()
 	_delete_saves()
 	print("\nTitle smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:
 		print("  FAIL: " + f)
 	get_tree().quit(0 if failures.is_empty() else 1)
 
+func _write_old(path: String) -> void: # a save from a format this build refuses
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_var({"version": 1, "name": path.get_file()})
+	f.close()
+
 func _delete_saves() -> void:
-	for p: String in [SaveGame.WORLD_DIR + WNAME + SaveGame.WORLD_EXT, SaveGame.CHAR_DIR + CNAME + SaveGame.CHAR_EXT]:
+	for p: String in [SaveGame.WORLD_DIR + WNAME + SaveGame.WORLD_EXT, SaveGame.CHAR_DIR + CNAME + SaveGame.CHAR_EXT,
+			SaveGame.WORLD_DIR + OLD_W + SaveGame.WORLD_EXT, SaveGame.WORLD_DIR + OLD_W2 + SaveGame.WORLD_EXT, SaveGame.CHAR_DIR + OLD_C + SaveGame.CHAR_EXT]:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))

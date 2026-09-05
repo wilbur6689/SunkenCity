@@ -22,10 +22,13 @@ const BUILDING_SCALE := 0.7
 const SKY_COLOR := Color(0.226, 0.625, 0.705)
 const SKY_HEIGHT := 2000.0
 
-func setup(waterline_y: float, origin_x: float) -> void:
+func setup(waterline_y: float, origin_x: float, city_px: float = 0.0) -> void:
 	scroll_scale = Vector2(0.4, 1.0) # slow horizontal parallax, pinned vertically to the waterline
 	repeat_size = Vector2(PLATE_W * PLATES.size(), 0)
-	repeat_times = 9 # enough coverage for the full city width at 0.4 parallax
+	# Coverage for the whole city: at 0.4 parallax the plates drift 0.6x the
+	# camera's travel, plus a generous max-zoom-out view either side.
+	var drift := city_px * 0.6 + 8000.0
+	repeat_times = maxi(9, int(ceil(drift / repeat_size.x)) + 2)
 	var sky := ColorRect.new()
 	sky.color = SKY_COLOR
 	sky.position = Vector2(origin_x, waterline_y - SKY_HEIGHT)

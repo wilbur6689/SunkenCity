@@ -178,17 +178,34 @@ def water(rng, _o, _t, _h):
     return tile
 
 
-def ladder(rng, o, t, h):
-    """Rails at x 4-6 and 17-19, three rungs; two side-by-side cells read as
-    one wide ladder with a middle pair of rails."""
-    tile = Tile()
+def _rail(tile, x0, o, t, h):
+    """A 4-texel vertical rail: outline, two body tones, highlight edge."""
     for y in range(T):
-        for x in (4, 5, 6, 17, 18, 19):
-            tile.set(x, y, t[1] if x in (4, 5, 17, 18) else t[2])
-    for ry in (3, 11, 19):
-        for x in range(4, 20):
-            tile.set(x, ry, t[3]); tile.set(x, ry + 1, t[2]); tile.set(x, ry + 2, o)
-        tile.set(4, ry, h); tile.set(5, ry, h)
+        tile.set(x0, y, o); tile.set(x0 + 1, y, h); tile.set(x0 + 2, y, t[2]); tile.set(x0 + 3, y, t[1])
+
+
+def _rung(tile, x0, x1, o, t, h):
+    """One 4-texel rung across x0..x1 at mid-height (the H's crossbar)."""
+    for x in range(x0, x1 + 1):
+        tile.set(x, 10, h); tile.set(x, 11, t[3]); tile.set(x, 12, t[2]); tile.set(x, 13, o)
+
+
+def ladder(rng, o, t, h, col=2):
+    """A ladder is two cells wide (2026-09-05): col 0 = LEFT half (left rail +
+    the rung running to the cell's right edge), col 1 = RIGHT half (right rail
+    + the rung from the left edge), so a pair reads as one H per row with a
+    single rung; col 2+ = a lone single-cell ladder (both rails, one rung)."""
+    tile = Tile()
+    if col == 0:
+        _rail(tile, 3, o, t, h)
+        _rung(tile, 7, T - 1, o, t, h)
+    elif col == 1:
+        _rail(tile, 17, o, t, h)
+        _rung(tile, 0, 16, o, t, h)
+    else:
+        _rail(tile, 3, o, t, h)
+        _rail(tile, 17, o, t, h)
+        _rung(tile, 7, 16, o, t, h)
     return tile
 
 
@@ -247,7 +264,7 @@ def build_atlas():
         ramp = RAMPS.get(name, RAMPS["wood"])
         for col in range(VARIANTS):
             rng = random.Random(1000 * row + col + 7)
-            tile = RECIPES[name](rng, *ramp)
+            tile = ladder(rng, *ramp, col=col) if name == "ladder" else RECIPES[name](rng, *ramp)
             tile.blit(img, col * T, row * T)
     out = ROOT / "assets" / "tiles" / "placeholder_blocks_24.png"
     img.save(out)

@@ -81,7 +81,7 @@ func _process(delta: float) -> void:
 	_clamp_pan()
 	map_rect.position = pan
 	map_rect.size = Vector2(_img.get_size()) * zoom
-	var player = get_tree().get_first_node_in_group("player")
+	var player = Net.local_player()
 	if player != null:
 		var cell := World.map_macro_for(player.global_position) - World.map_bounds.position
 		marker.position = pan + Vector2(cell) * zoom - marker.size * 0.5
@@ -95,7 +95,7 @@ func open_map() -> void:
 	else:
 		_update_pixels()
 	_refresh = REFRESH_SECONDS
-	var player = get_tree().get_first_node_in_group("player")
+	var player = Net.local_player()
 	if player != null:
 		player.ui_blocks_mouse = true
 		# centre the view on the player (inside a pocket: on its doorway)
@@ -106,7 +106,7 @@ func close() -> void:
 	open = false
 	_dragging = false
 	root.visible = false
-	var player = get_tree().get_first_node_in_group("player")
+	var player = Net.local_player()
 	if player != null:
 		player.ui_blocks_mouse = false
 
@@ -163,7 +163,7 @@ func _update_pixels() -> void:
 		if b.has_point(cell): # reveals inside a pocket stay off the city map
 			_img.set_pixel(cell.x - b.position.x, cell.y - b.position.y, MapColors.cell_color(cell))
 	World.map_reveal.dirty.clear()
-	var player = get_tree().get_first_node_in_group("player")
+	var player = Net.local_player()
 	if player != null:
 		var center := World.map_macro_for(player.global_position)
 		var org := center - REPAINT_WINDOW / 2

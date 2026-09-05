@@ -19,6 +19,7 @@ var root: Control
 var quit_button: Button
 var main_box: VBoxContainer
 var controls_box: VBoxContainer
+var players_box: VBoxContainer # LAN roster (name · ping), shown only while online
 var _sliders: Dictionary = {}
 var _pct_labels: Dictionary = {}
 
@@ -89,6 +90,15 @@ func _ready() -> void:
 
 	main_box.add_child(UITheme.label("DISPLAY", 8, Color(0.56, 0.75, 0.81)))
 	main_box.add_child(_ui_size_row())
+
+	# LAN session (2026-09-05): who is in the world and their ping. Only
+	# shown while online; refreshed from Net's roster while the menu is open.
+	players_box = VBoxContainer.new()
+	players_box.add_theme_constant_override("separation", 2)
+	players_box.visible = false
+	players_box.add_child(UITheme.label("PLAYERS", 8, Color(0.56, 0.75, 0.81)))
+	main_box.add_child(players_box)
+	Net.roster_changed.connect(_refresh_players)
 
 	var controls_btn := Button.new()
 	controls_btn.text = "CONTROLS"
@@ -226,10 +236,13 @@ func open_menu() -> void:
 		_pct_labels[bus_name].text = "%d%%" % int(Audio.volume(bus_name) * 100.0)
 	if quit_text != "":
 		quit_button.text = quit_text
+	elif Net.is_online(): # LAN: a client leaves, the host closes the world for everyone
+		quit_button.text = "LEAVE" if Net.is_client() else "CLOSE WORLD"
 	else:
 		var scene := get_tree().current_scene
 		quit_button.text = "SAVE & QUIT" if scene != null and scene.has_method("save_and_exit_to_title") else "QUIT"
-	var player = get_tree().get_first_node_in_group("player")
+	_refresh_players()
+	var player = Net.local_player()
 	if player != null:
 		player.ui_blocks_mouse = true
 
@@ -237,7 +250,7 @@ func close() -> void:
 	open = false
 	root.visible = false
 	Audio.save_settings()
-	var player = get_tree().get_first_node_in_group("player")
+	var player = Net.local_player()
 	if player != null:
 		player.ui_blocks_mouse = false
 
@@ -247,7 +260,40 @@ func _quit() -> void:
 		quit_callable.call()
 		return
 	var scene := get_tree().current_scene
+	if Net.is_client():
+		# LEAVE: the scene's own leave path saves the character from the replica
+		# (Multiplayer step 7); until it exists, drop the connection and go to
+		# the title without writing a world file from a client.
+		if scene != null and scene.has_method("leave_world"):
+			scene.leave_world()
+		else:
+			Net.leave()
+			get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
+		return
+	if Net.is_online():
+		Net.close_world() # pushes every client its final state, then drops them
 	if scene != null and scene.has_method("save_and_exit_to_title"):
 		scene.save_and_exit_to_title()
 	else:
 		get_tree().quit()
+
+## "name · 12 ms" per connected peer (host first); the local row is marked.
+func _refresh_players() -> void:
+	if players_box == null:
+		return
+	players_box.visible = Net.is_online()
+	if not players_box.visible or not open:
+		return
+	for i in range(players_box.get_child_count() - 1, 0, -1): # keep the header
+		players_box.get_child(i).queue_free()
+	var ids: Array = Net.peers.keys()
+	ids.sort()
+	for id in ids:
+		var e: Dictionary = Net.peers[id]
+		var me: bool = int(id) == Net.local_peer()
+		var ping: float = Net.ping_ms if (me and Net.is_client()) else float(e.get("ping_ms", 0.0))
+		var text := "%s%s · %s" % [String(e.get("name", "?")), " (you)" if me else "",
+			"host" if id == 1 and not me else "%d ms" % int(ping)]
+		if id == 1 and me:
+			text = "%s (you, host)" % String(e.get("name", "?"))
+		players_box.add_child(UITheme.label(text, 8, Color(0.85, 0.9, 0.92) if me else Color(0.7, 0.78, 0.85)))

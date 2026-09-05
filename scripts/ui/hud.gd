@@ -187,7 +187,7 @@ func _hover_lines(obj: WorldObject) -> Array:
 			what = "Scrap bench (%s) — melts collected furniture to materials" % tier
 			how = "LMB: grind all %s furniture in your bag" % ("scrappable" if st == 5 else tier)
 		"planter":
-			what = "Planter — grows a tree for wood under open sky"
+			what = "Planter box — three trees, one per section" if obj.id == "planter_box" else "Planter — grows a tree for wood under open sky"
 			how = "LMB: plant a held seed · pour a full bucket to water it up a stage"
 		"chest":
 			what = "Container — %d slots" % obj.storage.slots.size()
@@ -292,7 +292,7 @@ func _refresh_debug() -> void:
 			Performance.get_monitor(Performance.OBJECT_NODE_COUNT)],
 		"pos (%.0f, %.0f) px · cell (%d, %d) · depth %+d blk (%+d ft) · band %s" % [
 			player.global_position.x, player.global_position.y, cell.x, cell.y,
-			depth, depth, World.band_at(cell)],
+			depth, depth, World.floor_band_at(cell)],
 		"water: awake %d · processed %d · tick %.2f ms" % [
 			World.water_sim.awake.size(), World.water_sim.processed_last_tick, World.perf.water_ms],
 		"light: window %dx%d · compute %.2f ms · fog raycast %.2f ms" % [
@@ -307,6 +307,18 @@ func _refresh_debug() -> void:
 			World.map_reveal.revealed_count(), World.time_of_day, World.sun_strength()],
 		"music: %s" % Audio.debug_status(),
 	]
+	if Net.is_online(): # LAN session (2026-09-05): peer id, role, ping, traffic
+		var ping: float = Net.ping_ms
+		if Net.mode == Net.Mode.HOST:
+			for id in Net.peers: # host: the slowest client's round trip
+				ping = maxf(ping, float(Net.peers[id].get("ping_ms", 0.0)))
+		lines.append("net: peer %d · %s · %d players · ping %d ms · in %.1f KB/s · out %.1f KB/s" % [
+			Net.local_peer(), "host" if Net.mode == Net.Mode.HOST else "client", Net.peers.size(),
+			int(ping), Net.bytes_in_per_s / 1024.0, Net.bytes_out_per_s / 1024.0])
+		if Net.mode == Net.Mode.HOST and Net.world_sync != null and Net.world_sync.get("stats_last") != null:
+			var st: Dictionary = Net.world_sync.stats_last
+			lines.append("sync: %d packets/s · %d cells/s · %d water pairs/s" % [int(st.get("packets", 0)),
+				int(st.get("cells", 0)), int(st.get("water_pairs", 0))])
 	_debug_text.text = "\n".join(PackedStringArray(lines))
 
 ## Top-right minimap (CC-25): a window of the fog-of-war world map centred
@@ -363,7 +375,7 @@ func _process(delta: float) -> void:
 	if player != null:
 		visible = not player.dying # the death scene clears the UI (2026-09-01)
 	if player == null:
-		player = get_tree().get_first_node_in_group("player") as Player
+		player = Net.local_player()
 		if player == null:
 			return
 		player.message.connect(show_message)

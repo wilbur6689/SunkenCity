@@ -2,32 +2,93 @@ extends Control
 ## Title screen (CC-09): the world picker <-> character picker flow. Worlds
 ## and characters save separately (Terraria model) — pick a saved world or a
 ## fresh seed on the left, a saved character or a new name on the right,
-## then dive. Saved rows can be deleted (two-click confirm). Dev runs
-## passing --seed / --shot skip straight into the city.
+## then dive. Saved rows can be deleted (two-click confirm). Old-format saves
+## (a version this build refuses) are listed greyed: they can't be dived but
+## CAN be selected and deleted, and "Clear old saves" removes them all
+## (user request 2026-09-05). The picker columns themselves live in
+## SavePickers (shared with the Multiplayer screen, 2026-09-05). Dev runs
+## passing --seed / --shot skip straight into the city; --host / --join
+## (docs/technical/MultiplayerImpl.md §8) start a LAN session without the menu.
 
 const CITY_SCENE := "res://scenes/city/city.tscn"
-const FONT := 10 # compact control font (user request: the menu ran large)
+const MULTIPLAYER_SCENE := "res://scenes/ui/multiplayer_menu.tscn"
+const FONT := SavePickers.FONT
+const HINT_TEXT := "Pick or create on both sides, then dive. Progress saves when you leave (Esc) — F5 saves any time."
+const STALE_COLOR := SavePickers.STALE_COLOR
 
 var frame: Control # fixed 640x360 design frame, centred on wide screens
+var pickers := SavePickers.new()
 var world_list: ItemList
 var char_list: ItemList
 var seed_spin: SpinBox
 var name_edit: LineEdit
 var world_del: Button
 var char_del: Button
-var _confirm_gen := 0 # invalidates pending delete confirms
+var clear_old: Button # deletes every old-format world + character (shown only when some exist)
+var hint: Label
+
+static var _dev_args_used := false # --host/--join fire once per process, not on every return to the title
 
 func _ready() -> void:
-	for a in OS.get_cmdline_user_args():
+	var args := OS.get_cmdline_user_args()
+	if SaveGame.pending_notice != "": # dev probe (tools/lan_smoke.py --host-closes): report the reason and exit
+		for a in args:
+			if a.begins_with("--net-probe="):
+				print("NETPROBE disconnected: " + SaveGame.pending_notice)
+				get_tree().quit()
+				return
+	# Dev aids: --host[=port] / --join=ip[:port] (+ --character= --world= --seed=)
+	# start a LAN session straight from the command line (MultiplayerImpl §8).
+	if not _dev_args_used:
+		for a in args:
+			if a == "--host" or a.begins_with("--host="):
+				_dev_args_used = true
+				_dev_host(args)
+				return
+			if a.begins_with("--join="):
+				_dev_args_used = true
+				_dev_join(args)
+				return
+	for a in args:
 		if a.begins_with("--seed=") or a.begins_with("--shot="):
 			get_tree().change_scene_to_file.call_deferred(CITY_SCENE)
 			return
 	_build_ui()
-	for a in OS.get_cmdline_user_args(): # dev aid: --titleshot=path
+	if SaveGame.pending_notice != "": # e.g. "Disconnected: host closed the world" (LAN Step 7)
+		hint.text = SaveGame.pending_notice
+		SaveGame.pending_notice = ""
+	for a in args: # dev aid: --titleshot=path
 		if a.begins_with("--titleshot="):
 			await get_tree().create_timer(0.5).timeout
 			get_viewport().get_texture().get_image().save_png(a.substr(12))
 			get_tree().quit()
+
+static func _arg(args: PackedStringArray, key: String, default_value: String) -> String:
+	for a in args:
+		if a.begins_with(key + "="):
+			return a.substr(key.length() + 1)
+	return default_value
+
+func _dev_host(args: PackedStringArray) -> void:
+	var port := Constants.LAN_PORT
+	for a in args:
+		if a.begins_with("--host=") and a.substr(7).is_valid_int():
+			port = int(a.substr(7))
+	var world := _arg(args, "--world", "")
+	var seed_value := int(_arg(args, "--seed", "0"))
+	var character := _arg(args, "--character", "diver")
+	var cap := int(_arg(args, "--cap", str(Constants.NET_MAX_PLAYERS)))
+	var err := Net.start_hosting(world, seed_value, character, port, cap)
+	if err != OK:
+		push_error("--host: could not start hosting (%s)" % error_string(err))
+		get_tree().quit(2)
+
+func _dev_join(args: PackedStringArray) -> void:
+	var target := _arg(args, "--join", "127.0.0.1")
+	var character := _arg(args, "--character", "diver")
+	# The Multiplayer screen runs the join flow and shows/prints its status.
+	Net.auto_join = {"target": target, "character": character}
+	get_tree().change_scene_to_file.call_deferred(MULTIPLAYER_SCENE)
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
@@ -76,48 +137,20 @@ func _build_ui() -> void:
 	sub.offset_top = 56
 	frame.add_child(sub)
 
-	world_list = _picker_panel(120, "WORLD")
-	char_list = _picker_panel(350, "CHARACTER")
-	world_del = _delete_button(120 + 170 - 52, "world")
-	char_del = _delete_button(350 + 170 - 52, "char")
-	world_list.item_selected.connect(func(i): world_del.disabled = i == 0; _reset_confirms())
-	char_list.item_selected.connect(func(i): char_del.disabled = i == 0; _reset_confirms())
+	pickers.build_world(frame, 120)
+	pickers.build_char(frame, 350)
+	pickers.build_clear_old(frame, Vector2(120, 224))
+	pickers.message.connect(func(t: String): hint.text = t)
+	world_list = pickers.world_list
+	char_list = pickers.char_list
+	seed_spin = pickers.seed_spin
+	name_edit = pickers.name_edit
+	world_del = pickers.world_del
+	char_del = pickers.char_del
+	clear_old = pickers.clear_old
 
-	# New-world seed row under the world panel.
-	var seed_label := Label.new()
-	seed_label.text = "Seed"
-	seed_label.add_theme_font_size_override("font_size", FONT)
-	seed_label.position = Vector2(120, 252)
-	frame.add_child(seed_label)
-	seed_spin = SpinBox.new()
-	seed_spin.min_value = 1
-	seed_spin.max_value = 999999
-	seed_spin.value = randi_range(1, 999999)
-	seed_spin.position = Vector2(148, 248)
-	seed_spin.custom_minimum_size = Vector2(84, 0)
-	seed_spin.get_line_edit().add_theme_font_size_override("font_size", FONT)
-	UITheme.style_input(seed_spin.get_line_edit())
-	frame.add_child(seed_spin)
-	var rand_btn := Button.new()
-	rand_btn.text = "Reroll"
-	UITheme.style_button(rand_btn)
-	rand_btn.add_theme_font_size_override("font_size", FONT)
-	rand_btn.position = Vector2(238, 248)
-	rand_btn.custom_minimum_size = Vector2(44, 18)
-	rand_btn.pressed.connect(func(): seed_spin.value = randi_range(1, 999999))
-	frame.add_child(rand_btn)
-
-	# New-character name row under the character panel.
-	name_edit = LineEdit.new()
-	name_edit.placeholder_text = "new character name"
-	name_edit.add_theme_font_size_override("font_size", FONT)
-	UITheme.style_input(name_edit)
-	name_edit.position = Vector2(350, 248)
-	name_edit.custom_minimum_size = Vector2(170, 0)
-	frame.add_child(name_edit)
-
-	var hint := Label.new()
-	hint.text = "Pick or create on both sides, then dive. Progress saves when you leave (Esc) — F5 saves any time."
+	hint = Label.new()
+	hint.text = HINT_TEXT
 	hint.add_theme_font_size_override("font_size", 8)
 	hint.add_theme_color_override("font_color", Color(0.45, 0.55, 0.6))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -130,10 +163,22 @@ func _build_ui() -> void:
 	UITheme.style_button(play)
 	play.add_theme_font_size_override("font_size", 14)
 	play.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	play.position = Vector2(-42, -64)
+	play.position = Vector2(-42, -86)
 	play.custom_minimum_size = Vector2(84, 28)
 	play.pressed.connect(_play)
 	frame.add_child(play)
+
+	# MULTIPLAYER between DIVE and QUIT (2026-09-05): host a world on the LAN
+	# or join one — docs/technical/Multiplayer.md §8.
+	var mp := Button.new()
+	mp.text = "MULTIPLAYER"
+	UITheme.style_button(mp)
+	mp.add_theme_font_size_override("font_size", 10)
+	mp.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	mp.position = Vector2(-42, -54)
+	mp.custom_minimum_size = Vector2(84, 18)
+	mp.pressed.connect(func(): get_tree().change_scene_to_file(MULTIPLAYER_SCENE))
+	frame.add_child(mp)
 
 	# QUIT under DIVE (user request 2026-09-01): out of the game entirely.
 	var quit := Button.new()
@@ -148,94 +193,21 @@ func _build_ui() -> void:
 
 	_refresh_lists()
 
-func _picker_panel(x: float, label_text: String) -> ItemList:
-	# A bordered column panel groups each side: header, list, delete, and
-	# the new-world/new-character row all read as one unit.
-	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", UITheme.flat_panel())
-	panel.position = Vector2(x - 8, 70)
-	panel.custom_minimum_size = Vector2(186, 206)
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	frame.add_child(panel)
-	var label := Label.new()
-	label.text = label_text
-	label.add_theme_font_size_override("font_size", FONT)
-	label.add_theme_color_override("font_color", Color(0.56, 0.75, 0.81))
-	label.position = Vector2(x, 76)
-	frame.add_child(label)
-	var list := ItemList.new()
-	list.position = Vector2(x, 92)
-	list.custom_minimum_size = Vector2(170, 124)
-	list.size = Vector2(170, 124)
-	list.add_theme_font_size_override("font_size", FONT)
-	UITheme.style_list(list)
-	frame.add_child(list)
-	return list
-
-func _delete_button(x: float, which: String) -> Button:
-	var b := Button.new()
-	b.text = "Delete"
-	UITheme.style_button(b)
-	b.position = Vector2(x, 224)
-	b.custom_minimum_size = Vector2(52, 16)
-	b.pressed.connect(_delete_pressed.bind(which))
-	frame.add_child(b)
-	return b
-
-## Delete a saved world/character: first click arms ("Really?"), a second
-## click within a few seconds deletes the file for good.
+# Thin wrappers over SavePickers (the title smoke drives these directly).
 func _delete_pressed(which: String) -> void:
-	var list := world_list if which == "world" else char_list
-	var btn := world_del if which == "world" else char_del
-	var sel := list.get_selected_items()
-	if sel.is_empty() or sel[0] == 0:
-		return # the "+ New" rows aren't deletable
-	var save_name := list.get_item_text(sel[0])
-	if btn.text != "Really?":
-		btn.text = "Really?"
-		btn.modulate = Color(1.0, 0.55, 0.5)
-		_confirm_gen += 1
-		var gen := _confirm_gen
-		get_tree().create_timer(3.0).timeout.connect(func():
-			if _confirm_gen == gen:
-				_reset_confirms())
-		return
-	if which == "world":
-		SaveGame.delete_world(save_name)
-	else:
-		SaveGame.delete_character(save_name)
-	_reset_confirms()
-	_refresh_lists()
+	pickers.delete_pressed(which)
+
+func _clear_old_pressed() -> void:
+	pickers.clear_old_pressed()
 
 func _reset_confirms() -> void:
-	_confirm_gen += 1
-	for b: Button in [world_del, char_del]:
-		if b != null:
-			b.text = "Delete"
-			b.modulate = Color.WHITE
+	pickers.reset_confirms()
+
+func _stale_selected() -> bool:
+	return pickers.stale_selected()
 
 func _refresh_lists() -> void:
-	world_list.clear()
-	world_list.add_item("+ New world")
-	for w in SaveGame.world_names():
-		world_list.add_item(w)
-		if SaveGame.world_is_stale(w): # older save format (e.g. pre-8 px cells): shown, not loadable
-			var idx := world_list.item_count - 1
-			world_list.set_item_text(idx, w + "  (old format)")
-			world_list.set_item_disabled(idx, true)
-	var first_world := 0 # newest loadable world, else "+ New world" (old-format rows are disabled)
-	for i in range(1, world_list.item_count):
-		if not world_list.is_item_disabled(i):
-			first_world = i
-			break
-	world_list.select(first_world)
-	char_list.clear()
-	char_list.add_item("+ New character")
-	for c in SaveGame.character_names():
-		char_list.add_item(c)
-	char_list.select(mini(1, char_list.item_count - 1))
-	world_del.disabled = world_list.get_selected_items()[0] == 0
-	char_del.disabled = char_list.get_selected_items()[0] == 0
+	pickers.refresh()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -243,17 +215,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Turn the pickers' selection into SaveGame's pending handoff.
 func _apply_selection() -> void:
-	var wi := world_list.get_selected_items()
-	if wi.size() > 0 and wi[0] > 0:
-		SaveGame.pending_world = world_list.get_item_text(wi[0])
-	else:
-		SaveGame.pending_seed = int(seed_spin.value)
-	var ci := char_list.get_selected_items()
-	if ci.size() > 0 and ci[0] > 0:
-		SaveGame.pending_character = char_list.get_item_text(ci[0])
-	elif name_edit.text.strip_edges() != "":
-		SaveGame.pending_character = name_edit.text.strip_edges()
+	pickers.apply_selection()
 
 func _play() -> void:
+	if _stale_selected():
+		hint.text = "That save is an old format this build can't load - delete it (or Clear old saves) and pick another."
+		return
+	hint.text = HINT_TEXT
 	_apply_selection()
 	get_tree().change_scene_to_file(CITY_SCENE)

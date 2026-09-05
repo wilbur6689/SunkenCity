@@ -264,6 +264,16 @@ func _run() -> void:
 	check(World.has_block_cell(Vector2i(34, row + 1)) and player.interaction.message.begins_with("Needs a better tool"),
 			"metal slab shrugs off a scrap-tier hammer (GL-01 amended: metal needs steel)")
 
+	print("== J2. ladders build two cells wide (user request 2026-09-05)")
+	var lc := Vector2i(40, row)
+	check(World.can_place_block("ladder", lc, player) and World.place_block("ladder", lc), "a ladder places on the floor")
+	check(World.is_ladder_cell(lc) and World.is_ladder_cell(lc + Vector2i.RIGHT) and World.placed_blocks.has(World._key(lc + Vector2i.RIGHT, "climb")),
+			"...as a 2-cell pair, both halves player-owned")
+	check(not World.can_place_block("ladder", lc + Vector2i.LEFT, player), "the pair blocks a second ladder overlapping its left half")
+	check(str(World.ladder_pair(lc + Vector2i.RIGHT)) == str([lc, lc + Vector2i.RIGHT]), "either half resolves to the same pair")
+	check(World.pickup_climbable(lc + Vector2i.RIGHT) == "ladder" and not World.is_ladder_cell(lc) and not World.is_ladder_cell(lc + Vector2i.RIGHT),
+			"picking up one half lifts the whole ladder as one item")
+
 	print("== K. background walls (WS-21)")
 	await goto(38)
 	await ticks(20) # let the hammer's hit cooldown from the slab test expire
@@ -339,3 +349,86 @@ func _run() -> void:
 	var s := player.skills
 	check(s.level("scrapping") >= 2 and s.level("building") >= 0, "Scrapping %d, Building %d (xp %.0f)" % [s.level("scrapping"), s.level("building"), s.xp["building"]])
 	check(s.player_level() == s.total_levels() / 5 and s.available_points() == s.player_level(), "player level = total / 5, points banked")
+
+	print("== Q. UI gestures through PlayerActions (LAN Step 7: reference cursor, slot-index actions)")
+	var ui = tower.get_node("InventoryUI")
+	var actions: PlayerActions = player.get_node("Actions")
+	check(actions != null, "every Player carries an Actions child")
+	ui.player = player
+	ui.open_panel()
+	var lmb := InputEventMouseButton.new()
+	lmb.button_index = MOUSE_BUTTON_LEFT
+	lmb.pressed = true
+	var rmb := InputEventMouseButton.new()
+	rmb.button_index = MOUSE_BUTTON_RIGHT
+	rmb.pressed = true
+	var shift_lmb := InputEventMouseButton.new()
+	shift_lmb.button_index = MOUSE_BUTTON_LEFT
+	shift_lmb.pressed = true
+	shift_lmb.shift_pressed = true
+	var worn_suit = player.equipment.get("suit")
+	player.set_equipment("suit", null)
+	inv.slots.fill(null)
+	inv.set_slot(0, {"id": "wood", "count": 10})
+	inv.set_slot(1, {"id": "scrap_metal", "count": 3})
+	inv.set_slot(2, {"id": "wood", "count": 5})
+	ui._on_slot_input(lmb, "inv", 0)
+	check(not ui.cursor.is_empty() and inv.slots[0] != null, "lifting a stack is a reference - the slot keeps it")
+	ui._on_slot_input(lmb, "inv", 5)
+	check(inv.slots[5] != null and inv.slots[5].id == "wood" and inv.slots[5].count == 10 and inv.slots[0] == null and ui.cursor.is_empty(), "put down on an empty slot = move_slot")
+	ui._on_slot_input(lmb, "inv", 5)
+	ui._on_slot_input(lmb, "inv", 1)
+	var swapped = ui._cursor_stack()
+	check(inv.slots[1].id == "wood" and inv.slots[5].id == "scrap_metal" and swapped != null and swapped.id == "scrap_metal", "swap: the cursor now holds the swapped-out item")
+	ui._on_slot_input(lmb, "inv", 5)
+	check(ui.cursor.is_empty() and inv.slots[5].id == "scrap_metal", "clicking its own slot sets it back down")
+	ui._on_slot_input(lmb, "inv", 2)
+	ui._on_slot_input(lmb, "inv", 1)
+	check(inv.slots[1].count == 15 and inv.slots[2] == null and ui.cursor.is_empty(), "merge onto the same item")
+	ui._on_slot_input(rmb, "inv", 1)
+	var half = ui._cursor_stack()
+	check(half != null and half.count == 8 and inv.slots[1].count == 15, "RMB lifts half (8 of 15) without moving anything")
+	ui._on_slot_input(rmb, "inv", 3)
+	check(inv.slots[3] != null and inv.slots[3].count == 1 and inv.slots[1].count == 14 and ui._cursor_stack().count == 7, "RMB places one (split_slot)")
+	ui._on_slot_input(lmb, "inv", 4)
+	check(inv.slots[4].count == 7 and inv.slots[1].count == 7 and ui.cursor.is_empty(), "LMB puts the remainder down")
+	inv.set_slot(6, {"id": "clothes", "count": 1})
+	ui._on_slot_input(lmb, "inv", 6)
+	ui._on_slot_input(lmb, "equip:suit", 0)
+	check(player.equipped("suit") == "clothes" and inv.slots[6] == null and ui.cursor.is_empty(), "equip from the lifted stack (equip action)")
+	ui._on_slot_input(lmb, "equip:suit", 0)
+	check(ui.cursor.get("which", "") == "equip" and player.equipped("suit") == "clothes", "lifting a worn piece is a reference too")
+	ui._on_slot_input(lmb, "inv", 7)
+	check(inv.slots[7] != null and inv.slots[7].id == "clothes" and player.equipped("suit") == "" and ui.cursor.is_empty(), "put down in the bag = unequip")
+	ui._on_slot_input(lmb, "inv", 7)
+	ui._on_slot_input(lmb, "equip:suit", 0)
+	check(player.equipped("suit") == "clothes" and inv.slots[7] == null, "and worn again")
+	await goto(30)
+	ui.open_container(chest)
+	ui._on_slot_input(shift_lmb, "inv", 1)
+	check(chest.storage.count("wood") == 7 and inv.slots[1] == null, "shift-click moves into the chest (container_move)")
+	var ci := -1
+	for i in chest.storage.size():
+		if chest.storage.slots[i] != null and chest.storage.slots[i].id == "wood":
+			ci = i
+			break
+	ui._on_slot_input(lmb, "chest", ci)
+	ui._on_slot_input(lmb, "inv", 1)
+	check(inv.slots[1] != null and inv.slots[1].count == 7 and chest.storage.count("wood") == 0 and ui.cursor.is_empty(), "chest -> bag through the cursor")
+	chest.storage.add("scrap_metal", 1)
+	ui._quick_stack()
+	check(chest.storage.count("scrap_metal") == 4 and inv_count("scrap_metal") == 0, "Stack button = quick_stack action")
+	var r_id := ""
+	for r in Data.recipe_list:
+		if r.station == "hand" and r.inputs.size() == 1 and r.inputs[0].item == "wood" and (r.get("known", false) or player.knows_recipe(r.id)):
+			r_id = r.id
+			break
+	inv.add("wood", 60)
+	var out_id: String = Data.recipes[r_id].output.item if r_id != "" else ""
+	var out_before := inv_count(out_id)
+	check(r_id != "" and actions.act("craft", [r_id]) and inv_count(out_id) > out_before, "craft action by recipe id (%s)" % r_id)
+	check(not actions.act("craft", ["no_such_recipe"]), "unknown recipe refused")
+	check(not actions.act("move_slot", [0, 99]), "out-of-range slot refused")
+	ui.close()
+	check(ui.cursor.is_empty() and ui.bench.is_empty() and not player.equipment.suit == null, "closing clears the references - nothing to hand back")
+	player.set_equipment("suit", worn_suit)

@@ -13,7 +13,7 @@ extends Control
 ## Room zones (user decision 2026-09-01): residential · business (small service
 ## firms — lawyers, accountants, agencies) · commercial (retail / office) ·
 ## industrial · civil (city admin, police, hospital, post office; was "hospital").
-const ZONES := ["residential", "business", "commercial", "industrial", "civil", "roof"]
+const ZONES := ["residential", "business", "commercial", "industrial", "civil", "construction", "roof"]
 const ZONE_FURNITURE := {
 	"residential": ["bed_frame", "cabinet", "chair", "fridge", "desk"],
 	"business": ["desk", "chair", "cabinet", "locker"],
@@ -26,7 +26,7 @@ const CELL := 16   # canvas px per world cell (8 px cells drawn at 2x)
 const MIN_W := 12
 const MAX_W := 40
 const MIN_H := 8
-const MAX_H := 16
+const MAX_H := 18 # industrial floors are 20 cells (18 open) since the districts overhaul
 const ATLAS := preload("res://assets/tiles/placeholder_blocks.png")
 
 var rooms_path := "res://data/rooms.json"
@@ -148,7 +148,7 @@ func _build_ui() -> void:
 	sv.add_child(UITheme.label("Size (width x height)", 8))
 	width_spin = _spin(MIN_W, MAX_W, 24, "Interior width in cells (8 px each) - rooms tile side by side across a tower wing.")
 	width_spin.value_changed.connect(func(_v): _apply_settings())
-	height_spin = _spin(MIN_H, MAX_H, 10, "Interior height in cells (tower floors hold 10).")
+	height_spin = _spin(MIN_H, MAX_H, 10, "Interior height in cells (residential/business floors hold 10, commercial/civil 12, industrial 18).")
 	height_spin.value_changed.connect(func(_v): _apply_settings())
 	var sh := HBoxContainer.new()
 	sh.add_child(width_spin)

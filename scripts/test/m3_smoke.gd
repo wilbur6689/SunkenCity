@@ -44,7 +44,7 @@ func _ready() -> void:
 	SaveGame.pending_character = "__m3_smoke__" # never inherit a real save
 	city = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
-	player = city.get_node("Player")
+	player = city.player
 	player.set_multiplayer_authority(2)
 	await get_tree().physics_frame
 	var gen: Dictionary = city.gen
@@ -53,7 +53,7 @@ func _ready() -> void:
 	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands on the drop-off roof")
 	check(World.band_at(World.cell_at(player.global_position)) == "dry", "spawn floor is in The Dry")
 	var ground_ok := true
-	for gx in [20, 800, 2400, 4000, 4780]:
+	for gx in [20, 800, CityGen.WORLD_W / 2, 6000, CityGen.WORLD_W - 20]:
 		if not World.has_block_cell(Vector2i(gx, CityGen.GROUND)):
 			ground_ok = false
 	check(ground_ok, "bare concrete ground spans the city (CT-07)")
@@ -126,7 +126,7 @@ func _ready() -> void:
 	var sc := Vector2i(-1, -1)
 	var floor_spot := Vector2i(-1, -1)
 	for f in range(1, 4):
-		var srr := int(st.top) + f * CityGen.FLOOR_H + CityGen.FLOOR_H - 1
+		var srr := int(st.top) + f * int(st.floor_h) + int(st.floor_h) - 1
 		for fx in range(int(st.zones[0][0]) + 1, int(st.zones[0][1])):
 			if sc.x < 0 and World.has_back_wall_cell(Vector2i(fx, srr - 6)) \
 					and World.can_place_object("hos_eye_chart", Vector2i(fx, srr - 6)):
@@ -167,7 +167,7 @@ func _ready() -> void:
 	check(World.is_climbable_cell(Vector2i(int(tw0.x0) + 8, int(tw0.top) + 4)) \
 			and World.is_climbable_cell(Vector2i(int(tw0.x1) - 9, int(tw0.top) + 4)),
 			"ladders run on both sides of a tower (hugging the room-side wall)")
-	check(not World.has_block_cell(Vector2i(int(tw0.mid), int(tw0.top) + CityGen.FLOOR_H)),
+	check(not World.has_block_cell(Vector2i(int(tw0.mid), int(tw0.top) + int(tw0.floor_h))),
 			"the central elevator shaft is open through the slabs")
 	var broken := 0
 	for rec: Dictionary in World.object_records:

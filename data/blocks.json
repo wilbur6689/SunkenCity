@@ -84,6 +84,7 @@
   {
    "id": "ladder",
    "name": "Ladder",
+   "desc": "Builds two cells wide (one H per rung); hangs off a ladder above, below or beside it.",
    "layer": "climb",
    "atlas_row": 5,
    "hp": 10,

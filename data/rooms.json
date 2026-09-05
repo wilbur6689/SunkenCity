@@ -7214,6 +7214,947 @@
     }
    ],
    "blocks": []
+  },
+  {
+   "id": "con_site_a",
+   "zone": "construction",
+   "type": "site",
+   "width": 20,
+   "height": 10,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "con_scaffold",
+     "x": 0
+    },
+    {
+     "id": "con_sawhorse",
+     "x": 8
+    },
+    {
+     "id": "con_plywood_stack",
+     "x": 14
+    },
+    {
+     "id": "con_toolbox",
+     "x": 18
+    },
+    {
+     "id": "int_wall_vent",
+     "x": 10,
+     "dy": 6
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "con_site_b",
+   "zone": "construction",
+   "type": "site",
+   "width": 16,
+   "height": 10,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "con_cement_mixer",
+     "x": 0
+    },
+    {
+     "id": "con_wheelbarrow",
+     "x": 6
+    },
+    {
+     "id": "con_paint_bucket",
+     "x": 12
+    },
+    {
+     "id": "con_toolbox",
+     "x": 14
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "con_site_c",
+   "zone": "construction",
+   "type": "site",
+   "width": 24,
+   "height": 10,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "con_rebar_bundle",
+     "x": 0
+    },
+    {
+     "id": "con_tarp_pile",
+     "x": 8
+    },
+    {
+     "id": "con_scaffold",
+     "x": 14
+    },
+    {
+     "id": "con_hazard_barrier",
+     "x": 20
+    },
+    {
+     "id": "int_wall_pipes",
+     "x": 2,
+     "dy": 6
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "con_site_d",
+   "zone": "construction",
+   "type": "site",
+   "width": 20,
+   "height": 10,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "con_plywood_stack",
+     "x": 0
+    },
+    {
+     "id": "con_plywood_stack",
+     "x": 4
+    },
+    {
+     "id": "con_sawhorse",
+     "x": 10
+    },
+    {
+     "id": "con_paint_bucket",
+     "x": 16
+    },
+    {
+     "id": "con_toolbox",
+     "x": 18
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "con_site_e",
+   "zone": "construction",
+   "type": "site",
+   "width": 22,
+   "height": 10,
+   "depth_min": -9999,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "con_scaffold",
+     "x": 0
+    },
+    {
+     "id": "con_scaffold",
+     "x": 6
+    },
+    {
+     "id": "con_tarp_pile",
+     "x": 14
+    },
+    {
+     "id": "con_paint_bucket",
+     "x": 20
+    },
+    {
+     "id": "con_hazard_barrier",
+     "x": 16,
+     "dy": 0
+    }
+   ],
+   "blocks": []
+  },
+  {
+   "id": "ind_hall_a",
+   "zone": "industrial",
+   "type": "plant",
+   "width": 34,
+   "height": 18,
+   "depth_min": 80,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_generator",
+     "x": 0
+    },
+    {
+     "id": "ind_boiler",
+     "x": 8
+    },
+    {
+     "id": "ind_barrel_rack",
+     "x": 14
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 20
+    },
+    {
+     "id": "ind_pallet_jack",
+     "x": 24
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 30
+    },
+    {
+     "id": "ind_vent_unit",
+     "x": 20,
+     "dy": 6
+    },
+    {
+     "id": "ind_cable_spool",
+     "x": 26,
+     "dy": 6
+    },
+    {
+     "id": "ind_hazard_sign",
+     "x": 2,
+     "dy": 10
+    },
+    {
+     "id": "ind_pipe_diagram",
+     "x": 8,
+     "dy": 12
+    }
+   ],
+   "blocks": [
+    {
+     "x": 18,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 19,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 20,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 21,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 22,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 23,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 24,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 25,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 26,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 27,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 28,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 29,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 30,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 31,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 32,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 33,
+     "dy": 5,
+     "mat": 3
+    }
+   ]
+  },
+  {
+   "id": "ind_hall_b",
+   "zone": "industrial",
+   "type": "plant",
+   "width": 30,
+   "height": 18,
+   "depth_min": 80,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_air_compressor",
+     "x": 0
+    },
+    {
+     "id": "ind_welding_cart",
+     "x": 6
+    },
+    {
+     "id": "ind_tool_table",
+     "x": 12
+    },
+    {
+     "id": "ind_parts_shelf",
+     "x": 20
+    },
+    {
+     "id": "ind_oil_can",
+     "x": 26
+    },
+    {
+     "id": "ind_hose_coil",
+     "x": 28
+    },
+    {
+     "id": "ind_work_light",
+     "x": 0,
+     "dy": 6
+    },
+    {
+     "id": "ind_tool_chest",
+     "x": 4,
+     "dy": 6
+    },
+    {
+     "id": "ind_fuse_box",
+     "x": 14,
+     "dy": 9
+    },
+    {
+     "id": "ind_fire_hose_cabinet",
+     "x": 24,
+     "dy": 12
+    }
+   ],
+   "blocks": [
+    {
+     "x": 0,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 1,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 2,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 3,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 4,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 5,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 6,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 7,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 8,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 9,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 10,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 11,
+     "dy": 5,
+     "mat": 3
+    }
+   ]
+  },
+  {
+   "id": "ind_hall_c",
+   "zone": "industrial",
+   "type": "plant",
+   "width": 38,
+   "height": 18,
+   "depth_min": 80,
+   "depth_max": 9999,
+   "objects": [
+    {
+     "id": "ind_boiler",
+     "x": 0
+    },
+    {
+     "id": "ind_water_heater",
+     "x": 5
+    },
+    {
+     "id": "ind_pipe_manifold",
+     "x": 8
+    },
+    {
+     "id": "ind_generator",
+     "x": 14
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 22
+    },
+    {
+     "id": "ind_drum_barrel",
+     "x": 24
+    },
+    {
+     "id": "ind_barrel_rack",
+     "x": 28
+    },
+    {
+     "id": "ind_mop_bucket",
+     "x": 34
+    },
+    {
+     "id": "ind_bucket",
+     "x": 36
+    },
+    {
+     "id": "ind_pipe_diagram",
+     "x": 16,
+     "dy": 10
+    },
+    {
+     "id": "ind_punch_clock",
+     "x": 30,
+     "dy": 8
+    },
+    {
+     "id": "ind_hazard_sign",
+     "x": 34,
+     "dy": 12
+    },
+    {
+     "id": "int_wall_pipes",
+     "x": 4,
+     "dy": 12
+    }
+   ],
+   "blocks": [
+    {
+     "x": 22,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 23,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 24,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 25,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 26,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 27,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 28,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 29,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 30,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 31,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 32,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 33,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 34,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 35,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 36,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 37,
+     "dy": 5,
+     "mat": 3
+    }
+   ]
+  },
+  {
+   "id": "ind_loft_a",
+   "zone": "industrial",
+   "type": "loft",
+   "width": 30,
+   "height": 18,
+   "depth_min": -9999,
+   "depth_max": 79,
+   "objects": [
+    {
+     "id": "ind_vent_unit",
+     "x": 0
+    },
+    {
+     "id": "ind_cable_spool",
+     "x": 6
+    },
+    {
+     "id": "ind_work_light",
+     "x": 12
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 16
+    },
+    {
+     "id": "ind_bucket",
+     "x": 20
+    },
+    {
+     "id": "ind_hose_coil",
+     "x": 26
+    },
+    {
+     "id": "ind_cable_spool",
+     "x": 18,
+     "dy": 6
+    },
+    {
+     "id": "ind_hazard_sign",
+     "x": 4,
+     "dy": 10
+    },
+    {
+     "id": "ind_fuse_box",
+     "x": 24,
+     "dy": 8
+    },
+    {
+     "id": "ind_pipe_diagram",
+     "x": 10,
+     "dy": 12
+    }
+   ],
+   "blocks": [
+    {
+     "x": 16,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 17,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 18,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 19,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 20,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 21,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 22,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 23,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 24,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 25,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 26,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 27,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 28,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 29,
+     "dy": 5,
+     "mat": 3
+    }
+   ]
+  },
+  {
+   "id": "ind_loft_b",
+   "zone": "industrial",
+   "type": "loft",
+   "width": 28,
+   "height": 18,
+   "depth_min": -9999,
+   "depth_max": 79,
+   "objects": [
+    {
+     "id": "ind_work_light",
+     "x": 0
+    },
+    {
+     "id": "ind_mop_bucket",
+     "x": 4
+    },
+    {
+     "id": "ind_vent_unit",
+     "x": 8
+    },
+    {
+     "id": "ind_oil_can",
+     "x": 14
+    },
+    {
+     "id": "ind_cable_spool",
+     "x": 18
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 24
+    },
+    {
+     "id": "ind_work_light",
+     "x": 2,
+     "dy": 6
+    },
+    {
+     "id": "ind_bucket",
+     "x": 6,
+     "dy": 6
+    },
+    {
+     "id": "ind_punch_clock",
+     "x": 20,
+     "dy": 9
+    },
+    {
+     "id": "ind_fire_hose_cabinet",
+     "x": 12,
+     "dy": 11
+    }
+   ],
+   "blocks": [
+    {
+     "x": 0,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 1,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 2,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 3,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 4,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 5,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 6,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 7,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 8,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 9,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 10,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 11,
+     "dy": 5,
+     "mat": 3
+    }
+   ]
+  },
+  {
+   "id": "ind_loft_c",
+   "zone": "industrial",
+   "type": "loft",
+   "width": 34,
+   "height": 18,
+   "depth_min": -9999,
+   "depth_max": 79,
+   "objects": [
+    {
+     "id": "ind_cable_spool",
+     "x": 0
+    },
+    {
+     "id": "ind_cable_spool",
+     "x": 4
+    },
+    {
+     "id": "ind_hose_coil",
+     "x": 10
+    },
+    {
+     "id": "ind_vent_unit",
+     "x": 14
+    },
+    {
+     "id": "ind_work_light",
+     "x": 20
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 24
+    },
+    {
+     "id": "ind_gas_cylinder",
+     "x": 26
+    },
+    {
+     "id": "ind_mop_bucket",
+     "x": 30
+    },
+    {
+     "id": "ind_vent_unit",
+     "x": 22,
+     "dy": 6
+    },
+    {
+     "id": "ind_pipe_diagram",
+     "x": 2,
+     "dy": 12
+    },
+    {
+     "id": "ind_hazard_sign",
+     "x": 12,
+     "dy": 8
+    },
+    {
+     "id": "ind_fuse_box",
+     "x": 30,
+     "dy": 10
+    }
+   ],
+   "blocks": [
+    {
+     "x": 20,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 21,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 22,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 23,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 24,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 25,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 26,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 27,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 28,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 29,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 30,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 31,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 32,
+     "dy": 5,
+     "mat": 3
+    },
+    {
+     "x": 33,
+     "dy": 5,
+     "mat": 3
+    }
+   ]
   }
  ],
  "cell_px": 8

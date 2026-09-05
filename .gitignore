@@ -19,3 +19,6 @@ desktop.ini
 # Audio source drops (too big for git — several exceed GitHub's 100MB cap);
 # game-ready versions live in assets/audio/
 docs/Examples/Audio/**/*.wav
+
+# LAN smoke driver logs (tools/lan_smoke.py)
+tools/_lan_smoke/

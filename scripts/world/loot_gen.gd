@@ -5,7 +5,10 @@ extends RefCounted
 ## live in the object records, so the world save carries looted/unlooted
 ## state for free (LT-27). Safes roll the best-of-band "safe" tables.
 
-static func fill_containers(records: Array, waterline: int, seed_value: int) -> void:
+## `towers` (World.towers summaries) resolves each container to its FLOOR's
+## band - a floor straddling a boundary rolls the shallower table
+## (DistrictsOverhaul "Bands", 2026-09-04).
+static func fill_containers(records: Array, waterline: int, seed_value: int, towers: Array = []) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value * 977 + 11
 	var tables: Dictionary = Data.loot.get("tables", {})
@@ -21,7 +24,7 @@ static func fill_containers(records: Array, waterline: int, seed_value: int) -> 
 			var zones: Array = rec.def.get("zones", [])
 			if not zones.is_empty():
 				zkey = String(zones[0])
-		var band := _band(rec.cell.y - waterline)
+		var band := _band(CityGen.band_row(towers, rec.cell) - waterline)
 		var zone_tables: Dictionary = tables.get(zkey, {})
 		var table: Array = zone_tables.get(band, [])
 		if table.is_empty(): # zone has no table this deep: generic covers it

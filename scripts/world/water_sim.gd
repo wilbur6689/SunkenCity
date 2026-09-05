@@ -23,6 +23,15 @@ var is_solid: Callable          # func(cell: Vector2i) -> bool
 var budget_per_tick: int = 3000
 var processed_last_tick: int = 0
 var changed_last_tick: int = 0 # cells that actually moved water this tick
+## LAN (Step 5): every index whose level was written since the last clear
+## (tick, add/remove, fills, flattening). Net/WorldSync turns `track` on when
+## hosting, reads and clears `changed` once per tick; offline it costs nothing.
+var track: bool = false
+var changed: Dictionary = {} # index -> true
+
+func _touch(i: int) -> void:
+	if track:
+		changed[i] = true
 
 func _init(p_bounds: Rect2i, p_is_solid: Callable) -> void:
 	bounds = p_bounds
@@ -60,6 +69,7 @@ func set_level(cell: Vector2i, l: int) -> void:
 	if not in_bounds(cell):
 		return
 	levels[_idx(cell)] = clampi(l, 0, MAX_LEVEL)
+	_touch(_idx(cell))
 	wake_around(cell)
 
 ## Adds up to `units`; returns what did not fit.
@@ -70,6 +80,8 @@ func add_water(cell: Vector2i, units: int) -> int:
 	var space := MAX_LEVEL - levels[i]
 	var t := mini(space, units)
 	levels[i] += t
+	if t > 0:
+		_touch(i)
 	wake_around(cell)
 	return units - t
 
@@ -81,6 +93,7 @@ func remove_water(cell: Vector2i, units: int) -> int:
 	var t := mini(int(levels[i]), units)
 	levels[i] -= t
 	if t > 0:
+		_touch(i)
 		wake_around(cell)
 	return t
 
@@ -88,6 +101,7 @@ func remove_water(cell: Vector2i, units: int) -> int:
 func seed_cell(cell: Vector2i, level: int) -> void:
 	if in_bounds(cell) and not is_solid.call(cell):
 		levels[_idx(cell)] = level
+		_touch(_idx(cell))
 
 ## Seeds a rect at the given level without waking anything (already settled).
 func fill_rect(rect: Rect2i, level: int) -> void:
@@ -96,6 +110,7 @@ func fill_rect(rect: Rect2i, level: int) -> void:
 			var c := Vector2i(x, y)
 			if in_bounds(c) and not is_solid.call(c):
 				levels[_idx(c)] = level
+				_touch(_idx(c))
 
 func total_units() -> int:
 	var t := 0
@@ -139,20 +154,20 @@ func tick() -> void:
 	var order := awake.keys()
 	order.sort_custom(func(a, b): return a > b) # bottom-up (higher index = lower row)
 	var processed := 0
-	var changed := 0
+	var moved_n := 0
 	for i in order:
 		if processed >= budget_per_tick:
 			break
 		processed += 1
 		var moved := _step_cell(i)
 		if moved:
-			changed += 1
+			moved_n += 1
 		else:
 			awake.erase(i) # settle; a neighbour change re-wakes it
 			if levels[i] > 0:
 				_settled_recently[i] = true
 	processed_last_tick = processed
-	changed_last_tick = changed
+	changed_last_tick = moved_n
 
 ## When a body finishes moving, redistribute it to true equilibrium: the
 ## flow rules freeze slope-1 staircases (diff >= 2 only), so a settled body
@@ -212,6 +227,7 @@ func _flatten_body(seed: Vector2i, visited: Dictionary) -> void:
 			var ci := _idx(row[k])
 			if int(levels[ci]) != want:
 				levels[ci] = want
+				_touch(ci)
 				changed.append(row[k])
 	for c in changed:
 		wake_around(c)
@@ -231,6 +247,8 @@ func _step_cell(i: int) -> bool:
 			var t := mini(l, space)
 			levels[i] -= t
 			levels[bi] += t
+			_touch(i)
+			_touch(bi)
 			_record_flow(i, Vector2(0, t))
 			wake_around(c)
 			wake_around(below)
@@ -251,6 +269,8 @@ func _step_cell(i: int) -> bool:
 				var t := diff / 2
 				levels[i] -= t
 				levels[ni] += t
+				_touch(i)
+				_touch(ni)
 				fresh[ni] = dir.x
 				_record_flow(i, Vector2(dir.x * t, 0))
 				wake_around(c)
@@ -271,6 +291,8 @@ func _step_cell(i: int) -> bool:
 				if int(levels[ni2]) < l and levels[ni2] < MAX_LEVEL:
 					levels[i] -= 1
 					levels[ni2] += 1
+					_touch(i)
+					_touch(ni2)
 					fresh[ni2] = dirx
 					_record_flow(i, Vector2(dirx, 0))
 					wake_around(c)
@@ -300,6 +322,7 @@ func displace(cell: Vector2i) -> void:
 	if units == 0:
 		return
 	levels[_idx(cell)] = 0
+	_touch(_idx(cell))
 	wake_around(cell)
 	# leftover units are destroyed (enclosed pocket)
 	_insert_spread(cell, units, true)
@@ -361,6 +384,7 @@ func _insert_spread(start: Vector2i, units: int, skip_start: bool) -> int:
 			var t := mini(MAX_LEVEL - int(levels[ni]), units)
 			levels[ni] += t
 			units -= t
+			_touch(ni)
 			wake_around(n)
 		if levels[ni] > 0:
 			# free space lives at the body's surface: search upward first

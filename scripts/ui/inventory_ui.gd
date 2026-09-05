@@ -10,6 +10,12 @@ extends CanvasLayer
 ##               apply learned mods to clean gear
 ## Drag model: LMB pick/put/swap/merge, RMB split half / place one,
 ## Shift+LMB move between bag and chest.
+## LAN Step 7: the lifted "cursor" (and the Modification Bench slot) is a
+## client-side REFERENCE to a slot - the item never leaves its inventory
+## while lifted - and every mutation is a named slot-index action on the
+## player's `Actions` child (PlayerActions), which applies it offline / on
+## the host and requests it from the host on a client. Nothing in here
+## writes `player.inventory` / `equipment` / `skills` / chest storage directly.
 
 const SLOT := 24
 const GAP := 2
@@ -23,8 +29,11 @@ const EQUIP_LABEL := {"head": "Head", "suit": "Suit", "accessory1": "Accessory",
 var player: Player
 var open: bool = false
 var screen: String = "inventory"
-var cursor_stack = null # {id, count} or null
+## The lifted stack: {} or {which: "inv"|"chest"|"equip", index, cell (chest),
+## slot_name (equip), count (how much of the slot is lifted), id}.
+var cursor: Dictionary = {}
 var container: WorldObject = null
+var _watched_storage: Inventory = null # the open chest's inventory (refresh on replicated changes)
 var selected_recipe: Dictionary = {}
 
 var root: Control
@@ -496,11 +505,10 @@ func _ability_button(a: Dictionary) -> Button:
 	return b
 
 func _unlock_selected() -> void:
-	if player.skills.unlock(selected_ability):
-		player.message.emit("Learned " + String(Data.abilities[selected_ability].name))
+	if _act("unlock_ability", [selected_ability]):
 		_refresh_all()
 
-var bench_stack = null # item resting on the Modification Bench
+var bench: Dictionary = {} # bag-slot reference resting on the Modification Bench ({} = empty)
 var bench_button: Button
 var bench_icon: TextureRect
 var learned_box: VBoxContainer
@@ -566,12 +574,23 @@ func _build_modify_screen() -> void:
 	bench_action.pressed.connect(_bench_act)
 	rv.add_child(bench_action)
 
+## The bench holds a reference to a bag slot (the piece stays in the bag
+## until LEARN destroys it); the cursor and the bench swap references.
 func _bench_slot_input(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton) or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
 		return
-	var was = bench_stack
-	bench_stack = cursor_stack
-	cursor_stack = was
+	var cur = _cursor_stack()
+	var on_bench = _bench_stack()
+	if cur == null:
+		if on_bench != null:
+			cursor = bench
+			bench = {}
+	elif cursor.which == "inv":
+		var was := bench
+		bench = _make_ref("inv", int(cursor.index), int(_ref_stack(cursor).count))
+		cursor = was
+	else:
+		player.message.emit("Only items from your bag go on the bench")
 	_refresh_all()
 
 func _refresh_modify() -> void:
@@ -599,6 +618,7 @@ func _refresh_modify() -> void:
 	if learned_box.get_child_count() == 0:
 		learned_box.add_child(UITheme.label("Nothing learned yet.\nSacrifice modded gear on\nthe bench to learn its mods.", 8, Color(0.55, 0.6, 0.68)))
 	# Bench state → info + the one action button
+	var bench_stack = _bench_stack()
 	bench_icon.texture = Data.icon(bench_stack.id) if bench_stack != null else null
 	bench_action.visible = false
 	if not _bench_near:
@@ -633,18 +653,17 @@ func _toggle_learned(mod_id: String, is_prefix: bool) -> void:
 	_refresh_all()
 
 func _bench_act() -> void:
+	var bench_stack = _bench_stack()
 	if bench_stack == null or not _bench_near:
 		return
 	if bench_stack.has("mods"):
 		if player.learnable_mods(bench_stack).is_empty():
 			return
-		var learned: Array = player.learn_mods(bench_stack)
-		bench_stack = null # sacrificed (LT-09)
-		Audio.play_sfx("dismantle_rattle", player.global_position, 1, -4.0)
-		player.message.emit("Learned: " + ", ".join(learned) if not learned.is_empty() else "Nothing new to learn")
+		if _act("learn_mods", [int(bench.index)]): # sacrificed (LT-09)
+			bench = {}
+			Audio.play_sfx("dismantle_rattle", player.global_position, 1, -4.0)
 	else:
-		if player.apply_mods(bench_stack, sel_prefix, sel_suffix):
-			player.message.emit("Modified: " + ItemMods.display_name(bench_stack))
+		if _act("apply_mods", [int(bench.index), sel_prefix, sel_suffix]):
 			sel_prefix = ""
 			sel_suffix = ""
 	_refresh_all()
@@ -689,13 +708,78 @@ func _hover_stack():
 	if w == "chest" and container != null and is_instance_valid(container):
 		return container.storage.slots[_hover.index] if _hover.index < container.storage.slots.size() else null
 	if w == "bench":
-		return bench_stack
+		return _bench_stack()
 	if w.begins_with("equip:"):
 		return player.equipment.get(w.substr(6))
 	return null
 
+# --- Slot references (the lifted cursor / the bench) and the action funnel ---
+
+func _actions() -> PlayerActions:
+	return player.get_node_or_null("Actions") as PlayerActions if player != null else null
+
+## Every mutation goes through here: PlayerActions applies it (host/offline)
+## or requests it from the host (client). Returns whether it applied / went out.
+func _act(action: String, args: Array = []) -> bool:
+	var a := _actions()
+	return a != null and a.act(action, args)
+
+func _cell_for(which: String) -> Vector2i:
+	return container.cell if (which == "chest" and container != null and is_instance_valid(container)) else Vector2i.ZERO
+
+func _make_ref(which: String, index: int, count: int) -> Dictionary:
+	var s = _inv_for(which).slots[index]
+	if s == null:
+		return {}
+	return {"which": which, "index": index, "cell": _cell_for(which), "count": maxi(count, 1), "id": String(s.id)}
+
+func _same_ref(ref: Dictionary, which: String, index: int) -> bool:
+	return not ref.is_empty() and ref.which == which and int(ref.index) == index \
+			and (which != "chest" or ref.cell == _cell_for(which))
+
+## The live stack a reference points at (null when gone / another chest).
+func _ref_stack(ref: Dictionary):
+	if ref.is_empty() or player == null:
+		return null
+	match String(ref.which):
+		"inv":
+			return player.inventory.slots[ref.index] if int(ref.index) < player.inventory.slots.size() else null
+		"chest":
+			if container == null or not is_instance_valid(container) or container.cell != ref.cell:
+				return null
+			return container.storage.slots[ref.index] if int(ref.index) < container.storage.slots.size() else null
+		"equip":
+			return player.equipment.get(ref.slot_name)
+	return null
+
+## What the cursor shows: the referenced slot, limited to the lifted count.
+## A reference whose slot emptied or changed item (the host consumed it, a
+## replica arrived) clears itself.
+func _cursor_stack():
+	var s = _ref_stack(cursor)
+	if s == null or String(s.id) != String(cursor.id):
+		cursor = {}
+		return null
+	if int(cursor.count) >= int(s.count):
+		cursor.count = int(s.count)
+		return s
+	var part = s.duplicate(true)
+	part.count = int(cursor.count)
+	return part
+
+func _bench_stack():
+	var s = _ref_stack(bench)
+	if s == null or String(s.id) != String(bench.id):
+		bench = {}
+		return null
+	return s
+
+## True while the cursor or the bench holds this slot (drawn dimmed).
+func _lifted(which: String, index: int) -> bool:
+	return _same_ref(cursor, which, index) or _same_ref(bench, which, index)
+
 func _update_hover_plate() -> void:
-	if _hover.is_empty() or cursor_stack != null: # hidden while dragging
+	if _hover.is_empty() or not cursor.is_empty(): # hidden while dragging
 		hover_plate.visible = false
 		return
 	var st = _hover_stack()
@@ -757,26 +841,28 @@ func close() -> void:
 	if storage_panel != null:
 		storage_panel.visible = false
 		stats_panel.visible = true
+	_watch_container(null)
 	if player != null:
 		player.ui_blocks_mouse = false
-		for held in [cursor_stack, bench_stack]: # never lose a stack on close
-			if held == null:
-				continue
-			if held.has("mods"): # keep the instance's mods intact
-				if not player.inventory.add_stack(held):
-					World.spawn_item(held.id, held.count, player.global_position)
-			else:
-				var leftover: int = player.inventory.add(held.id, held.count)
-				if leftover > 0:
-					World.spawn_item(held.id, leftover, player.global_position)
-		cursor_stack = null
-		bench_stack = null
+	# Lifted stacks are references - the items never left their slots.
+	cursor = {}
+	bench = {}
+
+## Refresh when the open chest's inventory changes under us (a replicated
+## record on a client, another player's hands on the host).
+func _watch_container(obj: WorldObject) -> void:
+	if _watched_storage != null and _watched_storage.changed.is_connected(_refresh_all):
+		_watched_storage.changed.disconnect(_refresh_all)
+	_watched_storage = obj.storage if (obj != null and is_instance_valid(obj)) else null
+	if _watched_storage != null:
+		_watched_storage.changed.connect(_refresh_all)
 
 func open_container(obj: WorldObject) -> void:
 	# Build the chest's slot buttons BEFORE any refresh runs: units differ
 	# in slot count, and a refresh against the previous container's buttons
 	# indexes out of bounds (crash seen opening a smaller unit).
 	container = obj
+	_watch_container(obj)
 	_chest_slots = _make_slots(chest_grid, obj.storage, "chest")
 	stats_panel.visible = false
 	storage_panel.visible = true
@@ -792,7 +878,7 @@ func show_screen(name: String) -> void:
 
 func _process(_delta: float) -> void:
 	if player == null:
-		player = get_tree().get_first_node_in_group("player") as Player
+		player = Net.local_player()
 		if player == null:
 			return
 		player.container_opened.connect(open_container)
@@ -837,14 +923,17 @@ func _refresh_all() -> void:
 		var eb: Dictionary = _equip_buttons[slot_name]
 		eb.icon.texture = Data.icon(st.id) if st != null else null
 		eb.glyph.visible = st == null
+		var lifted: bool = not cursor.is_empty() and cursor.which == "equip" and cursor.slot_name == slot_name
+		eb.icon.modulate = Color(1, 1, 1, 0.35) if lifted else Color.WHITE
 		var locked: bool = not player.slot_unlocked(slot_name)
 		eb.button.modulate = Color(0.55, 0.57, 0.62) if locked else Color.WHITE
 	var s := player.skills
 	stats_label.text = "Level %d\nPoints %d\n\nScrapping %d\nSwimming %d\nBuilding %d\n\nWeight %.1f\nSwim x%.2f" % [
 		s.player_level(), s.available_points(), s.level("scrapping"), s.level("swimming"), s.level("building"),
 		player.inventory.total_weight(), player.swim_factor()]
-	cursor_icon.texture = Data.icon(cursor_stack.id) if cursor_stack != null else null
-	cursor_count.text = str(cursor_stack.count) if (cursor_stack != null and cursor_stack.count > 1) else ""
+	var cur = _cursor_stack()
+	cursor_icon.texture = Data.icon(cur.id) if cur != null else null
+	cursor_count.text = str(cur.count) if (cur != null and cur.count > 1) else ""
 	if screen == "crafting":
 		_refresh_crafting(true)
 	elif screen == "skills":
@@ -853,9 +942,11 @@ func _refresh_all() -> void:
 		_refresh_modify()
 
 func _refresh_grid(ui_slots: Array, inv: Inventory, is_bag: bool) -> void:
+	var which := "inv" if is_bag else "chest"
 	for i in mini(ui_slots.size(), inv.slots.size()):
 		var st = inv.slots[i]
 		ui_slots[i].icon.texture = Data.icon(st.id) if st != null else null
+		ui_slots[i].icon.modulate = Color(1, 1, 1, 0.35) if _lifted(which, i) else Color.WHITE
 		ui_slots[i].count.text = str(st.count) if (st != null and st.count > 1) else ""
 		if is_bag:
 			UITheme.style_slot(ui_slots[i].button, i == player.selected_slot)
@@ -973,14 +1064,13 @@ func _refresh_detail() -> void:
 # --- Actions ---
 
 func _craft_selected() -> void:
-	if not selected_recipe.is_empty() and _row_craftable(selected_recipe) and player.craft(selected_recipe):
-		player.message.emit("Crafted " + Data.item_name(selected_recipe.output.item))
+	if not selected_recipe.is_empty() and _row_craftable(selected_recipe) \
+			and _act("craft", [String(selected_recipe.id)]):
 		_refresh_crafting(true)
 
 func _quick_stack() -> void:
 	if container != null and is_instance_valid(container):
-		var moved: int = player.inventory.quick_stack_into(container.storage)
-		player.message.emit("Quick-stacked %d items" % moved)
+		_act("quick_stack", [container.cell])
 		_refresh_all()
 
 func _inv_for(which: String) -> Inventory:
@@ -998,33 +1088,28 @@ func _on_slot_input(event: InputEvent, which: String, index: int) -> void:
 		_equip_click(event, which.substr(6))
 		_refresh_all()
 		return
+	if which == "chest" and (container == null or not is_instance_valid(container)):
+		return
 	var inv := _inv_for(which)
 	var slot = inv.slots[index]
+	var cur = _cursor_stack()
 	if event.button_index == MOUSE_BUTTON_LEFT:
 		if event.shift_pressed:
-			var other := _other_for(which)
-			if other != null and slot != null:
-				var leftover := other.add(slot.id, slot.count)
-				inv.set_slot(index, {"id": slot.id, "count": leftover} if leftover > 0 else null)
-		elif cursor_stack == null:
-			cursor_stack = slot
-			inv.set_slot(index, null)
-		elif slot == null:
-			inv.set_slot(index, cursor_stack)
-			cursor_stack = null
-		elif slot.id == cursor_stack.id:
-			var room: int = Data.stack_size(slot.id) - slot.count
-			var take: int = mini(room, cursor_stack.count)
-			slot.count += take
-			cursor_stack.count -= take
-			if cursor_stack.count <= 0:
-				cursor_stack = null
-			inv.set_slot(index, slot)
+			if slot != null and _other_for(which) != null:
+				_act("container_move", [_cell_for("chest"), which == "chest", index, -1, 0])
+		elif cur == null:
+			if slot != null:
+				cursor = _make_ref(which, index, int(slot.count))
+		elif _same_ref(cursor, which, index):
+			cursor = {} # set back down where it came from
+		elif cursor.which == "equip":
+			if which == "inv":
+				_act("unequip", [String(cursor.slot_name), index])
+			cursor = {}
 		else:
-			inv.set_slot(index, cursor_stack)
-			cursor_stack = slot
+			_put(which, index, int(cursor.count))
 	elif event.button_index == MOUSE_BUTTON_RIGHT:
-		if cursor_stack == null:
+		if cur == null:
 			if slot != null:
 				# Scrappable bag items: RMB press starts a hold-to-scrap
 				# (same rule as scrapping furniture in the world); a quick
@@ -1032,42 +1117,61 @@ func _on_slot_input(event: InputEvent, which: String, index: int) -> void:
 				if which == "inv" and not Data.scrap_yield(slot.id).is_empty():
 					_begin_slot_scrap(index, slot.id)
 					return
-				_rmb_take_half(inv, index)
-		elif slot == null:
-			if cursor_stack.has("mods"): # a modded instance places whole
-				inv.set_slot(index, cursor_stack)
-				cursor_stack = null
-			else:
-				inv.set_slot(index, {"id": cursor_stack.id, "count": 1})
-				cursor_stack.count -= 1
-				if cursor_stack.count <= 0:
-					cursor_stack = null
-		elif slot.id == cursor_stack.id and slot.count < Data.stack_size(slot.id):
-			slot.count += 1
-			cursor_stack.count -= 1
-			if cursor_stack.count <= 0:
-				cursor_stack = null
-			inv.set_slot(index, slot)
+				_rmb_take_half(which, index)
+		elif cursor.which != "equip" and not _same_ref(cursor, which, index) \
+				and (slot == null or (slot.id == cur.id and not slot.has("mods") and not cur.has("mods"))):
+			_put(which, index, 1) # place one
 	_refresh_all()
+
+## Put `n` of the lifted stack onto (which, index) as ONE slot-to-slot action,
+## then let the cursor follow what its source slot holds now: the swapped-out
+## item after a swap, the remainder after a split, nothing once it emptied.
+func _put(which: String, index: int, n: int) -> void:
+	# Work from a copy: the action's `changed` refresh re-validates `cursor`
+	# and clears it the moment its source slot empties.
+	var ref := cursor.duplicate()
+	var src := _inv_for(String(ref.which))
+	var si := int(ref.index)
+	var before = src.slots[si]
+	if before == null:
+		cursor = {}
+		return
+	var before_count := int(before.count)
+	var whole: bool = n >= before_count
+	var count := 0 if whole else n
+	if ref.which == which:
+		if which == "inv":
+			if whole:
+				_act("move_slot", [si, index])
+			else:
+				_act("split_slot", [si, index, n])
+		else:
+			_act("storage_move", [ref.cell, si, index, count])
+	else:
+		var cell: Vector2i = ref.cell if ref.which == "chest" else _cell_for(which)
+		_act("container_move", [cell, ref.which == "chest", si, index, count])
+	var after = src.slots[si]
+	if after == null:
+		cursor = {}
+	elif String(after.id) != String(ref.id): # swapped: the cursor now holds the other item
+		cursor = _make_ref(String(ref.which), si, int(after.count))
+	else:
+		var left := int(ref.count) - (before_count - int(after.count))
+		cursor = _make_ref(String(ref.which), si, left) if left > 0 else {}
 
 # --- Hold-RMB scrapping from the bag (user request) ---
 
 var scrap_hold: Dictionary = {} # {index, id, time, duration} while RMB held
 var scrap_hold_bar: ProgressBar = null
 
-func _rmb_take_half(inv: Inventory, index: int) -> void:
-	var slot = inv.slots[index]
+## Lift half the stack (a modded instance or a single moves whole) - a
+## reference only; nothing moves until it is put down.
+func _rmb_take_half(which: String, index: int) -> void:
+	var slot = _inv_for(which).slots[index]
 	if slot == null:
 		return
-	if slot.has("mods") or slot.count == 1: # modded instances move whole
-		cursor_stack = slot
-		inv.set_slot(index, null)
-		_refresh_all()
-		return
-	var half: int = int(ceil(slot.count / 2.0))
-	cursor_stack = {"id": slot.id, "count": half}
-	slot.count -= half
-	inv.set_slot(index, slot if slot.count > 0 else null)
+	var half: int = 1 if (slot.has("mods") or int(slot.count) == 1) else int(ceil(slot.count / 2.0))
+	cursor = _make_ref(which, index, half)
 	_refresh_all()
 
 func _begin_slot_scrap(index: int, id: String) -> void:
@@ -1109,7 +1213,7 @@ func _tick_slot_scrap(delta: float) -> void:
 		return
 	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		if scrap_hold.time < 0.25: # a quick tap keeps the split-stack action
-			_rmb_take_half(inv, scrap_hold.index)
+			_rmb_take_half("inv", scrap_hold.index)
 		_clear_slot_scrap()
 		return
 	scrap_hold.time += delta
@@ -1119,7 +1223,7 @@ func _tick_slot_scrap(delta: float) -> void:
 		Audio.play_sfx("creak_plastic", player.global_position, 3, -8.0)
 	scrap_hold_bar.value = scrap_hold.time / scrap_hold.duration * 100.0
 	if scrap_hold.time >= scrap_hold.duration:
-		if player.scrap_item(scrap_hold.id, 1, true):
+		if _act("scrap_slot", [int(scrap_hold.index), 1]):
 			Audio.play_sfx("dismantle_rattle", player.global_position, 1, -4.0)
 			_refresh_all()
 			scrap_hold.time = 0.0 # keep holding to keep scrapping the stack
@@ -1127,32 +1231,33 @@ func _tick_slot_scrap(delta: float) -> void:
 		else:
 			_clear_slot_scrap()
 
-## Equipment slots hold one item; LMB swaps with the cursor when the item fits the slot.
+## Equipment slots hold one item; LMB with a bag stack lifted wears one of it
+## (`equip` action: the piece it replaces lands in that bag slot when it
+## emptied, so the cursor ends up holding it - same feel as before); LMB on a
+## worn piece lifts it as a reference, put down on a bag slot (`unequip`).
 func _equip_click(event: InputEventMouseButton, slot_name: String) -> void:
 	if event.button_index != MOUSE_BUTTON_LEFT:
 		return
 	var current = player.equipment.get(slot_name)
-	if cursor_stack == null:
+	var cur = _cursor_stack()
+	if cur == null:
 		if current != null:
-			cursor_stack = current
-			player.set_equipment(slot_name, null)
+			cursor = {"which": "equip", "slot_name": slot_name, "index": 0, "count": 1, "id": String(current.id)}
+		return
+	if cursor.which == "equip":
+		if cursor.slot_name == slot_name:
+			cursor = {} # set it back
+		return
+	if cursor.which != "inv":
+		player.message.emit("Put it in your bag first")
 		return
 	if not player.slot_unlocked(slot_name):
 		player.message.emit("That mount is locked — an ability on the tech tree opens it")
 		return
-	if not player.can_equip(slot_name, cursor_stack.id):
-		player.message.emit("%s cannot go in the %s slot" % [Data.item_name(cursor_stack.id), EQUIP_LABEL[slot_name]])
+	if not player.can_equip(slot_name, cur.id):
+		player.message.emit("%s cannot go in the %s slot" % [Data.item_name(cur.id), EQUIP_LABEL[slot_name]])
 		return
-	var one = cursor_stack.duplicate(true) # keep per-instance mods (LT-05..07)
-	one.count = 1
-	cursor_stack.count -= 1
-	var rest = cursor_stack if cursor_stack.count > 0 else null
-	player.set_equipment(slot_name, one)
-	if current != null:
-		if rest == null:
-			rest = current
-		else:
-			var leftover: int = player.inventory.add(current.id, current.count)
-			if leftover > 0:
-				World.spawn_item(current.id, leftover, player.global_position)
-	cursor_stack = rest
+	var i := int(cursor.index)
+	_act("equip", [slot_name, i])
+	var after = player.inventory.slots[i]
+	cursor = _make_ref("inv", i, int(after.count)) if after != null else {}

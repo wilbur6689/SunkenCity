@@ -54,7 +54,7 @@ func _ready() -> void:
 	var g: WorldGrid = r.grid
 	var annex_x0: int = 1600 + CityGen.ANNEX_GAP
 	check(int(r.city_w) == 1600, "result carries the city width")
-	check(g.bounds.size.x == annex_x0 + CityGen.ANNEX_W, "grid widened by the gap + VOID annex (%d cols)" % g.bounds.size.x)
+	check(g.bounds.size.x == annex_x0 + CityGen.annex_width(1600), "grid widened by the gap + VOID annex (%d cols)" % g.bounds.size.x)
 	check(r.pockets.size() >= 15, "slice carved %d pockets" % r.pockets.size())
 	check(str(r.pockets) == str(r2.pockets) and g.content_hash() == r2.grid.content_hash(), "pockets are seed-deterministic (CT-21)")
 	check(g.structure_at(Vector2i(annex_x0, 5)) == WorldGrid.M.VOID and g.structure_at(Vector2i(annex_x0 + 200, 760)) == WorldGrid.M.VOID,
@@ -75,7 +75,8 @@ func _ready() -> void:
 		var sr: int = rect.end.y - 1
 		if rect.position.x < annex_x0 or rect.end.x > g.bounds.end.x:
 			shell_ok = false
-		if sr != int(p.exit.y) or rect.size.y != CityGen.FLOOR_OPEN:
+		var host := CityGen.tower_at(r.tower_list, p.exit) # the pocket is as tall as its tower's floors (district pitch)
+		if sr != int(p.exit.y) or host.is_empty() or rect.size.y != int(host.floor_h) - CityGen.SLAB_T:
 			rows_ok = false # a pocket sits on exactly its doorway's floor rows
 		for y in range(rect.position.y, rect.end.y):
 			for x in range(rect.position.x, rect.end.x):
@@ -165,7 +166,7 @@ func _ready() -> void:
 	SaveGame.pending_character = "__pocket_smoke__"
 	city = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
-	player = city.get_node("Player")
+	player = city.player
 	player.set_multiplayer_authority(2)
 	await get_tree().physics_frame
 	check(World.city_bounds.size.x == CityGen.WORLD_W and World.grid.bounds.size.x > CityGen.WORLD_W, "World knows the city proper vs the wider grid")
@@ -285,7 +286,7 @@ func _ready() -> void:
 	SaveGame.save_world("__pocket_smoke", city.seed_value)
 	var data := SaveGame.read_world("__pocket_smoke")
 	var linked := 0
-	for st in data.objects:
+	for st in (data.object_extra as Dictionary).values(): # compact records (WORLD_VERSION 3): rare fields live in the extras
 		if st.has("link"):
 			linked += 1
 	check(int(data.city_w) == CityGen.WORLD_W and data.pockets.size() == World.pockets.size(), "world save carries city width + pockets")

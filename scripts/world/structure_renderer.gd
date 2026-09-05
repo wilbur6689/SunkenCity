@@ -130,9 +130,21 @@ func _paint_cell(cell: Vector2i) -> void:
 	if cl == WorldGrid.C.NONE:
 		climb_layer.erase_cell(cell)
 	else:
-		climb_layer.set_cell(cell, 0, Vector2i(0, 4 + cl)) # ladder row 5, rope row 6
+		# Ladder halves (user request 2026-09-05): a 2-wide ladder reads as one
+		# H per row - atlas col 0 = left rail + rung, col 1 = right rail + rung,
+		# col 2 = a lone single-cell ladder. Ropes use col 0.
+		var col := 0
+		if cl == WorldGrid.C.LADDER:
+			if g.climb_at(cell + Vector2i.LEFT) == WorldGrid.C.LADDER:
+				col = 1
+			elif g.climb_at(cell + Vector2i.RIGHT) != WorldGrid.C.LADDER:
+				col = 2
+		climb_layer.set_cell(cell, 0, Vector2i(col, 4 + cl)) # ladder row 5, rope row 6
 
 ## A grid cell changed: repaint it if it is inside the painted window.
 func refresh_cell(cell: Vector2i) -> void:
 	if painted != Rect2i() and painted.has_point(cell):
 		_paint_cell(cell)
+		for n: Vector2i in [cell + Vector2i.LEFT, cell + Vector2i.RIGHT]: # a ladder half's art depends on its neighbour
+			if painted.has_point(n) and World.grid.climb_at(n) != WorldGrid.C.NONE:
+				_paint_cell(n)

@@ -33,15 +33,16 @@ water sim) so roadmap step 2 (LAN) is an unlock, not a rewrite.
 
 ### World
 
-- Seed-based city: ~40 towers, ~2,500×400 blocks, bell-curve skyline, whole world in RAM
-  (chunks schedule rendering/sim only).
+- Seed-based city: **52 towers**, ~7,600×800 cells, **flat skyline** at jumpable 5–10-cell gaps, divided
+  into **districts** (one building type per tower cluster — [DistrictsOverhaul.md](DistrictsOverhaul.md),
+  2026-09-04), whole world in RAM (chunks schedule rendering/sim only).
 - Room-template generation — with the authoring workflow: **proc-gen rooms → curate keepers →
   assemble from the curated library**, then wear (breaches ↑ with depth), flooding by pure
   connectivity.
-- Five room zones (residential, business, commercial, industrial, civil — hospital renamed
-  2026-09-01), **mixed-use per floor**; elevator-shaft
-  highways; authored starting hospital + relay stations; bare concrete roads at ground level;
-  invisible wall edges; light surface debris.
+- Six room zones (residential, business, commercial, industrial, civil — hospital renamed
+  2026-09-01 — and construction, 2026-09-04), **one zone per tower** with per-district floor
+  height and room width; elevator-shaft highways; relay stations (no authored hospital); bare
+  concrete roads at ground level; invisible wall edges; light surface debris.
 - Block palette: concrete, steel, brick, wood, glass. **Structure unbreakable**; breakable =
   contents, glass, interior partitions, player blocks (HP + hardness tiers).
 
@@ -99,7 +100,7 @@ water sim) so roadmap step 2 (LAN) is an unlock, not a rewrite.
 Story/lore delivery & environmental storytelling · tutorial/onboarding · NPCs/traders/currency ·
 cooking & buff foods · bosses/guardians & unique items · environmental hazards (electrified
 water) · weather/storms · fishing rod · skybridges, debris fields, wrecks between towers ·
-below-street level · districts · band wear-tile visuals · water distortion shader · controller
+below-street level · band wear-tile visuals · water distortion shader · controller
 support · difficulty/world toggles · teleportation · durability · creative mode · grappling hook ·
 set bonuses · working elevators · cosmetic surface fauna.
 

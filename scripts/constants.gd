@@ -75,7 +75,7 @@ const DROP_PICKUP_DELAY: float = 1.0 # seconds before a dropped item can be re-p
 const SCRAP_SPEED_MULT: float = 2.0 # global scrap-speed multiplier (2.0 = testing boost, user request)
 const FIELD_SCRAP_YIELD: float = 0.5 # fraction of full yield when scrapping in place
 const HAND_TOOL_TIER: int = 0
-const ROPE_DROP: int = 8 # cells a single rope placement drops (user request 2026-09-02)
+const ROPE_DROP: int = 1 # cells a single rope placement drops: one per click, added at the BOTTOM of the line (user request 2026-09-04; was a run of 4 old blocks)
 const MORNING_TIME: float = 0.25 # time_of_day of dawn; trees advance one stage here (2026-09-02)
 const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
 
@@ -148,7 +148,9 @@ const LIGHT_RECOMPUTE_TICKS: int = 3
 const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
 
 # --- World scale, bands, clock (M3: CT-28, GD-16, CC-11) ---
-const LIGHT_WINDOW: Vector2i = Vector2i(240, 144) # cells relit around the camera
+# Sized to cover the widest zoom-out on an ultrawide plus the LIGHT_SNAP margin.
+const LIGHT_WINDOW: Vector2i = Vector2i(320, 176)
+const LIGHT_SNAP: int = 16 # the window anchors to this cell grid, so walking does not shift it per cell # cells relit around the camera
 
 # Object streaming: records within this window (cells, centred on the
 # player) are instantiated as nodes; the rest of the city stays data.
@@ -285,3 +287,25 @@ func _ready() -> void:
 	jump_velocity = -gravity * JUMP_APEX_TIME
 	water_jump_velocity = -sqrt(2.0 * gravity * WATER_EXIT_JUMP_BLOCKS * BLOCK_SIZE)
 	drowning_damage_per_second = MAX_HEALTH / DROWNING_SECONDS_TO_DEATH
+
+# --- LAN multiplayer (docs/technical/Multiplayer.md, 2026-09-05) ---
+const LAN_PORT: int = 47120              # ENet game port (typed into the Join screen)
+const LAN_BEACON_PORT: int = 47121       # UDP beacon the host broadcasts on, once a second
+const NET_MAX_PLAYERS: int = 4           # MP-01 working assumption (host included)
+const NET_TICK_HZ: int = 60              # = physics; input relay + state stream cadence
+const NET_CHUNK_BYTES: int = 32768       # join snapshot chunk size (reliable RPCs)
+const NET_WATER_RESYNC_TICKS: int = 120  # full water-window resync period on clients
+const NET_CLOCK_SYNC_TICKS: int = 60     # time_of_day / day / red-moon values, once a second
+const NET_ITEM_RESYNC_TICKS: int = 30    # dropped-item position resync period
+const NET_RECONCILE_CELLS: int = 2       # prediction snap threshold (Step 8, unused until then)
+const NET_INPUT_BUFFER: int = 8          # predicted-input replay buffer (Step 8)
+const NET_BEACON_INTERVAL: float = 1.0   # seconds between beacons
+const NET_BEACON_TIMEOUT: float = 5.0    # a host silent this long drops off the Join list
+const NET_PEER_TIMEOUT_MS: int = 8000    # ENet peer timeout before a client counts as gone
+const PUPPET_LAMP_LIGHT: int = 18        # light level a remote player's worn head lamp seeds on a client (gear isn't replicated)
+
+## LAN Step 6: client puppet enemies (scripts/enemies/enemy.gd, scripts/net/enemy_sync.gd)
+const NET_ENEMY_SNAP_BLOCKS: float = 6.0   # a puppet further than this from the stream teleports instead of sliding
+const NET_ENEMY_EASE: float = 18.0         # exponential ease rate toward the streamed position (per second)
+const NET_ENEMY_RESYNC_TICKS: int = 120    # reliable pos+hp resync of every enemy record in a peer window (2 s)
+const NET_CHAR_RESYNC_TICKS: int = 120   # character-state safety resync to the owning client (2 s)

@@ -12,6 +12,10 @@ extends Node2D
 ## Secondary: place/remove background walls (WS-21).
 
 var player: Player
+## LAN Step 4 (MultiplayerImpl §0/§5): on a client the layer only AIMS -
+## target cell, reach, hover, cursor, ghost - and never acts; the host runs
+## the actions from the relayed snapshot. Set by Player._ready().
+var view_only: bool = false
 var target_cell: Vector2i = Vector2i.ZERO
 var target_in_reach: bool = false
 var scrapping: WorldObject = null
@@ -63,8 +67,13 @@ func tick(delta: float) -> void:
 	var reach := player.reach_blocks() * Constants.BLOCK_SIZE
 	target_in_reach = player.global_position.distance_to(World.cell_center(target_cell)) <= reach
 	_update_hover()
-	_update_cursor()
-	_update_ghost()
+	if _visuals():
+		_update_cursor()
+		_update_ghost()
+	if view_only:
+		_used_last_tick = player.wants_use
+		_used_secondary_last_tick = player.wants_use_secondary
+		return
 
 	if player.wants_interact:
 		_interact()
@@ -80,13 +89,28 @@ func tick(delta: float) -> void:
 
 ## LMB on an interactable: interact on a short click's release; picking it
 ## up on a long hold. Dragging off the object cancels the press.
+var press_climb := Vector2i(-1, -1) # ladder/rope cell under a held LMB (picked up on a long hold)
+
 func _object_press(delta: float) -> void:
 	if player.wants_use:
 		if not _used_last_tick and pending_pump == null:
-			press_obj = hovered
+			press_obj = hovered if target_in_reach else null
+			press_climb = Vector2i(-1, -1)
+			# Ladders and ropes lift out on a long hold too (user request
+			# 2026-09-04) - unless a rope is held, which extends the line instead.
+			if press_obj == null and target_in_reach and World.is_climbable_cell(target_cell) and player.held_item() != "rope":
+				press_climb = target_cell
 			press_time = 0.0
 			press_consumed = false
-			press_lock = press_obj != null
+			press_lock = press_obj != null or press_climb.x >= 0
+		if press_climb.x >= 0:
+			if target_cell != press_climb:
+				press_climb = Vector2i(-1, -1) # dragged off: cancel
+			else:
+				press_time += delta
+				if press_time >= Constants.OBJECT_LONG_PRESS and not press_consumed:
+					press_consumed = true
+					_pickup_climbable(press_climb)
 		if press_obj != null:
 			if not is_instance_valid(press_obj) or World.object_at(target_cell) != press_obj:
 				press_obj = null # dragged off: cancel (press_lock stays until release)
@@ -101,7 +125,17 @@ func _object_press(delta: float) -> void:
 			if msg != "":
 				say(msg)
 		press_obj = null
+		press_climb = Vector2i(-1, -1)
 		press_lock = false
+
+func _pickup_climbable(cell: Vector2i) -> void:
+	var id := "ladder" if World.grid.climb_at(cell) == WorldGrid.C.LADDER else "rope"
+	if not player.inventory.can_add(id, 1):
+		say("Inventory full")
+		return
+	if World.pickup_climbable(cell) != "":
+		player.inventory.add(id, 1)
+		say("Picked up " + Data.item(id).get("name", id))
 
 func _pickup_object(obj: WorldObject) -> void:
 	if obj.def.get("fixed", false) or Data.item(obj.id).is_empty():
@@ -121,6 +155,17 @@ func _pickup_object(obj: WorldObject) -> void:
 func say(text: String) -> void:
 	message = text
 	message_timer = 2.0
+	if not player.is_local() and player._sync != null:
+		player._sync.ev_say(text) # host: the owning client shows it
+
+## Visual side effects (hover glow, cursor, ghost, SFX) belong to the machine
+## whose screen this body is on: skipped when the host simulates a remote peer.
+func _visuals() -> bool:
+	return player.is_local()
+
+func _sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 0.0) -> void:
+	if player.is_local():
+		Audio.play_sfx(base, pos, variants, volume_db)
 
 # --- Actions ---
 
@@ -155,6 +200,7 @@ func _set_pump_outlet() -> void:
 		say("The outlet must be an open cell")
 	else:
 		pending_pump.outlet_cell = target_cell
+		World.notify_record_state(pending_pump)
 		say("Pump outlet set")
 	pending_pump = null
 
@@ -169,7 +215,7 @@ func _primary() -> void:
 	match it.get("category", ""):
 		"placeable_block":
 			if it.get("places_block", "") == "rope":
-				# Ropes drop a run of up to ROPE_DROP cells / click, extending
+				# Ropes place ROPE_DROP cell(s) per click (one), extending
 				# an existing line from its bottom (user request 2026-09-02).
 				if target_in_reach and World.can_place_rope(target_cell):
 					var slot = player.inventory.slots[player.selected_slot]
@@ -226,7 +272,7 @@ func _plant_seed() -> void:
 	if obj == null or obj.def.get("kind", "") != "planter":
 		say("Plant seeds in a planter pot")
 		return
-	if World.plant_in_planter(obj):
+	if World.plant_in_planter(obj, target_cell):
 		player.inventory.remove_from_slot(player.selected_slot, 1)
 		player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
 		say("Planted a seed - give it open sky to grow")
@@ -243,7 +289,7 @@ func _use_bucket() -> void:
 		if World.water_sim.level_at(target_cell) > 0:
 			World.water_sim.remove_water(target_cell, WaterSim.MAX_LEVEL)
 			_swap_held("wood_bucket_full")
-			Audio.play_sfx("splash", World.cell_center(target_cell), 4, -12.0)
+			_sfx("splash", World.cell_center(target_cell), 4, -12.0)
 			say("Filled the bucket")
 		else:
 			say("No water to scoop there")
@@ -253,7 +299,7 @@ func _use_bucket() -> void:
 		else:
 			World.water_sim.add_water(target_cell, WaterSim.MAX_LEVEL)
 			_swap_held("wood_bucket")
-			Audio.play_sfx("splash", World.cell_center(target_cell), 4, -10.0)
+			_sfx("splash", World.cell_center(target_cell), 4, -10.0)
 			say("Poured out the bucket")
 
 func _swap_held(to_id: String) -> void:
@@ -298,7 +344,7 @@ func _hammer(tool: Dictionary) -> void:
 			# junk are not harvestable - a hammer knock simply clears them.
 			var dname: String = obj.def.name
 			World.remove_object(obj)
-			Audio.play_sfx("wood_break", World.cell_center(target_cell), 4)
+			_sfx("wood_break", World.cell_center(target_cell), 4)
 			say("Cleared away the " + dname.to_lower())
 			return
 		if obj.def.kind == "scrap":
@@ -324,9 +370,9 @@ func _hammer(tool: Dictionary) -> void:
 		"too_hard":
 			say("Needs a better tool")
 		"broken":
-			Audio.play_sfx("wood_break", World.cell_center(target_cell), 4)
+			_sfx("wood_break", World.cell_center(target_cell), 4)
 		"damaged":
-			Audio.play_sfx("wood_hit", World.cell_center(target_cell), 2)
+			_sfx("wood_hit", World.cell_center(target_cell), 2)
 		_:
 			pass
 
@@ -358,7 +404,7 @@ func _melee(damage: float, aps: float, knockback: float, water_factor: float) ->
 	var enemy := _enemy_near_aim()
 	if enemy != null:
 		enemy.hurt(damage, player.global_position, knockback)
-		Audio.play_sfx("wood_hit", enemy.global_position, 2, -6.0)
+		_sfx("wood_hit", enemy.global_position, 2, -6.0)
 
 ## Firearms (LT-01): hitscan, loud, and dead weight submerged. Bullets stop
 ## at solids and at the water surface — lead above, spears below.
@@ -400,7 +446,7 @@ func _fire_gun(w: Dictionary) -> void:
 			best = e
 	if best != null:
 		best.hurt(float(w.damage), player.global_position, 3.0)
-	Audio.play_sfx("gunshot", origin, 1, 0.0)
+	_sfx("gunshot", origin, 1, 0.0)
 	player.play_swing()
 
 ## Speargun (GD-08, LT-16): a silent bolt that flies, sticks, and is picked
@@ -422,7 +468,7 @@ func _fire_spear(w: Dictionary) -> void:
 	bolt.setup(bolt_id, dir * Constants.SPEAR_SPEED, float(w.damage))
 	World.items_root.add_child(bolt)
 	bolt.global_position = player.global_position + dir * 8.0
-	Audio.play_sfx("splash", player.global_position, 5, -14.0)
+	_sfx("splash", player.global_position, 5, -14.0)
 
 func _scrap(delta: float, tool: Dictionary) -> void:
 	var obj := World.object_at(target_cell) if target_in_reach else null
@@ -458,7 +504,7 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 	_scrap_sfx_timer -= delta
 	if _scrap_sfx_timer <= 0.0:
 		_scrap_sfx_timer = Constants.SCRAP_SFX_INTERVAL
-		Audio.play_sfx("creak_plastic", obj.center(), 3, -6.0)
+		_sfx("creak_plastic", obj.center(), 3, -6.0)
 	var speed: float = float(tool.get("speed", Constants.HAND_SCRAP_SPEED)) * player.scrap_speed_mult()
 	scrap_progress += delta * speed / float(obj.def.get("scrap_time", 2.0))
 	obj.scrap_progress = scrap_progress
@@ -473,7 +519,7 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		World.spawn_break_puff(pos, yields[0].item if not yields.is_empty() else "")
 		player.skills.add_xp("scrapping", float(obj.def.get("xp", 3)))
 		say("Scrapped " + obj.def.name)
-		Audio.play_sfx("dismantle_rattle", pos)
+		_sfx("dismantle_rattle", pos)
 		scrapping = null
 		scrap_progress = 0.0
 
@@ -527,20 +573,20 @@ func can_harvest(obj: WorldObject) -> bool:
 ## (self_modulate, so door transparency and power dimming are untouched).
 func _update_hover() -> void:
 	var new_hover: WorldObject = null
-	if target_in_reach and not player.ui_blocking():
+	if not player.ui_blocking(): # the info card reads at any distance (user request 2026-09-04)
 		var obj := World.object_at(target_cell)
 		if obj != null and obj.is_interactable():
 			new_hover = obj
 	if new_hover != hovered:
-		if hovered != null and is_instance_valid(hovered):
+		if hovered != null and is_instance_valid(hovered) and _visuals():
 			hovered.sprite.self_modulate = Color.WHITE
 		hovered = new_hover
 	# The glow marks "you can act on this NOW": only harvestable objects light
 	# up (user request 2026-09-02), refreshed each frame so switching to the
 	# right tool lights it. The info card still shows for un-harvestable ones,
 	# so the tier badge can explain the gate.
-	if hovered != null and is_instance_valid(hovered):
-		hovered.sprite.self_modulate = Color(1.45, 1.42, 1.2) if can_harvest(hovered) else Color.WHITE
+	if hovered != null and is_instance_valid(hovered) and _visuals():
+		hovered.sprite.self_modulate = Color(1.45, 1.42, 1.2) if target_in_reach and can_harvest(hovered) else Color.WHITE
 
 ## Cursor swap (user request): a magnifying glass over a searchable
 ## container; the same glass with a green check once it has been emptied.
@@ -580,6 +626,8 @@ func _update_ghost() -> void:
 	if cat == "placeable_block":
 		ok = target_in_reach and World.can_place_block(it.places_block, target_cell, player)
 		_ghost_rect.size = Vector2.ONE * Constants.BLOCK_SIZE
+		if it.places_block == "ladder": # a ladder builds 2 cells wide (2026-09-05)
+			_ghost_rect.size.x *= 2
 		_ghost_rect.position = origin
 		_ghost.texture = Data.icon(held)
 		_ghost.position = origin

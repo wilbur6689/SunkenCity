@@ -5,8 +5,6 @@ extends Node
 ## Screens: inventory (default), crafting, chest (places a chest and opens it).
 
 func _ready() -> void:
-	var tower = load("res://scenes/test/test_tower.tscn").instantiate()
-	add_child(tower)
 	var screen := "inventory"
 	var shot := ""
 	for a in OS.get_cmdline_user_args():
@@ -14,6 +12,19 @@ func _ready() -> void:
 			screen = a.substr(9)
 		elif a.begins_with("--shot="):
 			shot = a.substr(7)
+	if screen == "multiplayer": # the title-side Multiplayer screen (2026-09-05): no tower needed
+		var mp = load("res://scenes/ui/multiplayer_menu.tscn").instantiate()
+		add_child(mp)
+		if OS.get_cmdline_user_args().has("--page=join"):
+			mp._show_page("join")
+		if shot != "":
+			await get_tree().create_timer(1.0).timeout
+			get_viewport().get_texture().get_image().save_png(shot)
+			print("shot saved: ", shot)
+			get_tree().quit()
+		return
+	var tower = load("res://scenes/test/test_tower.tscn").instantiate()
+	add_child(tower)
 	await get_tree().create_timer(0.5).timeout
 	var player: Player = tower.get_node("Player")
 	var ui = tower.get_node("InventoryUI")

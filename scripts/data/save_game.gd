@@ -11,12 +11,22 @@ const CHAR_DIR := "user://saves/chars/"
 const WORLD_EXT := ".world"
 const CHAR_EXT := ".char"
 const VERSION := 2 # 2 = 8 px cells (2026-09-04); v1 worlds/characters are refused, not migrated
+## World files carry their own version: 3 = compact object records (districts city, 2026-09-04:
+## ~50k records as an id table + PackedInt32Array instead of one Dictionary each - 20 MB -> ~1 MB).
+const WORLD_VERSION := 3
+const OBJ_PLACED := 1
+const OBJ_OPEN := 2
+const OBJ_POWERED := 4
+const OBJ_UNLOCKED := 8
 
 ## Handoff into the city scene's next boot (set by the title screen or the
 ## quick-load key before a scene change/reload).
 static var pending_world: String = ""
 static var pending_character: String = ""
 static var pending_seed: int = -1
+## A line for the title screen's hint after an involuntary trip back to it
+## (LAN: "Disconnected: ..."); shown once, then cleared.
+static var pending_notice: String = ""
 
 # --- Listing ---
 
@@ -46,23 +56,65 @@ static func delete_character(char_name: String) -> void:
 # --- World ---
 
 static func save_world(world_name: String, seed_value: int) -> void:
+	var data := world_payload(world_name, seed_value)
+	DirAccess.make_dir_recursive_absolute(WORLD_DIR)
+	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.WRITE)
+	f.store_var(data)
+	f.close()
+
+## The world-save dictionary: one builder for the disk file and the LAN join
+## snapshot (MultiplayerImpl §3 - `Net/Snapshot` var_to_bytes this and streams
+## it in chunks, and the client boots from it through city._boot_loaded like a
+## disk load).
+static func world_payload(world_name: String, seed_value: int) -> Dictionary:
 	var g: WorldGrid = World.grid
-	var objs: Array = []
+	# Object records, compact: an id table, four ints per record (id index,
+	# x, y, flag bits) and a sparse dict of the rare fields (doorway links,
+	# button targets, growth clocks, pump outlets, non-empty storage).
+	var id_table: Array = []
+	var id_index := {}
+	var cells := PackedInt32Array()
+	var extra := {}
+	var i := 0
 	for rec: Dictionary in World.object_records:
 		if rec.node != null and is_instance_valid(rec.node):
 			World.sync_record(rec, rec.node) # bank live node state first
-		var st := {"id": rec.id, "cell": rec.cell, "placed": rec.placed,
-			"open": rec.open, "powered": rec.powered, "unlocked": rec.get("unlocked", false),
-			"outlet": rec.outlet}
+		if not id_index.has(rec.id):
+			id_index[rec.id] = id_table.size()
+			id_table.append(rec.id)
+		var flags := 0
+		if rec.placed:
+			flags |= OBJ_PLACED
+		if rec.open:
+			flags |= OBJ_OPEN
+		if rec.powered:
+			flags |= OBJ_POWERED
+		if rec.get("unlocked", false):
+			flags |= OBJ_UNLOCKED
+		cells.append(int(id_index[rec.id]))
+		cells.append(rec.cell.x)
+		cells.append(rec.cell.y)
+		cells.append(flags)
+		var ex := {}
 		if rec.has("link"): # interior doorway twin
-			st["link"] = rec.link
+			ex["link"] = rec.link
 		if rec.has("door"): # release button -> barred door cell
-			st["door"] = rec.door
+			ex["door"] = rec.door
 		if rec.has("grow_day"): # tree growth clock
-			st["grow_day"] = rec.grow_day
+			ex["grow_day"] = rec.grow_day
+		if rec.outlet != WorldObject.NO_OUTLET:
+			ex["outlet"] = rec.outlet
 		if rec.storage != null:
-			st["storage"] = rec.storage.slots.duplicate(true)
-		objs.append(st)
+			var any := false
+			for s in rec.storage.slots:
+				if s != null:
+					any = true
+					break
+			if any:
+				ex["storage"] = rec.storage.slots.duplicate(true)
+		if not ex.is_empty():
+			extra[i] = ex
+		i += 1
 	var items: Array = []
 	var packs: Array = []
 	for it in World.items_root.get_children():
@@ -81,7 +133,7 @@ static func save_world(world_name: String, seed_value: int) -> void:
 			st["stock"] = rec.stock
 		enemies.append(st)
 	var data := {
-		"version": VERSION, "name": world_name, "seed": seed_value,
+		"version": WORLD_VERSION, "name": world_name, "seed": seed_value,
 		"waterline_row": World.waterline_row, "time_of_day": World.time_of_day,
 		"bounds": g.bounds, "spawn": World.spawn_position,
 		"structure": g.structure.compress(FileAccess.COMPRESSION_ZSTD),
@@ -90,15 +142,14 @@ static func save_world(world_name: String, seed_value: int) -> void:
 		"water": World.water_sim.levels.compress(FileAccess.COMPRESSION_ZSTD),
 		"placed_blocks": World.placed_blocks.duplicate(true),
 		"structure_damage": World.structure_damage.duplicate(),
-		"objects": objs, "items": items, "backpacks": packs, "enemies": enemies,
+		"object_ids": id_table, "object_cells": cells, "object_extra": extra,
+		"items": items, "backpacks": packs, "enemies": enemies,
 		"day_count": World.day_count, "next_red_moon_day": World.next_red_moon_day,
 		"red_moon_active": World.red_moon_active,
 		"city_w": World.city_bounds.size.x, "pockets": World.pockets.duplicate(true),
+		"towers": World.towers.duplicate(true),
 	}
-	DirAccess.make_dir_recursive_absolute(WORLD_DIR)
-	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.WRITE)
-	f.store_var(data)
-	f.close()
+	return data
 
 static func read_world(world_name: String) -> Dictionary:
 	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.READ)
@@ -106,12 +157,35 @@ static func read_world(world_name: String) -> Dictionary:
 		return {}
 	var data = f.get_var()
 	f.close()
-	return data if data is Dictionary and int(data.get("version", 0)) == VERSION else {}
+	return data if data is Dictionary and int(data.get("version", 0)) == WORLD_VERSION else {}
 
 ## True when a save file exists but was written by an older, incompatible build
 ## (the title picker greys those out instead of loading half a world).
 static func world_is_stale(world_name: String) -> bool:
 	return FileAccess.file_exists(WORLD_DIR + world_name + WORLD_EXT) and read_world(world_name).is_empty()
+
+static func character_is_stale(char_name: String) -> bool:
+	return FileAccess.file_exists(CHAR_DIR + char_name + CHAR_EXT) and read_character(char_name).is_empty()
+
+## Every saved world / character the current build refuses (older formats).
+static func stale_saves() -> Dictionary:
+	var out := {"worlds": [], "chars": []}
+	for w in world_names():
+		if world_is_stale(w):
+			out.worlds.append(w)
+	for c in character_names():
+		if character_is_stale(c):
+			out.chars.append(c)
+	return out
+
+## Delete every old-format save file (title screen "Clear old saves", 2026-09-05).
+static func delete_stale_saves() -> int:
+	var st := stale_saves()
+	for w in st.worlds:
+		delete_world(w)
+	for c in st.chars:
+		delete_character(c)
+	return st.worlds.size() + st.chars.size()
 
 ## Rebuild a WorldGrid from a world-save dict.
 static func build_grid(data: Dictionary) -> WorldGrid:
@@ -125,22 +199,37 @@ static func build_grid(data: Dictionary) -> WorldGrid:
 
 # --- Character ---
 
+## The per-character fields that are world-independent: what the file carries
+## besides maps/positions/spawns, and what the LAN host replicates to the
+## owning client (Net/CharSync, MultiplayerImpl §7).
+static func character_state(player) -> Dictionary:
+	return {
+		"inventory": player.inventory.slots.duplicate(true),
+		"equipment": player.equipment.duplicate(true),
+		"skills": {"xp": player.skills.xp.duplicate(), "spent": player.skills.spent_points,
+			"abilities": player.skills.abilities.duplicate()},
+		"known_recipes": player.known_recipes.duplicate(),
+		"known_mods": player.known_mods.duplicate(),
+		"health": player.health,
+		"oxygen": player.oxygen,
+		"selected_slot": player.selected_slot,
+		"bare_hands": player.bare_hands,
+		"compact": player.compact,
+	}
+
 static func save_character(char_name: String, player, world_key: String) -> void:
 	var data := read_character(char_name)
 	if data.is_empty():
-		data = {"version": VERSION, "name": char_name, "maps": {}, "positions": {}}
-	data["inventory"] = player.inventory.slots.duplicate(true)
-	data["equipment"] = player.equipment.duplicate(true)
-	data["skills"] = {"xp": player.skills.xp.duplicate(), "spent": player.skills.spent_points,
-		"abilities": player.skills.abilities.duplicate()}
-	data["known_recipes"] = player.known_recipes.duplicate()
-	data["known_mods"] = player.known_mods.duplicate()
-	data["health"] = player.health
-	data["oxygen"] = player.oxygen
-	data["selected_slot"] = player.selected_slot
-	data["compact"] = player.compact
+		data = {"version": VERSION, "name": char_name, "maps": {}, "positions": {}, "spawns": {}}
+	data.merge(character_state(player), true)
 	data.maps[world_key] = World.map_reveal.to_bytes()
 	data.positions[world_key] = player.global_position
+	if not data.has("spawns"):
+		data["spawns"] = {}
+	if player.spawn_feet != Vector2.INF: # this character's bed in this world (GL-23)
+		data.spawns[world_key] = player.spawn_feet
+	else:
+		data.spawns.erase(world_key)
 	DirAccess.make_dir_recursive_absolute(CHAR_DIR)
 	var f := FileAccess.open(CHAR_DIR + char_name + CHAR_EXT, FileAccess.WRITE)
 	f.store_var(data)
@@ -172,8 +261,11 @@ static func apply_character(data: Dictionary, player, world_key: String) -> void
 	player.health = float(data.health)
 	player.oxygen = float(data.oxygen)
 	player.selected_slot = int(data.selected_slot)
+	player.bare_hands = bool(data.get("bare_hands", false))
 	if data.maps.has(world_key):
 		World.map_reveal.from_bytes(data.maps[world_key])
+	if data.get("spawns", {}).has(world_key):
+		player.spawn_feet = data.spawns[world_key]
 	if data.positions.has(world_key):
 		player.global_position = data.positions[world_key]
 		player.velocity = Vector2.ZERO

@@ -56,7 +56,7 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if World.light_map == null:
 		return
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	var player := Net.local_player() as Node2D
 	if player == null:
 		return
 	var viewer: Vector2 = player.global_position
@@ -69,7 +69,7 @@ func _draw() -> void:
 	var c1 := Vector2i(ceili(bottom_right.x / s) + 1, ceili(bottom_right.y / s) + 1)
 	var size := Vector2i(c1.x - c0.x + 1, c1.y - c0.y + 1)
 	var recompute := size != _size or c0 != _origin or _texture == null or _idle >= 0.5 \
-		or (_cooldown <= 0.0 and viewer.distance_to(_last_viewer) >= 4.0) # px
+		or (_cooldown <= 0.0 and viewer.distance_to(_last_viewer) >= 8.0) # px
 	if recompute:
 		var t0 := Time.get_ticks_usec()
 		if size != _size:
@@ -89,7 +89,7 @@ func _draw() -> void:
 		_material.set_shader_parameter("cells", Vector2(size))
 		_material.set_shader_parameter("quant", SUB_STEPS)
 		_last_viewer = viewer
-		_cooldown = 0.05
+		_cooldown = 0.1 # 10x/s while moving (was 20x/s; 2026-09-04 perf)
 		_idle = 0.0
 		World.perf.fog_ms = (Time.get_ticks_usec() - t0) / 1000.0
 	draw_texture_rect(_texture, Rect2(_origin.x * s, _origin.y * s, _size.x * s, _size.y * s), false)

@@ -13,7 +13,8 @@ var character_name := "diver"
 @onready var water_renderer: WaterRenderer = $WaterRenderer
 @onready var items_root: Node2D = $Items
 @onready var objects_root: Node2D = $Objects
-@onready var player: Player = $Player
+@onready var players: Players = $Players
+var player: Player # the host's own body (peer 1 offline); clients get theirs via Players.spawn_for
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -24,8 +25,27 @@ func _ready() -> void:
 		SaveGame.pending_seed = -1
 	if SaveGame.pending_character != "":
 		character_name = SaveGame.pending_character
+	# LAN Step 1: the local player lives in the Players container (one per peer).
+	# Step 4 (D): on a CLIENT this is the local PUPPET, parked at the payload's
+	# spawn and silent until Net/PlayerSpawn._spawn_player (host READY) places it
+	# and opens its input stream; spawn_for is idempotent, so that RPC reuses it.
+	player = players.spawn_for(Net.local_peer(), character_name)
 	var loaded := false
-	if SaveGame.pending_world != "":
+	# LAN Step 3: a joining client boots from the host's snapshot through the
+	# disk-load path (no generation, no LootGen/EnemyGen, no character from
+	# disk - the host owns the body and its state).
+	if Net.is_client() and not Net.pending_snapshot.is_empty():
+		var snap: Dictionary = Net.pending_snapshot
+		Net.pending_snapshot = {}
+		SaveGame.pending_world = ""
+		world_name = String(snap.get("name", ""))
+		_boot_loaded(snap)
+		loaded = true
+		if Net.world_sync != null and Net.world_sync.has_method("_ready_for_world"):
+			Net.world_sync.rpc_id(1, "_ready_for_world")
+		else:
+			print("[net] client world up; no WorldSync yet - _ready_for_world not sent")
+	elif SaveGame.pending_world != "":
 		var data := SaveGame.read_world(SaveGame.pending_world)
 		if not data.is_empty():
 			world_name = SaveGame.pending_world
@@ -37,6 +57,15 @@ func _ready() -> void:
 	if not loaded:
 		world_name = "world_%d" % seed_value
 		_boot_generated()
+	if Net.mode == Net.Mode.HOST:
+		print("NETHOST ready port=%d" % Net.port) # MultiplayerImpl §8: drivers wait for this
+	for a in OS.get_cmdline_user_args(): # dev probe (MultiplayerImpl §8): NETPROBE lines, --net-drive
+		if a.begins_with("--net-probe="):
+			var probe := Node.new()
+			probe.name = "NetProbe"
+			probe.set_script(load("res://scripts/net/net_probe.gd"))
+			add_child(probe)
+			break
 	# Dev aids: --at=col,row puts the player's feet on that cell (e.g. inside
 	# an interior pocket); --shot=path[:zoom_steps] saves a screenshot and quits.
 	for a in OS.get_cmdline_user_args():
@@ -50,12 +79,16 @@ func _ready() -> void:
 		if a.begins_with("--shot="):
 			_take_shot(a.substr(7))
 
+func local_player() -> Player:
+	return player
+
 func _boot_generated() -> void:
 	var t0 := Time.get_ticks_msec()
 	gen = CityGen.generate(seed_value)
 	var t_gen := Time.get_ticks_msec() - t0
 	World.register(gen.grid, gen.spawn_feet, items_root, objects_root, structure_renderer,
 		gen.waterline_row, int(gen.get("city_w", -1)))
+	World.towers = _tower_summaries(gen.tower_list)
 	# Data-only records: the object window instantiates the ones near spawn.
 	for o in gen.objects:
 		var rec := World.add_object_record(o.id, o.cell, false)
@@ -68,7 +101,7 @@ func _boot_generated() -> void:
 		World.add_object_record(dc.id, dc.cell, false)
 	for p in gen.get("pockets", []):
 		World.pockets.append({"rect": p.rect, "exit": p.exit, "entry": p.entry})
-	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value)
+	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value, World.towers)
 	for e in EnemyGen.seed_city(gen, seed_value): # M4: seeded once, no respawn (GD-02)
 		World.add_enemy_record(e.type, e.pos)
 	var t_flood0 := Time.get_ticks_msec()
@@ -98,26 +131,36 @@ func _boot_loaded(data: Dictionary) -> void:
 		int(data.get("city_w", -1)))
 	for p in data.get("pockets", []):
 		World.pockets.append((p as Dictionary).duplicate())
+	for t in data.get("towers", []):
+		World.towers.append((t as Dictionary).duplicate())
 	World.time_of_day = float(data.time_of_day)
 	World.placed_blocks = (data.placed_blocks as Dictionary).duplicate(true)
 	World.structure_damage = (data.get("structure_damage", {}) as Dictionary).duplicate()
 	World.damage_rev += 1 # loaded damage: the crack overlay redraws
-	for st in data.objects:
-		var rec := World.add_object_record(st.id, st.cell, bool(st.placed))
-		rec.open = bool(st.get("open", false))
-		rec.powered = bool(st.get("powered", false))
-		rec.unlocked = bool(st.get("unlocked", false))
-		rec.outlet = st.get("outlet", WorldObject.NO_OUTLET)
-		if st.has("link"):
-			rec["link"] = st.link
-		if st.has("door"):
-			rec["door"] = st.door
-		if st.has("grow_day"):
-			rec["grow_day"] = st.grow_day
-		if rec.storage != null and st.has("storage"):
-			var slots: Array = (st.storage as Array).duplicate(true)
-			slots.resize(rec.storage.slots.size())
-			rec.storage.slots = slots
+	# Compact object records (SaveGame.WORLD_VERSION 3): id table + 4 ints per record + sparse extras.
+	var ids: Array = data.object_ids
+	var cells: PackedInt32Array = data.object_cells
+	var extra: Dictionary = data.object_extra
+	for i in cells.size() / 4:
+		var flags: int = cells[i * 4 + 3]
+		var rec := World.add_object_record(String(ids[cells[i * 4]]), Vector2i(cells[i * 4 + 1], cells[i * 4 + 2]),
+			flags & SaveGame.OBJ_PLACED != 0)
+		rec.open = flags & SaveGame.OBJ_OPEN != 0
+		rec.powered = flags & SaveGame.OBJ_POWERED != 0
+		rec.unlocked = flags & SaveGame.OBJ_UNLOCKED != 0
+		if extra.has(i):
+			var st: Dictionary = extra[i]
+			rec.outlet = st.get("outlet", WorldObject.NO_OUTLET)
+			if st.has("link"):
+				rec["link"] = st.link
+			if st.has("door"):
+				rec["door"] = st.door
+			if st.has("grow_day"):
+				rec["grow_day"] = st.grow_day
+			if rec.storage != null and st.has("storage"):
+				var slots: Array = (st.storage as Array).duplicate(true)
+				slots.resize(rec.storage.slots.size())
+				rec.storage.slots = slots
 	for it in data.items:
 		World.spawn_item(it.id, int(it.count), it.pos)
 	for bp in data.get("backpacks", []):
@@ -137,13 +180,15 @@ func _boot_loaded(data: Dictionary) -> void:
 	World.update_power()
 	print("Loaded '%s' (seed %d) in %d ms" % [data.name, seed_value, Time.get_ticks_msec() - t0])
 	_setup_visuals()
-	player.respawn()
-	SaveGame.apply_character(SaveGame.read_character(character_name), player, String(data.name))
+	player.respawn() # a client's local body starts at the payload's spawn; the host's state stream moves it
+	if not Net.is_client(): # the host places and dresses every body (MultiplayerImpl §3.5)
+		SaveGame.apply_character(SaveGame.read_character(character_name), player, String(data.name))
 	World.refresh_objects_around(player.global_position)
 
 func _setup_visuals() -> void:
 	water_renderer.setup(World.waterline_row * Constants.BLOCK_SIZE)
-	$Backdrop.setup(World.waterline_row * Constants.BLOCK_SIZE, -900.0)
+	$Backdrop.setup(World.waterline_row * Constants.BLOCK_SIZE, -900.0,
+		World.city_bounds.size.x * Constants.BLOCK_SIZE)
 
 ## Red moon dressing (CC-14): a blood tint while the moon is up, a warning
 ## line when it rises. The World runs the actual waves.
@@ -167,29 +212,89 @@ func _process(_delta: float) -> void:
 		player.message.emit("The moon rises red — they are coming"
 			if _red_moon_seen else "Dawn breaks; the red moon sets")
 
-## Write both save files for the current run.
+## Write both save files for the current run. LAN (Step 7): a client only
+## writes its character (from the host's replica - the host keeps the
+## world); the host also banks every connected character and pushes each
+## client its final state so they write their own files.
 func save_now() -> void:
+	if Net.is_client():
+		_save_local_character()
+		return
 	SaveGame.save_world(world_name, seed_value)
 	SaveGame.save_character(character_name, player, world_name)
+	if Net.mode == Net.Mode.HOST and Net.char_sync != null and Net.char_sync.has_method("save_all_characters"):
+		Net.char_sync.save_all_characters()
+
+## This process's own body (a client's is spawned late by Net/PlayerSpawn).
+func _local_body() -> Player:
+	if player != null and is_instance_valid(player):
+		return player
+	return Net.local_player()
+
+## Client: the character file from the replica + the local map reveal.
+func _save_local_character() -> void:
+	var body := _local_body()
+	if body != null and World.is_ready():
+		SaveGame.save_character(character_name, body, world_name)
 
 ## Esc from the game: bank everything, then back to the title. Without this
 ## a fresh world/character only became files on F5, so quitting made them
-## look like they were never created (the pickers list files).
+## look like they were never created (the pickers list files). Hosting: the
+## world closes for everyone first (each client gets its final state).
 func save_and_exit_to_title() -> void:
+	if Net.is_client():
+		leave_world()
+		return
 	save_now()
+	if Net.is_online():
+		Net.close_world()
+	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
+
+## LEAVE on a client (pause menu): character from the replica, drop the
+## connection, back to the title. On the host it is Save & Quit.
+func leave_world() -> void:
+	if not Net.is_client():
+		save_and_exit_to_title()
+		return
+	_save_local_character()
+	Net.leave("")
+	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
+
+## The host went away (Net.disconnected, via Net/CharSync): keep what the
+## replica holds, tell the title why.
+func on_net_disconnected(reason: String) -> void:
+	_save_local_character()
+	SaveGame.pending_notice = "Disconnected: " + reason
 	get_tree().change_scene_to_file("res://scenes/ui/title.tscn")
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST and World.is_ready() and player != null:
-		save_now() # closing the window mid-run loses nothing
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and World.is_ready() and _local_body() != null:
+		save_now() # closing the window mid-run loses nothing (host: pushes final states too)
+		if Net.is_client():
+			Net.leave("")
+		elif Net.is_online():
+			Net.close_world()
 
 ## Quick save/load (CC-09): F5 writes both files, F9 reboots from them.
+## LAN: a client's F5 saves only its character; F9 is host-only.
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
+		var body := _local_body()
+		if body == null:
+			return
 		if event.keycode == KEY_F5:
 			save_now()
-			player.message.emit("Saved '%s' / '%s'" % [world_name, character_name])
+			if Net.is_client():
+				body.message.emit("Saved '%s' (the host keeps the world)" % character_name)
+			else:
+				body.message.emit("Saved '%s' / '%s'" % [world_name, character_name])
 		elif event.keycode == KEY_F9:
+			if Net.is_client():
+				body.message.emit("Only the host can reload the world")
+				return
+			if Net.is_online():
+				body.message.emit("Close the world before reloading it")
+				return
 			if SaveGame.read_world(world_name).is_empty():
 				player.message.emit("No save for '%s' yet (F5 saves)" % world_name)
 				return
@@ -226,3 +331,12 @@ func _take_shot(spec: String) -> void:
 		print("F3 at shot:
 " + hud._debug_text.text) # dev aid: exact perf numbers alongside the picture
 	get_tree().quit()
+
+## The small per-tower record World keeps for floor-level band lookups
+## (and the world save carries): footprint, crown row, floor count and pitch.
+func _tower_summaries(tower_list: Array) -> Array:
+	var out: Array = []
+	for t in tower_list:
+		out.append({"x0": int(t.x0), "x1": int(t.x1), "top": int(t.top), "floors": int(t.floors),
+			"floor_h": int(t.get("floor_h", CityGen.FLOOR_H)), "district": String(t.get("district", "residential"))})
+	return out

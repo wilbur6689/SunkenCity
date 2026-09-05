@@ -1,6 +1,7 @@
 # SunkenCity — MVP Development Checklist
 
-Living tracker for the M0–M6 build order defined in [MVP-overview.md](MVP-overview.md).
+Living tracker for the M0–M6 build order defined in [MVP-overview.md](MVP-overview.md), plus the
+roadmap-step-2 **LAN Multiplayer** section (2026-09-05) near the bottom.
 The Drain endgame (relay stations, waterline drops, ending) is **deferred to after the Steam
 release** — it stays in the story; see "Post-release — The Drain" at the bottom.
 Check items as they land; each milestone ends with its **GATE** — a demonstrable in-build test.
@@ -150,11 +151,11 @@ refilling tanks all working in the reclaimed room.
 - [x] **Zone item packs** (user request, 2026-08-31): 5 worker-agent art packs — residential/apartment, commercial/office, commercial/retail, industrial/utility, hospital/ward — 70 items (furniture, storage, clutter, `wall_mounted` wall art) authored as `tools/rooms_pack/<module>.py`, validated by `render_check.py`, packed by `tools/build_room_packs.py` into sprite sheets (`assets/sprites/sets/*.png`) and merged into `data/objects.json` with `sheet`+`rect` (loaded as AtlasTextures). Wall art hangs on back walls (no floor), placeable at height in the Room Editor (`dy`), honoured by CityGen; 5 new pack-furnished room templates incl. the first industrial rooms
 - [x] Floor assembler: rooms stitched with doorway partitions; west stairwell (ladder + landings) and east elevator shaft guaranteed per tower (CT-06)
 - [x] Two-jump rule validator on assembled floors (WS-04): `CityGen.floor_blockages` flags any authored obstacle taller than the jump from the standing row (jump = 3 blocks, crawl fits a 1-block gap; since 2026-09-04: `JUMP_CELLS` 6, `CRAWL_GAP` 2 of 8 px); gen repairs by carving a `DOOR_H`-tall doorway — checked per tower in m3 smoke
-- [x] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve (4–56 floors; the tallest crowns break the surface)
+- [x] Tower assembler: floors stacked, mixed-use types per floor (CT-02), heights per bell curve (4–56 floors; the tallest crowns break the surface) *— superseded 2026-09-04 by districts (M3b): one type per tower, per-district pitch, flat skyline*
 - [x] City layout: ~26 double-wide towers over 2400×400 cells (4800×800 of 8 px since 2026-09-04, same pixel extent), open ocean at the edges (CT-01); invisible edge walls clamp the player at the grid's x extents (CT-22). *Amended 2026-09-01 (user request): the old centre-out bell curve left mid-city towers at half the crown — now the central 80 % rolls a uniform 50-floor base (~39–56, similar heights with variance) and only the edge 20 % is all shorter (4–34, tapering out)*
 - [x] Wear pass: exterior breaches scaling with depth + occasional slab collapses (CT-11)
 - [x] Flood pass: connectivity flooding from the ocean at/below the waterline after doors exist (CT-12/13); ~85% of sealed floors keep their air, wear breaches the rest
-- [x] Authored inserts: starting medical room atop the tallest tower (bed spawn, med kit furniture) + bare concrete ground (CT-20/07); mega-pump shells (CT-08/CC-26, non-functional until endgame): central station hall in the widest centre gap on the ground + 3 relay pylons at the band boundaries (metal machine rooms with pump/breaker/lamp kits, legs dropping to the first solid cell)
+- [x] Authored inserts: ~~starting medical room atop the tallest tower~~ (removed 2026-09-04 — no authored start, hospitals are civil rooms) + bare concrete ground (CT-20/07); mega-pump shells (CT-08/CC-26, non-functional until endgame): central station hall in the widest centre gap on the ground + 3 relay pylons at the band boundaries (metal machine rooms with pump/breaker/lamp kits, legs dropping to the first solid cell)
 - [x] Surface debris pass (light, CT-23): floating wood rafts scattered on open water (~25-30 per city, occasional cardboard box aboard)
 - [x] Deterministic seeds (CT-21): same seed = identical grid + object hashes (m3 smoke); `--seed=N` on the command line; ~1.5 s per full generation (2026-09-04, 4x cells: ~2.5 s incl. a scanline flood; the cell-by-cell flood took 5.5 s)
 - [x] **Interior pockets** (user request, 2026-09-01): apartment doorways on wing back walls beside the stairwell — ~30 % of floors, one per floor (random wing, never the top; a 3–4-floor countdown was tried and reverted, rolls play better); wood `room_door` through The Shallows (40 % standing open, 20 % deadbolted `room_door_locked` — pry bar+), chained `room_door_metal` below (bolt cutters+, GL-09 ladder); open ones step straight through, closed ones open on the first click; each leads to a room of its own carved in a solid-black `VOID` annex east of the city on the doorway's own rows (stone shell, metal slabs, one zone template, the return doorway inside; doorways link by cell and share their open state; 40 % of submerged pockets sealed dry, the rest drowned; loot/depth bands honest). Maps/minimap anchor on the doorway while inside; the annex is off the map and off-limits to spawns. Gate: `pocket_smoke.tscn` (43 checks); `save_smoke` covers the round trip
@@ -176,6 +177,53 @@ refilling tanks all working in the reclaimed room.
 **GATE:** a fresh seed generates a full explorable city — bands, gates, minimap — that saves and
 loads reliably. ✔ `save_smoke.tscn` (19 checks): full round trip — grid bit-for-bit, water exact,
 object/storage/door state, character inventory/skills/position, map reveal. **M3 complete.**
+
+---
+
+## M3b — Districts *(2026-09-04, [DistrictsOverhaul.md](DistrictsOverhaul.md); reverses the "districts are post-MVP" call)*
+
+### Decisions (guided review 2026-09-04)
+- [x] Units: the design doc is written in cells (8 px = 1 ft), old block values in parentheses
+- [x] Gap rule: jumpable 5–10 cells citywide (widened 2026-09-05 from the review's 2–6, which hid the water in a slit); world width derived from 52 towers (~6,900 cells of city)
+- [x] No authored hospital / medical room / supply crate at the start; hospital rooms are civil-district templates only; no starting supplies
+- [x] Skyline jitter tightened to 10 cells (5 old blocks); neighbouring roofs keep the 4–10-cell step
+- [x] Bands: enemies, loot and the HUD/F3 label resolve from the floor's ceiling row; cold/crush gates stay per cell
+- [x] Floor heights: Res/Bus 12 · Com/Civ 14 · Ind 20 · Con 12; room widths Res 16–24 · Bus 16–28 · Com/Civ 20–38 · Ind 28–whole wing · Con 16–24
+- [x] Construction palette: metal frame + wood flooring/partitions only, back walls only below the waterline; keeps the dry cap, barrier and hatch; below the waterline breaches are near-certain, no sealed rooms
+- [x] Triple-wide towers weighted to industrial/commercial, never residential or construction
+- [x] Budget fence: gen ≤ 5 s · world RAM ≤ 64 MB · save ≤ 10 MB · water asleep seconds after load
+
+### Generator: layout
+- [x] Tower slots rolled from the width + gap rule (count-driven; 52 on the full world, fewer on test slices), run centred between ocean margins
+- [x] District assignment: 6 centre slots reserved residential, five 5–6-tower clusters placed with the 1-tower buffer (deterministic candidate pick, shrink on failure), residential fills the rest
+- [x] Tower dict carries `district`, `floor_h`, `wings`, `shafts`; `_build_tower` reads them instead of `FLOOR_H`
+- [x] Flat skyline: crown walk within 10 cells, plinth = remainder of the crown-to-ground distance ÷ floor height; bell curve, 80/20 split and 56-floor cluster rule deleted
+- [x] Triple-wide towers: column plan generalised to N wings / N−1 shafts (hatch per shaft, sealing per wing)
+- [x] Room pool = the tower's district only (no `tower_bias`, no per-wing roll); per-district width filter; industrial open wings
+- [x] Construction: palette, breach chance, no sealed rooms; dry construction floors (no back walls) carry no pocket doorways
+- [x] Pocket lanes replaced by a first-fit rect packer (mixed floor heights), annex sized to the tower count (`annex_width`, ~35 % of the city) — density back at ~50 %; pocket cavity matches its tower's floor
+- [x] Medical room removed (`_author_medical_room`, `MED_ROOM_LAYOUT`); stations and debris relocate to open water now that gaps are tight
+- [x] Backdrop repeat count from the city width
+
+### Bands
+- [x] `World.towers` (saved) + `World.floor_band_at`: enemy registration, loot roll, HUD/F3 label use it; `band_at` stays per cell for the gates
+
+### Content and tools
+- [x] `construction` zone in the Room / Furniture editors, `check_room_variants.py`, `interior_details.py`, loot tables
+- [x] Construction room templates (`con_site_a..e`) + a 10-piece site object pack (`tools/rooms_pack/construction_site.py`)
+- [x] Tall industrial templates `ind_hall_a..c` (18 open rows, jumpable catwalk blocks; Room Editor height cap 18) + shallow iron-free `ind_loft_a..c` (depth ≤ 79) so industrial dry floors no longer fall back to other zones' rooms
+
+### Runtime and perf
+- [x] Measured in `district_smoke` section C: gen ~3.2 s (city load ~5.6 s incl. records/loot/enemies + flood) · grid + water 32 MB · save 4.1 MB after compacting object records (`SaveGame.WORLD_VERSION` 3: id table + `PackedInt32Array` + sparse extras; was 21 MB) · water asleep at load (0 awake cells). Surface wall safes cut to `SURFACE_SAFE_CHANCE` 0.012 so GL-28 still holds (40 iron above The Cold vs a 53 chain)
+
+### Tests
+- [x] `district_smoke.tscn` (80 checks): tower count, centre residential, cluster sizes, buffer rule, one district per tower, crown spread ≤ 10 cells, all towers reach ground, floor height per district, floor-band rule
+- [x] Retired `_cluster_check` / `_height_report`; fixed `m3/pocket_smoke` assumptions (`roof/save/m5/m4` passed unchanged)
+
+### Docs canon
+- [x] GameOverview (Core Concept "World", The City, Building types, Landmarks, Tech model), MVP-overview (World, OUT list), OpenQuestions CT-01/02/03 amendments, this file's M3 items, CLAUDE.md, CityGen header, RoomInventory
+
+**GATE:** `district_smoke.tscn` passes and every earlier gate still passes on the district city.
 
 ---
 
@@ -257,7 +305,7 @@ shared the section stays here.)*
 
 - [ ] Full-run integrity pass: fresh seed, medical room → hard suit on the city floor (The Crush), no debug
 - [x] Performance pass (2026-09-04, half-size blocks): light relight on direct byte arrays with a cached per-column sky row (105 → ~37 ms per relight, player glow quantized to the macro grid so it fires per 16 px as before), scanline connectivity flood (5.5 s → 0.55 s), fog sampled on the 2×2 macro grid. Interior 38 → 114 fps at seed 1. *Frame budget with an active water sim still to be profiled in play*
-- [ ] LAN smoke test: second player joins a listen server and moves/interacts (architecture validation only — full LAN is phase 2)
+- [x] LAN smoke test: second player joins a listen server and moves/interacts (`python tools/lan_smoke.py`, 2026-09-05: join + move + rejoin-resume + host mutation + host close; a real two-machine session is Step 8) (architecture validation only — full LAN is phase 2; the design and the 8-step plan are in [technical/Multiplayer.md](technical/Multiplayer.md), 2026-09-05)
 
 **GATE (= MVP Definition of Done):** one player, one seed, zero debug commands — medical room to
 a hard suit on the floor of The Crush, saving/loading along the way.
@@ -272,6 +320,83 @@ a hard suit on the floor of The Crush, saving/loading along the way.
 - [ ] Character creation: name + shirt/pants/hair color (CC-17) — needed by first release, trivial any time
 - [ ] Tuning config files reviewed as systems land (speeds, oxygen, yields, tables)
 - [ ] Keep `docs/` in sync when implementation forces a design change — amend OpenQuestions.md answers, never silently drift
+
+---
+
+## LAN Multiplayer *(roadmap step 2, after the MVP; design: [technical/Multiplayer.md](technical/Multiplayer.md), 2026-09-05)*
+
+Built 2026-09-05 (Steps 1–7, relay-only model — see [technical/MultiplayerImpl.md](technical/MultiplayerImpl.md) §0):
+the host simulates every player from relayed input, so the `_rq_*` request twins and hit requests below
+were not needed. Gates: `lan_smoke.tscn` (handshake) and `python tools/lan_smoke.py` (two headless
+processes: join, rejoin-resume, host mutation, host close). Step 8 (prediction, a real two-machine
+session) stays open. Every step keeps single-player green — run the full gate list after each.
+
+### Step 1 — Seams (no networking yet)
+- [x] `Net` autoload stub (`scripts/net/net.gd`): `is_server()` (true), `local_peer()` (1), `local_player()`, `player_of(peer)`, `players()`; registered in `project.godot` after `World` *(2026-09-05)*
+- [x] `Players` spawner in `scenes/city/city.tscn` replaces the single `$Player`: one `Player` per peer, `set_multiplayer_authority(peer_id)`, `city.gd` boots the host's own player through it *(`scripts/city/players.gd`; nodes `City/Players/<peer_id>`)*
+- [x] Local-player accessor: HUD, inventory UI, map view, pause menu, `LightRenderer`, the audio director and `city.gd` use `Net.local_player()` instead of `get_first_node_in_group("player")` (enemies/items/backpacks/aggro keep the group — they must see everyone) *(2026-09-05)*
+- [x] Per-character spawn: `Player.spawn_feet` (bed sets it, GL-23; default = the world's drop-off roof) replaces the global `World.spawn_position` for respawn; saved in the character file *(`spawns[world]` in the character file; `World.set_spawn` still records the world default)*
+- [x] Windows follow players: object / enemy / light windows use the **union** of all players on the host and the local player on a client (`World.refresh_objects_around`, `ENEMY_WINDOW`, `LIGHT_WINDOW`) *(object/enemy windows are the union — `World._player_windows`; light + map reveal stay on the local player)*
+- [x] Host-only guards on `World._physics_process`: clock, night, red moons, tree growth, pumps, breakers, `WaterSim.tick()` run only when `Net.is_server()` *(2026-09-05)*
+- [x] Character-state funnel: every inventory / equipment / skills / vitals mutation (crafting, scrapping, `bulk_scrap`, `scrap_item`, pickups, damage, bandages, abilities) goes through a small set of `Player` methods so one place can validate and replicate *(as built: `PlayerActions` for UI-originated actions; field actions run on the host from the relayed input)*
+- [ ] World mutation switch: each `World` mutation entry point (`place_block`, `place_rope`, `damage_block`, `erase_back_wall`, `pickup_climbable`, `place_object`, `remove_object`, `plant_in_planter`, `water_plant_above`, `release_barred_door`, door open/close, breaker flip, pump targeting, `set_spawn`, portal travel, item pickup, harvest/scrap) gains a `_rq_*` request twin; on the host the request validates with the existing `can_*` check against **that peer's** player, then applies
+- [x] Pause menu stays an overlay (it already does not pause the tree); "Save & Quit" becomes "Leave" on a client *(LEAVE / CLOSE WORLD + player roster)*
+- [x] Constants: `LAN_PORT`, `LAN_BEACON_PORT`, `NET_MAX_PLAYERS` (4), `NET_TICK_HZ` (60), `NET_CHUNK_BYTES`, `NET_WATER_RESYNC_TICKS`, `NET_RECONCILE_CELLS`, `NET_INPUT_BUFFER` (8) *(+ `NET_CLOCK_SYNC_TICKS`, `NET_ITEM_RESYNC_TICKS`, `NET_BEACON_*`, `NET_PEER_TIMEOUT_MS`, `NET_ENEMY_*`, `NET_CHAR_RESYNC_TICKS`, `PUPPET_LAMP_LIGHT`)*
+- **GATE:** every existing gate passes unchanged with the stub `Net` in place ✔ 2026-09-05
+
+### Step 2 — Transport, lobby and the Multiplayer menu
+- [x] `Net` grows the real peer: `ENetMultiplayerPeer` host/join, `peer_connected`/`peer_disconnected` handling, a peer table `{peer_id: {character, player, state}}` *(2026-09-05; ping/bytes per peer, `peer_ready` signal)*
+- [x] LAN beacon: the host broadcasts `SUNKENCITY <build> <world> <players>/<cap>` on `LAN_BEACON_PORT` once per second (`PacketPeerUDP`, broadcast enabled); the Join screen listens and lists hosts, dropping entries silent for 5 s *(`scripts/net/lan_browser.gd`; `SUNKENCITY|build|world|n/cap|port`)*
+- [x] Build-id handshake: client sends build id + character name on connect; the host refuses a mismatched build, a full server, or a duplicate character name with a reason string, otherwise assigns the peer and replies "accepted" *(`Net._hello/_accepted/_refused`; a hello that beats the world waits up to 10 s)*
+- [x] **Title screen: a `MULTIPLAYER` button** between DIVE and QUIT (`scripts/ui/title.gd`, same `UITheme` styling and 640x360 design frame) that opens the Multiplayer screen; Esc / BACK returns *(2026-09-05)*
+- [x] **Multiplayer screen** (`scenes/ui/multiplayer_menu.tscn`, `scripts/ui/multiplayer_menu.gd`), two panels in the title's picker style: *(2026-09-05; pickers factored into `scripts/ui/save_pickers.gd`, shared with the title)*
+  - **HOST panel:** world picker (saved worlds + "+ New world" with seed/Reroll, old-format rows greyed like the title), character picker, port field (default `LAN_PORT`), player cap (2–4), a `HOST ON LAN` button; hosting boots `city.tscn` exactly like DIVE and starts the beacon
+  - **JOIN panel:** a live LAN host list (world name, players/cap, build, address — refreshed from beacons), an address field (`ip:port`) for hosts the broadcast can't reach, character picker (local character files only; "+ New character" allowed), a `JOIN` button; a status line shows connecting → handshake → "downloading world 37 %" → in game, and every refusal reason in plain words
+  - Both panels reuse the title's delete/old-format handling for their pickers; a `BACK` button returns to the title
+- [x] In-game: the pause menu lists connected players (name, ping) and shows `LEAVE` / (host) `CLOSE WORLD`; the HUD's F3 overlay adds peer id, ping, and bytes in/out per second *(+ a host `sync:` line with packets/cells/water pairs per second)*
+- [x] `lan_smoke.tscn`: host and client `MultiplayerAPI`s in one process on localhost (`SceneTree.set_multiplayer` per subtree) connect, exchange the handshake, and a mismatched build is refused *(36 checks: accept, LOADING/READY, roster, duplicate name, build mismatch, full world, leave, close)*
+- **GATE:** `lan_smoke` handshake checks; the Multiplayer screen renders in `menu_preview.tscn --screen=multiplayer` ✔ 2026-09-05 (36/36; both pages screenshotted)
+
+### Step 3 — Join snapshot
+- [x] Host serialises the world with the `SaveGame.save_world` payload builder (refactored into `SaveGame.world_payload()` used by both saving and networking) and streams it in `NET_CHUNK_BYTES` reliable chunks with a progress percentage (2026-09-05: `Net/Snapshot`, `scripts/net/snapshot.gd` — 4.3 MB / 131 chunks, 6 chunks per frame; `tools/lan_smoke.py` drives a headless host + client and compares `--net-probe` lines)
+- [x] Client rebuilds `World` through `city.gd._boot_loaded` from the received dictionary (one code path for "load from disk" and "load from host") (2026-09-05: `Net.pending_snapshot` branch in `city._ready`; no generation, no LootGen/EnemyGen, no character from disk on a client)
+- [x] Deltas for a peer mid-snapshot are queued on the host and flushed after the snapshot *(`WorldSync`/`EnemySync` per-peer queues from `peer_accepted` to `_ready_for_world`)*
+- **GATE:** after join the client's `grid.content_hash()`, water levels and record count equal the host's ✔ 2026-09-05 (`tools/lan_smoke.py`: grid/water/records/enemies equal)
+
+### Step 4 — Players
+- [x] Client → host input relay each physics tick: quantised `input_dir`, packed `wants_*` bits, `aim_position`, `selected_slot`/`bare_hands` absolute (unreliable-ordered, 12 B, `PlayerSync._in`); the host writes it into that peer's `Player` and repeats the last snapshot when input is late (held flags persist, one-frame flags fire once, silent >30 ticks = stop) — 2026-09-05
+- [x] Host → all player state each tick: position, velocity, `state`, `compact`, facing, swing phase, scrapping, water flags, health, oxygen, bleed, held item (unreliable, 28 B, `PlayerSync._st`; streamed to a peer only after it acked that body's `_spawn_player`) — 2026-09-05
+- [x] Remote players interpolate between the last two host states (snap beyond 6 blocks); the local player follows host state one tick late (no prediction yet); `Interaction.view_only` on clients — 2026-09-05
+- [x] Death scene, respawn and `travel_to` (pocket doorways) decided on the host, played locally from the owner events `_ev_died/_ev_respawn/_ev_travel` (+ `_ev_message/_ev_say/_ev_gain/_ev_container/_ev_crafting`); `Net/PlayerSpawn` spawns/despawns bodies on `peer_ready`/`peer_left`; players no longer collide with each other — 2026-09-05
+- **GATE:** the client-driven `m0` movement checks (walk, jump, crawl, climb, swim, dive) pass with host and client agreeing on position — partial 2026-09-05: `tools/lan_smoke.py` drives the client right for 2 s and both ends agree on the body's position; the full m0 set from a client is not built
+
+### Step 5 — World deltas
+- [x] Cell stream: structure / back / climb writes, placed-block ledger, structure damage, batched per tick (reliable) *(2026-09-05, `scripts/net/world_sync.gd` `_cells`)*
+- [x] Water stream: levels of cells the sim changed this tick clipped to any player's window (unreliable) + a full window resync every `NET_WATER_RESYNC_TICKS`; clients only draw *(`WaterSim.changed` tracking, `_water` / `_water_rect`)*
+- [x] Object stream: record add / remove / replace and state changes (`open`, `powered`, `unlocked`, `outlet`, storage slots, `grow_day`) *(`_rec_add/_rec_remove/_rec_change/_rec_replace`, `World.refresh_record_node`)*
+- [x] Item stream: spawn, pickup (who), backpack spawn / take; magnet targets resolved on the host *(`_item_spawn/_item_remove/_item_pos`, `_pack_spawn/_pack_remove`, READY re-lists the roster with host net ids)*
+- [x] Clock / red moon / pumps / power values once per second and on change *(`_clock`, `_power`; pump outlets ride the record stream)*
+- [x] Lighting stays local: `World.light_beacons` on a client reads the replicated placed lights, glowsticks and every player's worn head lamp *(remote bodies carry a lamp bit + suit id in the state stream: `puppet_lamp`/`puppet_suit`)*
+- **GATE:** a client places and mines a block, opens a door that floods a room, picks up a drop, plants a seed; host and client grids, water and records stay hash-equal ✔ 2026-09-05 (`--net-mutate` scenario: blocks placed/mined, water poured, planter, chest edit, item spawn; hashes equal)
+
+### Step 6 — Enemies and combat
+- [x] Host runs all enemy AI inside the union window; enemy spawn / despawn / death replicate, positions + hp stream per tick (unreliable); client enemy nodes are visual only (no AI, no contact checks) *(`scripts/net/enemy_sync.gd`: `_add/_remove/_event/_state/_resync/_bolt`; `Enemy.puppet`)*
+- [x] Hit requests: melee swings, hitscan firearms and speargun bolts are requests carrying the client's aim; the host resolves hits, damage, knockback and bolt retrieval *(moot under relay-only: the host runs the client's `Interaction.tick` from its relayed aim; bolts replicate as visual twins)*
+- [x] Bleeding, regen, damage and the death loop (bag transfer, backpack recovery) on the host; red-moon waves converge on every connected player (wave budget: MP-06) *(host-only by construction; MP-06 budget still open)*
+- **GATE:** the `m4` combat / death-loop checks driven from the client side — not built (m4 passes on the host; client-side combat = relayed input, exercised only manually so far)
+
+### Step 7 — Per-character state, saves, disconnects
+- [x] Inventory / equipment / skills / vitals replicate to the owning client on change (`Inventory.changed`); all UI actions (drag/drop, craft, scrap, equip, quick-stack, station tabs, ability unlocks) are requests with slot indices *(2026-09-05: `Net/CharSync` `_char_state` coalesced per tick + 2 s resync; `PlayerActions` child `Actions` — the UI's drag cursor is a slot reference, only slot-to-slot actions travel; m1_smoke §Q)*
+- [x] Client saves its own character file from the replicated state on leave / F5 / host push; map reveal stays client-side and saves with it *(city `leave_world` / `on_net_disconnected` / F5; `CharSync._final_state`; the client applies `maps[world]` from its own file)*
+- [x] Host keeps a leaving character's state in the world's peer table so a reconnect resumes; host quit pushes final state to every client, saves the world, disconnects with "host closed the world" *(`CharSync.resume_states[name]` wins over the uploaded file in `apply_on_spawn`; the title shows `SaveGame.pending_notice`)*
+- [x] F5 on the host saves world + all characters; F9 host-only; a client's `NOTIFICATION_WM_CLOSE_REQUEST` saves its character and leaves
+- **GATE:** `save_smoke` round trip with a client character written on the client, and a leave/rejoin resuming inventory and position ✔ 2026-09-05 (driver: client file written; client B resumes at A's position)
+
+### Step 8 — Feel, two-machine session, docs
+- [ ] Client-side prediction + reconciliation (`NET_RECONCILE_CELLS`, `NET_INPUT_BUFFER`) if the one-tick delay is felt on a real LAN (MP-02)
+- [ ] A two-machine LAN play session through a full early-game loop (roof → tripod → hatch → dive) with the F3 net stats logged
+- [ ] Answer MP-01…MP-09 in `technical/Multiplayer.md`; fold decisions into GameOverview "Key Decisions"; tick the M6 "LAN smoke test" item; CLAUDE.md summary
+- **GATE:** the M6 LAN smoke test item; one seed, two machines, both players reach the workbench
 
 ---
 

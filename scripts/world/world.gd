@@ -30,6 +30,14 @@ var _light_dirty: bool = true
 ## Lets the relight skip the empty rows above the window (2026-09-04 perf).
 var _sky_cache := PackedInt32Array()
 var _light_key: Array = []
+# The full relight runs on a worker thread (2026-09-04 perf): a scratch
+# LightMap computes the static field (sun + lamps) off the main thread and the
+# live map adopts it when done; players' own glow is re-applied per move.
+var _light_task: int = -1
+var _light_pending: LightMap = null
+var _light_pending_key: Array = []
+var _light_rerun: bool = false
+var _light_dyn_key: int = 0
 var _water_relight_at: int = 0 # next _light_tick water motion may relight at
 
 ## Depth bands (GD-16): world data every system can query.
@@ -38,6 +46,9 @@ var waterline_row: int = 0
 ## into the VOID annex that holds the interior pockets.
 var city_bounds: Rect2i
 var map_bounds: Rect2i # city_bounds in map cells (Constants.MAP_CELL); the annex is never mapped
+## Tower footprints {x0, x1, top, floors, floor_h, district} for floor-level
+## band lookups (DistrictsOverhaul "Bands"); set by the city scene, saved.
+var towers: Array = []
 ## Interior pockets (user request 2026-09-01): {rect: interior Rect2i,
 ## exit: doorway cell in the city, entry: doorway cell inside}. Saved.
 var pockets: Array = []
@@ -66,6 +77,13 @@ var _obj_window_center := Vector2i(-99999, -99999)
 ## enemy erases its record — cleared stays cleared (GD-02/03).
 var enemy_records: Array = []
 var enemies_root: Node = null
+var next_net_id: int = 1 # host-assigned ids for dropped items / backpacks / enemy records (LAN)
+## net_id -> live WorldItem / Backpack node, on both ends (LAN Step 5): the
+## host fills it in spawn_item/spawn_backpack, a client from WorldSync's
+## replicas; nodes drop themselves out in _exit_tree.
+var item_by_net_id: Dictionary = {}
+var _suppress_record_hooks: bool = false # _replace_object_record sends one replace, not add + replace
+var _window_key: Array = [] # snapped centres of every player the last time the windows were rebuilt
 var _enemy_window_center := Vector2i(-99999, -99999)
 ## Day counter + red moon schedule (CC-14, GL-15): a red moon rises at dusk
 ## once day_count reaches next_red_moon_day, waves converge on players all
@@ -92,6 +110,7 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	city_bounds = grid.bounds if p_city_w < 0 else Rect2i(grid.bounds.position, Vector2i(p_city_w, grid.bounds.size.y))
 	map_bounds = MapReveal.macro_bounds(city_bounds)
 	pockets.clear()
+	towers.clear()
 	placed_blocks.clear()
 	structure_damage.clear()
 	damage_rev += 1
@@ -101,6 +120,9 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	_obj_window_center = Vector2i(-99999, -99999)
 	enemy_records.clear()
 	_enemy_window_center = Vector2i(-99999, -99999)
+	_window_key = []
+	next_net_id = 1
+	item_by_net_id.clear()
 	enemies_root = Node2D.new()
 	enemies_root.name = "Enemies"
 	# Under the items root: draws below the fog-of-war layer, so unlit
@@ -123,55 +145,115 @@ func is_ready() -> bool:
 	return grid != null
 
 func set_spawn(feet_position: Vector2) -> void:
+	if Net.is_client():
+		return
 	spawn_position = feet_position
 
 func _physics_process(delta: float) -> void:
 	if water_sim == null:
 		return
-	var prev_time := time_of_day
-	time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
-	if time_of_day < prev_time:
-		day_count += 1 # midnight wrap
-	# Trees grow at dawn, not midnight (user request 2026-09-02): each morning
-	# every planted/seeded stage advances once - a sapling planted on day N is
-	# fully grown on the morning of day N+2 (a 2-day period).
-	if prev_time < Constants.MORNING_TIME and time_of_day >= Constants.MORNING_TIME:
-		_grow_trees()
-	_tick_night(delta)
-	_tick_red_moon(delta)
-	_tick_pumps()
-	var t0 := Time.get_ticks_usec()
-	water_sim.tick()
-	perf.water_ms = (Time.get_ticks_usec() - t0) / 1000.0
+	# The simulation is the host's (Multiplayer.md §3): a client only draws the
+	# replicated clock, water, records and enemies; its own light/fog, map
+	# reveal and streaming windows stay local.
+	if Net.is_server():
+		var prev_time := time_of_day
+		time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
+		if time_of_day < prev_time:
+			day_count += 1 # midnight wrap
+		# Trees grow at dawn, not midnight (user request 2026-09-02): each morning
+		# every planted/seeded stage advances once - a sapling planted on day N is
+		# fully grown on the morning of day N+2 (a 2-day period).
+		if prev_time < Constants.MORNING_TIME and time_of_day >= Constants.MORNING_TIME:
+			_grow_trees()
+		_tick_night(delta)
+		_tick_red_moon(delta)
+		_tick_pumps()
+		var t0 := Time.get_ticks_usec()
+		water_sim.tick()
+		perf.water_ms = (Time.get_ticks_usec() - t0) / 1000.0
+	else:
+		# Cosmetic: run the sun between the host's once-a-second clock
+		# replicas (WorldSync._clock) so the tint never steps. Days, growth
+		# and the red moon are the host's alone.
+		time_of_day = fposmod(time_of_day + delta / Constants.DAY_LENGTH_SECONDS, 1.0)
 	_light_tick += 1
-	if _light_tick % Constants.BREAKER_CHECK_TICKS == 0:
+	if Net.is_server() and _light_tick % Constants.BREAKER_CHECK_TICKS == 0:
 		_check_breakers()
 	if _light_tick % Constants.LIGHT_RECOMPUTE_TICKS == 0:
-		var p := get_tree().get_first_node_in_group("player") as Node2D
+		var p := Net.local_player() as Node2D
 		if p != null:
 			var center := cell_at(p.global_position)
 			var radius: int = p.reveal_radius() if p.has_method("reveal_radius") else Constants.MAP_REVEAL_RADIUS
 			map_reveal.reveal_disc(map_macro_for(p.global_position), radius)
 			_update_object_window(center)
 			_update_enemy_window(center)
-			var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
-			var window := Rect2i(center - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
-			var sources := _gather_light_sources()
-			var key: Array = [window, int(roundf(sun_strength() * LightMap.MAX_LIGHT)), hash(str(sources))]
-			# Water in motion (a pump, a slosh that never settles) must not
-			# force the full 40ms relight every cycle — its light effect is
-			# subtle, so it refreshes at most once a second. Blocks, doors,
-			# lamps, and the window/sun/sources key stay instant.
-			var water_due: bool = water_sim.changed_last_tick > 0 and _light_tick >= _water_relight_at
-			if _light_dirty or water_due or key != _light_key:
-				if water_due:
-					_water_relight_at = _light_tick + 60
-				_light_dirty = false
-				_light_key = key
-				var lt0 := Time.get_ticks_usec()
-				light_map.compute_window(window, grid.bounds, grid.structure, water_sim.levels,
-					closed_door_cells(), sky_row, waterline_row, sources, sun_strength())
-				perf.light_ms = (Time.get_ticks_usec() - lt0) / 1000.0
+			_tick_light(center)
+
+## Relight scheduling. The window snaps to a LIGHT_SNAP cell grid around the
+## player; the static field (sun, lamps, dropped lights) recomputes on a
+## worker thread whenever its key changes or something dirtied it, and the
+## live map adopts the result on completion. Players' glow is layered on by
+## a small BFS each time their cell changes - cheap, and it never stalls.
+func _tick_light(center: Vector2i) -> void:
+	var snap: int = Constants.LIGHT_SNAP
+	var anchor := Vector2i(floori(float(center.x) / snap) * snap, floori(float(center.y) / snap) * snap)
+	var half := Vector2i(Constants.LIGHT_WINDOW.x / 2.0, Constants.LIGHT_WINDOW.y / 2.0)
+	var window := Rect2i(anchor - half, Constants.LIGHT_WINDOW).intersection(grid.bounds)
+	var static_sources := _gather_light_sources(false)
+	var key: Array = [window, int(roundf(sun_strength() * LightMap.MAX_LIGHT)), hash(str(static_sources))]
+	# Finish a running relight first.
+	if _light_pending != null and WorkerThreadPool.is_task_completed(_light_task):
+		WorkerThreadPool.wait_for_task_completion(_light_task)
+		light_map.adopt(_light_pending)
+		perf.light_ms = _light_pending.compute_ms
+		_light_key = _light_pending_key
+		_light_pending = null
+		_light_task = -1
+		_light_dyn_key = 0 # force the dynamic pass over the fresh field
+		if _light_rerun:
+			_light_rerun = false
+			_light_dirty = true
+	# Water in motion (a pump, a slosh that never settles) must not force the
+	# full relight every cycle — its light effect is subtle, so it refreshes
+	# at most once a second. Blocks, doors, lamps, and the window/sun/sources
+	# key stay instant.
+	var water_due: bool = water_sim.changed_last_tick > 0 and _light_tick >= _water_relight_at
+	if _light_dirty or water_due or key != _light_key:
+		if _light_pending != null:
+			_light_rerun = true # a relight is in flight: run again when it lands
+		else:
+			if water_due:
+				_water_relight_at = _light_tick + 60
+				if Net.is_client():
+					water_sim.changed_last_tick = 0 # replica writes set it; the sim never ticks here
+			_light_dirty = false
+			_light_pending_key = key
+			var sky_rows := PackedInt32Array()
+			sky_rows.resize(window.size.x)
+			for i in window.size.x:
+				sky_rows[i] = sky_row(window.position.x + i)
+			var lm := LightMap.new()
+			_light_pending = lm
+			_light_task = WorkerThreadPool.add_task(lm.compute_window.bind(window, grid.bounds, grid.structure,
+				water_sim.levels, closed_door_cells(), sky_rows, waterline_row, static_sources, sun_strength()),
+				false, "relight")
+	# Players' glow over the static field, whenever they moved a cell.
+	var dyn := _gather_light_sources(true)
+	var dkey := hash(str(dyn))
+	if dkey != _light_dyn_key and not light_map.static_light.is_empty():
+		_light_dyn_key = dkey
+		light_map.apply_dynamic(dyn)
+
+## Block until any in-flight relight has landed (tests; scene teardown).
+func flush_light() -> void:
+	if _light_pending != null:
+		WorkerThreadPool.wait_for_task_completion(_light_task)
+		light_map.adopt(_light_pending)
+		_light_key = _light_pending_key
+		_light_pending = null
+		_light_task = -1
+		light_map.apply_dynamic(_gather_light_sources(true))
+		_light_dyn_key = hash(str(_gather_light_sources(true)))
 
 ## Daylight factor (CC-11): full sun by day, a dim glow at night.
 func sun_strength() -> float:
@@ -202,6 +284,8 @@ func cell_rect(cell: Vector2i) -> Rect2:
 func depth_below_waterline(cell: Vector2i) -> int:
 	return cell.y - waterline_row
 
+## Per-cell band: the physical gates (cold/crush) and anything that bites
+## at the exact depth use this.
 func band_at(cell: Vector2i) -> String:
 	var d := depth_below_waterline(cell)
 	if d < 0:
@@ -213,6 +297,13 @@ func band_at(cell: Vector2i) -> String:
 	if d < Constants.BAND_DARK_DEPTH:
 		return "dark"
 	return "crush"
+
+## Floor-level band (DistrictsOverhaul "Bands", 2026-09-04): inside a tower
+## the whole floor takes the band of its CEILING row, so a floor straddling
+## a boundary resolves to the shallower band. Enemies, loot and the HUD
+## label use this; outside a tower it equals band_at.
+func floor_band_at(cell: Vector2i) -> String:
+	return band_at(Vector2i(cell.x, CityGen.band_row(towers, cell)))
 
 # --- Interior pockets ---
 
@@ -262,6 +353,8 @@ func portal_target(cell: Vector2i) -> Vector2:
 ## Release a barred door (user request 2026-09-02): a hidden button's record
 ## carries the door's cell in `door`. Opens + unlocks that door for good.
 func release_barred_door(button_cell: Vector2i) -> bool:
+	if Net.is_client():
+		return false
 	var brec: Dictionary = object_cells.get(button_cell, {})
 	if brec.is_empty() or not brec.has("door"):
 		return false
@@ -273,6 +366,7 @@ func release_barred_door(button_cell: Vector2i) -> bool:
 	if drec.node != null and is_instance_valid(drec.node):
 		drec.node.unlocked = true
 		drec.node.set_open_look(true)
+	Net.on_record_changed(drec)
 	return true
 
 # --- Queries ---
@@ -545,13 +639,27 @@ func light_beacons() -> Array:
 	# A worn head lamp is a moving beacon (user request 2026-09-02): it lets
 	# the player see at night the way a placed light does, but hands-free.
 	for p in get_tree().get_nodes_in_group("player"):
-		if p is Node2D and p.has_method("equipped") \
-				and float(Data.item(p.equipped("head")).get("stats", {}).get("light", 0.0)) > 0.0:
+		if p is Node2D and ((p.has_method("equipped") \
+				and float(Data.item(p.equipped("head")).get("stats", {}).get("light", 0.0)) > 0.0) \
+				or p.get("puppet_lamp") == true): # LAN: remote bodies carry a lamp bit, not gear
 			_beacon_cache.append((p as Node2D).global_position)
 	return _beacon_cache
 
-func _gather_light_sources() -> Array:
+## dynamic = players (re-applied per move); static = lamps and dropped lights.
+func _gather_light_sources(dynamic: bool = false) -> Array:
 	var out := []
+	if dynamic:
+		for p in get_tree().get_nodes_in_group("player"):
+			var level := Constants.PLAYER_SIGHT_LIGHT
+			var held: Dictionary = Data.item(p.held_item())
+			if held.get("use", {}).has("drop_light"):
+				level = Constants.GLOWSTICK_LIGHT
+			if p.has_method("equip_stat"): # helmet lamp / glow band (M5 gear)
+				level = maxi(level, int(p.equip_stat("light")))
+			if p.get("puppet_lamp") == true: # LAN: a remote body's lamp (no gear replica)
+				level = maxi(level, Constants.PUPPET_LAMP_LIGHT)
+			out.append({"cell": cell_at(p.global_position), "level": level})
+		return out
 	if objects_root != null:
 		for obj in objects_root.get_children():
 			if not (obj is WorldObject) or obj.is_queued_for_deletion():
@@ -562,23 +670,11 @@ func _gather_light_sources() -> Array:
 		for it in items_root.get_children():
 			if it is WorldItem and it.light != null and not it.is_queued_for_deletion():
 				out.append({"cell": cell_at(it.global_position), "level": Constants.GLOWSTICK_LIGHT})
-	for p in get_tree().get_nodes_in_group("player"):
-		var level := Constants.PLAYER_SIGHT_LIGHT
-		var held: Dictionary = Data.item(p.held_item())
-		if held.get("use", {}).has("drop_light"):
-			level = Constants.GLOWSTICK_LIGHT
-		if p.has_method("equip_stat"): # helmet lamp / glow band (M5 gear)
-			level = maxi(level, int(p.equip_stat("light")))
-		# Quantized to the 2-cell macro grid: the source key changing every 8 px
-		# step would force a full relight per step (2026-09-04 perf).
-		var pc := cell_at(p.global_position)
-		var m: int = Constants.MAP_CELL
-		out.append({"cell": Vector2i(floori(float(pc.x) / m) * m, floori(float(pc.y) / m) * m), "level": level})
 	return out
 
 ## Building power (WS-17).
 func update_power() -> void:
-	if objects_root == null:
+	if objects_root == null or Net.is_client(): # a client's powered set arrives from WorldSync._power
 		return
 	_light_dirty = true
 	var breakers := []
@@ -592,6 +688,7 @@ func update_power() -> void:
 				if b.powered_on and b.center().distance_to(obj.center()) <= Constants.POWER_RADIUS_BLOCKS * Constants.BLOCK_SIZE:
 					on = true
 			obj.set_powered(on)
+	Net.on_power_changed()
 
 func _check_breakers() -> void:
 	if objects_root == null:
@@ -601,6 +698,7 @@ func _check_breakers() -> void:
 		if obj is WorldObject and obj.def.kind == "breaker" and obj.powered_on:
 			if water_sim.level_at(obj.cell) > 2:
 				obj.powered_on = false
+				notify_record_state(obj)
 				tripped = true
 	if tripped:
 		update_power()
@@ -618,20 +716,40 @@ func can_place_block(id: String, cell: Vector2i, by: CharacterBody2D = null) -> 
 		"back":
 			return not has_back_wall_cell(cell) and not has_block_cell(cell) and not object_cells.has(cell) and _has_neighbor_support(cell)
 		"climb":
+			if int(def.atlas_row) == 5:
+				# A ladder item builds a 2-cell-wide ladder (user request 2026-09-05):
+				# the aimed cell + the one to its right, both free; it hangs off any
+				# neighbouring ladder cell or a solid neighbour of either half.
+				var r := cell + Vector2i.RIGHT
+				if not grid.in_bounds(r):
+					return false
+				for c: Vector2i in [cell, r]:
+					if has_block_cell(c) or is_climbable_cell(c) or object_cells.has(c):
+						return false
+				return _has_neighbor_support(cell) or _has_neighbor_support(r) \
+					or is_climbable_cell(cell + Vector2i.UP) or is_climbable_cell(cell + Vector2i.DOWN) \
+					or is_climbable_cell(r + Vector2i.UP) or is_climbable_cell(r + Vector2i.DOWN) \
+					or is_climbable_cell(cell + Vector2i.LEFT) or is_climbable_cell(r + Vector2i.RIGHT)
 			return not has_block_cell(cell) and not is_climbable_cell(cell) and not object_cells.has(cell) \
-				and (_has_neighbor_support(cell) or is_climbable_cell(cell + Vector2i.UP) or is_climbable_cell(cell + Vector2i.DOWN))
+				and (_has_neighbor_support(cell) or is_climbable_cell(cell + Vector2i.UP) or is_climbable_cell(cell + Vector2i.DOWN) \
+					or is_climbable_cell(cell + Vector2i.LEFT) or is_climbable_cell(cell + Vector2i.RIGHT))
 		_:
 			return not has_block_cell(cell) and not object_cells.has(cell) \
 				and not _cell_overlaps_body(cell, by) and _has_neighbor_support(cell)
 
 func place_block(id: String, cell: Vector2i) -> bool:
 	var def: Dictionary = Data.blocks.get(id, {})
-	if def.is_empty() or not grid.in_bounds(cell):
+	if def.is_empty() or not grid.in_bounds(cell) or Net.is_client():
 		return false
 	match def.layer:
 		"back":
 			grid.set_back(cell, _mat_for_block(def))
 		"climb":
+			if int(def.atlas_row) == 5: # a ladder is a 2-cell pair: both halves are player blocks
+				var r := cell + Vector2i.RIGHT
+				grid.set_climb(r, WorldGrid.C.LADDER)
+				placed_blocks[_key(r, def.layer)] = {"id": id, "hp": float(def.hp), "layer": def.layer}
+				_cell_changed(r)
 			grid.set_climb(cell, WorldGrid.C.LADDER if int(def.atlas_row) == 5 else WorldGrid.C.ROPE)
 		_:
 			if water_sim != null:
@@ -641,9 +759,21 @@ func place_block(id: String, cell: Vector2i) -> bool:
 	_cell_changed(cell)
 	return true
 
-## Rope placement (user request 2026-09-02): a rope drops as a run of cells
-## from the anchor. Clicking anywhere on an existing rope extends it from the
-## BOTTOM, so you can lengthen a line from a ledge. Anchors need support above
+## The 2-cell ladder pair `cell` belongs to (left half first): a cell with a
+## ladder to its left is a right half, one with a ladder to its right a left
+## half; a lone cell is its own pair.
+func ladder_pair(cell: Vector2i) -> Array:
+	if grid.climb_at(cell) != WorldGrid.C.LADDER:
+		return []
+	if grid.climb_at(cell + Vector2i.LEFT) == WorldGrid.C.LADDER:
+		return [cell + Vector2i.LEFT, cell]
+	if grid.climb_at(cell + Vector2i.RIGHT) == WorldGrid.C.LADDER:
+		return [cell, cell + Vector2i.RIGHT]
+	return [cell]
+
+## Rope placement (user request 2026-09-02, one cell per click since
+## 2026-09-04): clicking anywhere on an existing rope adds the next cell at its
+## BOTTOM, so you lengthen a line from a ledge click by click. Anchors need support above
 ## or a neighbour; the cells below just hang.
 func can_place_rope(cell: Vector2i) -> bool:
 	if grid == null or not grid.in_bounds(cell):
@@ -656,7 +786,7 @@ func can_place_rope(cell: Vector2i) -> bool:
 ## Places up to `max_cells` rope cells downward from `cell` (or from the bottom
 ## of the column `cell` is part of). Returns how many were placed.
 func place_rope(cell: Vector2i, max_cells: int) -> int:
-	if grid == null:
+	if grid == null or Net.is_client():
 		return 0
 	if grid.climb_at(cell) == WorldGrid.C.ROPE:
 		while grid.climb_at(cell + Vector2i.DOWN) == WorldGrid.C.ROPE:
@@ -676,25 +806,49 @@ func place_rope(cell: Vector2i, max_cells: int) -> int:
 ## Plant a tree sapling on a planter (user request 2026-09-02): it sits one
 ## cell above the pot and grows via _grow_trees. Returns false if the space
 ## above is blocked (a plant already there, or a low ceiling).
-func plant_in_planter(planter) -> bool:
+## `at_cell` picks the SECTION of a wide planter (a planter box holds three
+## trees, one per sapling-width section - user request 2026-09-04); the pot
+## has a single section.
+func plant_in_planter(planter, at_cell: Vector2i = Vector2i(-1, -1)) -> bool:
 	var sd: Dictionary = Data.objects.get("tree_sapling", {})
-	if sd.is_empty():
+	if sd.is_empty() or Net.is_client():
 		return false
-	var base: Vector2i = planter.cell - Vector2i(0, int(planter.size.y)) # the cell row above the pot
+	var sw := maxi(int(sd.get("size", [2, 4])[0]), 1)
+	var slots := maxi(int(planter.size.x) / sw, 1)
+	var slot := 0
+	if at_cell.x >= 0:
+		slot = clampi((at_cell.x - int(planter.cell.x)) / sw, 0, slots - 1)
+	var base: Vector2i = planter.cell + Vector2i(slot * sw, -int(planter.size.y)) # the row above the pot
 	for dy in int(sd.get("size", [1, 2])[1]):
-		var c := base - Vector2i(0, dy)
-		if not grid.in_bounds(c) or has_block_cell(c) or object_cells.has(c) or is_solid_cell(c):
-			return false
+		for dx in sw:
+			var c := base + Vector2i(dx, -dy)
+			if not grid.in_bounds(c) or has_block_cell(c) or object_cells.has(c) or is_solid_cell(c):
+				return false
 	place_object("tree_sapling", base, true)
 	return true
 
 ## Water the plant growing on a planter (user request 2026-09-02): a bucket of
 ## water surges it one growth stage right now. Returns 1 grew, 0 can't (mature
 ## / drowned / no room), -1 no plant to water.
+## A wide planter waters the first section (west to east) whose plant can grow.
 func water_plant_above(planter_cell: Vector2i) -> int:
-	var rec: Dictionary = object_cells.get(planter_cell - Vector2i(0, int(Data.objects.get("planter", {}).get("size", [1, 1])[1])), {})
-	if rec.is_empty() or rec.get("def", {}).get("category", "") != "flora":
-		return -1
+	if Net.is_client():
+		return 0
+	var prec: Dictionary = object_cells.get(planter_cell, {})
+	var psize: Array = prec.def.size if not prec.is_empty() else Data.objects.get("planter", {}).get("size", [2, 2])
+	var sw := maxi(int(Data.objects.get("tree_sapling", {}).get("size", [2, 4])[0]), 1)
+	var rec: Dictionary = {}
+	var best := -1 # -1 no plant, 0 nothing can grow, 1 grew
+	for slot in maxi(int(psize[0]) / sw, 1):
+		var r: Dictionary = object_cells.get(planter_cell + Vector2i(slot * sw, -int(psize[1])), {})
+		if r.is_empty() or r.get("def", {}).get("category", "") != "flora":
+			continue
+		best = maxi(best, 0)
+		if r.def.get("grows_into", "") != "" and not is_water_cell(r.cell):
+			rec = r
+			break
+	if rec.is_empty():
+		return best
 	var next_id: String = rec.def.get("grows_into", "")
 	if next_id == "" or is_water_cell(rec.cell):
 		return 0
@@ -717,11 +871,12 @@ func _cell_changed(cell: Vector2i) -> void:
 		water_sim.notify_changed(cell)
 	if renderer != null:
 		renderer.refresh_cell(cell)
+	Net.on_cell_changed(cell) # the one funnel every grid/ledger write passes through
 
 ## Removes a player-placed block on the given layer; returns its item id or "".
 func remove_block(cell: Vector2i, layer_name: String = "blocks") -> String:
 	var key = _key(cell, layer_name)
-	if not placed_blocks.has(key):
+	if not placed_blocks.has(key) or Net.is_client():
 		return ""
 	var entry: Dictionary = placed_blocks[key]
 	match layer_name:
@@ -735,9 +890,23 @@ func remove_block(cell: Vector2i, layer_name: String = "blocks") -> String:
 	_cell_changed(cell)
 	return entry.id
 
+## Lift a ladder or rope cell out whole (user request 2026-09-04): generated
+## runs included - the piece goes back to the bag as its item.
+## A ladder lifts out as its whole 2-cell pair (one item).
+func pickup_climbable(cell: Vector2i) -> String:
+	var c := grid.climb_at(cell)
+	if c == WorldGrid.C.NONE or Net.is_client():
+		return ""
+	var cells: Array = ladder_pair(cell) if c == WorldGrid.C.LADDER else [cell]
+	for pc: Vector2i in cells:
+		grid.set_climb(pc, WorldGrid.C.NONE)
+		placed_blocks.erase(_key(pc, "climb"))
+		_cell_changed(pc)
+	return "ladder" if c == WorldGrid.C.LADDER else "rope"
+
 ## Background walls are cosmetic (WS-20/21): any wall can be knocked out.
 func erase_back_wall(cell: Vector2i) -> bool:
-	if not has_back_wall_cell(cell):
+	if not has_back_wall_cell(cell) or Net.is_client():
 		return false
 	placed_blocks.erase(_key(cell, "back"))
 	grid.set_back(cell, WorldGrid.M.AIR)
@@ -747,6 +916,8 @@ func erase_back_wall(cell: Vector2i) -> bool:
 ## Tool hit. Returns "broken" | "damaged" | "too_hard" | "structure" | "none".
 ## `by` (the miner's position) makes the drop toss toward them.
 func damage_block(cell: Vector2i, damage: float, tool_tier: int, by: Vector2 = Vector2.INF) -> String:
+	if Net.is_client():
+		return "none"
 	var layer_name := "blocks"
 	if not has_block_cell(cell):
 		if is_climbable_cell(cell):
@@ -765,7 +936,12 @@ func damage_block(cell: Vector2i, damage: float, tool_tier: int, by: Vector2 = V
 	entry.hp -= damage
 	damage_rev += 1 # crack overlay watches this
 	if entry.hp > 0.0:
+		Net.on_cell_changed(cell) # ledger hp changed, cell value didn't
 		return "damaged"
+	if layer_name == "climb" and entry.id == "ladder": # the other half of the pair goes with it (one drop)
+		for pc: Vector2i in ladder_pair(cell):
+			if pc != cell:
+				remove_block(pc, layer_name)
 	remove_block(cell, layer_name)
 	var it := spawn_item(entry.id, 1, cell_center(cell), _toss_velocity(cell_center(cell), by))
 	if it != null:
@@ -795,6 +971,7 @@ func _damage_structure(cell: Vector2i, damage: float, tool_tier: int, by: Vector
 	damage_rev += 1
 	if hp > 0.0:
 		structure_damage[cell] = hp
+		Net.on_cell_changed(cell) # crack state changed, cell value didn't
 		return "damaged"
 	structure_damage.erase(cell)
 	grid.set_structure(cell, WorldGrid.M.AIR)
@@ -866,7 +1043,26 @@ func add_object_record(id: String, cell: Vector2i, placed_by_player: bool) -> Di
 			_invalidate_sky(c)
 		if water_sim != null and _record_solid(rec):
 			water_sim.notify_changed(c)
+	if rec.storage != null: # chest slot edits replicate as a record change
+		rec.storage.changed.connect(func() -> void: Net.on_record_changed(rec))
+	if not _suppress_record_hooks:
+		Net.on_record_added(rec)
 	return rec
+
+## A live node's replicable state changed (door unlocked, breaker flipped,
+## pump outlet set): bank it on the record and tell the peers.
+func notify_record_state(obj: WorldObject) -> void:
+	var rec: Dictionary = object_cells.get(obj.cell, {})
+	if rec.is_empty() or rec.node != obj:
+		return
+	sync_record(rec, obj)
+	Net.on_record_changed(rec)
+
+## A record's fields changed with no node involved (UI chest edits, growth
+## clocks): replicate as-is.
+func notify_record_changed(rec: Dictionary) -> void:
+	if not rec.is_empty():
+		Net.on_record_changed(rec)
 
 func _record_cells(rec: Dictionary) -> Array:
 	var cells := []
@@ -878,6 +1074,8 @@ func _record_cells(rec: Dictionary) -> Array:
 ## Place an object and instantiate it right away (player actions and tests
 ## always act near the camera, so the node exists from the start).
 func place_object(id: String, cell: Vector2i, placed_by_player: bool) -> WorldObject:
+	if Net.is_client():
+		return null
 	return _instantiate_record(add_object_record(id, cell, placed_by_player))
 
 func _instantiate_record(rec: Dictionary) -> WorldObject:
@@ -888,6 +1086,8 @@ func _instantiate_record(rec: Dictionary) -> WorldObject:
 	objects_root.add_child(obj)
 	obj.restore_state({"open": rec.open, "powered": rec.powered, "outlet": rec.outlet,
 		"unlocked": rec.unlocked})
+	if rec.def.kind == "light" and bool(rec.def.get("powered", false)):
+		obj.set_powered(bool(rec.powered)) # a client never recomputes power: the record is the truth
 	rec.node = obj
 	if rec.def.kind == "pump":
 		pumps.append(obj)
@@ -921,15 +1121,16 @@ func refresh_objects_around(pos: Vector2) -> void:
 ## has moved a few cells; the window is generous so teleport-happy tests
 ## and normal play never see furniture pop.
 func _update_object_window(center: Vector2i) -> void:
-	if (_obj_window_center - center).length_squared() < 144: # < 12 cells moved
+	var key := _windows_key(center)
+	if (_obj_window_center - center).length_squared() < 144 and key == _window_key: # < 12 cells moved
 		return
 	_obj_window_center = center
-	var half: Vector2i = Constants.OBJECT_WINDOW / 2
-	var win := Rect2i(center - half, Constants.OBJECT_WINDOW)
+	_window_key = key
+	var wins := _player_windows(center, Constants.OBJECT_WINDOW)
 	var live := 0
 	var changed := false
 	for rec: Dictionary in object_records:
-		var inside := win.has_point(rec.cell)
+		var inside := _in_windows(wins, rec.cell)
 		if inside != (rec.node != null):
 			if inside:
 				_instantiate_record(rec)
@@ -944,6 +1145,8 @@ func _update_object_window(center: Vector2i) -> void:
 		update_power() # newly loaded wired lights resolve against breakers
 
 func remove_object(obj: WorldObject) -> void:
+	if Net.is_client():
+		return
 	_light_dirty = true
 	var rec: Dictionary = object_cells.get(obj.cell, {})
 	if rec.is_empty() or rec.get("node") != obj:
@@ -965,6 +1168,7 @@ func remove_object(obj: WorldObject) -> void:
 				_invalidate_sky(c)
 			if water_sim != null:
 				water_sim.notify_changed(c)
+		Net.on_record_removed(rec)
 	pumps.erase(obj)
 	obj.queue_free()
 
@@ -1014,9 +1218,12 @@ func _replace_object_record(rec: Dictionary, new_id: String, new_cell: Vector2i)
 	for c in _record_cells(rec):
 		if object_cells.get(c) == rec:
 			object_cells.erase(c)
+	_suppress_record_hooks = true # one replace delta, not add + replace
 	var nrec := add_object_record(new_id, new_cell, rec.placed)
+	_suppress_record_hooks = false
 	if had_node:
 		_instantiate_record(nrec)
+	Net.on_record_replaced(rec, nrec)
 
 ## Called when an object's solidity changes in place (door toggled).
 func notify_object_changed(obj: WorldObject) -> void:
@@ -1030,6 +1237,9 @@ func notify_object_changed(obj: WorldObject) -> void:
 	if water_sim != null:
 		for c in obj.covered_cells():
 			water_sim.notify_changed(c)
+	if not rec.is_empty() and rec.node == obj:
+		sync_record(rec, obj)
+		Net.on_record_changed(rec)
 
 ## Station ids within `reach` px of `pos` (GL-04).
 func stations_near(pos: Vector2, reach: float) -> Array:
@@ -1061,7 +1271,7 @@ func _tick_pumps() -> void:
 ## Returns {} when the type has no stats anywhere (bad id).
 func add_enemy_record(type_id: String, pos: Vector2, hp_mult: float = 1.0,
 		night_spawn: bool = false) -> Dictionary:
-	var band := band_at(cell_at(pos))
+	var band := floor_band_at(cell_at(pos)) # the floor's band, not the cell's (DistrictsOverhaul)
 	var base := Data.enemy_stats(type_id, band)
 	if base.is_empty():
 		return {}
@@ -1071,12 +1281,71 @@ func add_enemy_record(type_id: String, pos: Vector2, hp_mult: float = 1.0,
 		"stats": stats, "mult": hp_mult, "night": night_spawn, "node": null}
 	if Data.enemies[type_id].get("mode", "") == "fish":
 		rec["stock"] = randi_range(Constants.FISH_STOCK_MIN, Constants.FISH_STOCK_MAX)
+	rec["nid"] = next_net_id
+	next_net_id += 1
 	enemy_records.append(rec)
+	Net.on_enemy_added(rec)
 	return rec
+
+## LAN Step 6 (client): mirror a host record as given — the host's nid, hp
+## and band, stats re-derived from the same table; no hook, no id
+## allocation. Idempotent by nid (a queued add after a reset updates in
+## place). Returns the record ({} for an unknown type).
+func add_enemy_replica(d: Dictionary) -> Dictionary:
+	var type_id := String(d.type)
+	if not Data.enemies.has(type_id):
+		return {}
+	var nid := int(d.nid)
+	var band := String(d.get("band", "dry"))
+	var mult := float(d.get("mult", 1.0))
+	var base := Data.enemy_stats(type_id, band)
+	if base.is_empty():
+		return {}
+	var stats := {"hp": float(base.hp) * mult, "damage": float(base.damage) * mult,
+		"speed": float(base.speed), "aggro": float(base.aggro)}
+	var rec: Dictionary = {}
+	for r: Dictionary in enemy_records:
+		if int(r.get("nid", -1)) == nid:
+			rec = r
+			break
+	var fresh := rec.is_empty()
+	if fresh:
+		rec = {"type": type_id, "node": null, "nid": nid}
+		enemy_records.append(rec)
+	rec.pos = d.pos
+	rec.hp = float(d.get("hp", stats.hp))
+	rec.band = band
+	rec.stats = stats
+	rec.mult = mult
+	rec.night = bool(d.get("night", false))
+	if d.has("stock"):
+		rec["stock"] = int(d.stock)
+	var n = rec.node
+	if n != null and is_instance_valid(n):
+		n.puppet_state(rec.pos, rec.hp, 0, false)
+	elif _enemy_in_window(rec):
+		_instantiate_enemy(rec)
+	return rec
+
+## Client: drop every record + node (a `_reset` from the host follows).
+func clear_enemy_replicas() -> void:
+	for rec: Dictionary in enemy_records:
+		_despawn_enemy(rec)
+	enemy_records.clear()
+	_enemy_window_center = Vector2i(-99999, -99999)
+
+## Client: rebuild the enemy window around the local player right now
+## (streamed positions moved records in or out of view).
+func refresh_enemy_window() -> void:
+	var p := Net.local_player() as Node2D
+	if p == null or grid == null:
+		return
+	_enemy_window_center = Vector2i(-99999, -99999)
+	_update_enemy_window(cell_at(p.global_position))
 
 func _instantiate_enemy(rec: Dictionary) -> void:
 	var e: Enemy = ENEMY_SCENE.instantiate()
-	e.setup(rec)
+	e.setup(rec) # puppet on a client (Enemy.setup reads Net.is_client)
 	enemies_root.add_child(e)
 	rec.node = e
 
@@ -1095,18 +1364,20 @@ func remove_enemy(rec: Dictionary) -> void:
 	rec.node = null
 	if e != null and is_instance_valid(e):
 		e.queue_free()
+	Net.on_enemy_removed(rec)
 
 ## Instantiate records near `center`, freeze the rest (the object-window
 ## pattern; enemies outside the window don't think or move).
 func _update_enemy_window(center: Vector2i) -> void:
-	if (_enemy_window_center - center).length_squared() < 144:
+	var key := _windows_key(center)
+	if (_enemy_window_center - center).length_squared() < 144 and key == _enemy_window_key:
 		return
 	_enemy_window_center = center
-	var half: Vector2i = Constants.ENEMY_WINDOW / 2
-	var win := Rect2i(center - half, Constants.ENEMY_WINDOW)
+	_enemy_window_key = key
+	var wins := _player_windows(center, Constants.ENEMY_WINDOW)
 	var live := 0
 	for rec: Dictionary in enemy_records:
-		var inside := win.has_point(cell_at(rec.pos))
+		var inside := _in_windows(wins, cell_at(rec.pos))
 		if inside != (rec.node != null):
 			if inside:
 				_instantiate_enemy(rec)
@@ -1129,6 +1400,8 @@ func pound_target(cell: Vector2i) -> bool:
 ## A zombie pound: chews through player-placed blocks (any hardness — mass
 ## beats craftsmanship) or a placed door (fixed hp pool on the record).
 func pound(cell: Vector2i, damage: float) -> void:
+	if Net.is_client():
+		return # LAN: enemies pound on the host only
 	if placed_blocks.has(cell):
 		damage_block(cell, damage, 99)
 		return
@@ -1146,6 +1419,7 @@ func pound(cell: Vector2i, damage: float) -> void:
 				if object_cells.get(c) == rec:
 					object_cells.erase(c)
 			_light_dirty = true
+			Net.on_record_removed(rec)
 
 ## Night extras (GD-29): floaters drift in near players after dark — the one
 ## ambient-spawn exception — and disperse at dawn.
@@ -1233,8 +1507,41 @@ func _spawn_wave_zombie(pos: Vector2, mult: float) -> void:
 			return
 
 func _enemy_in_window(rec: Dictionary) -> bool:
-	var half: Vector2i = Constants.ENEMY_WINDOW / 2
-	return Rect2i(_enemy_window_center - half, Constants.ENEMY_WINDOW).has_point(cell_at(rec.pos))
+	return _in_windows(_player_windows(_enemy_window_center, Constants.ENEMY_WINDOW), cell_at(rec.pos))
+
+## Streaming windows follow players (LAN Step 1): on the host every player's
+## surroundings run as nodes (the union of their windows); on a client only
+## the local player's. `center` is the local player's cell (the caller's).
+var _enemy_window_key: Array = []
+
+func _player_windows(center: Vector2i, size: Vector2i) -> Array:
+	var half: Vector2i = size / 2
+	var wins: Array = [Rect2i(center - half, size)]
+	if Net.is_server():
+		for p in get_tree().get_nodes_in_group("player"):
+			if p is Player and is_instance_valid(p):
+				var c := cell_at(p.global_position)
+				if c != center:
+					wins.append(Rect2i(c - half, size))
+	return wins
+
+func _in_windows(wins: Array, cell: Vector2i) -> bool:
+	for w: Rect2i in wins:
+		if w.has_point(cell):
+			return true
+	return false
+
+## Snapped (12-cell) centres of every other player: the windows rebuild when
+## any of them moves a step, not only the local one.
+func _windows_key(center: Vector2i) -> Array:
+	var key: Array = []
+	if Net.is_server():
+		for p in get_tree().get_nodes_in_group("player"):
+			if p is Player and is_instance_valid(p):
+				var c := cell_at(p.global_position)
+				if c != center:
+					key.append(Vector2i(floori(c.x / 12.0), floori(c.y / 12.0)))
+	return key
 
 # --- Items ---
 
@@ -1249,7 +1556,7 @@ var _puff_tex: ImageTexture
 
 ## A short one-shot debris burst where an object breaks into resources (user
 ## request 2026-09-02): the icons then pop out and hover for pickup.
-func spawn_break_puff(pos: Vector2, item_id: String) -> void:
+func spawn_break_puff(pos: Vector2, item_id: String, local_only: bool = false) -> void:
 	if items_root == null:
 		return
 	if _puff_tex == null:
@@ -1274,19 +1581,238 @@ func spawn_break_puff(pos: Vector2, item_id: String) -> void:
 	p.global_position = pos
 	items_root.add_child(p)
 	get_tree().create_timer(p.lifetime + 0.3).timeout.connect(p.queue_free)
+	if not local_only:
+		Net.on_effect("puff", pos, item_id)
 
+## Host-only (LAN): a client's items arrive as WorldSync replicas with the
+## host's net ids, so a local spawn would only ever be a duplicate.
 func spawn_item(id: String, count: int, pos: Vector2, velocity: Vector2 = Vector2.ZERO) -> WorldItem:
+	if Net.is_client() or items_root == null:
+		return null
 	var it: WorldItem = WORLD_ITEM_SCENE.instantiate()
 	it.setup(id, count, velocity)
 	it.global_position = pos
+	it.net_id = next_net_id
+	next_net_id += 1
+	item_by_net_id[it.net_id] = it
 	items_root.add_child(it)
+	Net.on_item_spawned(it)
 	return it
 
 ## Death backpack (CC-07): holds the dropped inventory, floats like any
 ## buoyant item, recovered on touch. Lives under items_root so saves see it.
 func spawn_backpack(slots: Array, pos: Vector2) -> Node2D:
+	if Net.is_client() or items_root == null:
+		return null
 	var pack: Node2D = BACKPACK_SCENE.instantiate()
 	pack.slots = slots
 	pack.global_position = pos
+	pack.net_id = next_net_id
+	next_net_id += 1
+	item_by_net_id[pack.net_id] = pack
+	items_root.add_child(pack)
+	Net.on_backpack_spawned(pack)
+	return pack
+
+# --- LAN replicas (client side; Net/WorldSync calls these, MultiplayerImpl §6) ---
+# Each writes the replica exactly as the host's delta says and repaints —
+# no Net hooks, no water wake, no game logic, so nothing echoes back.
+
+## One cell delta: the three layers, the placed-block ledger entries per
+## layer ({layer: entry} or null) and the structure crack hp (or null).
+func apply_cell_replica(cell: Vector2i, structure: int, back: int, climb: int, placed, damage) -> void:
+	if grid == null or not grid.in_bounds(cell):
+		return
+	grid.set_structure(cell, structure)
+	grid.set_back(cell, back)
+	grid.set_climb(cell, climb)
+	for layer in ["blocks", "back", "climb"]:
+		var key = _key(cell, layer)
+		if placed is Dictionary and placed.has(layer):
+			placed_blocks[key] = (placed[layer] as Dictionary).duplicate()
+		else:
+			placed_blocks.erase(key)
+	if damage == null:
+		structure_damage.erase(cell)
+	else:
+		structure_damage[cell] = float(damage)
+	damage_rev += 1
+	_light_dirty = true
+	_invalidate_sky(cell)
+	if renderer != null:
+		renderer.refresh_cell(cell)
+
+## [index, level] pairs (the sim's own indexing) — the per-tick water delta.
+func apply_water_replica(pairs: PackedInt32Array) -> void:
+	if water_sim == null:
+		return
+	var n := water_sim.levels.size()
+	var i := 0
+	while i + 1 < pairs.size():
+		var idx := pairs[i]
+		if idx >= 0 and idx < n:
+			water_sim.levels[idx] = clampi(pairs[i + 1], 0, WaterSim.MAX_LEVEL)
+		i += 2
+	water_sim.changed_last_tick += pairs.size() / 2 # the light pass watches this
+
+## A whole window of levels, row-major (the periodic resync).
+func apply_water_rect_replica(rect: Rect2i, bytes: PackedByteArray) -> void:
+	if water_sim == null:
+		return
+	rect = rect.intersection(water_sim.bounds)
+	if rect.size.x <= 0 or bytes.size() < rect.size.x * rect.size.y:
+		return
+	var src := 0
+	for y in range(rect.position.y, rect.end.y):
+		var i0: int = water_sim._idx(Vector2i(rect.position.x, y))
+		for dx in rect.size.x:
+			water_sim.levels[i0 + dx] = bytes[src + dx]
+		src += rect.size.x
+	water_sim.changed_last_tick += rect.size.x * rect.size.y
+
+## Compact record dict (WorldSync._compact) -> a new record, instantiated
+## right away when it lands inside the local window.
+func add_record_replica(d: Dictionary) -> Dictionary:
+	var id := String(d.get("id", ""))
+	if not Data.objects.has(id) or not d.has("cell"):
+		return {}
+	var rec := add_object_record(id, d.cell, bool(d.get("placed", false)))
+	_copy_record_fields(rec, d)
+	if _in_windows(_player_windows(_obj_window_center, Constants.OBJECT_WINDOW), rec.cell):
+		_instantiate_record(rec)
+	return rec
+
+func _copy_record_fields(rec: Dictionary, d: Dictionary) -> void:
+	rec.open = bool(d.get("open", rec.open))
+	rec.powered = bool(d.get("powered", rec.powered))
+	rec.unlocked = bool(d.get("unlocked", rec.get("unlocked", false)))
+	rec.outlet = d.get("outlet", rec.outlet)
+	for k in ["link", "door", "grow_day"]:
+		if d.has(k):
+			rec[k] = d[k]
+	if rec.storage != null and d.has("storage"):
+		var slots: Array = (d.storage as Array).duplicate(true)
+		slots.resize(rec.storage.slots.size())
+		rec.storage.slots = slots
+		rec.storage.changed.emit() # an open chest UI refreshes; the Net hook is a no-op here
+	if rec.def.kind == "door":
+		_light_dirty = true
+		for c in _record_cells(rec):
+			_invalidate_sky(c)
+
+## The record anchored at `cell` with this id (a later record may own the
+## shared cell in object_cells, so fall back to a scan).
+func _record_replica_at(cell: Vector2i, id: String) -> Dictionary:
+	var rec: Dictionary = object_cells.get(cell, {})
+	if not rec.is_empty() and rec.cell == cell and (id == "" or String(rec.id) == id):
+		return rec
+	for r: Dictionary in object_records:
+		if r.cell == cell and (id == "" or String(r.id) == id):
+			return r
+	return {}
+
+func remove_record_replica(cell: Vector2i, id: String) -> void:
+	var rec := _record_replica_at(cell, id)
+	if rec.is_empty():
+		return
+	var obj = rec.node
+	rec.node = null
+	if obj != null and is_instance_valid(obj):
+		pumps.erase(obj)
+		obj.queue_free()
+	object_records.erase(rec)
+	for c in _record_cells(rec):
+		if object_cells.get(c) == rec:
+			object_cells.erase(c)
+		if rec.def.kind == "door":
+			_invalidate_sky(c)
+	_light_dirty = true
+
+func change_record_replica(cell: Vector2i, fields: Dictionary) -> void:
+	var rec := _record_replica_at(cell, String(fields.get("id", "")))
+	if rec.is_empty():
+		return
+	_copy_record_fields(rec, fields)
+	refresh_record_node(rec)
+
+## Push a record's replicable state onto its live node (open look, lock,
+## power, outlet) without emitting the host hooks. Storage is shared already.
+func refresh_record_node(rec: Dictionary) -> void:
+	var obj = rec.get("node")
+	if obj == null or not is_instance_valid(obj):
+		return
+	obj.apply_replica_state({"open": rec.open, "powered": rec.powered, "unlocked": rec.get("unlocked", false),
+		"outlet": rec.outlet})
+
+## Items (client): created with the host's net id, physics runs locally,
+## pickup never (WorldItem._try_pickup is host-only).
+func spawn_item_replica(net_id: int, id: String, count: int, pos: Vector2, vel: Vector2) -> WorldItem:
+	if items_root == null:
+		return null
+	var existing = item_by_net_id.get(net_id)
+	if existing != null and is_instance_valid(existing):
+		return existing as WorldItem
+	var it: WorldItem = WORLD_ITEM_SCENE.instantiate()
+	it.setup(id, count, vel)
+	it.global_position = pos
+	it.net_id = net_id
+	item_by_net_id[net_id] = it
+	items_root.add_child(it)
+	return it
+
+func spawn_backpack_replica(net_id: int, slots: Array, pos: Vector2) -> Node2D:
+	if items_root == null:
+		return null
+	var existing = item_by_net_id.get(net_id)
+	if existing != null and is_instance_valid(existing):
+		return existing
+	var pack: Node2D = BACKPACK_SCENE.instantiate()
+	pack.slots = slots.duplicate(true)
+	pack.global_position = pos
+	pack.net_id = net_id
+	item_by_net_id[net_id] = pack
 	items_root.add_child(pack)
 	return pack
+
+## Item or backpack by net id (both share the id space).
+func remove_item_replica(net_id: int) -> void:
+	var node = item_by_net_id.get(net_id)
+	item_by_net_id.erase(net_id)
+	if node != null and is_instance_valid(node):
+		node.queue_free()
+
+## [net_id, pos, vel] x N: the host's periodic position resync.
+func apply_item_positions(packed: Array) -> void:
+	var i := 0
+	while i + 2 < packed.size():
+		var node = item_by_net_id.get(int(packed[i]))
+		if node != null and is_instance_valid(node):
+			node.global_position = packed[i + 1]
+			node.velocity = packed[i + 2]
+		i += 3
+
+## READY handshake: drop every item/backpack (the host re-lists them with ids).
+func reset_items_replica() -> void:
+	item_by_net_id.clear()
+	if items_root == null:
+		return
+	for it in items_root.get_children():
+		if it is WorldItem or it is Backpack:
+			it.queue_free()
+
+func apply_clock_replica(p_time_of_day: float, p_day_count: int, p_next_red_moon_day: int, p_red_moon_active: bool) -> void:
+	time_of_day = p_time_of_day
+	day_count = p_day_count
+	next_red_moon_day = p_next_red_moon_day
+	red_moon_active = p_red_moon_active
+
+## [[cell, on], ...] for wired lights and breakers: records + live nodes,
+## never recomputed here (update_power is host-only).
+func apply_power_replica(lights: Array, breakers: Array) -> void:
+	for row in lights + breakers:
+		var rec: Dictionary = object_cells.get(row[0], {})
+		if rec.is_empty():
+			continue
+		rec.powered = bool(row[1])
+		refresh_record_node(rec)
+	_light_dirty = true

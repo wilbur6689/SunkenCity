@@ -9,6 +9,7 @@ extends Node2D
 var slots: Array = [] # inventory stack dicts (mods intact, LT-05..07)
 var velocity: Vector2 = Vector2.ZERO
 var pickup_delay: float = Constants.BACKPACK_PICKUP_DELAY
+var net_id: int = 0 # host-assigned (World.spawn_backpack)
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -47,8 +48,15 @@ func _physics_process(delta: float) -> void:
 	if pickup_delay <= 0.0:
 		_try_recover()
 
+func _exit_tree() -> void:
+	var w := get_node_or_null("/root/World")
+	if w != null and net_id != 0 and w.item_by_net_id.get(net_id) == self:
+		w.item_by_net_id.erase(net_id)
+
 ## Recover-on-touch: stacks go back whole (mods intact); leftovers stay.
 func _try_recover() -> void:
+	if Net.is_client():
+		return # host-only; the take replicates as _pack_remove
 	for p in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) > 3.0 * Constants.BLOCK_SIZE: # 24 px
 			continue
@@ -66,6 +74,7 @@ func _try_recover() -> void:
 		slots = kept
 		if kept.is_empty():
 			p.message.emit("Backpack recovered")
+			Net.on_backpack_removed(self, p)
 			queue_free()
 		else:
 			p.message.emit("Backpack too full to take everything")

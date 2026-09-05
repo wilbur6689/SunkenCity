@@ -103,7 +103,7 @@ lock as the roof hatch, and they seal water); the central 20% of the map is the 
 cluster** (2026-09-02): all towers full height (56 floors), gaps of 1–3 blocks, and each tower
 rides a 0–5 row stone plinth (**crown lift**) picked so neighbouring roofs differ by 2–5
 blocks — a varied but hoppable skyline for the roof-locked early game
-(`scenes/test/_cluster_check.tscn` verifies it). The wood wall got its own dark vertical-plank tile
+(superseded by the districts city, see below; `district_smoke.tscn` verifies the skyline now). The wood wall got its own dark vertical-plank tile
 (atlas row 8, `WorldGrid.M.WOODWALL`; tres + `gen_placeholder_art.py` updated). The **Flora
 Editor** (`res://scenes/tools/flora_editor.tscn`) authors category-`flora` objects (type, growth
 chain `grows_into`/`grow_chance`, `flora_weight` spawn bias, no-item flag, up to 16x32-cell
@@ -225,8 +225,14 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   covers the full persistence round trip; run it after touching World state or SaveGame.
   `m4_smoke` covers enemies/combat/death loop/red moons; run it after touching enemies, combat,
   or the interaction layer.
-- Skyline shape report: `--headless res://scenes/test/_height_report.tscn` — 10 seeds, floor
-  counts of the central 80% vs the edge 20% vs the crown (dev analysis, not a gate).
+- Districts gate: `--headless res://scenes/test/district_smoke.tscn` — tower count, district
+  plan, skyline, per-district pitch, floor-level bands, and the gen/RAM/save/water budget fence;
+  run it after touching `CityGen`, `World.towers`, or the world save.
+- LAN gates (2026-09-05): `--headless res://scenes/test/lan_smoke.tscn` (two `Net` instances in
+  one process: handshake, refusals, roster, leave/close — 36 checks) and `python
+  tools/lan_smoke.py` (two headless processes on localhost: join + hashes + move, rejoin-resume,
+  `--net-mutate`, host close; logs in `tools/_lan_smoke/`, ~3 min). Run both after touching
+  anything under `scripts/net/`, `Players`, `SaveGame`, or the World mutation entry points.
 - Regenerate placeholder art: `python tools/gen_placeholder_art.py` (tiles, character, item icons,
   object sprites, enemy sprites, light texture — deterministic).
 - Convert music drops: `python tools/convert_music.py` (WAVs from `docs/Examples/Audio/music`
@@ -312,7 +318,7 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   (`SLAB_T`/`WALL_T` 2, `DOOR_H` 6, ladders 2 wide, crawl vent 2 rows), rows 0–60 load-bearing;
   `tower/m0/m1/m2/m4_smoke` converted (cells ×2, standing rows 2r+1, px tolerances unchanged,
   water units ×4, light levels ×2) and passing. NOT yet converted (Phases 2–3): `CityGen`/`EnemyGen`
-  and their gates (`m3/m5/pocket/roof/save/_cluster_check`), the editors + Python room tools, map/
+  and their gates (`m3/m5/pocket/roof/save`), the editors + Python room tools, map/
   minimap macro grid, balance, docs canon — the city scene does not play correctly until Phase 3.
 - **Half-size blocks, Phase 2** (2026-09-04): tooling on the cell grid. `build_room_packs.py`
   keeps the pack modules' 16 px art contract (`ART_UNIT`) and writes `size` as cells
@@ -328,7 +334,7 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   (cells): `SLAB_T 2`, `FLOOR_H 12` (= `SLAB_T` + `FLOOR_OPEN 10`), `WALL_T 2`, `OUTER_WALL_T 4`,
   `DOOR_H/W 6/2`, `LADDER_W 2`, `STAIR_W 6`, `SHAFT_W 6`, `BREACH 4`, `CRAWL_GAP 2`, `STAND_GAP 3`,
   `JUMP_CELLS 6`, `MIN_ROOM_W 16`, `POCKET_DOOR_INSET 4`; world 4800x800, `WATERLINE 104`,
-  `GROUND 720`, tower widths 96-152, cluster gaps 2-6, crown lift 0-10 (steps 4-10), annex
+  `GROUND 720`, tower widths 96-152, cluster gaps 2-6 (5-10 citywide since 2026-09-05), crown lift 0-10 (steps 4-10), annex
   gap/width/margin 160/840/160, pockets 16-44 wide. Column plan per tower: outer wall x0..x0+3 |
   stair gap x0+4..x0+9 (ladder x0+8..x0+9) | stair wall x0+10..x0+11 | wing x0+12..mid-6 | shaft
   wall mid-5..mid-4 | shaft mid-3..mid+2 | mirrored east. Room stamping snaps furniture to the
@@ -338,7 +344,73 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   `World.portal_target` lands the traveller centred on the 2-wide doorway (a body centred on the
   record's west cell overlapped the wall and got unstuck out of the room). Gates converted (cells
   x2, 1600-wide slices, water units x4, light x2, per-cell demolition HP) and passing: `m3`, `m5`,
-  `pocket`, `roof`, `save`, `_cluster_check`.
+  `pocket`, `roof`, `save`.
+- **Districts** (2026-09-04, `docs/DistrictsOverhaul.md`; tracker section M3b in the checklist):
+  the city is a flat slab of **52 towers** at jumpable 5–10-cell gaps (`CityGen.TOWER_COUNT`,
+  `WORLD_W` 7600; 2–6 gaps were tried first and hid the water in a slit, user request 2026-09-05), run centred between `OCEAN_MARGIN`s), crowns within `SKYLINE_BAND` 10 cells of
+  `CROWN_ROW` (neighbours step 4–10), every tower to the ground (plinth = remainder of crown-to-
+  ground ÷ pitch). `_assign_districts` reserves the 6 centre slots residential, places five 5–6-
+  tower clusters (business/commercial/civil/industrial/construction) with a 1-tower residential
+  buffer (every valid start enumerated, shrink on failure), residential fills the rest. A tower's
+  district sets its zone for EVERY floor (mixed-use is gone), its pitch (`DISTRICT_FLOOR_H`: 12/12/
+  14/14/20/12), its template width filter (`DISTRICT_ROOM_W`; industrial wings are often one open
+  room) and a rare triple-wide roll (`TRIPLE_WIDE`, industrial/commercial: `_column_plan` builds N
+  wings / N−1 shafts, one hatch per shaft). Construction = metal frame + wood slabs/partitions, back
+  walls only below the waterline, `CONSTRUCTION_BREACH` 0.95, never sealed; it keeps the dry cap
+  and hatch. Tower dicts carry `district/floor_h/wings/shafts/lift/center`; `FLOOR_H` (12) is only
+  the default/minimum. **No authored medical room or supplies** at the start any more (spawn = the
+  centre-most centre tower's roof). Stations/relays/debris sit in the ocean margins (gaps are too
+  tight). Pockets pack first-fit into an annex sized by `annex_width(world_w)` (~35 % of the city).
+  **Floor-level bands:** `World.towers` (summaries, saved) + `World.floor_band_at` resolve a floor to
+  its CEILING row's band for enemies (`add_enemy_record`), loot (`LootGen`, `EnemyGen`) and the F3
+  label; `band_at` stays per cell for the cold/crush gates. Surface wall safes drop to
+  `SURFACE_SAFE_CHANCE` so GL-28 holds on the doubled city. World saves are `WORLD_VERSION` 3
+  (compact object records: id table + `PackedInt32Array` + sparse extras — 20 MB → ~1 MB).
+  `construction` is a zone everywhere zones are listed (editors, `check_room_variants`,
+  `interior_details`, loot tables); its object pack is `tools/rooms_pack/construction_site.py`
+  and rooms.json carries `con_site_a..e` plus tall `ind_hall_a..c` (18 open rows; Room Editor cap
+  18). Gate: `district_smoke.tscn`; `_cluster_check`/`_height_report` were retired.
+- **Ladders build 2 cells wide** (2026-09-05, user request): one `ladder` item places the aimed
+  cell + its right neighbour (`World.can_place_block`/`place_block` climb branch, both halves
+  player-owned; `World.ladder_pair` resolves either half), pickup/break lifts the pair as one item,
+  the ghost is 2 wide. Art: the 24 px atlas ladder row is col 0 = left rail + rung, col 1 = right
+  rail + rung, col 2 = lone single (`gen_tiles_24.py`); `StructureRenderer` picks the half by
+  neighbour and repaints neighbours on change, so a pair reads as one H per row with a single rung;
+  the 16 px block icon is an H too. Covered in `m1_smoke` J2.
+- **Old-format saves** (2026-09-05): the title lists them greyed "(old format)" but SELECTABLE, so
+  Delete reaches them; DIVE refuses them with a hint; a **Clear old saves (N)** button (visible only
+  when some exist, two-click confirm) runs `SaveGame.delete_stale_saves()` over worlds AND
+  characters (`world_is_stale`/`character_is_stale`/`stale_saves`). Covered in `title_smoke` D.
+- **LAN multiplayer** (2026-09-05, Steps 1–7 of `docs/technical/Multiplayer.md` §11; the build
+  contract is `docs/technical/MultiplayerImpl.md`): a **listen server, relay-only** — the host
+  runs every player's full `Player._physics_process` (state machine, vitals AND
+  `Interaction.tick`) from the client's relayed input snapshot, so placing/mining/scrapping/
+  combat/doors/pickups need no request RPCs; on a client `Interaction.view_only` computes only
+  target/hover/cursor/ghost and every body is a puppet (`Player.is_puppet()`) interpolating host
+  state. `Net` autoload (`scripts/net/net.gd`: `mode` OFFLINE/HOST/CLIENT, `is_server()`,
+  `local_player()`, `peers`, ENet host/join, UDP beacon on `LAN_BEACON_PORT`, build-id handshake
+  `_hello/_accepted/_refused`, ping/bytes) owns RPC endpoint children created from
+  `scripts/net/*.gd` when present: `WorldSync` (cells/water window/records/items/backpacks/clock/
+  power/effects, per-peer queues until the client's `_ready_for_world`), `EnemySync` (puppet
+  enemies), `Snapshot` (`SaveGame.world_payload` in `NET_CHUNK_BYTES` chunks), `CharSync`
+  (host → owner character state, final-state push, `resume_states`), `PlayerSpawn`
+  (`City/Players/<peer_id>` bodies via `scripts/city/players.gd`). Per player: child `Sync`
+  (`PlayerSync`: 12 B input in, 30 B state out incl. held item/lamp/suit, owner events
+  `_ev_*`) and `Actions` (`PlayerActions`: every inventory-UI mutation as a named slot action,
+  optimistic on the client, validated on the host). World mutations call `Net.on_*` hooks
+  (no-ops offline); `World._physics_process` ticks clock/water/enemies only when
+  `Net.is_server()`; object/enemy windows are the union of all players on the host. Title:
+  MULTIPLAYER → `scenes/ui/multiplayer_menu.tscn` (Host / Join, LAN host list, `ip:port`);
+  pause menu: roster + LEAVE / CLOSE WORLD; F3: `net:`/`sync:` lines. Dev args: `--host[=port]`
+  (+ `--seed/--world/--character/--cap`), `--join=ip[:port] --character=name`,
+  `--net-probe=SECS` (NETPROBE hash lines, exits through the real leave/close path),
+  `--net-drive` (client walks right 2 s), `--net-mutate` (host mutates beside a joiner). NOT
+  done: prediction (MP-02), a real two-machine session, client-side m0/m4 gate variants, wave
+  budget MP-06, friendly fire; remote SFX aren't heard on the host and water outside every
+  client's window stays stale until it comes near.
+- **Gate runs:** `--quit-after N` counts FRAMES, not seconds - it truncates the input-driven gates
+  (`m0/m1/m2/m4/tower`) mid-run while still exiting 0. Run gates with a shell `timeout` only, and
+  read the final "N checks, M failures" line; a parse error makes a headless scene hang forever.
 - **Half-size blocks, Phases 4-5** (2026-09-04, overhaul complete): the map side (`MapReveal`,
   minimap, `map_view`, `MapColors`) works on `Constants.MAP_CELL` (2) macro cells via
   `World.map_macro_for` / `World.map_bounds`, so reveal radius, minimap window, map image and the
@@ -355,7 +427,8 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   drops iron; retune the Stage 1-2 loops in play). Docs canon updated: GameOverview scale table,
   OpenQuestions WS-01/02/03/04/05/11/12/15/30 + CT-01 amendments, TileArt (24 px atlas), WaterPhysics,
   MVP-checklist, Stage 2-5 band rows. Feel follow-ups (not done): a 2x2 placement brush (building
-  is 4x the clicks), a left/right ladder autotile, player walls being 8 px unless built double.
+  is 4x the clicks), player walls being 8 px unless built double. (The left/right ladder autotile
+  landed 2026-09-05.)
 - **UI size slider** (`UIScale` autoload, 2026-09-02): the pause menu's UI Size slider (1.0-2.0,
   1.0 = current/smallest) sets `get_window().content_scale_factor` — the engine-native UI scale
   (correct anchoring for free). Because that also scales the world, `Player._apply_zoom` divides
@@ -421,7 +494,10 @@ These are settled and should be treated as canon in all docs and future code:
   back into `GameOverview.md` and into deeper docs under `docs/technical/`.
 - `docs/technical/` — in-depth technical design docs, added as design areas get resolved.
   `GameOverview.md`'s "Document Map" section lists the planned topics. First doc:
-  `WaterPhysics.md` (cellular tile water, pumps, endgame drain).
+  `WaterPhysics.md` (cellular tile water, pumps, endgame drain). `Multiplayer.md` (2026-09-05) is the
+  LAN design: listen server, host owns the world and simulates every player from replicated input
+  snapshots, clients own only input + lighting/map/UI, join = the world-save payload as a snapshot,
+  then cell/water/object/enemy/item/clock deltas; §4 lists the seams to refactor first, §11 the plan.
 
 When answering design questions, questions cross-reference each other by ID (e.g. GD-19 defers to
 GL-12) — check whether a referenced question was already decided before asking again.

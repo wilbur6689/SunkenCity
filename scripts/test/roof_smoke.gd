@@ -268,6 +268,15 @@ func _ready() -> void:
 	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_young", "1st morning: sapling -> young")
 	World.day_count += 1; World._grow_trees()
 	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_mature", "2nd morning: young -> mature (fully grown)")
+	# Planter box (user request 2026-09-04): three sections, a tree each.
+	var box := World.place_object("planter_box", Vector2i(10, 59), true)
+	check(box != null and World.plant_in_planter(box, Vector2i(10, 59)) and World.plant_in_planter(box, Vector2i(13, 59)) \
+			and World.plant_in_planter(box, Vector2i(15, 59)), "a planter box takes a seed over each of its three sections")
+	check(World.object_record_at(Vector2i(10, 57)).get("id", "") == "tree_sapling" and World.object_record_at(Vector2i(12, 57)).get("id", "") == "tree_sapling" \
+			and World.object_record_at(Vector2i(14, 57)).get("id", "") == "tree_sapling", "three saplings stand on the box")
+	check(not World.plant_in_planter(box, Vector2i(11, 59)), "a full section refuses a fourth seed")
+	check(World.water_plant_above(Vector2i(10, 59)) == 1 and World.object_record_at(Vector2i(10, 57)).get("id", "") == "tree_young",
+			"a bucket waters the first section's sapling up a stage")
 	# Room draw planes (user request 2026-09-01): decals under wall pieces
 	# under furniture (the player wins by tree order).
 	for y2 in range(48, 60):

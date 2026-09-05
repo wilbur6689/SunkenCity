@@ -1,9 +1,9 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/city/city.gd" id="1_city"]
 [ext_resource type="Script" path="res://scripts/world/backdrop.gd" id="2_backdrop"]
 [ext_resource type="Script" path="res://scripts/world/structure_renderer.gd" id="3_structure"]
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="4_player"]
+[ext_resource type="Script" path="res://scripts/city/players.gd" id="4_players"]
 [ext_resource type="Script" path="res://scripts/world/water_renderer.gd" id="5_water"]
 [ext_resource type="Script" path="res://scripts/world/light_renderer.gd" id="6_light"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="7_hud"]
@@ -37,7 +37,8 @@ script = ExtResource("3_structure")
 
 [node name="Items" type="Node2D" parent="."]
 
-[node name="Player" parent="." instance=ExtResource("4_player")]
+[node name="Players" type="Node2D" parent="."]
+script = ExtResource("4_players")
 
 [node name="WaterRenderer" type="Node2D" parent="."]
 script = ExtResource("5_water")

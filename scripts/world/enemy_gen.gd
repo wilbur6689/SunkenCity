@@ -22,10 +22,12 @@ static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 	# --- Tower interiors ---
 	var spawn_tower: Dictionary = gen.get("spawn_tower", {})
 	for tower in gen.tower_list:
+		var fh: int = int(tower.get("floor_h", CityGen.FLOOR_H)) # district floor pitch
 		for f in int(tower.floors):
 			if f == 0 and not spawn_tower.is_empty() and tower == spawn_tower:
 				continue # keep the roof drop-off tower's top floor clear — no ambush on landing
-			var sr: int = int(tower.top) + f * CityGen.FLOOR_H + CityGen.FLOOR_H - 1
+			var ceiling: int = int(tower.top) + f * fh
+			var sr: int = ceiling + fh - 1
 			for zone in tower.zones:
 				var zx0 := int(zone[0])
 				var zx1 := int(zone[1])
@@ -39,7 +41,7 @@ static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 					for i in n:
 						var tid := "crawler" if rng.randf() < float(cfg.get("wing_crawler_chance", 0.3)) else "walker"
 						_stand(out, rng, grid, tid, zx0, zx1, sr)
-				elif _band(sr - waterline) in ["dark", "crush"]:
+				elif _band(ceiling - waterline) in ["dark", "crush"]: # the floor's band = its ceiling row
 					if rng.randf() < float(cfg.get("wing_drowned_chance", 0.4)):
 						_stand(out, rng, grid, "drowned", zx0, zx1, sr)
 	# --- Open water ---

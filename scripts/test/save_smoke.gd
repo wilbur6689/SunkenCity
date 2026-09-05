@@ -37,7 +37,7 @@ func _ready() -> void:
 	print("== A. play a little")
 	var city: Node2D = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city)
-	var player: Player = city.get_node("Player")
+	var player: Player = city.player
 	player.set_multiplayer_authority(2)
 	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands")
 	var sc := World.cell_at(World.spawn_position)
@@ -89,7 +89,7 @@ func _ready() -> void:
 	SaveGame.pending_character = CNAME
 	var city2: Node2D = load("res://scenes/city/city.tscn").instantiate()
 	add_child(city2) # _ready -> _boot_loaded runs synchronously here
-	var player2: Player = city2.get_node("Player")
+	var player2: Player = city2.player
 	player2.set_multiplayer_authority(2)
 	check(World.grid.content_hash() == grid_hash, "grid restored bit-for-bit (placed block included)")
 	check(hash(World.water_sim.levels) == water_hash, "water levels restored exactly")

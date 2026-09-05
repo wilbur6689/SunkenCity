@@ -157,7 +157,7 @@ func play_sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 
 ## The pool the current situation calls for: threat music in the deep
 ## danger bands, adventure everywhere else (title screen included).
 func desired_pool() -> String:
-	var p := get_tree().get_first_node_in_group("player") as Node2D
+	var p := Net.local_player() as Node2D
 	if p != null and World.is_ready():
 		var band: String = World.band_at(World.cell_at(p.global_position))
 		if band == "dark" or band == "crush":
@@ -180,7 +180,7 @@ func _update_ambient(delta: float) -> void:
 			_amb_cycle = randf_range(Constants.AMBIENT_OFF_MIN, Constants.AMBIENT_OFF_MAX)
 	var submerged := false
 	var inside := false
-	var p := get_tree().get_first_node_in_group("player")
+	var p := Net.local_player()
 	if p != null and World.is_ready():
 		submerged = p.get("submerged") == true
 		inside = World.has_back_wall_cell(World.cell_at(p.global_position))

@@ -43,9 +43,10 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
 - **Setting:** A megacity deliberately flooded to contain the zombie virus. The water level sits
   near the tops of the skyscrapers; everything below is submerged. The story of who made that call
   is told later (story development deferred until after the MVP).
-- **World:** One finite city per world, procedurally generated from a seed. The skyline is a bell
-  curve — the largest towers in the center, buildings getting shorter and farther apart toward the
-  edges, most outer buildings entirely underwater, and large open-water areas at the map edges.
+- **World:** One finite city per world, procedurally generated from a seed. The skyline is a
+  near-flat slab of 52 towers at jumpable 5–10-cell gaps, divided horizontally into **districts** (clusters of
+  one building type — see [DistrictsOverhaul.md](DistrictsOverhaul.md), 2026-09-04); open water and
+  a seafloor beyond the last tower on each side. *(Replaced the centre-out bell curve.)*
 - **Materials:** Everything the player finds can be classified/scrapped down to basic parts —
   wood, metal, plastic, stone, cloth, etc.
 - **Base building:** Players build and fortify a base using raw materials, starting on the
@@ -242,31 +243,37 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 
 ## The City
 
-- **Dimensions:** ~26 double-wide towers; the central 80 % of the map is uniformly high-rise —
-  a ~50-floor base with variance (~39–56 floors, ~600 blocks ≈ 600 ft to ground), so the whole
-  city reads as one skyline with the starting tower merely its tallest point; only the edge 20 %
-  is all shorter (4–34 floors, tapering out). World ≈ 4,800 × 800 blocks (8 px cells; the same
-  pixel extent as the old 2,400 × 400).
-  *(2026-09-01: replaced the centre-out bell curve, which left mid-city at half the crown.)*
+- **Dimensions (districts, 2026-09-04):** **52 double-wide towers** (rare triple-wide in
+  industrial/commercial) at **jumpable 5–10-cell gaps** everywhere; every crown within **10 cells**
+  of the others (neighbours step 4–10), every tower a full shaft to the ground (~600 cells ≈ 600 ft).
+  World ≈ **7,600 × 800 cells** of city (~6,900 of towers plus ocean margins) + the pocket annex.
+  The city is divided into **districts** — clusters of 5–6 towers of one building type with a
+  1-tower residential buffer between any two, a reserved 6-tower residential centre, and
+  residential filling the rest — see [DistrictsOverhaul.md](DistrictsOverhaul.md).
+  *(2026-09-01: replaced the centre-out bell curve; 2026-09-04: flattened, doubled, districted.)*
 - **Generation:** curated room templates, procedurally assembled — rooms are proc-generated
   during development, the keepers saved as templates, and the game stitches templates into
   floors and towers before applying wear (breaches, collapse, flooding). Worlds are seed-based
   and shareable.
-- **Building types (room zones):** residential · business (small service firms — lawyers,
-  accountants, agencies) · commercial (retail, office) · industrial · civil (hospital, police, city
-  admin, post office) — **mixed-use per floor**, driving template pools and scrap flavor.
-  *(2026-09-01: business added; "hospital" renamed civil.)* Every tower has an elevator shaft as a vertical highway.
+- **Building types (districts / room zones):** residential · business (small service firms —
+  lawyers, accountants, agencies) · commercial (retail, office) · industrial · civil (hospital,
+  police, city admin, post office) · **construction** (unfinished metal-and-wood frames, flooded on
+  nearly every submerged floor) — **one type per tower** (mixed-use per floor is gone), driving
+  template pools, floor height (12 / 14 / 20 cells), room width and scrap flavor.
+  *(2026-09-01: business added; "hospital" renamed civil. 2026-09-04: construction added, per-tower.)*
+  Every tower has an elevator shaft between its wings as a vertical highway.
 - **Flooding is connectivity:** breaches are placed at gen (more with depth); the water sim runs
   to equilibrium, so whatever connects to the ocean floods and sealed rooms keep their air —
   air pockets emerge, never authored.
 - **Palette:** concrete, steel, brick, wood, glass (no drywall); glass is a fragile transparent
   block; furniture is scrappable multi-tile objects, never blocks.
-- **City profile:** a uniform high-rise skyline with the crown at the centre; only the edge
-  fifth is shorter, sparser, fully submerged buildings; open water (and an invisible wall) at
-  the map borders; light floating debris on the surface. Stairwell ladders hug the room-side
+- **City profile:** a flat slab of towers — The Dry is one horizontal rooftop layer — ending at
+  open water (and an invisible wall) at the map borders; light floating debris on the surface. Stairwell ladders hug the room-side
   wall so enemies can chase through wing doorways onto them (2026-09-01). Ground level is bare concrete roads — The Crush's floor — with nothing below
   it in MVP.
-- **Landmarks:** the starting hospital tower and the pump relay stations only.
+- **Landmarks:** the pump relay stations only. *(2026-09-04: the authored hospital / medical room
+  at the start is gone — hospital rooms are civil-district templates; the run starts on a bare roof
+  with no supplies.)*
 - **Interior pockets (2026-09-01):** ~30 % of floors have an apartment door on the back
   wall beside the stairwell (one per floor, random wing) — wood through The Shallows (found open, closed, or deadbolted —
   pry bar), chained metal below (bolt cutters; the GL-09 tool ladder). It leads to a room of its
@@ -276,8 +283,9 @@ no environmental hazards in MVP (electrified water is on the ideas list).
   fast travel — the no-teleportation rule (Travel) still stands.
 - **Depth scaling:** the farther below the surface, the harder the enemies and the better the
   loot; the depth color grade differentiates the five bands visually in MVP.
-- **Tech model:** the whole ~4M-tile world lives in RAM on the host (3 byte layers + water); chunks only schedule
-  rendering/simulation; no structural-integrity sim (placed blocks float).
+- **Tech model:** the whole ~8M-cell world (city + annex, ~32 MB) lives in RAM on the host (3 byte
+  layers + water); chunks only schedule rendering/simulation; no structural-integrity sim (placed
+  blocks float). Budget fence: gen ≤ 5 s, RAM ≤ 64 MB, save ≤ 10 MB.
 - **Endgame:** reach ground level and drain the whole city via the mega-pump relay network.
 
 ---
@@ -301,6 +309,7 @@ environmental storytelling (CT-27).
 - Enemy design, red moon events, and depth-based difficulty scaling
 - Base building mechanics
 - Building power/electrical systems (breakers, powered lights, water interaction)
-- Character controller (swimming, diving, platforming) and LAN networking model
+- Character controller (swimming, diving, platforming)
+- [technical/Multiplayer.md](technical/Multiplayer.md) — LAN listen-server model: host authority, input relay, join snapshot, delta streams, per-character state, implementation plan ✅
 - Skills, player level, and the ability tech tree
 - [technical/TileArt.md](technical/TileArt.md) — tile/sprite specifications (8×8 blocks from a 24 px atlas, 30px character, Terraria-style textured blocks) ✅

@@ -177,14 +177,15 @@ def water(rng, _o, _t, _h):
 
 
 def ladder(rng, o, t, h):
+    """Block icon: an H - two rails and one rung (the ladder builds 2 cells
+    wide since 2026-09-05; the world tiles are in gen_tiles_24.py)."""
     tile = Tile()
     for y in range(T):
-        for x in (3, 4, 11, 12):
-            tile.set(x, y, t[1] if x in (3, 11) else t[2])
-    for ry in (2, 7, 12):
-        for x in range(3, 13):
-            tile.set(x, ry, t[3]); tile.set(x, ry + 1, o)
-        tile.set(3, ry, h)
+        for x in (2, 3, 12, 13):
+            tile.set(x, y, t[1] if x in (2, 12) else t[2])
+        tile.set(3, y, h) if y % 4 == 0 else None
+    for x in range(4, 12):
+        tile.set(x, 7, t[3]); tile.set(x, 8, o)
     return tile
 
 
@@ -620,6 +621,7 @@ OBJECTS = {  # id: (w, h) in blocks — must match data/objects.json
     "safe": (1, 1),
     "broken_ladder": (1, 1),
     "planter": (1, 1),           # farm pot: plant a tree seed, grows under sky
+    "planter_box": (3, 1),       # long box: three pot sections (user request 2026-09-04)
     # Tiered scrap benches (2026-09-02): bulk-melt a stage's objects to material
     "wood_scrap_bench": (2, 2), "metal_scrap_bench": (2, 2), "iron_scrap_bench": (2, 2),
     "steel_scrap_bench": (2, 2), "master_scrap_bench": (2, 2),
@@ -775,6 +777,18 @@ def _draw_object(d, oid, W, H):
         d.rectangle([4, H - 8, W - 5, H - 7], fill=(58, 42, 30))            # soil
         d.line([W // 2, H - 8, W // 2, H - 11], fill=(64, 122, 64))         # sprout
         d.point((W // 2 - 1, H - 10), fill=(96, 168, 96)); d.point((W // 2 + 1, H - 11), fill=(96, 168, 96))
+    elif oid == "planter_box":
+        # A long wooden trough with three soil sections (user request 2026-09-04).
+        _box(d, 1, H - 8, W - 2, H - 1, wood)                                # trough
+        d.rectangle([0, H - 10, W - 1, H - 8], fill=wood[1][3], outline=OUT) # top rail
+        for k in range(3):
+            x0 = k * (W // 3)
+            d.rectangle([x0 + 3, H - 9, x0 + W // 3 - 4, H - 8], fill=(58, 42, 30))  # soil
+            cx = x0 + W // 6
+            d.line([cx, H - 9, cx, H - 12], fill=(64, 122, 64))                      # sprout
+            d.point((cx - 1, H - 11), fill=(96, 168, 96)); d.point((cx + 1, H - 12), fill=(96, 168, 96))
+        for x in (W // 3, 2 * W // 3):
+            d.line([x, H - 8, x, H - 2], fill=wood[1][0])                             # dividers
     elif oid == "room_door_barred":
         # Wood door faced with riveted metal bars (user request 2026-09-02).
         frame = (OUT, [(52, 40, 30), (70, 54, 40), (88, 68, 50), (104, 82, 60)], (124, 100, 74))

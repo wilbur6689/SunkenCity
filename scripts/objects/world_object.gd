@@ -108,6 +108,29 @@ func restore_state(st: Dictionary) -> void:
 		storage.slots = slots
 		storage.changed.emit()
 
+## LAN client replica (World.refresh_record_node): the record's state onto
+## the node, node-only — no World notify, no hooks, no sounds.
+func apply_replica_state(st: Dictionary) -> void:
+	unlocked = bool(st.get("unlocked", unlocked))
+	outlet_cell = st.get("outlet", outlet_cell)
+	match def.kind:
+		"door":
+			_set_door_open(bool(st.get("open", open)))
+		"portal":
+			set_open_look(bool(st.get("open", open)))
+		"breaker":
+			powered_on = bool(st.get("powered", powered_on))
+		"light":
+			if def.get("powered", false):
+				set_powered(bool(st.get("powered", powered_on)))
+
+func _set_door_open(v: bool) -> void:
+	open = v
+	if _shape != null:
+		_shape.disabled = v
+	if sprite != null:
+		sprite.modulate.a = 0.45 if v else 1.0
+
 ## Objects that respond to E (everything except wired-in lights).
 func is_interactable() -> bool:
 	return def.kind != "light" and def.kind != "decal"
@@ -162,11 +185,16 @@ func _try_unlock(player) -> String:
 			need = "a pry bar or better"
 		return "Locked — needs " + need
 	unlocked = true
+	World.notify_record_state(self)
 	Audio.play_sfx("door_latch", center())
 	return ""
 
 ## E-key interaction. Returns a short HUD message ("" for none).
+## On a LAN client the host runs it from the replicated input (MultiplayerImpl
+## §0); the local node is a replica and must not act.
 func interact(player) -> String:
+	if Net.is_client():
+		return ""
 	match def.kind:
 		"portal":
 			if not open:
@@ -191,7 +219,7 @@ func interact(player) -> String:
 			open = not open
 			_shape.disabled = open
 			sprite.modulate.a = 0.45 if open else 1.0
-			World.notify_object_changed(self) # doors seal water; toggling wakes it
+			World.notify_object_changed(self) # doors seal water; toggling wakes it (+ replicates)
 			Audio.play_sfx("door_open" if open else "door_creak_1", center())
 			return "Door " + ("opened" if open else "closed")
 		"pump":
@@ -211,13 +239,13 @@ func interact(player) -> String:
 					return "Nothing more to water here"
 				return "Plant a tree seed here first"
 			if Data.item(seed).get("category", "") == "seed":
-				if World.plant_in_planter(self):
+				if World.plant_in_planter(self, player.interaction.target_cell):
 					player.inventory.remove_from_slot(player.selected_slot, 1)
 					player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
 					Audio.play_sfx("creak_plastic", center(), 3, -8.0)
 					return "Planted a seed - give it open sky to grow"
 				return "This planter already has something growing"
-			return "A planter pot - plant a tree seed here"
+			return "A planter box - a tree seed over each section" if id == "planter_box" else "A planter pot - plant a tree seed here"
 		"button":
 			if World.release_barred_door(cell):
 				Audio.play_sfx("door_latch", center())
@@ -227,9 +255,11 @@ func interact(player) -> String:
 			if World.water_sim != null and World.water_sim.level_at(cell) > 2:
 				return "The breaker is flooded"
 			powered_on = not powered_on
+			World.notify_record_state(self)
 			World.update_power()
 			return "Breaker switched " + ("on" if powered_on else "off")
 		"bed":
+			player.spawn_feet = bottom_center() # per character (GL-23); World.spawn_position stays the world default
 			World.set_spawn(bottom_center())
 			return "Spawn point set"
 		"chest":

@@ -15,6 +15,19 @@ enum State { GROUNDED, AIRBORNE, CRAWLING, CLIMBING, SURFACE_SWIM, UNDERWATER }
 
 var state: State = State.AIRBORNE
 
+# LAN identity (docs/technical/MultiplayerImpl.md §4-5): which peer owns this
+# body, the character it plays, and that character's spawn in this world.
+var peer_id: int = 1
+var character_name: String = ""
+var spawn_feet: Vector2 = Vector2.INF # GL-23: this character's bed; INF = the world default
+
+func is_local() -> bool:
+	return peer_id == Net.local_peer()
+
+## Every player body on a client is a puppet driven by host state (Step 4).
+func is_puppet() -> bool:
+	return Net.is_client()
+
 # --- Input snapshot (separated from state logic for LAN-readiness) ---
 var input_dir: Vector2 = Vector2.ZERO
 var wants_jump: bool = false # pressed this frame
@@ -62,13 +75,48 @@ var climbable_below: bool = false
 var _stand_shape := RectangleShape2D.new()
 var _compact_shape := RectangleShape2D.new()
 
+## Net endpoint (LAN Step 4): child `Sync` (scripts/net/player_sync.gd),
+## added by code so the test tower's $Player carries one too. Untyped: the
+## script is loaded at runtime to keep Player <-> PlayerSync acyclic.
+const SYNC_SCRIPT := "res://scripts/net/player_sync.gd"
+var _sync: Node = null
+# Puppet-only replicas of host-side facts the visuals need (remote bodies on
+# a client have no inventory or interaction of their own).
+var puppet_held: String = ""
+var puppet_scrapping: bool = false
+var puppet_dying: bool = false
+var puppet_lamp: bool = false  # LAN: a remote body's worn head lamp (state stream bit)
+var puppet_suit: String = ""   # LAN: a remote body's suit id (tint), from the state stream
+
 func _ready() -> void:
 	_stand_shape.size = Constants.STAND_HITBOX
 	_compact_shape.size = Constants.COMPACT_HITBOX
 	_set_compact(false)
 	_apply_zoom()
+	if _sync == null and ResourceLoader.exists(SYNC_SCRIPT):
+		_sync = Node.new()
+		_sync.name = "Sync"
+		_sync.set_script(load(SYNC_SCRIPT))
+		add_child(_sync)
+	interaction.view_only = is_puppet() # a client aims and previews; the host acts
+	PlayerActions.attach(self) # LAN Step 7: the UI-action funnel child `Actions`
 	if World.is_ready():
 		respawn()
+
+## Host relays to the owning client (remote bodies only; offline and for the
+## host's own body every relay is a no-op).
+func _relay() -> Node:
+	return _sync if _sync != null and Net.mode == Net.Mode.HOST and not is_local() else null
+
+## Put the feet at `feet` with no momentum (spawn, respawn on a puppet).
+func place_at_feet(feet: Vector2) -> void:
+	velocity = Vector2.ZERO
+	global_position = feet - Vector2(0, FEET_Y)
+	state = State.AIRBORNE
+	fall_start_y = global_position.y
+	camera.offset = Vector2.ZERO
+	camera.reset_smoothing()
+	reset_physics_interpolation()
 
 ## Invisible edge walls (CT-22): the finite city ends past the open-water
 ## margins — nothing rendered, just a hard clamp at the grid's x extents.
@@ -89,8 +137,13 @@ func _physics_process(delta: float) -> void:
 	if dying: # death scene (user request 2026-09-01): 3 s of stillness -
 		_tick_death(delta) # camera closing in, screen fading - then respawn
 		return
+	if is_puppet(): # client: every body follows host state (LAN Step 4)
+		_puppet_tick(delta)
+		return
 	if is_multiplayer_authority():
 		_read_input()
+	elif _sync != null:
+		_sync.apply_input() # host: a remote peer's relayed snapshot (no-op offline)
 	_tick_timers(delta)
 	_apply_hotbar()
 	_sense()
@@ -130,6 +183,36 @@ func _physics_process(delta: float) -> void:
 	wants_drop = false
 	hotbar_select = -1
 
+## Client-side body (LAN Step 4, MultiplayerImpl §5): no state machine, no
+## move_and_slide, no vitals, no interaction ACTIONS - the host runs all of
+## that and streams the result. The local puppet still reads input (and ships
+## it), drives the camera/zoom/hotbar and aims in view-only mode; every puppet
+## keeps its sprite, held tool and movement sounds from the replicated fields.
+func _puppet_tick(delta: float) -> void:
+	var local := is_local()
+	if local and is_multiplayer_authority():
+		_read_input()
+		_apply_hotbar()
+		if _sync != null:
+			_sync.send_input() # before the one-frame flags clear below
+	if _sync != null:
+		_sync.apply_state(delta)
+	_update_sprite(delta)
+	_update_swing(delta)
+	_update_move_sfx(delta)
+	if local:
+		_update_camera(delta)
+		interaction.tick(delta) # view_only: target/hover/cursor/ghost, no actions
+		if wants_drop:
+			bare_hands = not bare_hands
+			if bare_hands:
+				message.emit("Hands free")
+			elif held_item() != "":
+				message.emit("Holding " + Data.item_name(held_item()))
+	wants_interact = false
+	wants_drop = false
+	hotbar_select = -1
+
 # --- Input & timers ---
 
 func _read_input() -> void:
@@ -155,6 +238,8 @@ func _read_input() -> void:
 ## on GUI controls (the hotbar) also stay out of the world.
 var ui_blocks_mouse: bool = false
 func ui_blocking() -> bool:
+	if not is_local():
+		return false # a remote body's clicks were already UI-filtered on its own machine
 	return ui_blocks_mouse or get_viewport().gui_get_hovered_control() != null
 
 ## Bare mouse wheel cycles the hotbar while no menu is open (user request);
@@ -195,6 +280,8 @@ func _consume_jump() -> bool:
 var bare_hands: bool = false
 
 func held_item() -> String:
+	if puppet_held != "" and is_puppet() and not is_local():
+		return puppet_held # a remote body on a client: what the host says it holds
 	if bare_hands:
 		return ""
 	var s = inventory.slots[selected_slot]
@@ -470,9 +557,17 @@ func bulk_scrap(stage: int) -> String:
 	return "Ground down %d object%s to materials" % [total, "" if total == 1 else "s"]
 
 func open_container(obj: WorldObject) -> void:
+	var relay := _relay()
+	if relay != null:
+		relay.ev_container(obj.cell) # the owning client opens its UI on that record
+		return
 	container_opened.emit(obj)
 
 func open_crafting(station: String) -> void:
+	var relay := _relay()
+	if relay != null:
+		relay.ev_crafting(station)
+		return
 	crafting_opened.emit(station)
 
 # --- Hitbox geometry (local space; feet are always at local y = 12) ---
@@ -823,6 +918,9 @@ func _die() -> void:
 	else:
 		message.emit("You died")
 	_begin_death_scene()
+	var relay := _relay()
+	if relay != null:
+		relay.ev_died() # the owning client plays the scene on its own screen
 
 ## Death scene (user request 2026-09-01): the UI clears, the camera slowly
 ## closes in on the body, the screen fades to black over DEATH_SCENE_SECONDS,
@@ -839,6 +937,8 @@ func _begin_death_scene() -> void:
 	_death_t = 0.0
 	velocity = Vector2.ZERO
 	_death_zoom_from = camera.zoom
+	if not is_local():
+		return # host simulating a remote body: no fade on THIS screen (relayed instead)
 	if _death_fade == null:
 		var layer := CanvasLayer.new()
 		layer.layer = 90 # above the HUD, below nothing that matters mid-death
@@ -856,13 +956,21 @@ func _tick_death(delta: float) -> void:
 	var zoom_t := minf(t / 0.85, 1.0) # the zoom lands just before full black
 	var z := lerpf(1.0, Constants.DEATH_SCENE_ZOOM, zoom_t * zoom_t * (3.0 - 2.0 * zoom_t))
 	camera.zoom = _death_zoom_from * z
-	_death_fade.color.a = clampf((t - 0.45) / 0.5, 0.0, 1.0)
+	if _death_fade != null:
+		_death_fade.color.a = clampf((t - 0.45) / 0.5, 0.0, 1.0)
 	if _death_t >= Constants.DEATH_SCENE_SECONDS:
 		dying = false
 		camera.zoom = _death_zoom_from
-		respawn()
-		var tw := create_tween() # eyes open at the bed
-		tw.tween_property(_death_fade, "color:a", 0.0, 0.5)
+		if is_puppet():
+			# The host decides where we wake up (_ev_respawn); until it lands
+			# the body stays put and the state stream carries it.
+			if _sync != null:
+				_sync.reset_interp()
+		else:
+			respawn()
+		if _death_fade != null:
+			var tw := create_tween() # eyes open at the bed
+			tw.tween_property(_death_fade, "color:a", 0.0, 0.5)
 
 func respawn() -> void:
 	health = Constants.MAX_HEALTH
@@ -872,12 +980,16 @@ func respawn() -> void:
 	combat_timer = 999.0
 	velocity = Vector2.ZERO
 	_set_compact(false)
-	global_position = World.spawn_position - Vector2(0, FEET_Y)
+	var feet: Vector2 = spawn_feet if spawn_feet != Vector2.INF else World.spawn_position
+	global_position = feet - Vector2(0, FEET_Y)
 	state = State.AIRBORNE
 	fall_start_y = global_position.y
 	camera.offset = Vector2.ZERO
 	camera.reset_smoothing()
 	reset_physics_interpolation()
+	var relay := _relay()
+	if relay != null:
+		relay.ev_respawn(feet)
 
 ## Step through an interior doorway (or any authored portal): land with the
 ## feet at `feet`, no momentum, camera snapped — the far side can be a whole
@@ -893,6 +1005,9 @@ func travel_to(feet: Vector2) -> void:
 	reset_physics_interpolation()
 	World.refresh_objects_around(global_position)
 	unstick()
+	var relay := _relay()
+	if relay != null:
+		relay.ev_travel(global_position + Vector2(0, FEET_Y)) # after unstick: the settled spot
 
 # --- Camera (WS-18) ---
 
@@ -970,7 +1085,7 @@ func _update_swing(delta: float) -> void:
 			_tool_sprite.texture = Data.icon(held_item())
 			_fit_tool_sprite()
 			_tool_sprite.visible = true
-			if interaction != null and interaction.scrapping != null:
+			if puppet_scrapping or (interaction != null and interaction.scrapping != null):
 				# Harvest chop (user request 2026-09-01): wind back, arc over
 				# the head, pull down onto the resource, repeat.
 				_scrap_anim += delta / CHOP_CYCLE_TIME
@@ -1044,9 +1159,10 @@ var _lamp_dot: Sprite2D = null
 ## tinted by the worn suit tier ("tint" in items.json) and a lit pip marks a
 ## worn head lamp; the held tool renders in hand (see _update_swing).
 func _update_gear_visuals() -> void:
-	var tint: Array = Data.item(equipped("suit")).get("tint", [])
+	var remote := is_puppet() and not is_local() # a remote body on a client has no equipment replica
+	var tint: Array = Data.item(puppet_suit if remote else equipped("suit")).get("tint", [])
 	sprite.modulate = Color(tint[0], tint[1], tint[2]) if tint.size() == 3 else Color.WHITE
-	var head_light := equipment.get("head") != null and float(Data.item(equipped("head")).get("stats", {}).get("light", 0)) > 0.0
+	var head_light := puppet_lamp if remote else (equipment.get("head") != null and float(Data.item(equipped("head")).get("stats", {}).get("light", 0)) > 0.0)
 	if head_light and _lamp_dot == null:
 		var img := Image.create(2, 2, false, Image.FORMAT_RGBA8)
 		img.fill(Color(1.0, 0.95, 0.6))
@@ -1114,5 +1230,9 @@ var gain_feed: Array = []
 
 func notify_gain(id: String, count: int) -> void:
 	if count <= 0 or Data.item(id).get("category", "") != "material":
+		return
+	var relay := _relay()
+	if relay != null:
+		relay.ev_gain(id, count) # only the owner's HUD drains a feed
 		return
 	gain_feed.append({"id": id, "count": count})

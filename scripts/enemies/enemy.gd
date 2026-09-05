@@ -24,6 +24,12 @@ var wander_timer := 0.0
 var facing := 1
 var _flash := 0.0
 var half: Vector2
+## LAN Step 6: on a client every enemy node is a puppet — no brain, no
+## touch, no pound, no damage; it only eases toward the host's streamed
+## position (`net_pos`) and animates. Hurt/death visuals arrive as events.
+var puppet := false
+var net_pos: Vector2 = Vector2.ZERO
+var net_moving := false
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var shape: CollisionShape2D = $CollisionShape2D
@@ -33,6 +39,8 @@ func setup(p_rec: Dictionary) -> void:
 	def = Data.enemies[rec.type]
 	stats = rec.stats
 	global_position = rec.pos
+	puppet = Net.is_client()
+	net_pos = rec.pos
 
 func _ready() -> void:
 	# Fish are catchable ambience, not weapon targets (GD-09: hands only).
@@ -72,6 +80,9 @@ func _ready() -> void:
 		add_collision_exception_with(p)
 
 func _physics_process(delta: float) -> void:
+	if puppet:
+		_puppet_tick(delta)
+		return
 	attack_cd = maxf(attack_cd - delta, 0.0)
 	pound_cd = maxf(pound_cd - delta, 0.0)
 	if _flash > 0.0:
@@ -95,6 +106,54 @@ func _physics_process(delta: float) -> void:
 	# Bank live position so streaming out / saving mid-chase loses nothing
 	# (hp banks in hurt()).
 	rec.pos = global_position
+
+# --- Puppet (client replica, LAN Step 6) ---
+
+## Ease toward the streamed position (snap when far — a teleport or a
+## window re-entry), fake a velocity so the walk/idle clips still read,
+## bank the position on the record like the host does.
+func _puppet_tick(delta: float) -> void:
+	if _flash > 0.0:
+		_flash = maxf(_flash - delta, 0.0)
+		sprite.modulate = Color(1, 0.4, 0.4) if _flash > 0.0 else Color.WHITE
+	var prev := global_position
+	if prev.distance_to(net_pos) > Constants.NET_ENEMY_SNAP_BLOCKS * Constants.BLOCK_SIZE:
+		global_position = net_pos
+	else:
+		global_position = prev.lerp(net_pos, 1.0 - exp(-Constants.NET_ENEMY_EASE * delta))
+	velocity = (global_position - prev) / maxf(delta, 0.0001) if net_moving else Vector2.ZERO
+	if net_moving and velocity.length() < 8.0:
+		velocity = Vector2(facing * 8.0, 0.0) # streamed "moving" but eased to rest: keep the walk cycle
+	sprite.flip_h = facing < 0
+	_tick_anim(delta)
+	rec.pos = global_position
+
+## One streamed sample from EnemySync: target pos, hp (the health bar), facing, walk flag.
+func puppet_state(pos: Vector2, hp: float, p_facing: int, moving: bool) -> void:
+	net_pos = pos
+	net_moving = moving
+	if p_facing != 0:
+		facing = p_facing
+	if not is_equal_approx(float(rec.hp), hp):
+		rec.hp = hp
+		queue_redraw()
+
+## A reliable one-shot from the host: "hurt" / "died" / "anim:<clip>".
+func puppet_event(event: String) -> void:
+	match event:
+		"hurt":
+			_flash = 0.12
+			queue_redraw()
+			if sprite != null:
+				sprite.modulate = Color(1, 0.4, 0.4)
+				if _oneshot != "attack":
+					_play_oneshot("hurt", 0.3)
+		"died":
+			Audio.play_sfx("dismantle_rattle", global_position, 1, -10.0)
+			_spawn_corpse()
+		_:
+			if event.begins_with("anim:"):
+				_play_oneshot(event.substr(5), 0.5)
 
 ## Animation clips (2026-09-01): the walk strip drives movement, an idle
 ## clip sways while standing, attack/hurt clips one-shot over the action,
@@ -324,6 +383,8 @@ func _move_fish(delta: float) -> void:
 
 ## Hand-grab (GD-09): swim close + interact takes one fish from the school.
 func catch_fish(player) -> bool:
+	if puppet: # the host's copy takes the fish; the replica only mirrors
+		return false
 	if player.global_position.distance_to(global_position) > Constants.FISH_GRAB_BLOCKS * Constants.BLOCK_SIZE:
 		return false
 	player.inventory.add("fish_meat", 1)
@@ -353,6 +414,7 @@ func _try_touch() -> void:
 		if touching or in_front:
 			attack_cd = Constants.ENEMY_TOUCH_COOLDOWN
 			_play_oneshot("attack", 0.5) # the bite reads on the body (2026-09-01)
+			Net.on_enemy_event(rec, "anim:attack") # puppets play the bite too
 			p.hurt_from_enemy(float(stats.damage), global_position, def.get("bleeds", false))
 			return
 
@@ -375,7 +437,10 @@ func _draw() -> void:
 # --- Damage in ---
 
 func hurt(damage: float, from_pos: Vector2, knockback: float = 0.0) -> void:
+	if puppet: # damage is the host's call; the flash arrives as a "hurt" event
+		return
 	rec.hp = float(rec.hp) - damage
+	Net.on_enemy_event(rec, "hurt")
 	queue_redraw()
 	_flash = 0.12
 	if sprite != null: # hurt can land the same frame the node spawns
@@ -392,6 +457,8 @@ func hurt(damage: float, from_pos: Vector2, knockback: float = 0.0) -> void:
 		_die()
 
 func _die() -> void:
+	if puppet: # the host removes the record; the corpse comes with the "died" event
+		return
 	# Light drops only (GD-24): cloth/scrap bits, meat from fish.
 	for drop in def.get("drops", []):
 		if randf() <= float(drop.get("chance", 1.0)):
@@ -400,6 +467,7 @@ func _die() -> void:
 				World.spawn_item(drop.item, n, global_position,
 					Vector2(randf_range(-3.0, 3.0), -4.0) * Constants.BLOCK_SIZE)
 	Audio.play_sfx("dismantle_rattle", global_position, 1, -10.0)
+	Net.on_enemy_event(rec, "died")
 	_spawn_corpse()
 	World.remove_enemy(rec)
 

@@ -205,3 +205,27 @@ them up automatically; the rooms above received hand-seated copies where there w
 | `res_modern_clock` | Modern Clock | wall_art · wall | 1×1 | residential, business, commercial | wood 1–1 |
 | `res_pendant_lamp` | Pendant Lamp | wall_art · wall | 1×2 | residential, business, commercial | scrap_metal 1–2 |
 | `res_wall_sconce` | Wall Sconce | wall_art · wall | 1×1 | residential, business, commercial | scrap_metal 1–1, cloth 0–1 |
+
+
+## 2026-09-04 additions (districts)
+
+**Construction zone** — pack `tools/rooms_pack/construction_site.py` (10 pieces, wood/scrap/plastic/cloth
+yields only): `con_scaffold` 6x6 · `con_plywood_stack` 4x2 · `con_cement_mixer` 4x4 ·
+`con_rebar_bundle` 6x2 · `con_sawhorse` 4x2 · `con_wheelbarrow` 4x2 · `con_tarp_pile` 4x2 ·
+`con_hazard_barrier` 4x2 · clutter `con_paint_bucket` / `con_toolbox` 2x2 (sizes in cells).
+
+| Room | Zone | Size | Objects |
+|---|---|---|---|
+| con_site_a | construction | 20x10 | scaffold, sawhorse, plywood stack, toolbox, wall vent |
+| con_site_b | construction | 16x10 | cement mixer, wheelbarrow, paint bucket, toolbox |
+| con_site_c | construction | 24x10 | rebar bundle, tarped pile, scaffold, hazard barrier, wall pipes |
+| con_site_d | construction | 20x10 | two plywood stacks, sawhorse, paint bucket, toolbox |
+| con_site_e | construction | 22x10 | two scaffolds, tarped pile, hazard barrier, paint bucket |
+| ind_hall_a | industrial (depth ≥ 80) | 34x18 | generator, boiler, barrel rack, drum, pallet jack, gas cylinder; catwalk (dy 5, x 18–33) carrying a vent unit + cable spool; hazard sign, pipe diagram |
+| ind_hall_b | industrial (depth ≥ 80) | 30x18 | air compressor, welding cart, machinist's table, parts shelf, oil can, hose coil; catwalk (x 0–11) with a work light + tool chest; fuse box, fire-hose cabinet |
+| ind_hall_c | industrial (depth ≥ 80) | 38x18 | boiler, water heater, manifold, generator, two drums, barrel rack, mop bucket, bucket; catwalk (x 22–37); pipe diagram, punch clock, hazard sign, wall pipes |
+
+| ind_loft_a/b/c | industrial (depth ≤ 79, iron-free) | 30/28/34 x18 | vent units, cable spools, work lights, gas cylinders, hoses, buckets; catwalks at dy 5 — so industrial towers' dry floors stay industrial (GL-28: no iron above The Cold) |
+
+Industrial floors are 20 cells (18 open rows) in the districts city; the catwalks sit at dy 5 so a
+6-cell jump mounts them. The construction district's rooms stamp on 12-cell floors like residential.

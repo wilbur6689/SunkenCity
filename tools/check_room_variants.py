@@ -29,7 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OBJ = {o["id"]: o for o in json.loads((ROOT / "data" / "objects.json").read_text(encoding="utf-8"))["objects"]}
 EXISTING = {r["id"] for r in json.loads((ROOT / "data" / "rooms.json").read_text(encoding="utf-8"))["rooms"]}
-ZONES = {"residential", "business", "commercial", "industrial", "civil"}
+ZONES = {"residential", "business", "commercial", "industrial", "civil", "construction"}
 MAX_FLOOR_FILL = 0.9
 
 

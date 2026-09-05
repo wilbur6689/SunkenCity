@@ -13,6 +13,7 @@ var magnet: bool = false # mined drops home to a nearby player (pays out visibly
 var gentle: bool = false # harvest drops drift in softly instead of snapping (2026-09-02)
 var _bob_t: float = randf() * TAU # phase-offset so a pile of drops doesn't bob in unison
 var light: PointLight2D
+var net_id: int = 0 # host-assigned (World.spawn_item); clients address items by it
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -25,9 +26,10 @@ func setup(p_id: String, p_count: int, p_velocity: Vector2 = Vector2.ZERO) -> vo
 func _ready() -> void:
 	add_to_group("world_items")
 	sprite.texture = Data.icon(id)
-	if sprite.texture != null and sprite.texture.get_width() > Data.ICON_PX: # icons draw at 16 px in the world
-		# 32x32 authored icons draw at one block in the world (2026-09-01)
-		sprite.scale = Vector2.ONE * (float(Data.ICON_PX) / sprite.texture.get_width())
+	if sprite.texture != null and sprite.texture.get_width() > Constants.BLOCK_SIZE:
+		# Dropped resources draw at ONE BLOCK (8 px since 2026-09-04, user request:
+		# harvest drops shrank with the block), whatever size the icon is authored at.
+		sprite.scale = Vector2.ONE * (float(Constants.BLOCK_SIZE) / sprite.texture.get_width())
 	var it := Data.item(id)
 	var drop_light: Dictionary = it.get("use", {}).get("drop_light", {})
 	if not drop_light.is_empty():
@@ -98,7 +100,15 @@ func _physics_process(delta: float) -> void:
 	if pickup_delay <= 0.0:
 		_try_pickup()
 
+## Drop out of the net-id map when freed (pickup, scene change, replica remove).
+func _exit_tree() -> void:
+	var w := get_node_or_null("/root/World")
+	if w != null and net_id != 0 and w.item_by_net_id.get(net_id) == self:
+		w.item_by_net_id.erase(net_id)
+
 func _try_pickup() -> void:
+	if Net.is_client():
+		return # the host picks up for every player and replicates the removal
 	var radius := Constants.PICKUP_RADIUS_BLOCKS * Constants.BLOCK_SIZE
 	for p in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) <= radius:
@@ -107,5 +117,6 @@ func _try_pickup() -> void:
 			if leftover < count:
 				count = leftover
 				if count <= 0:
+					Net.on_item_removed(self, p)
 					queue_free()
 			return
