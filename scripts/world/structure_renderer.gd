@@ -82,14 +82,17 @@ func _physics_process(_delta: float) -> void:
 	var c1 := Vector2i(ceili((cam.get_screen_center_position().x + half.x) / s), ceili((cam.get_screen_center_position().y + half.y) / s))
 	var want := Rect2i(c0 - Vector2i(MARGIN, MARGIN), (c1 - c0) + Vector2i(MARGIN * 2, MARGIN * 2))
 	want = want.intersection(World.grid.bounds)
-	if painted.encloses(want) and painted.grow(-SHRINK_SLACK).intersection(want) != want:
-		pass # keep
+	World.perf.struct_cells = painted.size.x * painted.size.y
 	if painted == Rect2i():
+		var t0 := Time.get_ticks_usec()
 		_paint_rect(want)
 		painted = want
+		World.perf.struct_ms = (Time.get_ticks_usec() - t0) / 1000.0
 		return
 	if painted.encloses(want):
+		World.perf.struct_ms = 0.0
 		return
+	var t1 := Time.get_ticks_usec()
 	var new_rect := painted.merge(want)
 	# Repaint fully if the merged area drifted too large; else paint the delta strips.
 	if new_rect.size.x * new_rect.size.y > (want.size.x + SHRINK_SLACK * 2) * (want.size.y + SHRINK_SLACK * 2) * 2:
@@ -103,6 +106,7 @@ func _physics_process(_delta: float) -> void:
 				if not painted.has_point(c):
 					_paint_cell(c)
 		painted = new_rect
+	World.perf.struct_ms = (Time.get_ticks_usec() - t1) / 1000.0
 
 func _clear_all() -> void:
 	back_layer.clear()

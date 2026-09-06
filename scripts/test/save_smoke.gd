@@ -122,7 +122,7 @@ func _ready() -> void:
 	check(player2.knows_recipe("iron_knife"), "learned recipes restored (GL-06)")
 	check(player2.library_count("com_4") == 3 and player2.library_count("demolition_2") == 1, "modifier library stock restored")
 	check(player2.skills.has_ability("field_strip"), "tech-tree abilities restored (CC-18)")
-	check(World.map_reveal.revealed_count() == revealed, "map reveal restored per character+world")
+	check(World.map_reveal.revealed_count() == revealed, "shared map reveal restored from the world save (CC-25 amended 2026-09-06)")
 	var links_after := 0
 	for rec in World.object_records:
 		if rec.has("link"):

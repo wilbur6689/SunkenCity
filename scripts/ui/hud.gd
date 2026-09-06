@@ -307,6 +307,46 @@ func _refresh_debug() -> void:
 			World.map_reveal.revealed_count(), World.time_of_day, World.sun_strength()],
 		"music: %s" % Audio.debug_status(),
 	]
+	# Perf drill-down (2026-09-05): what the view costs and what is streamed.
+	var cam := get_viewport().get_camera_2d()
+	var zoom: float = cam.zoom.x if cam != null else 1.0
+	var view_px: Vector2 = get_viewport().get_visible_rect().size / maxf(zoom, 0.01)
+	var view_cells := Vector2i(ceili(view_px.x / Constants.BLOCK_SIZE), ceili(view_px.y / Constants.BLOCK_SIZE))
+	var fh: int = int(CityGen.tower_at(World.towers, cell).get("floor_h", CityGen.FLOOR_H))
+	var items_asleep := 0
+	var items_hidden := 0
+	var items_total := 0
+	var live_enemies_on_screen := 0
+	var half_view := view_px * 0.5
+	for it in World.items_root.get_children():
+		if it is WorldItem:
+			items_total += 1
+			if it.asleep:
+				items_asleep += 1
+			if not it.visible:
+				items_hidden += 1
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if e is Node2D and absf(e.global_position.x - player.global_position.x) < half_view.x \
+				and absf(e.global_position.y - player.global_position.y) < half_view.y:
+			live_enemies_on_screen += 1
+	lines.append_array([
+		"view: zoom %.2f · %dx%d cells (%.0f x %.0f px) · ~%.1f floors tall (pitch %d)" % [
+			zoom, view_cells.x, view_cells.y, view_px.x, view_px.y, float(view_cells.y) / fh, fh],
+		"render ms: water draw %.2f (%d cells) · fog %.2f (%d cells) · tiles %.2f (%d painted)" % [
+			World.perf.water_draw_ms, World.perf.water_cells, World.perf.fog_ms, World.perf.fog_cells,
+			World.perf.struct_ms, World.perf.struct_cells],
+		"stream: objects window %dx%d (%.1f floors) · scan %.2f ms (%d scans, %d spawned) · enemies window %dx%d (%.1f floors) · scan %.2f ms" % [
+			World.object_window.x, World.object_window.y, float(World.object_window.y) / fh,
+			World.perf.obj_scan_ms, World.perf.obj_scans, World.perf.obj_spawned,
+			World.enemy_window.x, World.enemy_window.y, float(World.enemy_window.y) / fh, World.perf.enemy_scan_ms],
+		"items: %d nodes (all dropped items live as nodes; none are unloaded) · %d asleep beyond %d blk · %d hidden by fog · enemies on screen %d / %d live" % [
+			items_total, items_asleep, int(Constants.ITEM_SLEEP_BLOCKS), items_hidden, live_enemies_on_screen, World.perf.enemies_live],
+		"memory: static %.1f MB · objects %d · orphan nodes %d · physics bodies %d" % [
+			Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
+			Performance.get_monitor(Performance.OBJECT_COUNT),
+			Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT),
+			Performance.get_monitor(Performance.PHYSICS_2D_ACTIVE_OBJECTS)],
+	])
 	if Net.is_online(): # LAN session (2026-09-05): peer id, role, ping, traffic
 		var ping: float = Net.ping_ms
 		if Net.mode == Net.Mode.HOST:

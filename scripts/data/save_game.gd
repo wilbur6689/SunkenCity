@@ -148,6 +148,7 @@ static func world_payload(world_name: String, seed_value: int) -> Dictionary:
 		"red_moon_active": World.red_moon_active,
 		"city_w": World.city_bounds.size.x, "pockets": World.pockets.duplicate(true),
 		"towers": World.towers.duplicate(true),
+		"map": World.map_reveal.to_bytes(), # shared fog-of-war map (2026-09-06)
 	}
 	return data
 
@@ -222,7 +223,10 @@ static func save_character(char_name: String, player, world_key: String) -> void
 	if data.is_empty():
 		data = {"version": VERSION, "name": char_name, "maps": {}, "positions": {}, "spawns": {}}
 	data.merge(character_state(player), true)
-	data.maps[world_key] = World.map_reveal.to_bytes()
+	# The map is shared and lives in the world save since 2026-09-06; a
+	# character file keeps no copy any more (an old one is merged on load).
+	if data.has("maps") and (data.maps as Dictionary).has(world_key):
+		(data.maps as Dictionary).erase(world_key)
 	data.positions[world_key] = player.global_position
 	if not data.has("spawns"):
 		data["spawns"] = {}
@@ -276,8 +280,8 @@ static func apply_character(data: Dictionary, player, world_key: String) -> void
 	player.oxygen = float(data.oxygen)
 	player.selected_slot = int(data.selected_slot)
 	player.bare_hands = bool(data.get("bare_hands", false))
-	if data.maps.has(world_key):
-		World.map_reveal.from_bytes(data.maps[world_key])
+	if (data.get("maps", {}) as Dictionary).has(world_key): # legacy per-character map: fold it into the shared one
+		World.map_reveal.merge_bytes(data.maps[world_key])
 	if data.get("spawns", {}).has(world_key):
 		player.spawn_feet = data.spawns[world_key]
 	if data.positions.has(world_key):

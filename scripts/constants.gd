@@ -154,9 +154,12 @@ const LIGHT_SNAP: int = 16 # the window anchors to this cell grid, so walking do
 
 # Object streaming: records within this window (cells, centred on the
 # player) are instantiated as nodes; the rest of the city stays data.
-# Generous on purpose — it must cover the tallest zoom-out and the test
-# tower's full height so held references never despawn mid-test.
-const OBJECT_WINDOW: Vector2i = Vector2i(400, 320)
+# Perf pass 2026-09-05: sized to the widest zoom-out (227x90 cells on 1080p)
+# plus margin - ~10 floors tall, not 27. Window size barely moves the frame
+# rate once records are indexed; it sets node count and RAM. The test tower
+# scene widens it (test_tower.gd) so held references never despawn mid-test.
+const OBJECT_WINDOW: Vector2i = Vector2i(280, 120)
+const OBJECT_SPAWN_BUDGET: int = 24 # records instantiated per physics tick while streaming in (spreads the cost)
 
 const TOOL_SWING_TIME: float = 0.18 # seconds per hammer swing arc
 const FOOTSTEP_STRIDE_BLOCKS: float = 3.2 # ground distance between step sounds
@@ -210,7 +213,7 @@ const COLD_DPS: float = 2.0    # in The Dark without a cold-rated suit
 const CRUSH_DPS: float = 25.0  # in The Crush without a crush-rated suit
 
 # --- Enemies (M4, GD-01..29; stat tables live in data/enemies.json) ---
-const ENEMY_WINDOW: Vector2i = Vector2i(280, 200) # records in this window (cells) run as nodes
+const ENEMY_WINDOW: Vector2i = Vector2i(280, 120) # records in this window (cells) run as nodes (~10 floors; perf pass 2026-09-05)
 const AGGRO_NIGHT_MULT: float = 1.5      # surface-band aggro radii grow at night (GD-29)
 const ENEMY_TOUCH_COOLDOWN: float = 0.9  # seconds between contact hits on the player
 const ENEMY_ATTACK_REACH_BLOCKS: float = 2.5 # a bite also lands this far IN FRONT of the
@@ -243,6 +246,9 @@ const DEFENSE_FLOOR: float = 0.3         # ...down to this share at most
 const SHOTGUN_SPREAD_DEG: float = 12.0   # default half-cone for shotgun pellets (weapon.spread overrides)
 const PROJECTILE_SPEED_BLOCKS: float = 44.0 # default flight speed for bows/nail guns (ammo `projectile.speed`)
 const PROJECTILE_GRAVITY: float = 0.25   # default share of gravity a projectile feels in air
+const TRACER_SPEED_BLOCKS: float = 200.0 # cosmetic bullet streak speed for hitscan shots
+const ITEM_SLEEP_BLOCKS: float = 120.0    # dropped items farther than this from every player skip physics (perf, 2026-09-05)
+const ITEM_CULL_SECONDS: float = 0.25     # how often a dropped item re-checks sleep + fog visibility
 const BLEED_DPS: float = 1.5             # bleeding drip (GD-21)
 const BLEED_DURATION: float = 18.0       # untreated bleed length; bandage/medkit cure instantly
 const BLEED_CHANCE: float = 0.35         # per zombie/Drowned hit
@@ -302,6 +308,7 @@ const NET_CHUNK_BYTES: int = 32768       # join snapshot chunk size (reliable RP
 const NET_WATER_RESYNC_TICKS: int = 120  # full water-window resync period on clients
 const NET_CLOCK_SYNC_TICKS: int = 60     # time_of_day / day / red-moon values, once a second
 const NET_ITEM_RESYNC_TICKS: int = 30    # dropped-item position resync period
+const NET_MAP_SYNC_TICKS: int = 30       # shared-map reveal deltas (host -> clients), twice a second
 const NET_RECONCILE_CELLS: int = 2       # prediction snap threshold (Step 8, unused until then)
 const NET_INPUT_BUFFER: int = 8          # predicted-input replay buffer (Step 8)
 const NET_BEACON_INTERVAL: float = 1.0   # seconds between beacons

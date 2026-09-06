@@ -80,6 +80,27 @@ func _ready() -> void:
 	player.set_equipment("accessory1", null)
 	player.set_equipment("accessory2", null)
 
+	print("== A2. the weapon slot: worn weapon fights from an empty hand, its mods count as gear")
+	check(player.can_equip("weapon", "speargun") and player.can_equip("weapon", "fire_axe"), "weapons and tool-weapons fit the weapon slot")
+	check(not player.can_equip("weapon", "wetsuit") and not player.can_equip("suit", "speargun"), "a suit refuses the weapon slot and vice versa")
+	player.inventory.slots.fill(null)
+	player.selected_slot = 0
+	player.bare_hands = false
+	var worn := {"id": "speargun", "count": 1, "mods": {"suffix": {"id": "com_3"}}}
+	player.set_equipment("weapon", worn)
+	check(player.held_item() == "speargun" and player.holding_worn_weapon(), "an empty hotbar hand holds the worn weapon")
+	check(player.max_oxygen() == Constants.BASE_OXYGEN_SECONDS + 18.0, "its Commercial suffix (of the Showroom III) adds +18s air as worn gear")
+	player.inventory.set_slot(0, {"id": "hammer", "count": 1})
+	check(player.held_item() == "hammer" and not player.holding_worn_weapon(), "a hotbar item in hand takes precedence")
+	player.bare_hands = true
+	check(player.held_item() == "speargun", "Q (bare hands) brings the worn weapon back")
+	var drops_before := World.items_root.get_child_count()
+	player.drop_held(1)
+	check(World.items_root.get_child_count() == drops_before and player.equipment.weapon != null, "dropping never sheds the worn weapon")
+	player.bare_hands = false
+	player.inventory.slots.fill(null)
+	player.set_equipment("weapon", null)
+
 	print("== B. suits lift the depth gates (GL-09/12)")
 	player.global_position = Vector2(16 * B, (World.waterline_row + 120) * B)
 	player.velocity = Vector2.ZERO

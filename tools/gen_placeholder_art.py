@@ -1064,11 +1064,15 @@ def build_ui_textures():
         pass
     # shift glyphs 1 and 2 into their cells
     cell = glyphs.crop((0, 0, 16, 16))
-    out = Image.new("RGBA", (64, 16), (0, 0, 0, 0))
+    out = Image.new("RGBA", (80, 16), (0, 0, 0, 0))
     out.paste(cell, (0, 0))
     suit = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); ImageDraw.Draw(suit).polygon([(4, 3), (11, 3), (13, 6), (11, 13), (4, 13), (2, 6)], outline=dim); out.paste(suit, (16, 0))
     acc = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); dd = ImageDraw.Draw(acc); dd.ellipse([4, 4, 11, 11], outline=dim); dd.point((7, 7), fill=dim); out.paste(acc, (32, 0))
     out.paste(glyphs.crop((48, 0, 64, 16)), (48, 0))
+    # Weapon slot glyph (2026-09-05): a dim blade with a crossguard.
+    wep = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); wd = ImageDraw.Draw(wep)
+    wd.line([4, 12, 12, 4], fill=dim, width=2); wd.line([3, 9, 7, 13], fill=dim); wd.line([2, 14, 4, 12], fill=dim)
+    out.paste(wep, (64, 0))
     out.save(UI_DIR / "equip_glyphs.png")
     # Mouse cursors (32x32 = 16px art at 2x nearest): a magnifying glass for
     # a searchable container; the same glass with a small green check once

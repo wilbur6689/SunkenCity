@@ -282,14 +282,21 @@ var bare_hands: bool = false
 func held_item() -> String:
 	if puppet_held != "" and is_puppet() and not is_local():
 		return puppet_held # a remote body on a client: what the host says it holds
-	if bare_hands:
-		return ""
-	var s = inventory.slots[selected_slot]
+	var s = held_stack()
 	return s.id if s != null else ""
 
 ## The held stack dict (or null) — modifiers live on the instance (LT-05..07).
+## An empty hand (Q, or an empty hotbar slot) holds the WORN weapon instead,
+## so the weapon slot is what you fight with by default.
 func held_stack():
-	return null if bare_hands else inventory.slots[selected_slot]
+	if bare_hands:
+		return equipped_weapon()
+	var s = inventory.slots[selected_slot]
+	return s if s != null else equipped_weapon()
+
+## True when the hand is really empty and the worn weapon is standing in.
+func holding_worn_weapon() -> bool:
+	return equipped_weapon() != null and (bare_hands or inventory.slots[selected_slot] == null)
 
 func held_tool() -> Dictionary:
 	return ItemMods.tool_of(held_stack())
@@ -395,14 +402,15 @@ func use_item(slot: int) -> void:
 
 func drop_held(n: int) -> void:
 	var id := held_item()
-	if id == "":
-		return
+	if id == "" or holding_worn_weapon():
+		return # the worn weapon comes off in the inventory screen, never by dropping
 	var taken := inventory.remove_from_slot(selected_slot, n)
 	World.spawn_item(id, taken, global_position, Vector2(facing * 8.0 * Constants.BLOCK_SIZE, -4.0 * Constants.BLOCK_SIZE))
 
 # --- Equipment (LT-03: Suit + Head + two Accessories; accessory3/4 are the
-# reserved mounts, opened by the Tool Harness / Rigger's Kit abilities) ---
-var equipment: Dictionary = {"head": null, "suit": null,
+# reserved mounts, opened by the Tool Harness / Rigger's Kit abilities;
+# `weapon` (2026-09-05) is the worn weapon — see equipped_weapon()) ---
+var equipment: Dictionary = {"head": null, "suit": null, "weapon": null,
 	"accessory1": null, "accessory2": null, "accessory3": null, "accessory4": null}
 
 func slot_unlocked(slot_name: String) -> bool:
@@ -410,13 +418,27 @@ func slot_unlocked(slot_name: String) -> bool:
 		return skills.has_effect("unlock_slot", slot_name)
 	return true
 
-func can_equip(slot_name: String, id: String) -> bool:
+## Whether an item's kind belongs in a slot (no unlock check — shared with
+## CharSync.sanitize). The weapon slot takes anything with a weapon block.
+static func slot_fits(slot_name: String, id: String) -> bool:
+	if slot_name == "weapon":
+		return Data.item(id).has("weapon")
 	var want: String = Data.item(id).get("slot", "")
-	if want == "" or not slot_unlocked(slot_name):
+	if want == "":
 		return false
 	if slot_name.begins_with("accessory"):
 		return want == "accessory"
 	return want == slot_name
+
+func can_equip(slot_name: String, id: String) -> bool:
+	return slot_unlocked(slot_name) and slot_fits(slot_name, id)
+
+## The worn weapon (stack dict or null). It is what you fight with whenever
+## the hotbar hand is empty — held_item()/held_stack() fall back to it — and,
+## being equipment, its modifiers count as worn gear (equip_stat), so a
+## Commercial suffix on a spear gun gives air while it is worn.
+func equipped_weapon():
+	return equipment.get("weapon")
 
 func set_equipment(slot_name: String, stack) -> void:
 	equipment[slot_name] = stack

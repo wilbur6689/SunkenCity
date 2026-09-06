@@ -78,6 +78,29 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--shot="):
 			_take_shot(a.substr(7))
+	# Perf probe (2026-09-05): --perf=SECS samples frame costs and quits;
+	# --zoom=IDX / --objwin=WxH / --enemywin=WxH set the view + streaming
+	# windows for a render test; --walk drives the body right meanwhile.
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--zoom="):
+			player.zoom_index = clampi(a.substr(7).to_int(), 0, Constants.CAMERA_ZOOM_LEVELS.size() - 1)
+		elif a.begins_with("--objwin="):
+			var wh := a.substr(9).split("x")
+			if wh.size() == 2:
+				World.object_window = Vector2i(wh[0].to_int(), wh[1].to_int())
+				World.refresh_objects_around(player.global_position)
+		elif a.begins_with("--enemywin="):
+			var wh := a.substr(11).split("x")
+			if wh.size() == 2:
+				World.enemy_window = Vector2i(wh[0].to_int(), wh[1].to_int())
+				World.refresh_objects_around(player.global_position)
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--perf="):
+			var probe := Node.new()
+			probe.name = "PerfProbe"
+			probe.set_script(load("res://scripts/test/perf_probe.gd"))
+			add_child(probe)
+			break
 
 func local_player() -> Player:
 	return player
@@ -171,6 +194,8 @@ func _boot_loaded(data: Dictionary) -> void:
 			erec.hp = float(en.hp)
 			if en.has("stock"):
 				erec.stock = int(en.stock)
+	if data.has("map"): # shared fog-of-war map (2026-09-06)
+		World.map_reveal.from_bytes(data.map)
 	World.day_count = int(data.get("day_count", 0))
 	World.next_red_moon_day = int(data.get("next_red_moon_day", World.next_red_moon_day))
 	World.red_moon_active = bool(data.get("red_moon_active", false))

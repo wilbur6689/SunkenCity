@@ -63,6 +63,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
   - **A:** Deferred until the Steam early-access release.
 - [x] **CC-25.** Is there a map or minimap, and does it fill in as the player explores?
   - **A:** **Fog-of-war world map revealed by exploration**, tracked per character. Lives as a top-right corner minimap for now.
+  - **Amended 2026-09-06 (user request):** the map is **shared per world** - every player reveals into one map that saves with the world and streams to LAN clients; character files keep no map (old ones merge in once on load).
 - [x] **CC-26.** Mechanically, how does "draining the city" work at the endgame?
   - **A:** Restore the city's **mega-pump infrastructure** — a central ground-level station plus relay stations at depth intervals; each restored relay drains a horizontal band of the city, lowering the waterline in stages, "like a massive bathtub drain."
 - [x] **CC-27.** What happens after the city is drained — credits, sandbox continues, new threats?

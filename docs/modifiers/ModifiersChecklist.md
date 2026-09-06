@@ -83,6 +83,13 @@ supply, `ROLL_MOD_CHANCE` 0.35 → 0.6 · D6 names from `Merged_Modifiers.json`.
 - [x] `sanitize` clamps `mod_library` to known ids, `int ≥ 0`; `_clean_stack` delegates to `ItemMods.clean_stack`
 - [x] `resume_states` / final-state push carry `mod_library`
 
+## Step 3b — Weapon slot (user request 2026-09-05)
+
+- [x] Seventh paper-doll slot `weapon` (blade glyph); takes any item with a `weapon` block (`Player.slot_fits`, shared with `CharSync.sanitize`)
+- [x] An empty hand (empty hotbar slot or Q) holds the worn weapon: `held_stack()` falls back to it, so attacks, the paper doll, tool gates and LAN held-item replication all see it; dropping never sheds it
+- [x] The worn weapon's modifiers count as worn gear (`equip_stat`): suffixes on a weapon are live only while it is worn; prefixes apply to its attacks
+- [x] `m5_smoke` A2 covers fit rules, fallback precedence, the suffix stat and the drop guard
+
 ## Step 4 — Modify tab UI
 
 ### `scripts/ui/inventory_ui.gd`

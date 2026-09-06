@@ -22,9 +22,9 @@ const GAP := 2
 const ICON := 16
 const DESIGN_W := 640.0
 
-const EQUIP_SLOTS := ["head", "suit", "accessory1", "accessory2", "accessory3", "accessory4"]
-const EQUIP_GLYPH := {"head": 0, "suit": 1, "accessory1": 2, "accessory2": 2, "accessory3": 3, "accessory4": 3}
-const EQUIP_LABEL := {"head": "Head", "suit": "Suit", "accessory1": "Accessory", "accessory2": "Accessory", "accessory3": "Accessory", "accessory4": "Accessory"}
+const EQUIP_SLOTS := ["head", "suit", "weapon", "accessory1", "accessory2", "accessory3", "accessory4"]
+const EQUIP_GLYPH := {"head": 0, "suit": 1, "weapon": 4, "accessory1": 2, "accessory2": 2, "accessory3": 3, "accessory4": 3}
+const EQUIP_LABEL := {"head": "Head", "suit": "Suit", "weapon": "Weapon", "accessory1": "Accessory", "accessory2": "Accessory", "accessory3": "Accessory", "accessory4": "Accessory"}
 
 var player: Player
 var open: bool = false

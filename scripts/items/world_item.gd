@@ -41,7 +41,43 @@ func _ready() -> void:
 		light.energy = 0.9
 		add_child(light)
 
+## Perf (2026-09-05): a dropped item far from every player sleeps (no
+## physics, no magnet) and one hidden behind the fog of war is not drawn.
+## Both re-check a few times a second, not per frame.
+var _cull_timer: float = 0.0
+var asleep: bool = false
+
+func _cull_check() -> void:
+	var near := false
+	var viewer: Node2D = null
+	var best := INF
+	for p in get_tree().get_nodes_in_group("player"):
+		if p is Node2D:
+			var d := (p as Node2D).global_position.distance_squared_to(global_position)
+			if d < best:
+				best = d
+				viewer = p
+	var sleep_px := Constants.ITEM_SLEEP_BLOCKS * Constants.BLOCK_SIZE
+	near = best < sleep_px * sleep_px
+	asleep = not near
+	# Fog: an item the local viewer cannot see draws nothing (the overlay
+	# would black it out anyway; this saves the sprite + light draw).
+	var local := Net.local_player() as Node2D
+	var hidden := false
+	if local != null and World.light_map != null and near:
+		hidden = World.visibility_at(World.cell_at(global_position), local.global_position) <= 0.0
+	elif local != null and not near:
+		hidden = true
+	visible = not hidden
+
 func _physics_process(delta: float) -> void:
+	_cull_timer -= delta
+	if _cull_timer <= 0.0:
+		_cull_timer = Constants.ITEM_CULL_SECONDS
+		_cull_check()
+	if asleep:
+		pickup_delay = maxf(pickup_delay - delta, 0.0)
+		return
 	pickup_delay = maxf(pickup_delay - delta, 0.0)
 	var in_water := World.is_water(global_position)
 	var sinks: bool = Data.item(id).get("sinks", false)

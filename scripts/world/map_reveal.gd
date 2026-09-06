@@ -1,14 +1,19 @@
 class_name MapReveal
 extends RefCounted
-## Fog-of-war world map (CC-25): one bit per MAP cell (a Constants.MAP_CELL
-## square of world cells), revealed by proximity as the player explores.
-## Tracked per character — the bitset serializes into the character save,
-## not the world save. All coordinates here are map cells (World.map_macro_for).
+## Fog-of-war world map (CC-25, amended 2026-09-06: SHARED): one bit per MAP
+## cell (a Constants.MAP_CELL square of world cells), revealed by proximity
+## as ANY player explores. The bitset serializes into the WORLD save (the
+## host's copy is the truth); joining clients get it in the world snapshot
+## and then newly revealed cells as WorldSync `_map` deltas. Older character
+## files still carry a per-character map: it is merged in once on load.
+## All coordinates here are map cells (World.map_macro_for).
 
 var bounds: Rect2i
 var bits := PackedByteArray()
 var revealed := 0 # running count (the bitset is too big to walk per frame)
 var dirty: PackedVector2Array = [] # newly revealed cells since last drain (map view)
+var net_dirty: PackedVector2Array = [] # newly revealed cells not yet sent to clients (host only)
+var track_net: bool = false # the host sets this while a LAN session is up
 
 func _init(world_bounds: Rect2i) -> void:
 	bounds = MapReveal.macro_bounds(world_bounds)
@@ -38,6 +43,8 @@ func reveal_cell(cell: Vector2i) -> void:
 		revealed += 1
 		if dirty.size() < 200000: # safety cap; the map view drains this
 			dirty.append(Vector2(cell))
+		if track_net and net_dirty.size() < 200000:
+			net_dirty.append(Vector2(cell))
 
 ## Reveal a disc of cells around the player's position.
 func reveal_disc(center: Vector2i, radius: int) -> void:
@@ -49,6 +56,29 @@ func reveal_disc(center: Vector2i, radius: int) -> void:
 
 func revealed_count() -> int:
 	return revealed
+
+## Apply a batch of revealed map cells (a WorldSync delta on a client).
+func reveal_cells(cells: PackedVector2Array) -> void:
+	for c in cells:
+		reveal_cell(Vector2i(c))
+
+## OR another map into this one (a legacy per-character map joining the
+## shared world map). Cells it adds go to `dirty` so the map view repaints.
+func merge_bytes(data: PackedByteArray) -> void:
+	var raw := data.decompress(bits.size(), FileAccess.COMPRESSION_ZSTD)
+	if raw.size() != bits.size():
+		return
+	for i in bits.size():
+		var add: int = raw[i] & ~bits[i]
+		if add == 0:
+			continue
+		bits[i] |= add
+		for bit in 8:
+			if add & (1 << bit):
+				revealed += 1
+				var idx := i * 8 + bit
+				if dirty.size() < 200000:
+					dirty.append(Vector2(bounds.position.x + idx % bounds.size.x, bounds.position.y + idx / bounds.size.x))
 
 func to_bytes() -> PackedByteArray:
 	return bits.compress(FileAccess.COMPRESSION_ZSTD)

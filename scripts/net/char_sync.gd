@@ -14,9 +14,10 @@ extends Node
 ##                    character rejoining resumes where it was (preferred over
 ##                    the file it uploads)
 ##   client           applies `_char_state` to its local puppet WITHOUT moving it
-##                    (the body follows PlayerSync's stream), applies its own map
-##                    reveal from its character file at boot (map reveal is
-##                    client-local, never host-owned), and reacts to
+##                    (the body follows PlayerSync's stream), merges any LEGACY
+##                    per-character map from its file into the shared world map
+##                    at boot (the map is host-owned since 2026-09-06: it rides
+##                    the snapshot and WorldSync `_map` deltas), and reacts to
 ##                    `Net.disconnected` by handing the scene the reason.
 ##
 ## The parent is the Net node (autoload, or a plain node in lan_smoke), so
@@ -121,12 +122,10 @@ func sanitize(st: Dictionary) -> Dictionary:
 	inv.resize(Constants.INVENTORY_SLOTS)
 	out["inventory"] = inv
 	var eq := {}
-	for slot_name in ["head", "suit", "accessory1", "accessory2", "accessory3", "accessory4"]:
+	for slot_name in ["head", "suit", "weapon", "accessory1", "accessory2", "accessory3", "accessory4"]:
 		var s = _clean_stack((st.get("equipment", {}) as Dictionary).get(slot_name))
 		if s != null:
-			var want := String(Data.item(s.id).get("slot", ""))
-			var fits: bool = want == "accessory" if slot_name.begins_with("accessory") else want == slot_name
-			if not fits:
+			if not Player.slot_fits(slot_name, String(s.id)):
 				s = null
 			else:
 				s.count = 1
@@ -305,7 +304,7 @@ func _client_tick() -> void:
 		var data := SaveGame.read_character(String(player.character_name))
 		var wk := _world_key()
 		if not data.is_empty() and (data.get("maps", {}) as Dictionary).has(wk):
-			World.map_reveal.from_bytes(data.maps[wk])
+			World.map_reveal.merge_bytes(data.maps[wk]) # legacy per-character map joins the shared one
 
 ## Client: the character file from the replica (F5 / leave / host push).
 func save_local_character() -> void:

@@ -450,6 +450,27 @@
       ]
     },
     {
+      "id": "iron_smelt",
+      "station": "forge",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "iron",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 6
+        },
+        {
+          "item": "stone",
+          "count": 1
+        }
+      ],
+      "desc": "Smelt salvage down: six scrap and a stone flux make one iron ingot. Slow money - the deep still pays better."
+    },
+    {
       "id": "steel",
       "station": "forge",
       "tier": 1,

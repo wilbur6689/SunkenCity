@@ -277,6 +277,7 @@ func _physics_process(_delta: float) -> void:
 	_tick_water()
 	_tick_items()
 	_tick_clock()
+	_tick_map()
 
 func _flush_cells() -> void:
 	if _dirty_cells.is_empty():
@@ -414,6 +415,25 @@ func _tick_items() -> void:
 		if not packed.is_empty():
 			_send_to(id, "_item_pos", [packed])
 
+## Shared map (2026-09-06): the host's MapReveal banks every cell any body
+## revealed in `net_dirty`; it drains to ready peers every NET_MAP_SYNC_TICKS.
+var _map_t := 0
+func _tick_map() -> void:
+	_map_t += 1
+	if _map_t < Constants.NET_MAP_SYNC_TICKS or World.map_reveal == null:
+		return
+	_map_t = 0
+	var cells: PackedVector2Array = World.map_reveal.net_dirty
+	if cells.is_empty():
+		return
+	World.map_reveal.net_dirty = PackedVector2Array()
+	_send_ready("_map", [cells])
+
+@rpc("authority", "call_remote", "reliable")
+func _map(cells: PackedVector2Array) -> void:
+	if _is_client() and World.is_ready() and World.map_reveal != null:
+		World.map_reveal.reveal_cells(cells)
+
 func _clock_payload() -> Array:
 	return [World.time_of_day, World.day_count, World.next_red_moon_day, World.red_moon_active]
 
@@ -522,3 +542,7 @@ func _effect(kind: String, pos: Vector2, arg: String) -> void:
 			World.spawn_break_puff(pos, arg, true)
 		"sfx":
 			Audio.play_sfx(arg, pos)
+		"tracer":
+			var parts := arg.split(",")
+			if parts.size() == 2:
+				World.spawn_tracer(pos, Vector2(float(parts[0]), float(parts[1])), true)

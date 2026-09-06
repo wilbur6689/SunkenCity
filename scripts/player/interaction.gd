@@ -452,7 +452,12 @@ func _fire_gun(w: Dictionary) -> void:
 				best = e
 		if best != null:
 			best.hurt(float(w.damage), player.global_position, 3.0 + float(w.get("knockback", 0.0)) * 0.25)
-	_sfx("gunshot", origin, 1, 0.0)
+		World.spawn_tracer(origin, origin + dir * best_t) # the streak flies to where the shot stopped
+	# Three gunshot takes; the host also relays the bang to every client
+	# (a client shooter never runs this path itself, so it would hear nothing).
+	var take := randi() % 3 + 1
+	_sfx("gunshot_%d" % take, origin, 1, 0.0)
+	Net.on_effect("sfx", origin, "gunshot_%d" % take)
 	player.play_swing()
 
 ## Projectile weapons (GD-08, LT-16; generalised 2026-09-05): a spear gun,

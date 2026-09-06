@@ -62,6 +62,8 @@ func _ready() -> void:
 	spawn_point.global_position = Vector2((spawn_cell.x + 1.0) * Constants.BLOCK_SIZE, (spawn_cell.y + 0.5) * Constants.BLOCK_SIZE)
 	var feet := spawn_point.global_position + Vector2(0, Constants.BLOCK_SIZE * 0.5)
 	World.register(WorldGrid.new(bounds), feet, items_root, objects_root, structure_renderer, DRY_FLOORS * FLOOR_H)
+	World.object_window = Vector2i(400, 320) # the whole test tower stays live (held references in m1/m2/tower smokes)
+	World.enemy_window = Vector2i(280, 200)
 	_build_tower()
 	_furnish() # before seeding: closed doors must already seal (WS-20 solidity)
 	# Static seed at equilibrium: everything open at or below the waterline is full…

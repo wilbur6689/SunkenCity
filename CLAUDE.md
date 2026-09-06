@@ -442,7 +442,68 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   not), the flare gun's flare lands as a lit `WorldItem` (fog beacon). Gates: `m5_smoke` G/H
   (grid roll matches district/band, rarity buckets, stock/apply/combine, D3 cleaner), `save_smoke`
   (library + legacy instance), `m4_smoke` G2 (shotgun/bow/nails/flare), `lan_smoke` +
-  `tools/lan_smoke.py`; preview `menu_preview --screen=modify`.
+  `tools/lan_smoke.py`; preview `menu_preview --screen=modify`. **Weapon slot** (2026-09-05, user
+  request): a seventh paper-doll slot `equipment.weapon` (glyph cell 4 of `assets/ui/equip_glyphs.png`)
+  takes anything with a `weapon` block (`Player.slot_fits`, shared with `CharSync.sanitize`). The worn
+  weapon is what an EMPTY hand fights with — `held_stack()`/`held_item()` fall back to it when the
+  hotbar slot is empty or Q is on (`holding_worn_weapon()`), so the paper doll, `Interaction`, LAN
+  held-item replication and tool gates all see it; `drop_held` never sheds it. Being equipment, its
+  modifiers count as worn gear through `equip_stat` (a Commercial suffix on a spear gun gives air
+  while worn); prefix stats apply to its attacks as for any held weapon. Hotbar weapons still work
+  as before. Covered in `m5_smoke` A2.
+- **Enemy density doubled + open-water scatter fixed** (2026-09-05, user request): `data/enemies.json`
+  `seeding` — `wing_zombie_weights` is now an any-length list (index = zombie count per dry wing-floor,
+  `[0.15, 0.25, 0.35, 0.25]` ≈ 1.7 expected, was ≈ 0.85), `wing_drowned_chance` 0.8 (was 0.4),
+  open-water spacings halved. `EnemyGen._scatter` walks spacings along **open-water columns only**
+  (`_open_columns`: gaps + ocean margins) with 4 row retries — the districts city's 5–10 cell gaps had
+  made the old random-column walk land inside towers 95 % of the time (a whole city seeded 2 sharks,
+  4 floaters, 5 fish schools). Flooded Shallows/Cold interiors still seed nothing (walkers dry-only,
+  the Drowned from The Dark down) — the next lever if the shallows feel empty. **Gunshots**
+  (2026-09-05): `assets/audio/sfx/gunshot_1..3.wav` (synthesised, `tools`-less one-off) play per shot;
+  the host relays the take to clients via `Net.on_effect("sfx")`. A cosmetic **`Tracer`**
+  (`scripts/items/tracer.gd`, `TRACER_SPEED_BLOCKS`) streaks from muzzle to where each pellet stopped
+  (`World.spawn_tracer`, replicated as effect kind `tracer`); hitscan resolution is unchanged.
+  **Seeding pity timer** (2026-09-05, user request): per tower wing, walking floors top → bottom,
+  every quiet floor adds `wing_pity_boost` (0.5) × streak to the next floor's chance of at least one
+  spawn, and after `wing_pity_floors` (2) quiet floors the next is guaranteed (dry floors: one
+  zombie; Dark/Crush flooded: a Drowned). Flooded Shallows/Cold floors can't seed anything and just
+  extend the streak, so a wing there stays quiet by design — the open question if the first dives
+  still feel safe.
+- **Forge smelting** (2026-09-05, user request): recipe `iron_smelt` — 6 scrap metal + 1 stone → 1
+  iron ingot at the forge (tier 1, known). NB GL-28: the surface's scrap now converts to iron at
+  6:1, so the "iron above The Cold cannot cover the gear chain" pressure is softened; `m5_smoke` L
+  still counts raw iron only. Retune the ratio (or gate it on Scrapping 2) if Stage 2 play shows the
+  chain finishing without a dive.
+- **Perf pass** (2026-09-05, user report "choppy, worse zoomed out"). Probe: `godot --path . --
+  --seed=1 --perf=SECS [--zoom=IDX] [--objwin=WxH] [--enemywin=WxH] [--walk]` (windowed, not
+  headless; `scripts/test/perf_probe.gd`) prints `PERF` lines: avg/p95/worst frame ms, mean of every
+  `World.perf` timer, live counts. Findings + fixes: (1) the districts city has ~104k object
+  records and every 12-cell move rescanned all of them (~100 ms hitch) — records are now bucketed
+  (`World.OBJ_BUCKET` 64-cell grid, `_records_in_windows`), the live set (`_live_records`, keyed by
+  a per-record `uid` because dictionaries hash by content) handles despawn, and `door_records` /
+  `placed_light_records` replace the full scans in `closed_door_cells` / `light_beacons` (the latter
+  was also the hidden ~25 ms in every fog recompute): scan 107 → ~3 ms. (2) `WaterRenderer` drew a
+  `draw_rect` per visible water cell (8 ms/frame at max zoom-out): it now slices the visible rows of
+  `WaterSim.levels` into an R8 texture (rebuilt only when the view moves / water moved / 0.5 s
+  keep-alive) and a shader paints fill + bobbing surface; depth bands unchanged: 8 → 0.02 ms.
+  (3) streaming in is spread `OBJECT_SPAWN_BUDGET` (24) records per tick via `_spawn_queue`
+  (`refresh_objects_around` fills immediately for boot/tests/teleports). (4) `OBJECT_WINDOW` /
+  `ENEMY_WINDOW` shrunk to 280×120 (~10 floors; window size barely moves fps once indexed, it sets
+  node count/RAM); `test_tower.gd` widens them back so held references survive the smokes.
+  (5) dropped `WorldItem`s sleep beyond `ITEM_SLEEP_BLOCKS` (120) from every player and hide when
+  their cell's visibility is 0 (re-checked every `ITEM_CULL_SECONDS`); all dropped items stay nodes
+  (they are saved), none are unloaded. Result on the RTX 4070 test box: walking at max zoom-out
+  44 → 119 fps, p95 49 → 13 ms, worst 122 → 25 ms; default zoom 67 → 120 fps. F3 gained view /
+  render-ms / stream / items / memory lines (`hud.gd _refresh_debug`). Remaining per-frame costs:
+  fog raycasts 4–9 ms per recompute (10×/s moving), the static relight ~30 ms on a worker thread,
+  live enemy AI. No LOD exists or is needed in 2D — windowing + culling is the whole story.
+- **Shared map** (2026-09-06, user request; CC-25 amended): the fog-of-war map is ONE per world.
+  It saves in the world payload (`"map"`), so the host's F5 keeps everyone's exploration; the host
+  reveals for every body it simulates (`World._physics_process`) and streams new cells to clients
+  every `NET_MAP_SYNC_TICKS` (`WorldSync._tick_map` → `_map`, from `MapReveal.net_dirty`, tracked
+  only while hosting); a joining client gets the whole map in the snapshot and reveals for itself
+  locally too. Character files no longer store a map; a legacy per-character map is merged into the
+  shared one once on load (`MapReveal.merge_bytes`, `apply_character` / `CharSync`).
 - **Gate runs:** `--quit-after N` counts FRAMES, not seconds - it truncates the input-driven gates
   (`m0/m1/m2/m4/tower`) mid-run while still exiting 0. Run gates with a shell `timeout` only, and
   read the final "N checks, M failures" line; a parse error makes a headless scene hang forever.

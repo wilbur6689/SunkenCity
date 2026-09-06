@@ -68,6 +68,20 @@ var placed_blocks: Dictionary = {}
 ## all of them is what tanked the spawn framerate). Solidity and sight
 ## queries read the record, so far doors still seal water.
 var object_records: Array = []
+## Perf (2026-09-05): the districts city carries ~100k object records, and a
+## per-move scan of all of them cost ~100 ms (the "choppy while moving"
+## hitch). Records are bucketed on an OBJ_BUCKET cell grid so the streaming
+## window only visits candidates, the live set is tracked for despawn, and
+## the two per-frame consumers (fog beacons, closed doors) keep their own
+## short lists instead of walking everything.
+const OBJ_BUCKET := 64
+var _obj_buckets: Dictionary = {}      # Vector2i bucket -> Array of records
+var _live_records: Dictionary = {}     # instantiated records (uid -> rec; dictionaries hash by content, so records key by uid)
+var _spawn_queue: Array = []           # records waiting to instantiate (streamed in this move)
+var _spawn_immediate: bool = false     # refresh_objects_around: fill now (boot, tests, teleports)
+var _next_record_uid: int = 1
+var placed_light_records: Array = []   # player-placed kind:light records (fog beacons)
+var door_records: Array = []           # every door record (light occlusion)
 ## Every cell covered by an object -> its record.
 var object_cells: Dictionary = {}
 var _obj_window_center := Vector2i(-99999, -99999)
@@ -95,8 +109,15 @@ var _was_night: bool = false
 var _wave_timer: float = 0.0
 var _floater_timer: float = 0.0
 ## Per-system frame costs + counters for the F3 debug overlay.
-var perf: Dictionary = {"water_ms": 0.0, "light_ms": 0.0, "fog_ms": 0.0,
-	"objects_live": 0, "objects_total": 0, "enemies_live": 0, "enemies_total": 0}
+var perf: Dictionary = {"water_ms": 0.0, "light_ms": 0.0, "fog_ms": 0.0, "fog_cells": 0,
+	"water_draw_ms": 0.0, "water_cells": 0, "struct_ms": 0.0, "struct_cells": 0,
+	"obj_scan_ms": 0.0, "enemy_scan_ms": 0.0, "obj_scans": 0, "obj_spawned": 0,
+	"objects_live": 0, "objects_total": 0, "enemies_live": 0, "enemies_total": 0,
+	"items_live": 0, "items_asleep": 0, "items_hidden": 0}
+## Streaming windows (cells). Defaults from Constants; the --objwin=/--enemywin=
+## dev args (perf probe, 2026-09-05) override them for render tests.
+var object_window: Vector2i = Constants.OBJECT_WINDOW
+var enemy_window: Vector2i = Constants.ENEMY_WINDOW
 
 func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 		p_objects_root: Node, p_renderer: StructureRenderer, p_waterline_row: int,
@@ -116,6 +137,11 @@ func register(p_grid: WorldGrid, p_spawn: Vector2, p_items_root: Node,
 	damage_rev += 1
 	object_records.clear()
 	object_cells.clear()
+	_obj_buckets.clear()
+	_live_records.clear()
+	_spawn_queue.clear()
+	placed_light_records.clear()
+	door_records.clear()
 	pumps.clear()
 	_obj_window_center = Vector2i(-99999, -99999)
 	enemy_records.clear()
@@ -149,7 +175,23 @@ func set_spawn(feet_position: Vector2) -> void:
 		return
 	spawn_position = feet_position
 
+## Drain the streaming-in queue a few records per tick so a move never
+## instantiates a hundred furniture nodes in one frame.
+func _drain_spawn_queue() -> void:
+	var n := 0
+	var wins := _player_windows(_obj_window_center, object_window)
+	while not _spawn_queue.is_empty() and n < Constants.OBJECT_SPAWN_BUDGET:
+		var rec: Dictionary = _spawn_queue.pop_front()
+		if rec.node == null and _in_windows(wins, rec.cell) and object_cells.get(rec.cell) == rec:
+			_instantiate_record(rec)
+			n += 1
+	if n > 0:
+		perf.obj_spawned += n
+		update_power()
+
 func _physics_process(delta: float) -> void:
+	if not _spawn_queue.is_empty():
+		_drain_spawn_queue()
 	if water_sim == null:
 		return
 	# The simulation is the host's (Multiplayer.md §3): a client only draws the
@@ -180,6 +222,15 @@ func _physics_process(delta: float) -> void:
 	if Net.is_server() and _light_tick % Constants.BREAKER_CHECK_TICKS == 0:
 		_check_breakers()
 	if _light_tick % Constants.LIGHT_RECOMPUTE_TICKS == 0:
+		# Shared map (2026-09-06): the host reveals for EVERY body it simulates
+		# and streams the new cells; a client reveals for itself so its own
+		# view never waits on the round trip.
+		map_reveal.track_net = Net.is_server() and Net.is_online()
+		if Net.is_server():
+			for body in get_tree().get_nodes_in_group("player"):
+				if body is Node2D and body != Net.local_player():
+					var r: int = body.reveal_radius() if body.has_method("reveal_radius") else Constants.MAP_REVEAL_RADIUS
+					map_reveal.reveal_disc(map_macro_for(body.global_position), r)
 		var p := Net.local_player() as Node2D
 		if p != null:
 			var center := cell_at(p.global_position)
@@ -375,10 +426,49 @@ func release_barred_door(button_cell: Vector2i) -> bool:
 ## the connectivity flood, as is_solid_cell says.
 func closed_door_cells() -> Dictionary:
 	var out := {}
-	for rec: Dictionary in object_records:
-		if rec.def.kind == "door" and not rec.open:
+	for rec: Dictionary in door_records:
+		if not rec.open:
 			for c in _record_cells(rec):
 				out[c] = true
+	return out
+
+## --- Record spatial index (perf, 2026-09-05) ---
+func _bucket_of(cell: Vector2i) -> Vector2i:
+	return Vector2i(floori(float(cell.x) / OBJ_BUCKET), floori(float(cell.y) / OBJ_BUCKET))
+
+func _index_record(rec: Dictionary) -> void:
+	var b := _bucket_of(rec.cell)
+	if not _obj_buckets.has(b):
+		_obj_buckets[b] = []
+	(_obj_buckets[b] as Array).append(rec)
+	if rec.def.kind == "door":
+		door_records.append(rec)
+	if rec.placed and rec.def.get("kind", "") == "light":
+		placed_light_records.append(rec)
+
+func _unindex_record(rec: Dictionary) -> void:
+	var b := _bucket_of(rec.cell)
+	if _obj_buckets.has(b):
+		(_obj_buckets[b] as Array).erase(rec)
+	door_records.erase(rec)
+	placed_light_records.erase(rec)
+	_live_records.erase(int(rec.get("uid", 0)))
+
+## Every record whose bucket touches one of the windows (a superset: the
+## caller still tests the exact cell).
+func _records_in_windows(wins: Array) -> Array:
+	var out := []
+	var seen := {}
+	for w: Rect2i in wins:
+		var b0 := _bucket_of(w.position)
+		var b1 := _bucket_of(w.end)
+		for by in range(b0.y, b1.y + 1):
+			for bx in range(b0.x, b1.x + 1):
+				var key := Vector2i(bx, by)
+				if seen.has(key) or not _obj_buckets.has(key):
+					continue
+				seen[key] = true
+				out.append_array(_obj_buckets[key])
 	return out
 
 ## First solid row from the sky in column x (structure or closed door), or a
@@ -623,9 +713,7 @@ func light_beacons() -> Array:
 		return _beacon_cache
 	_beacon_frame = f
 	_beacon_cache = []
-	for rec: Dictionary in object_records:
-		if not rec.placed or rec.def.get("kind", "") != "light":
-			continue
+	for rec: Dictionary in placed_light_records:
 		if bool(rec.def.get("powered", false)):
 			# live node knows best; streamed-out records carry the last state
 			var on: bool = rec.node.powered_on if rec.node != null else bool(rec.get("powered", false))
@@ -1034,7 +1122,10 @@ func add_object_record(id: String, cell: Vector2i, placed_by_player: bool) -> Di
 		"storage": Inventory.new(slots) if slots > 0 else null, "node": null}
 	if def.has("grows_into"): # trees track the day this stage began (2026-09-02)
 		rec["grow_day"] = day_count
+	rec["uid"] = _next_record_uid
+	_next_record_uid += 1
 	object_records.append(rec)
+	_index_record(rec)
 	if _record_solid(rec):
 		_light_dirty = true
 	for c in _record_cells(rec):
@@ -1089,6 +1180,7 @@ func _instantiate_record(rec: Dictionary) -> WorldObject:
 	if rec.def.kind == "light" and bool(rec.def.get("powered", false)):
 		obj.set_powered(bool(rec.powered)) # a client never recomputes power: the record is the truth
 	rec.node = obj
+	_live_records[int(rec.get("uid", 0))] = rec
 	if rec.def.kind == "pump":
 		pumps.append(obj)
 	return obj
@@ -1097,6 +1189,7 @@ func _instantiate_record(rec: Dictionary) -> WorldObject:
 func _despawn_record(rec: Dictionary) -> void:
 	var obj: WorldObject = rec.node
 	rec.node = null
+	_live_records.erase(int(rec.get("uid", 0)))
 	if obj == null or not is_instance_valid(obj):
 		return
 	sync_record(rec, obj)
@@ -1113,7 +1206,9 @@ func sync_record(rec: Dictionary, obj: WorldObject) -> void:
 ## the first frame renders or the first test assertion runs).
 func refresh_objects_around(pos: Vector2) -> void:
 	_obj_window_center = Vector2i(-99999, -99999)
+	_spawn_immediate = true
 	_update_object_window(cell_at(pos))
+	_spawn_immediate = false
 	_enemy_window_center = Vector2i(-99999, -99999)
 	_update_enemy_window(cell_at(pos))
 
@@ -1126,21 +1221,28 @@ func _update_object_window(center: Vector2i) -> void:
 		return
 	_obj_window_center = center
 	_window_key = key
-	var wins := _player_windows(center, Constants.OBJECT_WINDOW)
-	var live := 0
+	var t0 := Time.get_ticks_usec()
+	var wins := _player_windows(center, object_window)
 	var changed := false
-	for rec: Dictionary in object_records:
-		var inside := _in_windows(wins, rec.cell)
-		if inside != (rec.node != null):
-			if inside:
-				_instantiate_record(rec)
-			else:
-				_despawn_record(rec)
+	var spawned := 0
+	for rec: Dictionary in _live_records.values(): # streamed out: only the live set can leave
+		if not _in_windows(wins, rec.cell):
+			_despawn_record(rec)
 			changed = true
-		if inside:
-			live += 1
+	for rec: Dictionary in _records_in_windows(wins): # streamed in: only the buckets under the windows
+		if rec.node == null and _in_windows(wins, rec.cell):
+			if _spawn_immediate:
+				_instantiate_record(rec)
+				spawned += 1
+				changed = true
+			else:
+				_spawn_queue.append(rec) # drained OBJECT_SPAWN_BUDGET per tick (perf, 2026-09-05)
+	var live := _live_records.size()
 	perf.objects_live = live
 	perf.objects_total = object_records.size()
+	perf.obj_scan_ms = (Time.get_ticks_usec() - t0) / 1000.0
+	perf.obj_scans += 1
+	perf.obj_spawned = spawned
 	if changed:
 		update_power() # newly loaded wired lights resolve against breakers
 
@@ -1161,6 +1263,7 @@ func remove_object(obj: WorldObject) -> void:
 				break
 	if not rec.is_empty():
 		object_records.erase(rec)
+		_unindex_record(rec)
 		for c in _record_cells(rec):
 			if object_cells.get(c) == rec:
 				object_cells.erase(c)
@@ -1215,6 +1318,7 @@ func _replace_object_record(rec: Dictionary, new_id: String, new_cell: Vector2i)
 	var had_node: bool = rec.node != null
 	_despawn_record(rec)
 	object_records.erase(rec)
+	_unindex_record(rec)
 	for c in _record_cells(rec):
 		if object_cells.get(c) == rec:
 			object_cells.erase(c)
@@ -1374,7 +1478,8 @@ func _update_enemy_window(center: Vector2i) -> void:
 		return
 	_enemy_window_center = center
 	_enemy_window_key = key
-	var wins := _player_windows(center, Constants.ENEMY_WINDOW)
+	var t0 := Time.get_ticks_usec()
+	var wins := _player_windows(center, enemy_window)
 	var live := 0
 	for rec: Dictionary in enemy_records:
 		var inside := _in_windows(wins, cell_at(rec.pos))
@@ -1387,6 +1492,7 @@ func _update_enemy_window(center: Vector2i) -> void:
 			live += 1
 	perf.enemies_live = live
 	perf.enemies_total = enemy_records.size()
+	perf.enemy_scan_ms = (Time.get_ticks_usec() - t0) / 1000.0
 
 ## True if pounding this cell can achieve anything: a player-placed block or
 ## a player-placed closed door. Structure is safe from zombies (GD-04; the
@@ -1415,6 +1521,7 @@ func pound(cell: Vector2i, damage: float) -> void:
 			remove_object(rec.node)
 		else:
 			object_records.erase(rec)
+			_unindex_record(rec)
 			for c in _record_cells(rec):
 				if object_cells.get(c) == rec:
 					object_cells.erase(c)
@@ -1507,7 +1614,7 @@ func _spawn_wave_zombie(pos: Vector2, mult: float) -> void:
 			return
 
 func _enemy_in_window(rec: Dictionary) -> bool:
-	return _in_windows(_player_windows(_enemy_window_center, Constants.ENEMY_WINDOW), cell_at(rec.pos))
+	return _in_windows(_player_windows(_enemy_window_center, enemy_window), cell_at(rec.pos))
 
 ## Streaming windows follow players (LAN Step 1): on the host every player's
 ## surroundings run as nodes (the union of their windows); on a client only
@@ -1552,6 +1659,19 @@ const HARVEST_TINT := {
 	"cloth": Color(0.78, 0.72, 0.58), "iron": Color(0.62, 0.64, 0.68),
 	"steel": Color(0.70, 0.72, 0.78), "tree_seed": Color(0.50, 0.36, 0.22),
 }
+const TRACER_SCRIPT := preload("res://scripts/items/tracer.gd")
+
+## A cosmetic bullet streak from muzzle to impact (hitscan shots). The host
+## also broadcasts it so clients draw the same one.
+func spawn_tracer(from: Vector2, to: Vector2, local_only: bool = false) -> void:
+	if items_root == null or from.distance_squared_to(to) < 1.0:
+		return
+	var t: Node2D = TRACER_SCRIPT.new() # preloaded: a fresh class_name is not in the global cache until an import pass
+	items_root.add_child(t)
+	t.setup(from, to)
+	if not local_only:
+		Net.on_effect("tracer", from, "%f,%f" % [to.x, to.y])
+
 var _puff_tex: ImageTexture
 
 ## A short one-shot debris burst where an object breaks into resources (user
@@ -1678,7 +1798,7 @@ func add_record_replica(d: Dictionary) -> Dictionary:
 		return {}
 	var rec := add_object_record(id, d.cell, bool(d.get("placed", false)))
 	_copy_record_fields(rec, d)
-	if _in_windows(_player_windows(_obj_window_center, Constants.OBJECT_WINDOW), rec.cell):
+	if _in_windows(_player_windows(_obj_window_center, object_window), rec.cell):
 		_instantiate_record(rec)
 	return rec
 
@@ -1723,6 +1843,7 @@ func remove_record_replica(cell: Vector2i, id: String) -> void:
 		pumps.erase(obj)
 		obj.queue_free()
 	object_records.erase(rec)
+	_unindex_record(rec)
 	for c in _record_cells(rec):
 		if object_cells.get(c) == rec:
 			object_cells.erase(c)

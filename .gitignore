@@ -22,3 +22,7 @@ docs/Examples/Audio/**/*.wav
 
 # LAN smoke driver logs (tools/lan_smoke.py)
 tools/_lan_smoke/
+
+# Python bytecode from the tools/ scripts
+__pycache__/
+*.pyc

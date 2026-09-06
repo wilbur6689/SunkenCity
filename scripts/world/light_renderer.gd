@@ -88,6 +88,7 @@ func _draw() -> void:
 		_material.set_shader_parameter("vis_tex", _texture)
 		_material.set_shader_parameter("cells", Vector2(size))
 		_material.set_shader_parameter("quant", SUB_STEPS)
+		World.perf.fog_cells = size.x * size.y
 		_last_viewer = viewer
 		_cooldown = 0.1 # 10x/s while moving (was 20x/s; 2026-09-04 perf)
 		_idle = 0.0
