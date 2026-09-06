@@ -429,53 +429,77 @@ func equipped(slot_name: String) -> String:
 func knows_recipe(id: String) -> bool:
 	return known_recipes.has(id)
 
-# --- Modification Bench (LT-09/10) ---
-var known_mods: Dictionary = {} # mod id -> best power learned (sacrifice-to-learn)
+# --- Modification Bench (Modifiers.md "The Library": stock, not unlocks) ---
+var mod_library: Dictionary = {} # mod id -> count in stock (sacrifice adds, apply/combine consume)
 
-## Mods on this stack that would teach something new (learnable, and a
-## higher power than already known) — what the bench's LEARN offers.
+func library_count(mod_id: String) -> int:
+	return int(mod_library.get(mod_id, 0))
+
+func _library_add(mod_id: String, n: int) -> void:
+	var c := library_count(mod_id) + n
+	if c <= 0:
+		mod_library.erase(mod_id)
+	else:
+		mod_library[mod_id] = c
+
+## Learnable mods on this stack — duplicates always teach (the library is a
+## stock count), only junk is refused. What the bench's LEARN offers.
 func learnable_mods(stack: Dictionary) -> Array:
 	var out := []
 	var mods := ItemMods.mods_of(stack)
 	for part in ["prefix", "suffix"]:
 		if mods.has(part):
 			var m: Dictionary = mods[part]
-			if bool(ItemMods.def_of(m.id).get("learnable", true)) and int(m.power) > int(known_mods.get(m.id, 0)):
+			if bool(ItemMods.def_of(m.id).get("learnable", false)):
 				out.append(String(m.id))
 	return out
 
-## Sacrifice-to-learn: consumes the modded item, keeps the best power seen
-## per modifier. Returns the human-readable list of what was learned.
+## Sacrifice: the modded item is destroyed and each learnable mod on it adds
+## one to the library. Returns the human-readable list of what was stocked.
 func learn_mods(stack: Dictionary) -> Array:
 	var learned := []
-	var mods := ItemMods.mods_of(stack)
-	for part in ["prefix", "suffix"]:
-		if not mods.has(part):
-			continue
-		var m: Dictionary = mods[part]
-		if not bool(ItemMods.def_of(m.id).get("learnable", true)):
-			continue
-		if int(m.power) > int(known_mods.get(m.id, 0)):
-			known_mods[m.id] = int(m.power)
-			learned.append(ItemMods.describe_mod(m.id, int(m.power)))
+	for id in learnable_mods(stack):
+		_library_add(id, 1)
+		learned.append(ItemMods.describe_mod(id))
 	return learned
 
-## Applies learned mods to an UNMODIFIED piece (then it is locked, LT-09).
-## Up to one learned prefix + one learned suffix in a single operation (LT-07).
+## Applies library mods to an UNMODIFIED piece (then it is locked, LT-09).
+## Up to one prefix + one suffix in a single operation (LT-07); each chosen
+## id needs stock, the right slot and an `applies` match, and is consumed.
 func apply_mods(stack: Dictionary, prefix_id: String, suffix_id: String) -> bool:
 	var cls := ItemMods.mod_class(stack.id)
 	if stack.has("mods") or cls == "":
 		return false
 	var mods := {}
-	if prefix_id != "" and known_mods.has(prefix_id) and (ItemMods.def_of(prefix_id).get("applies", []) as Array).has(cls):
-		mods["prefix"] = {"id": prefix_id, "power": int(known_mods[prefix_id])}
-	if suffix_id != "" and known_mods.has(suffix_id) and (ItemMods.def_of(suffix_id).get("applies", []) as Array).has(cls):
-		mods["suffix"] = {"id": suffix_id, "power": int(known_mods[suffix_id])}
+	if prefix_id != "" and library_count(prefix_id) > 0 and ItemMods.slot_of(prefix_id) == "prefix" and ItemMods.applies_to(prefix_id, cls):
+		mods["prefix"] = {"id": prefix_id}
+	if suffix_id != "" and library_count(suffix_id) > 0 and ItemMods.slot_of(suffix_id) == "suffix" and ItemMods.applies_to(suffix_id, cls):
+		mods["suffix"] = {"id": suffix_id}
 	if mods.is_empty():
 		return false
+	for part in mods:
+		_library_add(String(mods[part].id), -1)
 	stack["mods"] = mods
+	stack["count"] = 1
 	inventory.changed.emit()
 	return true
+
+## COMBINE two library entries (same slot, same tier) into the recipe's
+## result: two of one id climb the family's ladder, two families at one tier
+## make the named hybrid. Consumes the inputs, stocks the result; returns
+## the result id or "".
+func combine_mods(a_id: String, b_id: String) -> String:
+	var need_a := 2 if a_id == b_id else 1
+	if library_count(a_id) < need_a or (a_id != b_id and library_count(b_id) < 1):
+		return ""
+	var result := ItemMods.combine_result(a_id, b_id)
+	if result == "":
+		return ""
+	_library_add(a_id, -1)
+	_library_add(b_id, -1)
+	_library_add(result, 1)
+	inventory.changed.emit()
+	return result
 
 func can_craft(recipe: Dictionary) -> bool:
 	return inventory.has_all(recipe.inputs) and inventory.can_add(recipe.output.item, int(recipe.output.count))
@@ -885,7 +909,9 @@ func _update_vitals(delta: float) -> void:
 func hurt_from_enemy(damage: float, from_pos: Vector2, can_bleed: bool) -> void:
 	var dir := (global_position - from_pos).normalized()
 	velocity += Vector2(dir.x, -0.5).normalized() * Constants.ENEMY_KNOCKBACK
-	apply_damage(damage)
+	# Defence (Civil suffixes, gear stats) shaves a share off every bite.
+	var mitigated := damage * maxf(Constants.DEFENSE_FLOOR, 1.0 - equip_stat("defense") * Constants.DEFENSE_PER_POINT)
+	apply_damage(mitigated)
 	if can_bleed and bleed_time <= 0.0 and randf() < Constants.BLEED_CHANCE and health > 0.0:
 		start_bleeding()
 	Audio.play_sfx("footstep_soft", global_position, 8, -4.0)

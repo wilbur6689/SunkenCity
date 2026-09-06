@@ -22,7 +22,7 @@ extends Node
 
 ## Actions that run locally on a client as optimistic feedback (no world side effects).
 const OPTIMISTIC := {"move_slot": true, "split_slot": true, "container_move": true, "storage_move": true, "quick_stack": true,
-	"equip": true, "unequip": true, "craft": true, "learn_mods": true, "apply_mods": true,
+	"equip": true, "unequip": true, "craft": true, "learn_mods": true, "apply_mods": true, "combine_mods": true,
 	"unlock_ability": true, "select_slot": true}
 ## Actions the client never applies locally (they spawn items / play world effects).
 const HOST_ONLY := {"drop_slot": true, "scrap_slot": true, "use_slot": true, "bulk_scrap_at": true}
@@ -95,6 +95,8 @@ func _apply(action: String, args: Array) -> bool:
 			ok = learn_mods(int(args[0]))
 		"apply_mods":
 			ok = apply_mods(int(args[0]), String(args[1]), String(args[2]))
+		"combine_mods":
+			ok = combine_mods(String(args[0]), String(args[1]))
 		"unlock_ability":
 			ok = unlock_ability(String(args[0]))
 		"select_slot":
@@ -373,6 +375,16 @@ func apply_mods(i: int, prefix_id: String, suffix_id: String) -> bool:
 	if not player.apply_mods(s, prefix_id, suffix_id):
 		return false
 	_say("Modified: " + ItemMods.display_name(s))
+	return true
+
+## Modification Bench COMBINE: two library entries into their recipe's result.
+func combine_mods(a_id: String, b_id: String) -> bool:
+	if not World.stations_near(player.global_position, _reach()).has("mod_bench"):
+		return false
+	var result := player.combine_mods(a_id, b_id)
+	if result == "":
+		return false
+	_say("Combined: " + String(ItemMods.def_of(result).get("name", result)))
 	return true
 
 func unlock_ability(id: String) -> bool:

@@ -241,12 +241,12 @@ func _primary() -> void:
 		"bucket":
 			_use_bucket()
 		"weapon":
-			var w: Dictionary = it.weapon
+			var w: Dictionary = ItemMods.weapon_of(player.held_stack()) # prefix mods folded in
 			if w.get("melee", false):
 				_melee(float(w.damage), float(w.speed), float(w.get("knockback", 8.0)),
 					float(w.get("water_factor", Constants.MELEE_WATER_FACTOR)))
 			elif w.has("projectile"):
-				_fire_spear(w)
+				_fire_projectile(w)
 			else:
 				_fire_gun(w)
 		_:
@@ -423,35 +423,44 @@ func _fire_gun(w: Dictionary) -> void:
 	attack_cooldown = 1.0 / maxf(float(w.get("speed", 1.0)), 0.1)
 	if ammo != "":
 		player.inventory.remove(ammo, 1)
-	var dir := (player.aim_position - player.global_position).normalized()
-	if dir == Vector2.ZERO:
-		dir = Vector2(player.facing, 0)
-	var origin := player.global_position + dir * 6.0
-	var max_px := float(w.get("range_blocks", Constants.GUN_RANGE_BLOCKS)) * Constants.BLOCK_SIZE
-	# Wall/water clip first, then the nearest enemy inside that distance.
-	var d := 4.0
-	while d < max_px:
-		var pos := origin + dir * d
-		if World.is_solid(pos) or World.is_water(pos):
-			max_px = d
-			break
-		d += 4.0
-	var best: Enemy = null
-	var best_t := max_px
-	for e: Enemy in get_tree().get_nodes_in_group("enemies"):
-		var to := e.global_position - origin
-		var t := to.dot(dir)
-		if t > 0.0 and t < best_t and absf(to.cross(dir)) < e.half.length() + 3.0:
-			best_t = t
-			best = e
-	if best != null:
-		best.hurt(float(w.damage), player.global_position, 3.0)
+	var aim := (player.aim_position - player.global_position).normalized()
+	if aim == Vector2.ZERO:
+		aim = Vector2(player.facing, 0)
+	var origin := player.global_position + aim * 6.0
+	# Shotguns (Weapons.md §3): one trace per pellet across a half-cone, each
+	# pellet its own damage — up close it all lands, at range it thins out.
+	var pellets := maxi(int(w.get("pellets", 1)), 1)
+	var spread := deg_to_rad(float(w.get("spread", Constants.SHOTGUN_SPREAD_DEG))) if pellets > 1 else 0.0
+	for p in pellets:
+		var dir := aim.rotated(randf_range(-spread, spread)) if pellets > 1 else aim
+		var max_px := float(w.get("range_blocks", Constants.GUN_RANGE_BLOCKS)) * Constants.BLOCK_SIZE
+		# Wall/water clip first, then the nearest enemy inside that distance.
+		var d := 4.0
+		while d < max_px:
+			var pos := origin + dir * d
+			if World.is_solid(pos) or World.is_water(pos):
+				max_px = d
+				break
+			d += 4.0
+		var best: Enemy = null
+		var best_t := max_px
+		for e: Enemy in get_tree().get_nodes_in_group("enemies"):
+			var to := e.global_position - origin
+			var t := to.dot(dir)
+			if t > 0.0 and t < best_t and absf(to.cross(dir)) < e.half.length() + 3.0:
+				best_t = t
+				best = e
+		if best != null:
+			best.hurt(float(w.damage), player.global_position, 3.0 + float(w.get("knockback", 0.0)) * 0.25)
 	_sfx("gunshot", origin, 1, 0.0)
 	player.play_swing()
 
-## Speargun (GD-08, LT-16): a silent bolt that flies, sticks, and is picked
-## back up. The underwater ranged weapon; works above water too.
-func _fire_spear(w: Dictionary) -> void:
+## Projectile weapons (GD-08, LT-16; generalised 2026-09-05): a spear gun,
+## bow, crossbow, nail gun or harpoon gun fires its `projectile` ammo item.
+## The ammo def's `projectile` block sets flight speed, how much gravity it
+## feels in air and whether it drops back as a pickup. Silent; works above
+## and below water (spears are the underwater ranged line).
+func _fire_projectile(w: Dictionary) -> void:
 	if attack_cooldown > 0.0:
 		return
 	var bolt_id: String = w.projectile
@@ -464,8 +473,11 @@ func _fire_spear(w: Dictionary) -> void:
 	var dir := (player.aim_position - player.global_position).normalized()
 	if dir == Vector2.ZERO:
 		dir = Vector2(player.facing, 0)
+	var pdef: Dictionary = Data.item(bolt_id).get("projectile", {})
+	var speed := float(pdef.get("speed", Constants.PROJECTILE_SPEED_BLOCKS)) * Constants.BLOCK_SIZE
 	var bolt := SpearBolt.new()
-	bolt.setup(bolt_id, dir * Constants.SPEAR_SPEED, float(w.damage))
+	bolt.setup(bolt_id, dir * speed, float(w.damage))
+	bolt.knockback = 4.0 + float(w.get("knockback", 0.0)) * 0.25
 	World.items_root.add_child(bolt)
 	bolt.global_position = player.global_position + dir * 8.0
 	_sfx("splash", player.global_position, 5, -14.0)

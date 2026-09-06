@@ -255,6 +255,55 @@ func _run() -> void:
 	check(items_of("speargun_bolt") > 0, "spent bolts drop as retrievable items")
 	await clear_enemies()
 
+	print("== G2. district ranged classes (Weapons.md §3): shotgun spread, bows, nails, flares")
+	await place(30, row)
+	player.inventory.add("pump_shotgun", 1)
+	player.inventory.add("shotgun_shells", 6)
+	check(hold_item("pump_shotgun"), "pump shotgun in hand")
+	var w5 := spawn("walker", 34, row)
+	var w5hp: float = w5.hp
+	aim(Vector2(35.0 * B, (row + 1) * B - 12.0))
+	player.interaction.attack_cooldown = 0.0
+	player.wants_use = true
+	await ticks(2)
+	player.wants_use = false
+	check(float(w5.hp) < w5hp - 10.0, "shotgun: several pellets land up close (hp %d -> %d)" % [int(w5hp), int(w5.hp)])
+	check(inv_count("shotgun_shells") == 5, "one shell per blast")
+	await clear_enemies()
+	player.inventory.add("compound_bow", 1)
+	player.inventory.add("arrows", 5)
+	check(hold_item("compound_bow"), "compound bow in hand")
+	var arrows_before := items_of("arrows")
+	aim(Vector2(36.0 * B, (row + 1) * B - 12.0))
+	player.interaction.attack_cooldown = 0.0
+	player.wants_use = true
+	await ticks(2)
+	player.wants_use = false
+	check(inv_count("arrows") == 4, "an arrow leaves the quiver")
+	check(await until(func(): return items_of("arrows") > arrows_before, 300), "the arrow drops as a retrievable pickup")
+	player.inventory.add("nail_gun", 1)
+	player.inventory.add("nails", 5)
+	check(hold_item("nail_gun"), "nail gun in hand")
+	player.interaction.attack_cooldown = 0.0
+	player.wants_use = true
+	await ticks(1)
+	player.wants_use = false
+	await ticks(200)
+	check(inv_count("nails") < 5 and items_of("nails") == 0, "nails are spent, never dropped")
+	player.inventory.add("flare_gun", 1)
+	player.inventory.add("flares", 2)
+	check(hold_item("flare_gun"), "flare gun in hand")
+	var beacons_before := World.light_beacons().size()
+	player.interaction.attack_cooldown = 0.0
+	player.wants_use = true
+	await ticks(2)
+	player.wants_use = false
+	check(await until(func(): return World.light_beacons().size() > beacons_before, 300), "a fired flare lands as a light beacon")
+	for it in World.items_root.get_children():
+		if it is WorldItem:
+			it.queue_free()
+	await ticks(2)
+
 	print("== H. shark drops + light loot (GD-11/24)")
 	var s1 := spawn("shark", 12, 39)
 	await ticks(2)

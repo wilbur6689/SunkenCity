@@ -101,7 +101,7 @@ func _boot_generated() -> void:
 		World.add_object_record(dc.id, dc.cell, false)
 	for p in gen.get("pockets", []):
 		World.pockets.append({"rect": p.rect, "exit": p.exit, "entry": p.entry})
-	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value, World.towers)
+	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value, World.towers, World.pockets)
 	for e in EnemyGen.seed_city(gen, seed_value): # M4: seeded once, no respawn (GD-02)
 		World.add_enemy_record(e.type, e.pos)
 	var t_flood0 := Time.get_ticks_msec()

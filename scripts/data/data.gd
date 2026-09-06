@@ -18,8 +18,13 @@ var objects: Dictionary = {}  # id -> object def
 var recipes: Dictionary = {}  # id -> recipe def
 var recipe_list: Array = []
 var loot: Dictionary = {}   # ordered as authored
-var modifiers: Dictionary = {}      # {"prefixes": [...], "suffixes": [...]} (LT-05/06)
-var modifier_defs: Dictionary = {}  # mod id -> def
+var modifiers: Dictionary = {}      # raw modifiers.json v2: {families, hybrids, junk} (Modifiers.md)
+var modifier_defs: Dictionary = {}  # mod id -> {id, name, slot, tier, family|hybrid, applies, stats, learnable}
+var modifier_families: Dictionary = {} # family key -> {slot, applies, label, color, tiers: [ids]} (bench grid order)
+var modifier_hybrids: Array = []       # hybrid defs in file order
+const MOD_STAT_KEYS := ["tool_damage", "tool_speed", "knockback", "scrap_speed", "defense", "oxygen",
+	"swim", "weight_mult", "carry", "cold", "crush", "light", "yield_chance", "reveal"]
+const BAND_ORDER := ["dry", "shallows", "cold", "dark", "crush"]
 var abilities: Dictionary = {}      # ability id -> def (CC-18 tech tree)
 var ability_list: Array = []
 var enemies: Dictionary = {}        # enemy type id -> def (M4, GD-01)
@@ -59,9 +64,7 @@ func _load_all() -> void:
 		recipe_list.append(r)
 	loot = _load_json("res://data/loot.json")
 	modifiers = _load_json("res://data/modifiers.json")
-	for part in ["prefixes", "suffixes"]:
-		for m in modifiers.get(part, []):
-			modifier_defs[m.id] = m
+	_load_modifiers()
 	for a in _load_json("res://data/abilities.json").get("abilities", []):
 		abilities[a.id] = a
 		ability_list.append(a)
@@ -71,6 +74,76 @@ func _load_all() -> void:
 	enemy_bands = edata.get("bands", {})
 	enemy_seeding = edata.get("seeding", {})
 	_validate()
+
+## modifiers.json v2 -> flat defs. A base tier's stats are tier x the family's
+## stats_per_tier unless the tier carries its own `stats`; hybrids and junk
+## are authored flat. Bad entries are reported and skipped, never fatal.
+func _load_modifiers() -> void:
+	modifier_defs.clear()
+	modifier_families.clear()
+	modifier_hybrids.clear()
+	var fams: Dictionary = modifiers.get("families", {})
+	for fam in fams:
+		var f: Dictionary = fams[fam]
+		var slot := String(f.get("slot", ""))
+		var tiers: Array = f.get("tiers", [])
+		if not slot in ["prefix", "suffix"] or tiers.size() != 5:
+			push_error("modifiers: family %s needs slot prefix/suffix and 5 tiers" % fam)
+			continue
+		var per: Dictionary = f.get("stats_per_tier", {})
+		var ids := []
+		for i in tiers.size():
+			var t: Dictionary = tiers[i]
+			var stats := {}
+			if t.has("stats"):
+				stats = (t.stats as Dictionary).duplicate()
+			else:
+				for k in per:
+					stats[k] = float(per[k]) * float(i + 1)
+			var id := String(t.id)
+			if modifier_defs.has(id):
+				push_error("modifiers: duplicate id %s" % id)
+				continue
+			modifier_defs[id] = {"id": id, "name": String(t.name), "slot": slot, "tier": i + 1, "family": fam,
+				"applies": f.get("applies", []), "stats": stats, "learnable": true}
+			ids.append(id)
+		modifier_families[fam] = {"slot": slot, "applies": f.get("applies", []), "label": f.get("label", fam.substr(0, 3).to_upper()),
+			"color": f.get("color", [0.8, 0.8, 0.8]), "desc": f.get("desc", ""), "tiers": ids}
+	for h in modifiers.get("hybrids", []):
+		var id := String(h.id)
+		if modifier_defs.has(id):
+			push_error("modifiers: duplicate id %s" % id)
+			continue
+		modifier_defs[id] = {"id": id, "name": String(h.name), "slot": String(h.slot), "tier": int(h.tier), "hybrid": true,
+			"applies": h.get("applies", []), "stats": (h.get("stats", {}) as Dictionary).duplicate(), "learnable": true,
+			"recipe": h.get("recipe", []), "next": h.get("next", "")}
+		modifier_hybrids.append(modifier_defs[id])
+	for j in modifiers.get("junk", []):
+		var id := String(j.id)
+		if modifier_defs.has(id):
+			push_error("modifiers: duplicate id %s" % id)
+			continue
+		modifier_defs[id] = {"id": id, "name": String(j.name), "slot": String(j.slot), "tier": 0, "junk": true,
+			"applies": j.get("applies", []), "stats": (j.get("stats", {}) as Dictionary).duplicate(), "learnable": false}
+	# Validation: recipes exist / same tier / same slot / different families, next exists, stat keys known.
+	for h in modifier_hybrids:
+		var rec: Array = h.recipe
+		var ok := rec.size() == 2 and modifier_defs.has(String(rec[0])) and modifier_defs.has(String(rec[1]))
+		if ok:
+			var a: Dictionary = modifier_defs[String(rec[0])]
+			var b: Dictionary = modifier_defs[String(rec[1])]
+			ok = int(a.tier) == int(h.tier) and int(b.tier) == int(h.tier) and a.slot == h.slot and b.slot == h.slot \
+				and a.get("family", "a") != b.get("family", "b")
+		if not ok:
+			push_error("modifiers: hybrid %s has a bad recipe %s" % [h.id, str(rec)])
+		if String(h.next) != "" and not modifier_defs.has(String(h.next)):
+			push_error("modifiers: hybrid %s: unknown next %s" % [h.id, h.next])
+	for id in modifier_defs:
+		for k in modifier_defs[id].stats:
+			if not k in MOD_STAT_KEYS:
+				push_error("modifiers: %s uses unknown stat %s" % [id, k])
+	if fams.size() != 6:
+		push_error("modifiers: expected 6 families, found %d" % fams.size())
 
 func _load_json(path: String) -> Dictionary:
 	var text := FileAccess.get_file_as_string(path)
@@ -95,6 +168,16 @@ func _validate() -> void:
 	for it in items.values():
 		for s in it.get("scrap", []):
 			assert(items.has(s.item), "item %s: unknown scrap %s" % [it.id, s.item])
+	for it in items.values():
+		var w: Dictionary = it.get("weapon", {})
+		if w.has("ammo"):
+			assert(items.has(w.ammo), "weapon %s: unknown ammo %s" % [it.id, w.ammo])
+		if w.has("projectile"):
+			assert(items.has(w.projectile), "weapon %s: unknown projectile %s" % [it.id, w.projectile])
+	for zone in loot.get("tables", {}):
+		for band in loot.tables[zone]:
+			for e in loot.tables[zone][band]:
+				assert(items.has(e.item), "loot %s/%s: unknown item %s" % [zone, band, e.item])
 	for a in ability_list:
 		var req: String = a.get("requires", "")
 		assert(req == "" or abilities.has(req), "ability %s: unknown requirement %s" % [a.id, req])

@@ -51,9 +51,11 @@ func _ready() -> void:
 	player.inventory.add("wood", 9)
 	player.skills.add_xp("scrapping", 42.0)
 	# M5 state: a modded instance, learned mods/recipes, and a tree ability
-	player.inventory.add_stack({"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 2}}})
+	player.inventory.add_stack({"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "ind_2"}}})
+	player.inventory.add_stack({"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 2}}}) # a pre-grid instance (D3)
 	player.known_recipes["iron_knife"] = true
-	player.known_mods["of_the_deep"] = 3
+	player.mod_library["com_4"] = 3
+	player.mod_library["demolition_2"] = 1
 	player.skills.abilities["field_strip"] = true
 	World.time_of_day = 0.123
 	await ticks(8) # let reveal + water run a moment
@@ -109,12 +111,16 @@ func _ready() -> void:
 	check(player2.inventory.count("wood") >= 9, "character inventory restored")
 	check(player2.skills.level("scrapping") >= 1, "character skills restored")
 	var modded_ok := false
+	var legacy_clean := false
 	for s in player2.inventory.slots:
-		if s != null and s.id == "iron_knife" and s.get("mods", {}).get("prefix", {}).get("id", "") == "sharp":
+		if s != null and s.id == "iron_knife" and s.get("mods", {}).get("prefix", {}).get("id", "") == "ind_2":
 			modded_ok = true
+		if s != null and s.id == "scrap_knife" and not s.has("mods"):
+			legacy_clean = true
 	check(modded_ok, "modded item instance restored with its mods (LT-05..07)")
+	check(legacy_clean, "a pre-grid modded instance loads as a clean item (D3)")
 	check(player2.knows_recipe("iron_knife"), "learned recipes restored (GL-06)")
-	check(int(player2.known_mods.get("of_the_deep", 0)) == 3, "learned modifiers restored (LT-09)")
+	check(player2.library_count("com_4") == 3 and player2.library_count("demolition_2") == 1, "modifier library stock restored")
 	check(player2.skills.has_ability("field_strip"), "tech-tree abilities restored (CC-18)")
 	check(World.map_reveal.revealed_count() == revealed, "map reveal restored per character+world")
 	var links_after := 0

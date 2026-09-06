@@ -716,7 +716,7 @@
         6.0
       ],
       "id": "pistol",
-      "name": "Pistol",
+      "name": "9mm Pistol",
       "scrap": [
         {
           "count": 2.0,
@@ -746,7 +746,7 @@
         6.0
       ],
       "id": "smg",
-      "name": "Sub-Machine Gun",
+      "name": "Compact SMG",
       "scrap": [
         {
           "count": 3.0,
@@ -776,7 +776,7 @@
         6.0
       ],
       "id": "rifle",
-      "name": "Rifle",
+      "name": "Bolt-Action Rifle",
       "scrap": [
         {
           "count": 3.0,
@@ -897,7 +897,7 @@
         7.0
       ],
       "id": "speargun",
-      "name": "Speargun",
+      "name": "Spear Gun",
       "scrap": [
         {
           "count": 2.0,
@@ -1079,6 +1079,2417 @@
         }
       ],
       "desc": "A lashed wood A-frame hoist. Brace it over the roof vent hatch to lever it out - the metal-free way down - and it pops other tier-1 seals (side vents, jammed doors)."
+    },
+    {
+      "id": "shotgun_shells",
+      "name": "Shotgun Shells",
+      "category": "ammo",
+      "desc": "12-gauge buck. Six pellets a shell.",
+      "weight": 0.05,
+      "stack": 48,
+      "district_weapon": true
+    },
+    {
+      "id": "arrows",
+      "name": "Arrows",
+      "category": "ammo",
+      "desc": "Field arrows. Fly true, fall slow, come back.",
+      "weight": 0.05,
+      "stack": 40,
+      "district_weapon": true,
+      "projectile": {
+        "speed": 40.0,
+        "gravity": 0.35,
+        "retrievable": true
+      }
+    },
+    {
+      "id": "crossbow_bolts",
+      "name": "Crossbow Bolts",
+      "category": "ammo",
+      "desc": "Short heavy bolts. Retrievable.",
+      "weight": 0.06,
+      "stack": 40,
+      "district_weapon": true,
+      "projectile": {
+        "speed": 48.0,
+        "gravity": 0.3,
+        "retrievable": true
+      }
+    },
+    {
+      "id": "nails",
+      "name": "Nails",
+      "category": "ammo",
+      "desc": "Framing nails. Gone once fired.",
+      "weight": 0.01,
+      "stack": 200,
+      "district_weapon": true,
+      "projectile": {
+        "speed": 52.0,
+        "gravity": 0.2,
+        "retrievable": false
+      }
+    },
+    {
+      "id": "rivets",
+      "name": "Rivets",
+      "category": "ammo",
+      "desc": "Hot rivets. Gone once fired.",
+      "weight": 0.02,
+      "stack": 200,
+      "district_weapon": true,
+      "projectile": {
+        "speed": 56.0,
+        "gravity": 0.2,
+        "retrievable": false
+      }
+    },
+    {
+      "id": "flares",
+      "name": "Flares",
+      "category": "ammo",
+      "desc": "Burning flares. Light where they land.",
+      "weight": 0.1,
+      "stack": 20,
+      "district_weapon": true,
+      "projectile": {
+        "speed": 30.0,
+        "gravity": 0.5,
+        "retrievable": true
+      },
+      "use": {
+        "drop_light": {
+          "color": [
+            1.0,
+            0.45,
+            0.3
+          ],
+          "radius_blocks": 6.0
+        }
+      }
+    },
+    {
+      "id": "harpoon",
+      "name": "Harpoon Bolt",
+      "category": "ammo",
+      "desc": "Barbed harpoon. Heavy, retrievable.",
+      "weight": 0.3,
+      "stack": 12,
+      "district_weapon": true,
+      "projectile": {
+        "speed": 38.0,
+        "gravity": 0.5,
+        "retrievable": true
+      }
+    },
+    {
+      "id": "baseball_bat",
+      "name": "Baseball Bat",
+      "category": "weapon",
+      "desc": "Ash and tape. Swings quick, hits fair.",
+      "weight": 2.8,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.5,
+        "speed": 1.3,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "residential"
+    },
+    {
+      "id": "baton",
+      "name": "Baton",
+      "category": "weapon",
+      "desc": "Issue nightstick. Fast, light, forgettable.",
+      "weight": 2.8,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 5.2,
+        "speed": 1.37,
+        "knockback": 15.4,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "civil"
+    },
+    {
+      "id": "crowbar",
+      "name": "Crowbar",
+      "category": "weapon",
+      "desc": "Pries chained doors and skulls alike.",
+      "weight": 3.3,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 5.2,
+        "speed": 1.2,
+        "knockback": 12.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "industrial",
+      "tool": {
+        "type": "pry",
+        "tier": 2,
+        "damage": 3.1,
+        "speed": 1.2
+      }
+    },
+    {
+      "id": "desk_leg",
+      "name": "Desk Leg",
+      "category": "weapon",
+      "desc": "Unscrewed in a hurry. Better than nothing.",
+      "weight": 2.8,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.8,
+        "speed": 1.56,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "business"
+    },
+    {
+      "id": "fire_extinguisher",
+      "name": "Fire Extinguisher",
+      "category": "weapon",
+      "desc": "Slow, heavy, and it rings when it lands.",
+      "weight": 2.8,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.8,
+        "speed": 1.56,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "business"
+    },
+    {
+      "id": "fireplace_poker",
+      "name": "Fireplace Poker",
+      "category": "weapon",
+      "desc": "Wrought iron with a hook. Reaches.",
+      "weight": 2.3,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 3.8,
+        "speed": 1.4,
+        "knockback": 10.0,
+        "water_factor": 0.9
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "residential"
+    },
+    {
+      "id": "halligan_tool",
+      "name": "Halligan Tool",
+      "category": "weapon",
+      "desc": "Fire-crew entry bar: fork, adze and pick.",
+      "weight": 3.3,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.7,
+        "speed": 1.26,
+        "knockback": 13.2,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "civil",
+      "tool": {
+        "type": "pry",
+        "tier": 2,
+        "damage": 2.8,
+        "speed": 1.26
+      }
+    },
+    {
+      "id": "hatchet",
+      "name": "Hatchet",
+      "category": "weapon",
+      "desc": "One-hand axe. Fells saplings, opens zombies.",
+      "weight": 3.3,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 6.0,
+        "speed": 1.1,
+        "knockback": 16.0,
+        "water_factor": 0.45
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "industrial",
+      "tool": {
+        "type": "axe",
+        "tier": 1,
+        "damage": 3.6,
+        "speed": 1.1
+      }
+    },
+    {
+      "id": "kitchen_knife",
+      "name": "Kitchen Knife",
+      "category": "weapon",
+      "desc": "A cook's blade. Quick, and fine underwater.",
+      "weight": 1.1,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 2.9,
+        "speed": 2.2,
+        "knockback": 3.0,
+        "water_factor": 0.8
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "residential",
+      "tool": {
+        "type": "knife",
+        "tier": 1,
+        "damage": 1.7,
+        "speed": 2.2
+      }
+    },
+    {
+      "id": "letter_opener",
+      "name": "Letter Opener",
+      "category": "weapon",
+      "desc": "Brass and pointless - until it isn't.",
+      "weight": 1.1,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 3.1,
+        "speed": 2.64,
+        "knockback": 3.0,
+        "water_factor": 0.8
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "business",
+      "tool": {
+        "type": "knife",
+        "tier": 1,
+        "damage": 1.9,
+        "speed": 2.64
+      }
+    },
+    {
+      "id": "machete",
+      "name": "Machete",
+      "category": "weapon",
+      "desc": "Hardware-aisle steel. Wide, fast cuts.",
+      "weight": 1.9,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.5,
+        "speed": 1.7,
+        "knockback": 8.0,
+        "water_factor": 0.7
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "commercial"
+    },
+    {
+      "id": "nail_puller",
+      "name": "Nail Puller",
+      "category": "weapon",
+      "desc": "Cat's paw. Levers boards and doors.",
+      "weight": 3.3,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.5,
+        "speed": 1.2,
+        "knockback": 16.8,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "construction",
+      "tool": {
+        "type": "pry",
+        "tier": 1,
+        "damage": 2.7,
+        "speed": 1.2
+      }
+    },
+    {
+      "id": "paper_cutter",
+      "name": "Paper Cutter",
+      "category": "weapon",
+      "desc": "The guillotine arm off an office cutter. Slow, mean.",
+      "weight": 1.9,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.3,
+        "speed": 2.04,
+        "knockback": 8.0,
+        "water_factor": 0.55
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "business"
+    },
+    {
+      "id": "pipe_wrench",
+      "name": "Pipe Wrench",
+      "category": "weapon",
+      "desc": "Two kilos of cast iron on a handle.",
+      "weight": 2.8,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 5.8,
+        "speed": 1.3,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "industrial"
+    },
+    {
+      "id": "rebar_club",
+      "name": "Rebar Club",
+      "category": "weapon",
+      "desc": "Bent rebar, taped grip. Sends things flying.",
+      "weight": 2.8,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 5.0,
+        "speed": 1.3,
+        "knockback": 19.6,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "construction"
+    },
+    {
+      "id": "rescue_axe",
+      "name": "Rescue Axe",
+      "category": "weapon",
+      "desc": "Short fire axe with a pick. Balanced.",
+      "weight": 3.3,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 5.5,
+        "speed": 1.16,
+        "knockback": 17.6,
+        "water_factor": 0.45
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "civil",
+      "tool": {
+        "type": "axe",
+        "tier": 1,
+        "damage": 3.3,
+        "speed": 1.16
+      }
+    },
+    {
+      "id": "stapler",
+      "name": "Stapler",
+      "category": "weapon",
+      "desc": "Industrial stapler. Someone's last stand.",
+      "weight": 2.8,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 4.8,
+        "speed": 1.56,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "business"
+    },
+    {
+      "id": "utility_knife",
+      "name": "Utility Knife",
+      "category": "weapon",
+      "desc": "Box cutter. Quick, fine underwater, breaks nothing.",
+      "weight": 1.1,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 3.2,
+        "speed": 2.2,
+        "knockback": 3.0,
+        "water_factor": 0.95
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "commercial",
+      "tool": {
+        "type": "knife",
+        "tier": 1,
+        "damage": 1.9,
+        "speed": 2.2
+      }
+    },
+    {
+      "id": "boarding_axe",
+      "name": "Boarding Axe",
+      "category": "weapon",
+      "desc": "Marine axe with a spike. Bites underwater.",
+      "weight": 3.6,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 8.4,
+        "speed": 1.1,
+        "knockback": 16.0,
+        "water_factor": 0.6
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "commercial",
+      "tool": {
+        "type": "axe",
+        "tier": 2,
+        "damage": 5.0,
+        "speed": 1.1
+      }
+    },
+    {
+      "id": "breaching_tool",
+      "name": "Breaching Tool",
+      "category": "weapon",
+      "desc": "Security entry bar. Pries and pounds.",
+      "weight": 3.6,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 6.8,
+        "speed": 1.44,
+        "knockback": 12.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "business",
+      "tool": {
+        "type": "pry",
+        "tier": 2,
+        "damage": 4.1,
+        "speed": 1.44
+      }
+    },
+    {
+      "id": "demolition_hammer",
+      "name": "Demolition Hammer",
+      "category": "weapon",
+      "desc": "Powered breaker. Slow wind-up, brutal landing.",
+      "weight": 5.6,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 10.4,
+        "speed": 0.9,
+        "knockback": 16.8,
+        "water_factor": 0.35
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "construction",
+      "tool": {
+        "type": "hammer",
+        "tier": 3,
+        "damage": 6.2,
+        "speed": 0.9
+      }
+    },
+    {
+      "id": "security_flashlight",
+      "name": "Security Flashlight",
+      "category": "weapon",
+      "desc": "Four D-cells of aluminium. Lights the way, too.",
+      "weight": 3.1,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 7.6,
+        "speed": 1.56,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "business"
+    },
+    {
+      "id": "lump_hammer",
+      "name": "Lump Hammer",
+      "category": "weapon",
+      "desc": "Short sledge. Cracks stone and bone.",
+      "weight": 3.1,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 7.2,
+        "speed": 1.3,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "residential",
+      "tool": {
+        "type": "hammer",
+        "tier": 2,
+        "damage": 4.3,
+        "speed": 1.3
+      }
+    },
+    {
+      "id": "cane_machete",
+      "name": "Cane Machete",
+      "category": "weapon",
+      "desc": "Long field blade. Wide sweeps.",
+      "weight": 2.2,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 7.2,
+        "speed": 1.7,
+        "knockback": 8.0,
+        "water_factor": 0.7
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "commercial"
+    },
+    {
+      "id": "pickaxe",
+      "name": "Pickaxe",
+      "category": "weapon",
+      "desc": "Digs, breaks stone, punches through ribs.",
+      "weight": 2.6,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 7.8,
+        "speed": 1.4,
+        "knockback": 10.0,
+        "water_factor": 0.9
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "industrial",
+      "tool": {
+        "type": "hammer",
+        "tier": 2,
+        "damage": 4.7,
+        "speed": 1.4
+      }
+    },
+    {
+      "id": "rescue_saw",
+      "name": "Rescue Saw",
+      "category": "weapon",
+      "desc": "Powered rescue saw. Chews through anything soft.",
+      "weight": 5.6,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 10.9,
+        "speed": 0.95,
+        "knockback": 13.2,
+        "water_factor": 0.35
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "civil"
+    },
+    {
+      "id": "riot_baton",
+      "name": "Riot Baton",
+      "category": "weapon",
+      "desc": "Polycarbonate riot stick. Fast and hard.",
+      "weight": 3.1,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 7.6,
+        "speed": 1.56,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "business"
+    },
+    {
+      "id": "sledgehammer",
+      "name": "Sledgehammer",
+      "category": "weapon",
+      "desc": "Ten pounds on a hickory haft.",
+      "weight": 3.1,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 9.2,
+        "speed": 1.3,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "industrial",
+      "tool": {
+        "type": "hammer",
+        "tier": 2,
+        "damage": 5.5,
+        "speed": 1.3
+      }
+    },
+    {
+      "id": "spear",
+      "name": "Spear",
+      "category": "weapon",
+      "desc": "Boar spear. Thrusts work underwater.",
+      "weight": 2.6,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 6.8,
+        "speed": 1.4,
+        "knockback": 10.0,
+        "water_factor": 0.95
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "commercial"
+    },
+    {
+      "id": "splitting_maul",
+      "name": "Splitting Maul",
+      "category": "weapon",
+      "desc": "Axe on one side, sledge on the other.",
+      "weight": 3.6,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 9.7,
+        "speed": 1.1,
+        "knockback": 16.0,
+        "water_factor": 0.45
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "industrial",
+      "tool": {
+        "type": "axe",
+        "tier": 2,
+        "damage": 5.8,
+        "speed": 1.1
+      }
+    },
+    {
+      "id": "breaching_hammer",
+      "name": "Breaching Hammer",
+      "category": "weapon",
+      "desc": "Entry sledge. Doors, walls, heads.",
+      "weight": 3.4,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 13.8,
+        "speed": 1.3,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "industrial",
+      "tool": {
+        "type": "hammer",
+        "tier": 3,
+        "damage": 8.3,
+        "speed": 1.3
+      }
+    },
+    {
+      "id": "dive_knife",
+      "name": "Dive Knife",
+      "category": "weapon",
+      "desc": "Titanium dive blade. Made for the water.",
+      "weight": 1.7,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 7.8,
+        "speed": 2.2,
+        "knockback": 3.0,
+        "water_factor": 0.95
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "commercial",
+      "tool": {
+        "type": "knife",
+        "tier": 2,
+        "damage": 4.7,
+        "speed": 2.2
+      }
+    },
+    {
+      "id": "harpoon",
+      "name": "Harpoon",
+      "category": "weapon",
+      "desc": "Barbed hand harpoon. Thrusts hard underwater.",
+      "weight": 2.9,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 10.2,
+        "speed": 1.4,
+        "knockback": 10.0,
+        "water_factor": 0.95
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "commercial"
+    },
+    {
+      "id": "felling_axe",
+      "name": "Felling Axe",
+      "category": "weapon",
+      "desc": "Full-size timber axe. Fells anything.",
+      "weight": 3.9,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 14.5,
+        "speed": 1.1,
+        "knockback": 16.0,
+        "water_factor": 0.45
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "industrial",
+      "tool": {
+        "type": "axe",
+        "tier": 3,
+        "damage": 8.7,
+        "speed": 1.1
+      }
+    },
+    {
+      "id": "pinch_bar",
+      "name": "Pinch Bar",
+      "category": "weapon",
+      "desc": "Long pry bar. Leverage is damage.",
+      "weight": 3.9,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 10.8,
+        "speed": 1.2,
+        "knockback": 16.8,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "construction",
+      "tool": {
+        "type": "pry",
+        "tier": 2,
+        "damage": 6.5,
+        "speed": 1.2
+      }
+    },
+    {
+      "id": "broad_hatchet",
+      "name": "Broad Hatchet",
+      "category": "weapon",
+      "desc": "Wide-bit hewing hatchet.",
+      "weight": 3.9,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 11.3,
+        "speed": 1.1,
+        "knockback": 16.0,
+        "water_factor": 0.45
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "residential",
+      "tool": {
+        "type": "axe",
+        "tier": 2,
+        "damage": 6.8,
+        "speed": 1.1
+      }
+    },
+    {
+      "id": "hunting_knife",
+      "name": "Hunting Knife",
+      "category": "weapon",
+      "desc": "Drop-point blade. Quick and deep.",
+      "weight": 1.7,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 7.0,
+        "speed": 2.2,
+        "knockback": 3.0,
+        "water_factor": 0.8
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "residential",
+      "tool": {
+        "type": "knife",
+        "tier": 3,
+        "damage": 4.2,
+        "speed": 2.2
+      }
+    },
+    {
+      "id": "industrial_cutter",
+      "name": "Industrial Cutter",
+      "category": "weapon",
+      "desc": "Bench cutter torn off its stand. Spins up, then shreds.",
+      "weight": 5.9,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 17.9,
+        "speed": 0.9,
+        "knockback": 12.0,
+        "water_factor": 0.35
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "industrial"
+    },
+    {
+      "id": "breaching_sledge",
+      "name": "Breaching Sledge",
+      "category": "weapon",
+      "desc": "Entry team sledge. Sends things through walls.",
+      "weight": 3.7,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 17.0,
+        "speed": 1.3,
+        "knockback": 19.6,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "construction",
+      "tool": {
+        "type": "hammer",
+        "tier": 3,
+        "damage": 10.2,
+        "speed": 1.3
+      }
+    },
+    {
+      "id": "mattock",
+      "name": "Mattock",
+      "category": "weapon",
+      "desc": "Pick and adze. Breaks ground, breaks bone.",
+      "weight": 3.2,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 14.4,
+        "speed": 1.4,
+        "knockback": 14.0,
+        "water_factor": 0.9
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "construction",
+      "tool": {
+        "type": "hammer",
+        "tier": 3,
+        "damage": 8.6,
+        "speed": 1.4
+      }
+    },
+    {
+      "id": "hydraulic_cutter",
+      "name": "Hydraulic Cutter",
+      "category": "weapon",
+      "desc": "Rescue jaws. Opens vault doors and ribcages.",
+      "weight": 6.2,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 25.4,
+        "speed": 0.9,
+        "knockback": 12.0,
+        "water_factor": 0.35
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "industrial",
+      "tool": {
+        "type": "pry",
+        "tier": 3,
+        "damage": 15.2,
+        "speed": 0.9
+      }
+    },
+    {
+      "id": "industrial_saw",
+      "name": "Industrial Saw",
+      "category": "weapon",
+      "desc": "Powered circular saw. Fast, loud, wide.",
+      "weight": 6.2,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 25.4,
+        "speed": 0.9,
+        "knockback": 12.0,
+        "water_factor": 0.35
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "industrial"
+    },
+    {
+      "id": "pole_hook",
+      "name": "Pole Hook",
+      "category": "weapon",
+      "desc": "Long pike pole. Hooks and pulls at reach.",
+      "weight": 4.7,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 15.3,
+        "speed": 1.0,
+        "knockback": 25.2,
+        "water_factor": 0.6
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "construction"
+    },
+    {
+      "id": "rescue_spreader",
+      "name": "Rescue Spreader",
+      "category": "weapon",
+      "desc": "Hydraulic spreader. Pries anything, hits like a truck.",
+      "weight": 6.2,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 23.2,
+        "speed": 0.95,
+        "knockback": 13.2,
+        "water_factor": 0.35
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "civil",
+      "tool": {
+        "type": "pry",
+        "tier": 3,
+        "damage": 13.9,
+        "speed": 0.95
+      }
+    },
+    {
+      "id": "breaching_maul",
+      "name": "Breaching Maul",
+      "category": "weapon",
+      "desc": "The biggest hammer in the city.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 26.4,
+        "speed": 1.3,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "industrial",
+      "tool": {
+        "type": "hammer",
+        "tier": 3,
+        "damage": 15.8,
+        "speed": 1.3
+      }
+    },
+    {
+      "id": "shock_baton",
+      "name": "Shock Baton",
+      "category": "weapon",
+      "desc": "Executive-floor security stick. Fast, and it bites.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 21.8,
+        "speed": 1.56,
+        "knockback": 14.0,
+        "water_factor": 0.5
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "business"
+    },
+    {
+      "id": "whaling_harpoon",
+      "name": "Whaling Harpoon",
+      "category": "weapon",
+      "desc": "Iron whaling iron. Thrusts to the hilt underwater.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 19.6,
+        "speed": 1.4,
+        "knockback": 10.0,
+        "water_factor": 0.95
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "commercial"
+    },
+    {
+      "id": "tactical_axe",
+      "name": "Tactical Axe",
+      "category": "weapon",
+      "desc": "Black-anodised breaching axe.",
+      "weight": 4.5,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 22.9,
+        "speed": 1.32,
+        "knockback": 16.0,
+        "water_factor": 0.45
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "business",
+      "tool": {
+        "type": "axe",
+        "tier": 3,
+        "damage": 13.7,
+        "speed": 1.32
+      }
+    },
+    {
+      "id": "rifle_22",
+      "name": ".22 Rifle",
+      "category": "weapon",
+      "desc": "Plinker. Light rounds, quiet, cheap. Found only.",
+      "weight": 2.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 7.0,
+        "speed": 1.4,
+        "ammo": "pistol_rounds",
+        "reload": 1.4,
+        "range_blocks": 60
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "residential",
+      "found_only": true
+    },
+    {
+      "id": "compact_pistol",
+      "name": "Compact Pistol",
+      "category": "weapon",
+      "desc": "Pocket pistol from a desk drawer. Found only.",
+      "weight": 1.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 8.0,
+        "speed": 2.0,
+        "ammo": "pistol_rounds",
+        "reload": 1.0
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "business",
+      "found_only": true
+    },
+    {
+      "id": "compound_bow",
+      "name": "Compound Bow",
+      "category": "weapon",
+      "desc": "Sporting compound. Silent; arrows come back.",
+      "weight": 1.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 10.0,
+        "speed": 1.0,
+        "projectile": "arrows"
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "commercial"
+    },
+    {
+      "id": "crossbow",
+      "name": "Crossbow",
+      "category": "weapon",
+      "desc": "Hunting crossbow. Slow to span, hits hard.",
+      "weight": 3.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 14.0,
+        "speed": 0.6,
+        "projectile": "crossbow_bolts"
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "construction"
+    },
+    {
+      "id": "flare_gun",
+      "name": "Flare Gun",
+      "category": "weapon",
+      "desc": "Fires a burning flare that lights where it lands.",
+      "weight": 0.8,
+      "stack": 1,
+      "weapon": {
+        "damage": 3.0,
+        "speed": 0.7,
+        "projectile": "flares"
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "industrial"
+    },
+    {
+      "id": "hunting_rifle",
+      "name": "Hunting Rifle",
+      "category": "weapon",
+      "desc": "Scoped deer rifle. One heavy answer. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 18.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "residential",
+      "found_only": true
+    },
+    {
+      "id": "nail_gun",
+      "name": "Nail Gun",
+      "category": "weapon",
+      "desc": "Framing nailer with the safety filed off.",
+      "weight": 3.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 4.0,
+        "speed": 4.5,
+        "projectile": "nails"
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "industrial"
+    },
+    {
+      "id": "pellet_gun",
+      "name": "Pellet Gun",
+      "category": "weapon",
+      "desc": "Air pistol. Stings. Found only.",
+      "weight": 1.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 4.0,
+        "speed": 1.6,
+        "ammo": "pistol_rounds",
+        "reload": 1.0
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "commercial",
+      "found_only": true
+    },
+    {
+      "id": "revolver",
+      "name": "Revolver",
+      "category": "weapon",
+      "desc": "Six rounds, no jams. Found only.",
+      "weight": 1.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 8.0,
+        "speed": 2.0,
+        "ammo": "pistol_rounds",
+        "reload": 1.0
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "business",
+      "found_only": true
+    },
+    {
+      "id": "service_pistol",
+      "name": "Service Pistol",
+      "category": "weapon",
+      "desc": "Issue sidearm. Reliable. Found only.",
+      "weight": 1.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 8.0,
+        "speed": 2.0,
+        "ammo": "pistol_rounds",
+        "reload": 1.0
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 1,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "patrol_shotgun",
+      "name": "Patrol Shotgun",
+      "category": "weapon",
+      "desc": "Cruiser gun. Close work. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 5.0,
+        "speed": 0.9,
+        "ammo": "shotgun_shells",
+        "reload": 2.0,
+        "pellets": 6,
+        "spread": 12.0,
+        "range_blocks": 18
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "pump_shotgun",
+      "name": "Pump Shotgun",
+      "category": "weapon",
+      "desc": "Bird gun from a hall closet. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 5.0,
+        "speed": 0.9,
+        "ammo": "shotgun_shells",
+        "reload": 2.0,
+        "pellets": 6,
+        "spread": 12.0,
+        "range_blocks": 18
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "residential",
+      "found_only": true
+    },
+    {
+      "id": "rivet_gun",
+      "name": "Rivet Gun",
+      "category": "weapon",
+      "desc": "Pneumatic riveter. Hot rivets, fast.",
+      "weight": 3.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 5.0,
+        "speed": 4.5,
+        "projectile": "rivets"
+      },
+      "scrap": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        }
+      ],
+      "district_weapon": true,
+      "band": 2,
+      "district": "industrial"
+    },
+    {
+      "id": "harpoon_gun",
+      "name": "Harpoon Gun",
+      "category": "weapon",
+      "desc": "Pneumatic harpoon launcher. Underwater artillery.",
+      "weight": 5.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 28.0,
+        "speed": 0.5,
+        "projectile": "harpoon"
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "commercial"
+    },
+    {
+      "id": "compound_crossbow",
+      "name": "Compound Crossbow",
+      "category": "weapon",
+      "desc": "Cammed crossbow. Faster, harder.",
+      "weight": 3.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 22.0,
+        "speed": 0.6,
+        "projectile": "crossbow_bolts"
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "construction"
+    },
+    {
+      "id": "patrol_rifle",
+      "name": "Patrol Rifle",
+      "category": "weapon",
+      "desc": "Trunk rifle. Semi-auto. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 27.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "riot_shotgun",
+      "name": "Riot Shotgun",
+      "category": "weapon",
+      "desc": "Short riot gun. Wide pattern. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 6.0,
+        "speed": 0.9,
+        "ammo": "shotgun_shells",
+        "reload": 2.0,
+        "pellets": 6,
+        "spread": 12.0,
+        "range_blocks": 18
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "tactical_pistol",
+      "name": "Tactical Pistol",
+      "category": "weapon",
+      "desc": "Rail, light, big magazine. Found only.",
+      "weight": 1.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 13.0,
+        "speed": 2.0,
+        "ammo": "pistol_rounds",
+        "reload": 1.0
+      },
+      "scrap": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 3,
+      "district": "business",
+      "found_only": true
+    },
+    {
+      "id": "assault_carbine",
+      "name": "Assault Carbine",
+      "category": "weapon",
+      "desc": "Police carbine. Fast follow-ups. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 20.0,
+        "speed": 3.5,
+        "ammo": "rifle_rounds",
+        "reload": 1.8,
+        "range_blocks": 56
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "framing_nailer",
+      "name": "Framing Nailer",
+      "category": "weapon",
+      "desc": "Heavy-duty nailer. Longer nails, more of them.",
+      "weight": 3.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 8.0,
+        "speed": 4.5,
+        "projectile": "nails"
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "industrial"
+    },
+    {
+      "id": "hunting_magnum",
+      "name": "Hunting Magnum",
+      "category": "weapon",
+      "desc": "Magnum rifle. Stops anything once. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 32.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "residential",
+      "found_only": true
+    },
+    {
+      "id": "machine_pistol",
+      "name": "Machine Pistol",
+      "category": "weapon",
+      "desc": "Full-auto pocket gun. Empties fast. Found only.",
+      "weight": 3.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 10.0,
+        "speed": 6.0,
+        "ammo": "pistol_rounds",
+        "reload": 1.8
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "business",
+      "found_only": true
+    },
+    {
+      "id": "semi_auto_rifle",
+      "name": "Semi-Auto Rifle",
+      "category": "weapon",
+      "desc": "Ranch rifle. Quick and accurate. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 32.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "industrial",
+      "found_only": true
+    },
+    {
+      "id": "semi_auto_shotgun",
+      "name": "Semi-Auto Shotgun",
+      "category": "weapon",
+      "desc": "Gas gun. Fast shells. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 8.0,
+        "speed": 0.9,
+        "ammo": "shotgun_shells",
+        "reload": 2.0,
+        "pellets": 6,
+        "spread": 12.0,
+        "range_blocks": 18
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "residential",
+      "found_only": true
+    },
+    {
+      "id": "tactical_carbine",
+      "name": "Tactical Carbine",
+      "category": "weapon",
+      "desc": "Corporate security carbine. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 20.0,
+        "speed": 3.5,
+        "ammo": "rifle_rounds",
+        "reload": 1.8,
+        "range_blocks": 56
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "business",
+      "found_only": true
+    },
+    {
+      "id": "tactical_shotgun",
+      "name": "Tactical Shotgun",
+      "category": "weapon",
+      "desc": "Entry shotgun. Tight, hard pattern. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 8.0,
+        "speed": 0.9,
+        "ammo": "shotgun_shells",
+        "reload": 2.0,
+        "pellets": 6,
+        "spread": 12.0,
+        "range_blocks": 18
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 1
+        },
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true,
+      "band": 4,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "battle_rifle",
+      "name": "Battle Rifle",
+      "category": "weapon",
+      "desc": "Full-power rifle. Heavy, decisive. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 40.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "industrial",
+      "found_only": true
+    },
+    {
+      "id": "combat_shotgun",
+      "name": "Combat Shotgun",
+      "category": "weapon",
+      "desc": "Auto shotgun. The last word up close. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 10.0,
+        "speed": 0.9,
+        "ammo": "shotgun_shells",
+        "reload": 2.0,
+        "pellets": 6,
+        "spread": 12.0,
+        "range_blocks": 18
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "dmr",
+      "name": "Designated Marksman Rifle",
+      "category": "weapon",
+      "desc": "Precision rifle. One round, one drop. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 40.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "civil",
+      "found_only": true
+    },
+    {
+      "id": "whaling_gun",
+      "name": "Whaling Gun",
+      "category": "weapon",
+      "desc": "Deck-mounted harpoon gun, carried anyway.",
+      "weight": 5.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 42.0,
+        "speed": 0.5,
+        "projectile": "harpoon"
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "commercial"
+    },
+    {
+      "id": "industrial_rivet_gun",
+      "name": "Industrial Rivet Gun",
+      "category": "weapon",
+      "desc": "Shipyard riveter. Hot steel at speed.",
+      "weight": 3.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 10.0,
+        "speed": 4.5,
+        "projectile": "rivets"
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "industrial"
+    },
+    {
+      "id": "marksman_rifle",
+      "name": "Marksman Rifle",
+      "category": "weapon",
+      "desc": "Site security rifle, glassed and tuned. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 40.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "construction",
+      "found_only": true
+    },
+    {
+      "id": "military_carbine",
+      "name": "Military Carbine",
+      "category": "weapon",
+      "desc": "Executive protection carbine. Found only.",
+      "weight": 3.5,
+      "stack": 1,
+      "weapon": {
+        "damage": 24.0,
+        "speed": 3.5,
+        "ammo": "rifle_rounds",
+        "reload": 1.8,
+        "range_blocks": 56
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "business",
+      "found_only": true
+    },
+    {
+      "id": "sniper_rifle",
+      "name": "Sniper Rifle",
+      "category": "weapon",
+      "desc": "Private collection long rifle. Slow, final. Found only.",
+      "weight": 4.0,
+      "stack": 1,
+      "weapon": {
+        "damage": 40.0,
+        "speed": 0.8,
+        "ammo": "rifle_rounds",
+        "reload": 2.2,
+        "range_blocks": 70
+      },
+      "scrap": [
+        {
+          "item": "steel",
+          "count": 2
+        }
+      ],
+      "district_weapon": true,
+      "band": 5,
+      "district": "residential",
+      "found_only": true
     }
   ],
   "cell_px": 8

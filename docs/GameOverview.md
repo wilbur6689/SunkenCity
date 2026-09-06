@@ -113,7 +113,7 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
   decided purely by solid blocks.
 - **Crafting loop:** hand-craft basics anywhere; five base stations (Workbench, Forge, Med
   Station, Dive Station, Modification Bench). Material tiers **Wood → Scrap → Iron → Steel**. Advanced recipes come
-  from found **schematics** (plus planned modifier schematics for prefix/suffix attributes).
+  from found **schematics** (modifiers are recipes at the bench, never schematics — see Loot).
   Scrapping works anywhere at reduced yield — full yield back at base stations.
 - **Dive progression:** tanks extend time (scrap +30s → iron +60s → steel rebreather ~3 min);
   suits unlock depth (wetsuit beats cold gate 1 → hard suit beats cold gate 2 and crush depth).
@@ -221,13 +221,20 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 - **Sourcing split:** melee (knives/swords/axes) and the speargun craft at every material tier;
   **firearms (pistols, semi-autos, rifles) are loot-only** — every gun is an event. Ammo (pistol
   rounds, rifle rounds, retrievable spear bolts) is craftable.
-- **Modifiers:** found gear rolls a random prefix and/or suffix (~8 power prefixes + ~8 aquatic
-  utility suffixes; max one of each). At the **Modification Bench** (5th station), sacrificing a
-  modded item **destroys it and teaches its modifiers**, which can then be applied to
-  **unmodified gear only** — once modded, locked. Found gear = *use it or learn it*. No modifier
-  schematics, no rerolling.
-- **Rarity is derived** from modifier state and shown as gear title-text color (gray → green →
-  blue → purple).
+- **Modifiers** (revised 2026-09-05, `docs/modifiers/Modifiers.md`): a found piece's modifier is
+  decided by **where it sits** — the tower's **district** is the family (Industrial / Construction
+  / Business = damage / knockback / speed **prefixes**; Residential / Commercial / Civil = weight /
+  air / defence **suffixes**) and the floor's **depth band** is the tier (I–V). 30 base modifiers
+  on that grid plus 30 named first-order hybrids (`data/modifiers.json`, names in
+  `docs/modifiers/Merged_Modifiers.json`). At the **Modification Bench**, sacrificing a modded item
+  **destroys it and stocks its modifiers in a library** (a count, consumed by use); two same-tier
+  entries **COMBINE** — two of a kind climb the family's ladder, two districts make the hybrid —
+  and library entries **APPLY** to **unmodified gear only** (max one prefix + one suffix; once
+  modded, locked). Crafted gear is the blank canvas; found gear = *use it or sacrifice it*.
+  **Recipes, not rerolls.** District weapons (`docs/modifiers/Weapons.md`) give every district ×
+  band cell its own melee and ranged finds; melee is craftable blank, firearms stay loot-only.
+- **Rarity is derived** from the highest modifier tier on the piece, shown as title-text color
+  (gray none → green I–II → blue III–IV → purple V → **gold** both slots at V).
 - **Slots & stats:** Suit + Head + two Accessories; lean stat sheet (weight on everything;
   damage/speed/knockback; suit defense/cold/crush/swim). No crit, no durability, no set bonuses.
 - **Containers:** placed by room templates, rolling tables keyed **building type × depth band**;

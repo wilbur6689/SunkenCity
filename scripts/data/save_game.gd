@@ -209,7 +209,7 @@ static func character_state(player) -> Dictionary:
 		"skills": {"xp": player.skills.xp.duplicate(), "spent": player.skills.spent_points,
 			"abilities": player.skills.abilities.duplicate()},
 		"known_recipes": player.known_recipes.duplicate(),
-		"known_mods": player.known_mods.duplicate(),
+		"mod_library": player.mod_library.duplicate(),
 		"health": player.health,
 		"oxygen": player.oxygen,
 		"selected_slot": player.selected_slot,
@@ -235,6 +235,15 @@ static func save_character(char_name: String, player, world_key: String) -> void
 	f.store_var(data)
 	f.close()
 
+## A library dict with only known modifier ids and positive int counts.
+static func clean_library(raw) -> Dictionary:
+	var out := {}
+	if raw is Dictionary:
+		for id in raw:
+			if Data.modifier_defs.has(String(id)) and int(raw[id]) > 0:
+				out[String(id)] = int(raw[id])
+	return out
+
 static func read_character(char_name: String) -> Dictionary:
 	var f := FileAccess.open(CHAR_DIR + char_name + CHAR_EXT, FileAccess.READ)
 	if f == null:
@@ -248,16 +257,21 @@ static func read_character(char_name: String) -> Dictionary:
 static func apply_character(data: Dictionary, player, world_key: String) -> void:
 	if data.is_empty():
 		return
-	player.inventory.slots = (data.inventory as Array).duplicate(true)
+	# D3: unknown modifier ids (the pre-2026-09-05 sharp/of_the_deep set, or
+	# `power` instances) are stripped, not refused — the piece loads clean.
+	var inv: Array = (data.inventory as Array).duplicate(true)
+	for i in inv.size():
+		inv[i] = ItemMods.clean_stack(inv[i])
+	player.inventory.slots = inv
 	player.inventory.slots.resize(Constants.INVENTORY_SLOTS)
 	player.inventory.changed.emit()
 	for slot_name in player.equipment.keys():
-		player.set_equipment(slot_name, data.equipment.get(slot_name))
+		player.set_equipment(slot_name, ItemMods.clean_stack((data.equipment as Dictionary).get(slot_name)))
 	player.skills.xp = (data.skills.xp as Dictionary).duplicate()
 	player.skills.spent_points = int(data.skills.spent)
 	player.skills.abilities = (data.skills.get("abilities", {}) as Dictionary).duplicate()
 	player.known_recipes = (data.get("known_recipes", {}) as Dictionary).duplicate()
-	player.known_mods = (data.get("known_mods", {}) as Dictionary).duplicate()
+	player.mod_library = clean_library(data.get("mod_library", {})) # legacy `known_mods` is ignored
 	player.health = float(data.health)
 	player.oxygen = float(data.oxygen)
 	player.selected_slot = int(data.selected_slot)

@@ -976,6 +976,1149 @@
         "item": "master_scrap_bench",
         "count": 1
       }
+    },
+    {
+      "id": "baseball_bat",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "baseball_bat",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "baton",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "baton",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "crowbar",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "crowbar",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "desk_leg",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "desk_leg",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "fire_extinguisher",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "fire_extinguisher",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "fireplace_poker",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "fireplace_poker",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "halligan_tool",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "halligan_tool",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "hatchet",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "hatchet",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "kitchen_knife",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "kitchen_knife",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "letter_opener",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "letter_opener",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "machete",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "machete",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "nail_puller",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "nail_puller",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "paper_cutter",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "paper_cutter",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "pipe_wrench",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "pipe_wrench",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "rebar_club",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "rebar_club",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "rescue_axe",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "rescue_axe",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "stapler",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "stapler",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "utility_knife",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "utility_knife",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "boarding_axe",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "boarding_axe",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "breaching_tool",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "breaching_tool",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "demolition_hammer",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "demolition_hammer",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "security_flashlight",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "security_flashlight",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "lump_hammer",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "lump_hammer",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "cane_machete",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "cane_machete",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "pickaxe",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "pickaxe",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "rescue_saw",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "rescue_saw",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "riot_baton",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "riot_baton",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "sledgehammer",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "sledgehammer",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "spear",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "spear",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "splitting_maul",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "splitting_maul",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "breaching_hammer",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "breaching_hammer",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "dive_knife",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "dive_knife",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "harpoon",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "harpoon",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "felling_axe",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "felling_axe",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "pinch_bar",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "pinch_bar",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "broad_hatchet",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "broad_hatchet",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "hunting_knife",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "hunting_knife",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "industrial_cutter",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "industrial_cutter",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 15
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "breaching_sledge",
+      "station": "forge",
+      "tier": 4,
+      "known": true,
+      "output": {
+        "item": "breaching_sledge",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 10
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "mattock",
+      "station": "forge",
+      "tier": 4,
+      "known": true,
+      "output": {
+        "item": "mattock",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 10
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "hydraulic_cutter",
+      "station": "forge",
+      "tier": 4,
+      "known": true,
+      "output": {
+        "item": "hydraulic_cutter",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 10
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "industrial_saw",
+      "station": "forge",
+      "tier": 4,
+      "known": true,
+      "output": {
+        "item": "industrial_saw",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 10
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "pole_hook",
+      "station": "forge",
+      "tier": 4,
+      "known": true,
+      "output": {
+        "item": "pole_hook",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 10
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "rescue_spreader",
+      "station": "forge",
+      "tier": 4,
+      "known": true,
+      "output": {
+        "item": "rescue_spreader",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 10
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "breaching_maul",
+      "station": "forge",
+      "tier": 5,
+      "known": true,
+      "output": {
+        "item": "breaching_maul",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 20
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "shock_baton",
+      "station": "forge",
+      "tier": 5,
+      "known": true,
+      "output": {
+        "item": "shock_baton",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 20
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "whaling_harpoon",
+      "station": "forge",
+      "tier": 5,
+      "known": true,
+      "output": {
+        "item": "whaling_harpoon",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 20
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "tactical_axe",
+      "station": "forge",
+      "tier": 5,
+      "known": true,
+      "output": {
+        "item": "tactical_axe",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 20
+        },
+        {
+          "item": "iron",
+          "count": 5
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "arrows",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "arrows",
+        "count": 8
+      },
+      "inputs": [
+        {
+          "item": "wood",
+          "count": 2
+        },
+        {
+          "item": "scrap_metal",
+          "count": 1
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "crossbow_bolts",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "crossbow_bolts",
+        "count": 6
+      },
+      "inputs": [
+        {
+          "item": "wood",
+          "count": 1
+        },
+        {
+          "item": "scrap_metal",
+          "count": 1
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "nails",
+      "station": "workbench",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "nails",
+        "count": 20
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 1
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "flares",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "flares",
+        "count": 4
+      },
+      "inputs": [
+        {
+          "item": "plastic",
+          "count": 2
+        },
+        {
+          "item": "cloth",
+          "count": 1
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "rivets",
+      "station": "forge",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "rivets",
+        "count": 20
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 1
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "shotgun_shells",
+      "station": "forge",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "shotgun_shells",
+        "count": 8
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 3
+        },
+        {
+          "item": "plastic",
+          "count": 1
+        }
+      ],
+      "district_weapon": true
+    },
+    {
+      "id": "harpoon",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "harpoon",
+        "count": 2
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 2
+        }
+      ],
+      "district_weapon": true
     }
   ]
 }

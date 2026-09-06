@@ -147,11 +147,7 @@ func sanitize(st: Dictionary) -> Dictionary:
 		if Data.recipes.has(id):
 			recipes[id] = true
 	out["known_recipes"] = recipes
-	var mods := {}
-	for id in st.get("known_mods", {}):
-		if Data.modifier_defs.has(id):
-			mods[id] = int(st.known_mods[id])
-	out["known_mods"] = mods
+	out["mod_library"] = SaveGame.clean_library(st.get("mod_library", {}))
 	out["health"] = clampf(float(st.get("health", Constants.MAX_HEALTH)), 0.0, Constants.MAX_HEALTH)
 	out["oxygen"] = maxf(float(st.get("oxygen", Constants.BASE_OXYGEN_SECONDS)), 0.0)
 	out["selected_slot"] = clampi(int(st.get("selected_slot", 0)), 0, Constants.HOTBAR_SLOTS - 1)
@@ -167,18 +163,10 @@ func _clean_stack(s):
 	if not (s is Dictionary) or not s.has("id") or not Data.items.has(String(s.id)):
 		return null
 	var id := String(s.id)
-	var count: int = clampi(int(s.get("count", 1)), 1, Data.stack_size(id))
-	var out := {"id": id, "count": count}
+	var out := {"id": id, "count": clampi(int(s.get("count", 1)), 1, Data.stack_size(id))}
 	if s.get("mods") is Dictionary and not (s.mods as Dictionary).is_empty():
-		var mods := {}
-		for part in ["prefix", "suffix"]:
-			var m = (s.mods as Dictionary).get(part)
-			if m is Dictionary and Data.modifier_defs.has(String(m.get("id", ""))):
-				mods[part] = {"id": String(m.id), "power": int(m.get("power", 1))}
-		if not mods.is_empty():
-			out["mods"] = mods
-			out["count"] = 1
-	return out
+		out["mods"] = (s.mods as Dictionary).duplicate(true)
+	return ItemMods.clean_stack(out) # the shared cleaner: known ids, right slot, no `power`, count 1
 
 ## Apply a state dict to a body. `move` also places it (host spawn / resume);
 ## a client applies WITHOUT moving (the state stream drives the body) and
@@ -195,7 +183,7 @@ func apply_state(player: Node, st: Dictionary, move: bool) -> void:
 	player.skills.spent_points = int(st.skills.spent)
 	player.skills.abilities = (st.skills.get("abilities", {}) as Dictionary).duplicate()
 	player.known_recipes = (st.get("known_recipes", {}) as Dictionary).duplicate()
-	player.known_mods = (st.get("known_mods", {}) as Dictionary).duplicate()
+	player.mod_library = (st.get("mod_library", {}) as Dictionary).duplicate()
 	player.health = float(st.health)
 	player.oxygen = float(st.oxygen)
 	if st.has("spawn_feet"):

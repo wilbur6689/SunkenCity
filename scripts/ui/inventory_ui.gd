@@ -514,6 +514,11 @@ var bench_icon: TextureRect
 var learned_box: VBoxContainer
 var bench_info: VBoxContainer
 var bench_action: Button
+var library_grid: GridContainer
+var library_pick: Label
+## Library picks (up to two ids; the same id twice for a vertical combine).
+## APPLY reads the first prefix / first suffix among them; COMBINE needs two.
+var sel: Array = []
 var sel_prefix: String = ""
 var sel_suffix: String = ""
 var _bench_near: bool = false
@@ -532,16 +537,29 @@ func _build_modify_screen() -> void:
 	var lp := _panel(Vector2(185, 46), Vector2(130, 148), UITheme.steel_panel())
 	s.add_child(lp)
 	var lv := VBoxContainer.new()
+	lv.add_theme_constant_override("separation", 1)
 	lp.add_child(lv)
-	lv.add_child(UITheme.label("LEARNED MODS", 8, Color(0.56, 0.75, 0.81)))
+	lv.add_child(UITheme.label("MOD LIBRARY", 8, Color(0.56, 0.75, 0.81)))
+	# The 6 × 5 grid (family rows × tier columns) — the "map of where you
+	# have been"; cells carry the stock count and dim at zero.
+	library_grid = GridContainer.new()
+	library_grid.columns = 6
+	library_grid.add_theme_constant_override("h_separation", 1)
+	library_grid.add_theme_constant_override("v_separation", 1)
+	lv.add_child(library_grid)
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0, 22)
 	lv.add_child(scroll)
 	learned_box = VBoxContainer.new()
 	learned_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	learned_box.add_theme_constant_override("separation", 0)
 	scroll.add_child(learned_box)
+	library_pick = UITheme.label("", 8, Color(0.82, 0.84, 0.78))
+	library_pick.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	library_pick.custom_minimum_size = Vector2(0, 12)
+	lv.add_child(library_pick)
 
 	var rp := _panel(Vector2(321, 46), Vector2(134, 148), UITheme.steel_panel())
 	s.add_child(rp)
@@ -593,30 +611,92 @@ func _bench_slot_input(event: InputEvent) -> void:
 		player.message.emit("Only items from your bag go on the bench")
 	_refresh_all()
 
+const LIB_CELL := Vector2(17, 10)
+
+func _library_cell(mod_id: String, text: String, tint: Color) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = LIB_CELL
+	b.text = text
+	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override("font_size", 8)
+	var count := player.library_count(mod_id)
+	var picks := sel.count(mod_id)
+	UITheme.style_row(b, picks > 0)
+	# Rows must stack 7 high in the panel: no stylebox padding, a smaller face.
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		var sb: StyleBox = b.get_theme_stylebox(st).duplicate()
+		sb.set_content_margin_all(0)
+		b.add_theme_stylebox_override(st, sb)
+	b.add_theme_font_size_override("font_size", 7)
+	b.disabled = count <= 0
+	b.add_theme_color_override("font_color", tint if count > 0 else tint.darkened(0.55))
+	b.add_theme_color_override("font_disabled_color", tint.darkened(0.6))
+	if picks > 0:
+		b.add_theme_color_override("font_color", Color(1, 1, 1))
+	b.tooltip_text = ItemMods.describe_mod(mod_id) + ("\nin stock: %d" % count) if count > 0 else ItemMods.describe_mod(mod_id)
+	b.pressed.connect(_toggle_library.bind(mod_id))
+	return b
+
 func _refresh_modify() -> void:
 	_bench_near = _stations().has("mod_bench")
+	for c in library_grid.get_children():
+		c.queue_free()
 	for c in learned_box.get_children():
 		c.queue_free()
 	for c in bench_info.get_children():
 		c.queue_free()
-	# Learned mods, selectable for applying (prefix and suffix pick separately)
-	for part in ["prefixes", "suffixes"]:
-		for m in Data.modifiers.get(part, []):
-			if not player.known_mods.has(m.id):
-				continue
-			var power: int = int(player.known_mods[m.id])
-			var b := Button.new()
-			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-			b.text = " " + ItemMods.describe_mod(m.id, power)
-			b.custom_minimum_size = Vector2(0, 14)
-			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			b.add_theme_font_size_override("font_size", 8)
-			var selected: bool = (sel_prefix == m.id or sel_suffix == m.id)
-			UITheme.style_row(b, selected)
-			b.pressed.connect(_toggle_learned.bind(String(m.id), part == "prefixes"))
-			learned_box.add_child(b)
-	if learned_box.get_child_count() == 0:
-		learned_box.add_child(UITheme.label("Nothing learned yet.\nSacrifice modded gear on\nthe bench to learn its mods.", 8, Color(0.55, 0.6, 0.68)))
+	# Drop picks whose stock ran out (an APPLY / COMBINE just consumed them).
+	var kept := []
+	for id in sel:
+		if kept.count(id) < player.library_count(id):
+			kept.append(id)
+	sel = kept
+	_sync_picks()
+	# Header row: blank corner + tier numerals.
+	library_grid.add_child(UITheme.label("", 8))
+	for t in 5:
+		var h := UITheme.label(ItemMods.ROMAN[t + 1], 8, Color(0.56, 0.75, 0.81))
+		h.custom_minimum_size = LIB_CELL
+		h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		library_grid.add_child(h)
+	# Family rows in file order (prefix families first, then suffix families).
+	for fam in Data.modifier_families:
+		var f: Dictionary = Data.modifier_families[fam]
+		var c: Array = f.color
+		var tint := Color(c[0], c[1], c[2])
+		var lab := UITheme.label(String(f.label), 8, tint)
+		lab.custom_minimum_size = Vector2(22, LIB_CELL.y)
+		lab.tooltip_text = "%s (%s)\n%s" % [fam.capitalize(), f.slot, f.desc]
+		library_grid.add_child(lab)
+		for mid in f.tiers:
+			var n := player.library_count(String(mid))
+			library_grid.add_child(_library_cell(String(mid), str(n) if n > 0 else "-", tint))
+	# Hybrids in stock, as rows.
+	var any_hybrid := false
+	for h in Data.modifier_hybrids:
+		var n := player.library_count(String(h.id))
+		if n <= 0:
+			continue
+		any_hybrid = true
+		var b := _library_cell(String(h.id), " %s  x%d" % [h.name, n], Color(0.9, 0.85, 0.7))
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		learned_box.add_child(b)
+	if not any_hybrid:
+		var hint := "Sacrifice modded gear on the bench to stock it." if player.mod_library.is_empty() \
+			else "Combine two same-tier mods of different districts for a hybrid."
+		learned_box.add_child(UITheme.label(hint, 8, Color(0.55, 0.6, 0.68)))
+	# What is picked, and what two picks would make.
+	var pick_names := []
+	for id in sel:
+		pick_names.append(String(ItemMods.def_of(id).get("name", id)))
+	var combo := ItemMods.combine_result(String(sel[0]), String(sel[1])) if sel.size() == 2 else ""
+	if sel.is_empty():
+		library_pick.text = ""
+	elif combo != "":
+		library_pick.text = " + ".join(pick_names) + " -> " + String(ItemMods.def_of(combo).get("name", combo))
+	else:
+		library_pick.text = " + ".join(pick_names) + (" (no recipe)" if sel.size() == 2 else "")
 	# Bench state → info + the one action button
 	var bench_stack = _bench_stack()
 	bench_icon.texture = Data.icon(bench_stack.id) if bench_stack != null else null
@@ -625,7 +705,10 @@ func _refresh_modify() -> void:
 		bench_info.add_child(UITheme.label("No Modification Bench\nin reach.", 8, Color(0.95, 0.6, 0.55)))
 		return
 	if bench_stack == null:
-		bench_info.add_child(UITheme.label("Place an item on the\nbench (click with it on\nthe cursor).", 8, Color(0.7, 0.78, 0.85)))
+		bench_info.add_child(UITheme.label("Bench empty: pick two\nlibrary mods of one tier\nto COMBINE, or place an\nitem (click with it on\nthe cursor).", 8, Color(0.7, 0.78, 0.85)))
+		bench_action.visible = true
+		bench_action.text = "COMBINE"
+		bench_action.disabled = combo == ""
 		return
 	var nm := UITheme.label(ItemMods.display_name(bench_stack), 8, ItemMods.rarity_color(bench_stack))
 	nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -638,25 +721,48 @@ func _refresh_modify() -> void:
 		bench_action.text = "LEARN"
 		bench_action.disabled = player.learnable_mods(bench_stack).is_empty()
 	elif ItemMods.mod_class(bench_stack.id) != "":
-		bench_info.add_child(UITheme.label("Unmodified — pick learned\nmods to apply. Once modded\nit is locked for good.", 8, Color(0.7, 0.78, 0.85)))
+		bench_info.add_child(UITheme.label("Unmodified — pick library\nmods to apply (consumed).\nOnce modded it is locked\nfor good.", 8, Color(0.7, 0.78, 0.85)))
 		bench_action.visible = true
 		bench_action.text = "APPLY"
 		bench_action.disabled = sel_prefix == "" and sel_suffix == ""
 	else:
 		bench_info.add_child(UITheme.label("This cannot take modifiers.", 8, Color(0.7, 0.78, 0.85)))
 
-func _toggle_learned(mod_id: String, is_prefix: bool) -> void:
-	if is_prefix:
-		sel_prefix = "" if sel_prefix == mod_id else mod_id
+## sel -> the first prefix / first suffix picked (what APPLY uses).
+func _sync_picks() -> void:
+	sel_prefix = ""
+	sel_suffix = ""
+	for id in sel:
+		if ItemMods.slot_of(id) == "prefix" and sel_prefix == "":
+			sel_prefix = id
+		elif ItemMods.slot_of(id) == "suffix" and sel_suffix == "":
+			sel_suffix = id
+
+## A click cycles a cell: none -> picked -> picked twice (stock >= 2, for the
+## vertical combine) -> none. At most two picks; the oldest gives way.
+func _toggle_library(mod_id: String) -> void:
+	var picks := sel.count(mod_id)
+	if picks == 0:
+		sel.append(mod_id)
+	elif picks == 1 and player.library_count(mod_id) >= 2 and sel.size() < 2:
+		sel.append(mod_id)
 	else:
-		sel_suffix = "" if sel_suffix == mod_id else mod_id
+		while sel.has(mod_id):
+			sel.erase(mod_id)
+	while sel.size() > 2:
+		sel.pop_front()
+	_sync_picks()
 	_refresh_all()
 
 func _bench_act() -> void:
 	var bench_stack = _bench_stack()
-	if bench_stack == null or not _bench_near:
+	if not _bench_near:
 		return
-	if bench_stack.has("mods"):
+	if bench_stack == null:
+		if sel.size() == 2 and _act("combine_mods", [String(sel[0]), String(sel[1])]):
+			sel.clear()
+			Audio.play_sfx("dismantle_rattle", player.global_position, 1, -6.0)
+	elif bench_stack.has("mods"):
 		if player.learnable_mods(bench_stack).is_empty():
 			return
 		if _act("learn_mods", [int(bench.index)]): # sacrificed (LT-09)
@@ -664,8 +770,8 @@ func _bench_act() -> void:
 			Audio.play_sfx("dismantle_rattle", player.global_position, 1, -4.0)
 	else:
 		if _act("apply_mods", [int(bench.index), sel_prefix, sel_suffix]):
-			sel_prefix = ""
-			sel_suffix = ""
+			sel.clear()
+	_sync_picks()
 	_refresh_all()
 
 func _make_slots(target: GridContainer, inv: Inventory, which: String) -> Array:

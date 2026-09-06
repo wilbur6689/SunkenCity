@@ -297,14 +297,18 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
   - **A:** (From GL-03/09) Pry bar, scrap knife, hammer, bolt cutters, cutting torch. No pickaxe (structure is unbreakable), no lockpicks.
 - [x] **LT-05.** What stat-modifying **prefixes** exist, with examples (e.g., "Sharp", "Rusty")?
   - **A:** ~8 power prefixes: *Sharp* (+dmg), *Swift* (+speed), *Heavy* (+knockback −speed), *Balanced*, *Rusty* (found-only junk), etc.
+  - **Amended 2026-09-05 (Modifiers.md):** prefixes are the three *working* districts' ladders — Industrial (damage: Rough → Foundry), Construction (knockback/demolition: Braced → Wrecking), Business (speed: Junior → Executive), five tiers each by depth band; *Rusty* stays found-only junk. Names in `docs/modifiers/Merged_Modifiers.json`.
 - [x] **LT-06.** What stat-modifying **suffixes** exist, with examples (e.g., "of the Deep")?
   - **A:** ~8 utility suffixes, aquatic lean: *of the Deep* (+O2), *of Currents* (+swim), *of the Shore* (−weight), *of Warmth* (+cold resist), *of Sight* (+light), etc.
+  - **Amended 2026-09-05:** suffixes are the three *living* districts' buildings, roof to basement: Residential (weight/carry: of the Attic → of the Cellar), Commercial (air/swim: of the Awning → of the Vault), Civil (defence/cold/light: of the Helipad → of the Morgue). The old set (of the Deep …) is retired; old saves load those pieces clean.
 - [x] **LT-07.** Can one item roll both a prefix and a suffix, or only one?
   - **A:** Both — max one prefix + one suffix.
 - [x] **LT-08.** Are there rarity tiers, and how do they interact with modifiers (colors, roll counts)?
   - **A:** **Rarity is derived from modifier state** — no separate roll. Color applies to the gear's title text: no mods → gray, one mod → green, both → blue, both at top strength → purple.
+  - **Amended 2026-09-05 (D2):** colour = the highest tier on the piece: none gray · I–II green · III–IV blue · V purple · both slots at V **gold**.
 - [x] **LT-09.** Can modifiers be rerolled/reforged, and at what cost?
   - **A:** No rerolling. **Learning a modifier destroys the gear** carrying it (at the Modification Bench); learned modifiers can be applied **only to unmodified gear** — once modded, locked. *(M5 implementation note: one apply operation may attach up to one learned prefix + one learned suffix together, per LT-07; the piece locks after that single operation, so blue/purple crafted gear is reachable.)*
+  - **Amended 2026-09-05:** the bench library is **stock, not an unlock** — sacrifice adds one per modifier, APPLY consumes, and **COMBINE** (two same-tier same-slot entries → the family's next tier, or the two districts' named hybrid) is the deterministic "reforge". Recipes, not rerolls.
 - [x] **LT-10.** Do modifiers roll only on found loot, or on crafted items too?
   - **A:** Found gear rolls randomly; crafted gear comes out clean and takes learned modifiers at the **Modification Bench** (craft at Workbench/Forge, mod later). Found modded gear = *use it or learn it*.
 - [x] **LT-11.** How is the balance set between crafted gear and found gear (which is better when)?

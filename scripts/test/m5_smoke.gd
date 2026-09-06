@@ -172,50 +172,99 @@ func _ready() -> void:
 	check(player.craft(Data.recipes["hard_suit"]), "hard suit built after learning it")
 	check(player.inventory.count("hard_suit") == 1, "the ladder tops out: knife to hard suit through play")
 
-	print("== G. modifiers (LT-05..08)")
-	var knife := {"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 3}, "suffix": {"id": "of_the_shore", "power": 1}}}
-	check(ItemMods.display_name(knife) == "Sharp Iron Knife of the Shore", "prefix+suffix title: '%s'" % ItemMods.display_name(knife))
-	check(ItemMods.rarity(knife) == "rare", "one of each mod = rare (blue)")
-	knife.mods.suffix.power = 3
-	check(ItemMods.rarity(knife) == "epic", "both at top power = epic (purple)")
+	print("== G. modifiers v2: the district x band grid (Modifiers.md)")
+	check(Data.modifier_families.size() == 6 and Data.modifier_hybrids.size() == 30, "6 families x 5 tiers + 30 hybrids loaded (%d hybrids)" % Data.modifier_hybrids.size())
+	var knife := {"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "ind_3"}, "suffix": {"id": "civ_3"}}}
+	check(ItemMods.display_name(knife) == "Forged Iron Knife of the Ward", "prefix+suffix title: '%s'" % ItemMods.display_name(knife))
+	check(ItemMods.rarity(knife) == "rare", "tier 3 on the piece = rare (blue)")
+	check(ItemMods.rarity({"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "ind_1"}}}) == "uncommon", "tier 1 = uncommon (green)")
+	check(ItemMods.rarity({"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "ind_5"}}}) == "epic", "a single tier 5 = epic (purple)")
+	check(ItemMods.rarity({"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "ind_5"}, "suffix": {"id": "civ_5"}}}) == "legendary", "both slots at tier 5 = legendary (gold, D2)")
 	check(ItemMods.rarity({"id": "iron_knife", "count": 1}) == "common", "clean gear is common (gray)")
 	player.inventory.slots.fill(null)
 	player.inventory.set_slot(0, knife)
 	player.selected_slot = 0
 	player.bare_hands = false
 	var base_dmg := float(Data.tool_of("iron_knife").damage)
-	check(player.held_tool().damage == base_dmg + 3.0, "Sharp III adds +3 damage to the held tool")
-	check(ItemMods.unit_weight(knife) < Data.weight("iron_knife"), "'of the Shore' lightens the item")
-	var suit := {"id": "wetsuit", "count": 1, "mods": {"suffix": {"id": "of_the_deep", "power": 2}}}
+	check(player.held_tool().damage == base_dmg + 3.0, "Forged III adds +3 damage to the held tool (tier-authored, no power)")
+	check(ItemMods.stat(knife, "cold") == 1.0 and ItemMods.stat(knife, "defense") == 3.0, "of the Ward III carries cold 1 + defense 3")
+	var res_knife := {"id": "iron_knife", "count": 1, "mods": {"suffix": {"id": "res_2"}}}
+	check(ItemMods.unit_weight(res_knife) < Data.weight("iron_knife"), "a Residential suffix lightens the item")
+	var suit := {"id": "wetsuit", "count": 1, "mods": {"suffix": {"id": "com_5"}}}
 	player.set_equipment("suit", suit)
-	check(player.max_oxygen() == Constants.BASE_OXYGEN_SECONDS + 30.0, "'of the Deep II' grants +30s air from the suit")
-	var warm := {"id": "wetsuit", "count": 1, "mods": {"suffix": {"id": "of_warmth", "power": 1}}}
-	player.set_equipment("suit", warm)
-	check(player.suit_stat("cold") == 2.0, "'of Warmth' lifts a wetsuit to Dark-rating cold 2")
+	check(player.max_oxygen() == Constants.BASE_OXYGEN_SECONDS + 30.0, "of the Vault V grants +30s air from the suit")
+	var ward := {"id": "wetsuit", "count": 1, "mods": {"suffix": {"id": "civ_5"}}}
+	player.set_equipment("suit", ward)
+	check(player.suit_stat("cold") == 3.0, "of the Morgue V lifts a wetsuit's cold rating by 2")
 	player.set_equipment("suit", {"id": "clothes", "count": 1})
+	check(not player.apply_mods({"id": "wetsuit", "count": 1}, "ind_1", ""), "a prefix (weapon) family refuses a suit")
+	# Rolled mods match their container's district (family) and band (tier).
 	var modded_in_city := 0
+	var wrong_cell := 0
+	var powered_instances := 0
+	var families_seen := {}
+	var tiers_seen := {}
 	for rec: Dictionary in World.object_records:
 		if rec.storage == null:
 			continue
+		var district := LootGen.district_of(World.towers, World.pockets, rec.cell)
+		var tier: int = ItemMods.TIER_OF_BAND[World.floor_band_at(rec.cell)]
 		for s in rec.storage.slots:
-			if s != null and s.has("mods"):
-				modded_in_city += 1
-	check(modded_in_city >= 1, "found gear rolls mods at loot gen (%d modded items in city)" % modded_in_city)
+			if s == null or not s.has("mods"):
+				continue
+			modded_in_city += 1
+			for part in s.mods.values():
+				var mid := String(part.id)
+				if part.has("power"):
+					powered_instances += 1
+				if ItemMods.def_of(mid).get("junk", false):
+					continue
+				families_seen[ItemMods.family_of(mid)] = true
+				tiers_seen[ItemMods.tier_of(mid)] = true
+				if ItemMods.family_of(mid) != district or ItemMods.tier_of(mid) != tier:
+					wrong_cell += 1
+	check(modded_in_city >= 10, "found gear rolls mods at loot gen (%d modded items in city)" % modded_in_city)
+	check(powered_instances == 0, "instances carry no power (%d did)" % powered_instances)
+	check(wrong_cell == 0, "every rolled mod matches its container's district/band (%d off-grid)" % wrong_cell)
+	check(families_seen.size() >= 4, "several families roll across the city (%s)" % str(families_seen.keys()))
+	check(tiers_seen.size() >= 3, "several tiers roll across the depth (%s)" % str(tiers_seen.keys()))
 
-	print("== H. Modification Bench backend (LT-09/10)")
-	player.known_mods.clear()
-	var donor := {"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 2}}}
+	print("== H. Modification Bench backend: library stock, apply, combine")
+	player.mod_library.clear()
+	var donor := {"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "ind_3"}}}
 	check(not player.learnable_mods(donor).is_empty(), "a modded donor offers something to learn")
 	var learned := player.learn_mods(donor)
-	check(player.known_mods.get("sharp", 0) == 2, "Sharp learned at power 2 (%s)" % str(learned))
-	check(player.learnable_mods({"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 1}}}).is_empty(), "a weaker duplicate teaches nothing")
+	check(player.library_count("ind_3") == 1, "Forged stocked once (%s)" % str(learned))
+	player.learn_mods(donor)
+	check(player.library_count("ind_3") == 2, "a duplicate donor stocks a second (the library is a count, not an unlock)")
 	var clean := {"id": "iron_knife", "count": 1}
-	check(player.apply_mods(clean, "sharp", ""), "learned mod applies to clean crafted gear")
-	check(clean.mods.prefix.power == 2, "applied at the learned power")
-	check(not player.apply_mods(clean, "sharp", ""), "once modded the item is locked (LT-09)")
-	check(not player.apply_mods({"id": "wetsuit", "count": 1}, "sharp", ""), "a weapon prefix refuses a suit")
-	var junk := {"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "rusty", "power": 1}}}
+	check(player.apply_mods(clean, "ind_3", ""), "a library mod applies to clean crafted gear")
+	check(player.library_count("ind_3") == 1, "...and APPLY consumes it")
+	check(not clean.mods.prefix.has("power"), "applied instance is {id} only")
+	check(not player.apply_mods(clean, "ind_3", ""), "once modded the item is locked (LT-09)")
+	check(not player.apply_mods({"id": "wetsuit", "count": 1}, "ind_3", ""), "a weapon prefix refuses a suit")
+	var junk := {"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "rusty"}}}
 	check(player.learnable_mods(junk).is_empty(), "Rusty junk cannot be learned")
+	# Vertical: two of a kind climb the ladder; the ceiling is tier 5.
+	player.mod_library = {"ind_3": 2, "con_3": 1, "civ_5": 2, "res_3": 1, "res_4": 1}
+	check(ItemMods.combine_result("ind_3", "ind_3") == "ind_4", "2 x Forged (T3) -> Hardened (T4)")
+	check(ItemMods.combine_result("ind_3", "con_3") == "demolition_3", "Forged + Riveted -> the demolition hybrid at T3")
+	check(ItemMods.combine_result("ind_3", "res_3") == "", "no cross-slot combine (prefix + suffix)")
+	check(ItemMods.combine_result("res_3", "res_4") == "", "no mixed-tier combine")
+	check(ItemMods.combine_result("civ_5", "civ_5") == "", "tier 5 is the ceiling")
+	check(player.combine_mods("ind_3", "con_3") == "demolition_3", "COMBINE stocks the hybrid")
+	check(player.library_count("ind_3") == 1 and player.library_count("con_3") == 0 and player.library_count("demolition_3") == 1, "...and consumes both inputs")
+	check(player.combine_mods("ind_3", "ind_3") == "", "a vertical combine needs two in stock")
+	player.mod_library["ind_3"] = 2
+	check(player.combine_mods("ind_3", "ind_3") == "ind_4" and player.library_count("ind_4") == 1 and player.library_count("ind_3") == 0, "2 x Forged in stock -> one Hardened")
+	var hy := {"id": "scrap_sword", "count": 1}
+	check(player.apply_mods(hy, "demolition_3", "") and ItemMods.display_name(hy) == "Bulldozing Scrap Sword", "a hybrid applies like any prefix: '%s'" % ItemMods.display_name(hy))
+	check(ItemMods.weapon_of(hy).damage > float(Data.item("scrap_sword").weapon.damage), "the hybrid's damage folds into the weapon block")
+	# D3: old-format instances load clean.
+	var legacy = ItemMods.clean_stack({"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "sharp", "power": 3}}})
+	check(legacy != null and not legacy.has("mods"), "a pre-grid modded instance strips to a clean item")
+	var powered = ItemMods.clean_stack({"id": "iron_knife", "count": 1, "mods": {"prefix": {"id": "ind_2", "power": 2}}})
+	check(powered.mods.prefix.size() == 1 and powered.mods.prefix.id == "ind_2", "a known id keeps its mod and drops `power`")
 
 	print("== I. ability tech tree (CC-18)")
 	var sk := player.skills

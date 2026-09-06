@@ -1692,6 +1692,8 @@ func _copy_record_fields(rec: Dictionary, d: Dictionary) -> void:
 			rec[k] = d[k]
 	if rec.storage != null and d.has("storage"):
 		var slots: Array = (d.storage as Array).duplicate(true)
+		for i in slots.size():
+			slots[i] = ItemMods.clean_stack(slots[i]) # D3: old-format mods drop off, the item stays
 		slots.resize(rec.storage.slots.size())
 		rec.storage.slots = slots
 		rec.storage.changed.emit() # an open chest UI refreshes; the Net hook is a no-op here

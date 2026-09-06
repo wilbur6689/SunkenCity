@@ -59,10 +59,12 @@ func _ready() -> void:
 			ui.open_panel()
 			ui.show_screen("skills")
 		"modify":
-			World.place_object("mod_bench", Vector2i(10, 5), true)
-			player.known_mods = {"sharp": 2, "of_the_deep": 3}
+			World.place_object("mod_bench", World.cell_at(player.global_position) + Vector2i(3, -1), true)
+			# A few cells across the grid, one hybrid, a clean knife to apply to.
+			player.mod_library = {"ind_1": 3, "ind_2": 1, "con_3": 2, "bus_2": 1, "res_1": 2, "com_4": 1, "civ_3": 1, "demolition_2": 1}
 			player.inventory.add_stack({"id": "iron_knife", "count": 1,
-				"mods": {"prefix": {"id": "swift", "power": 3}, "suffix": {"id": "of_the_shore", "power": 3}}})
+				"mods": {"prefix": {"id": "ind_3", "count": 1}, "suffix": {"id": "civ_3"}}})
+			player.inventory.add("scrap_knife", 1)
 			ui.open_panel("mod_bench")
 		_:
 			ui.open_panel()

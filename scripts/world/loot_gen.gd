@@ -8,19 +8,26 @@ extends RefCounted
 ## `towers` (World.towers summaries) resolves each container to its FLOOR's
 ## band - a floor straddling a boundary rolls the shallower table
 ## (DistrictsOverhaul "Bands", 2026-09-04).
-static func fill_containers(records: Array, waterline: int, seed_value: int, towers: Array = []) -> void:
+## `pockets` (World.pockets) resolves annex containers to the tower their
+## doorway (`exit`) sits in, so a pocket's loot carries that district.
+static func fill_containers(records: Array, waterline: int, seed_value: int, towers: Array = [], pockets: Array = []) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value * 977 + 11
 	var tables: Dictionary = Data.loot.get("tables", {})
 	if tables.is_empty():
 		return
+	var tally := {}
 	for rec: Dictionary in records:
 		if rec.placed or rec.storage == null:
 			continue
-		var zkey := "generic"
+		# The tower's district is the loot table key AND the modifier family
+		# (Modifiers.md "The Grid"); a container's own zone tag only covers
+		# objects standing outside every tower (debris rafts, station shells).
+		var district := district_of(towers, pockets, rec.cell)
+		var zkey := district if district != "" else "generic"
 		if rec.def.get("kind", "") == "safe":
 			zkey = "safe"
-		else:
+		elif district == "":
 			var zones: Array = rec.def.get("zones", [])
 			if not zones.is_empty():
 				zkey = String(zones[0])
@@ -35,13 +42,28 @@ static func fill_containers(records: Array, waterline: int, seed_value: int, tow
 		for i in picks:
 			var e := _pick(rng, table)
 			var id := String(e.item)
-			# Found gear may roll prefixes/suffixes (LT-05..08, LT-10);
-			# a modded piece is a unique instance, stored as its own stack.
-			var mods := ItemMods.roll(rng, id)
+			# Found gear rolls its location's modifier (family = district,
+			# tier = band); a modded piece is a unique instance, its own stack.
+			var mods := ItemMods.roll(rng, id, district, band)
 			if mods.is_empty():
 				rec.storage.add(id, rng.randi_range(int(e.min), int(e.max)))
 			else:
 				rec.storage.add_stack({"id": id, "count": 1, "mods": mods})
+				var k := "%s/%s" % [district if district != "" else "-", band]
+				tally[k] = int(tally.get(k, 0)) + 1
+	if OS.is_stdout_verbose() or "--f3" in OS.get_cmdline_user_args():
+		print("LootGen: modded pieces per district/band ", tally)
+
+## The district a container's cell belongs to: its tower's, or — inside the
+## VOID annex — the tower holding the pocket's doorway. "" outside every tower.
+static func district_of(towers: Array, pockets: Array, cell: Vector2i) -> String:
+	var t := CityGen.tower_at(towers, cell)
+	if t.is_empty():
+		for p: Dictionary in pockets:
+			if (p.rect as Rect2i).has_point(cell):
+				t = CityGen.tower_at(towers, p.exit)
+				break
+	return String(t.get("district", ""))
 
 static func _pick(rng: RandomNumberGenerator, table: Array) -> Dictionary:
 	var total := 0

@@ -1,0 +1,73 @@
+{
+  "Rough": "ind_1",
+  "Tempered": "ind_2",
+  "Forged": "ind_3",
+  "Hardened": "ind_4",
+  "Foundry": "ind_5",
+
+  "Braced": "con_1",
+  "Shored": "con_2",
+  "Riveted": "con_3",
+  "Girdered": "con_4",
+  "Wrecking": "con_5",
+
+  "Junior": "bus_1",
+  "Associate": "bus_2",
+  "Manager": "bus_3",
+  "Director": "bus_4",
+  "Executive": "bus_5",
+
+  "of the Attic": "res_1",
+  "of the Landing": "res_2",
+  "of the Hallway": "res_3",
+  "of the Pantry": "res_4",
+  "of the Cellar": "res_5",
+
+  "of the Awning": "com_1",
+  "of the Shopfront": "com_2",
+  "of the Showroom": "com_3",
+  "of the Stockroom": "com_4",
+  "of the Vault": "com_5",
+
+  "of the Helipad": "civ_1",
+  "of the Lobby": "civ_2",
+  "of the Ward": "civ_3",
+  "of the Records": "civ_4",
+  "of the Morgue": "civ_5",
+
+  "Battering": "demolition_1",
+  "Toppling": "demolition_2",
+  "Bulldozing": "demolition_3",
+  "Levelling": "demolition_4",
+  "Razing": "demolition_5",
+
+  "Tooled": "works_1",
+  "Milled": "works_2",
+  "Machined": "works_3",
+  "Calibrated": "works_4",
+  "Factory-set": "works_5",
+
+  "Surveyed": "development_1",
+  "Drafted": "development_2",
+  "Permitted": "development_3",
+  "Approved": "development_4",
+  "Fast-Tracked": "development_5",
+
+  "of the Skylight": "arcade_1",
+  "of the Balcony": "arcade_2",
+  "of the Concourse": "arcade_3",
+  "of the Underpass": "arcade_4",
+  "of the Car Park": "arcade_5",
+
+  "of the Steeple": "parish_1",
+  "of the Belfry": "parish_2",
+  "of the Nave": "parish_3",
+  "of the Vestry": "parish_4",
+  "of the Crypt": "parish_5",
+
+  "of the Marquee": "customs_1",
+  "of the Stalls": "customs_2",
+  "of the Exchange": "customs_3",
+  "of the Impound": "customs_4",
+  "of the Quarantine": "customs_5"
+}

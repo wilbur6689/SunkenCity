@@ -1,893 +1,3526 @@
 {
- "comment": "Container loot (LT-12/13): tables keyed zone x depth band; rolled once at world gen (LT-27 - contents persist in the world save). w = pick weight. Firearms are found-only (LT-18): they never appear in recipes, only here.",
- "tables": {
-  "generic": {
-   "dry": [
-    {
-     "item": "wood",
-     "min": 1,
-     "max": 3,
-     "w": 4
+  "comment": "Container loot (LT-12/13): tables keyed zone x depth band; rolled once at world gen (LT-27 - contents persist in the world save). w = pick weight. Firearms are found-only (LT-18): they never appear in recipes, only here.",
+  "tables": {
+    "generic": {
+      "dry": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        }
+      ],
+      "shallows": [
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        }
+      ],
+      "cold": [
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 2,
+          "max": 4,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "tank_scrap",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        }
+      ]
     },
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 2,
-     "w": 3
+    "residential": {
+      "dry": [
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "kitchen_knife",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "baseball_bat",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "hatchet",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "fireplace_poker",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "hunting_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_22",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "shallows": [
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 4
+        },
+        {
+          "item": "cloth",
+          "min": 2,
+          "max": 4,
+          "w": 3
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "splitting_maul",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "hatchet",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "machete",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pickaxe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "lump_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pump_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shotgun_shells",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "hunting_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "cold": [
+        {
+          "item": "cloth",
+          "min": 2,
+          "max": 4,
+          "w": 3
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "weight_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "hunting_knife",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "fire_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pickaxe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "broad_hatchet",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crowbar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "pump_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shotgun_shells",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        },
+        {
+          "item": "hunting_knife",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "splitting_maul",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "felling_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "spear",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "hunting_magnum",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "semi_auto_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shotgun_shells",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_bow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "arrows",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        },
+        {
+          "item": "hunting_knife",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "felling_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "spear",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "demolition_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "hunting_magnum",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "sniper_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_bow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "arrows",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ]
     },
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 2,
-     "w": 3
+    "commercial": {
+      "dry": [
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "machete",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "hatchet",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "baseball_bat",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "utility_knife",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_bow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "arrows",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "pellet_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "shallows": [
+        {
+          "item": "plastic",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 3,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "boarding_axe",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "spear",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "cane_machete",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pickaxe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crowbar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun_bolt",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow_bolts",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "cold": [
+        {
+          "item": "scrap_metal",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 2,
+          "max": 4,
+          "w": 2
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "spear",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "boarding_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "dive_knife",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "harpoon",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "cane_machete",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "harpoon_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "harpoon",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun_bolt",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        },
+        {
+          "item": "harpoon",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "dive_knife",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "boarding_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pole_hook",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "harpoon_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "harpoon",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun_bolt",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        },
+        {
+          "item": "whaling_harpoon",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "dive_knife",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "boarding_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pole_hook",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "whaling_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "harpoon",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "speargun_bolt",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ]
     },
-    {
-     "item": "bandage",
-     "min": 1,
-     "max": 1,
-     "w": 2
+    "industrial": {
+      "dry": [
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 5,
+          "w": 4
+        },
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "hammer",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "hatchet",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crowbar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pipe_wrench",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pry_bar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nail_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nails",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "flare_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "flares",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "shallows": [
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 6,
+          "w": 4
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 1
+        },
+        {
+          "item": "sledgehammer",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "pipe_wrench",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "splitting_maul",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pickaxe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rivet_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rivets",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "nail_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nails",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "cold": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "bolt_cutters",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tank_scrap",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "breaching_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "felling_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "sledgehammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "industrial_cutter",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nail_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nails",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "hunting_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        },
+        {
+          "item": "industrial_saw",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "demolition_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "sledgehammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "hydraulic_cutter",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "felling_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "framing_nailer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nails",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "semi_auto_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        },
+        {
+          "item": "hydraulic_cutter",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "industrial_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "demolition_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "breaching_maul",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_spreader",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "industrial_rivet_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rivets",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "battle_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ]
     },
-    {
-     "item": "scrap_metal",
-     "min": 1,
-     "max": 2,
-     "w": 3
+    "safe": {
+      "dry": [
+        {
+          "item": "scrap_metal",
+          "min": 4,
+          "max": 6,
+          "w": 3
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "bandage",
+          "min": 2,
+          "max": 3,
+          "w": 2
+        }
+      ],
+      "shallows": [
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "tank_scrap",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        }
+      ],
+      "cold": [
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 3
+        },
+        {
+          "item": "weight_belt",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 12,
+          "max": 24,
+          "w": 2
+        }
+      ],
+      "dark": [
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 3
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 3
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "assault_carbine",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "hunting_magnum",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "machine_pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "semi_auto_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "semi_auto_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "tactical_carbine",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "tactical_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        }
+      ],
+      "crush": [
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 4
+        },
+        {
+          "item": "rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 12,
+          "max": 24,
+          "w": 2
+        },
+        {
+          "item": "battle_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "combat_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "dmr",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "marksman_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "military_carbine",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        },
+        {
+          "item": "sniper_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1,
+          "district_weapon": true
+        }
+      ]
+    },
+    "civil": {
+      "dry": [
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 3,
+          "w": 5
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 3,
+          "w": 3
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "fire_axe",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "baton",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crowbar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "halligan_tool",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "flare_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "flares",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "service_pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "shallows": [
+        {
+          "item": "bandage",
+          "min": 1,
+          "max": 3,
+          "w": 5
+        },
+        {
+          "item": "cloth",
+          "min": 2,
+          "max": 4,
+          "w": 2
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "rescue_axe",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "halligan_tool",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "riot_baton",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "bolt_cutters",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crowbar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "patrol_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shotgun_shells",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "service_pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "cold": [
+        {
+          "item": "bandage",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "wetsuit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "halligan_tool",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "riot_baton",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "breaching_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "patrol_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "riot_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shotgun_shells",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        },
+        {
+          "item": "breaching_sledge",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "halligan_tool",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_spreader",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "assault_carbine",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "tactical_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shotgun_shells",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        },
+        {
+          "item": "rescue_spreader",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "breaching_sledge",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "halligan_tool",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "dmr",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "combat_shotgun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shotgun_shells",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ]
+    },
+    "business": {
+      "dry": [
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 3,
+          "w": 4
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "cloth",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "letter_opener",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "stapler",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "paper_cutter",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "desk_leg",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "fire_extinguisher",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "compact_pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "revolver",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        }
+      ],
+      "shallows": [
+        {
+          "item": "plastic",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1,
+          "max": 3,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 3,
+          "w": 2
+        },
+        {
+          "item": "food_can",
+          "min": 1,
+          "max": 2,
+          "w": 2
+        },
+        {
+          "item": "riot_baton",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "fire_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crowbar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "security_flashlight",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "breaching_tool",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        }
+      ],
+      "cold": [
+        {
+          "item": "scrap_metal",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "iron",
+          "min": 1,
+          "max": 2,
+          "w": 3
+        },
+        {
+          "item": "glowstick",
+          "min": 2,
+          "max": 4,
+          "w": 2
+        },
+        {
+          "item": "dive_watch",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "riot_baton",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "breaching_tool",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "fire_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "security_flashlight",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "tactical_pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        },
+        {
+          "item": "breaching_tool",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "riot_baton",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "felling_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "machine_pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "tactical_carbine",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        },
+        {
+          "item": "breaching_tool",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "rescue_saw",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "shock_baton",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "tactical_axe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "tactical_pistol",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "military_carbine",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ]
+    },
+    "construction": {
+      "dry": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 6,
+          "w": 4
+        },
+        {
+          "item": "scrap_metal",
+          "min": 2,
+          "max": 4,
+          "w": 3
+        },
+        {
+          "item": "rope",
+          "min": 2,
+          "max": 4,
+          "w": 2
+        },
+        {
+          "item": "plastic",
+          "min": 1,
+          "max": 2,
+          "w": 1
+        },
+        {
+          "item": "hammer",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "pry_bar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nail_puller",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "bolt_cutters",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rebar_club",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nail_gun",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "nails",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow_bolts",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "shallows": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "scrap_metal",
+          "min": 3,
+          "max": 5,
+          "w": 4
+        },
+        {
+          "item": "rope",
+          "min": 2,
+          "max": 4,
+          "w": 1
+        },
+        {
+          "item": "glowstick",
+          "min": 1,
+          "max": 2,
+          "w": 1
+        },
+        {
+          "item": "sledgehammer",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "bolt_cutters",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pickaxe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rebar_club",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "demolition_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow_bolts",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_bow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "arrows",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "cold": [
+        {
+          "item": "scrap_metal",
+          "min": 4,
+          "max": 6,
+          "w": 4
+        },
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4,
+          "w": 2
+        },
+        {
+          "item": "pry_bar",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "hammer",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "breaching_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "demolition_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pinch_bar",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pickaxe",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "bolt_cutters",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_crossbow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow_bolts",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_bow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "arrows",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "dark": [
+        {
+          "item": "iron",
+          "min": 2,
+          "max": 4,
+          "w": 4
+        },
+        {
+          "item": "tank_iron",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "fins",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "glow_band",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "pistol_rounds",
+          "min": 8,
+          "max": 16,
+          "w": 2
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 8,
+          "w": 1
+        },
+        {
+          "item": "breaching_sledge",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "hydraulic_cutter",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "demolition_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "mattock",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pole_hook",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_crossbow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow_bolts",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ],
+      "crush": [
+        {
+          "item": "iron",
+          "min": 3,
+          "max": 5,
+          "w": 3
+        },
+        {
+          "item": "schematic_rebreather",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "schematic_hard_suit",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "vault_key",
+          "min": 1,
+          "max": 1,
+          "w": 2
+        },
+        {
+          "item": "compass",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "tool_belt",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "smg",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle",
+          "min": 1,
+          "max": 1,
+          "w": 1
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 6,
+          "max": 12,
+          "w": 2
+        },
+        {
+          "item": "breaching_maul",
+          "min": 1,
+          "max": 1,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "hydraulic_cutter",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "demolition_hammer",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "breaching_sledge",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "pole_hook",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "compound_crossbow",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "crossbow_bolts",
+          "min": 2,
+          "max": 6,
+          "w": 3,
+          "district_weapon": true
+        },
+        {
+          "item": "marksman_rifle",
+          "min": 1,
+          "max": 1,
+          "w": 2,
+          "district_weapon": true
+        },
+        {
+          "item": "rifle_rounds",
+          "min": 4,
+          "max": 12,
+          "w": 3,
+          "district_weapon": true
+        }
+      ]
     }
-   ],
-   "shallows": [
-    {
-     "item": "scrap_metal",
-     "min": 1,
-     "max": 3,
-     "w": 4
-    },
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 3,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 2,
-     "w": 3
-    },
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "cold": [
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2,
-     "w": 4
-    },
-    {
-     "item": "scrap_metal",
-     "min": 2,
-     "max": 4,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 3,
-     "w": 2
-    },
-    {
-     "item": "tank_scrap",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "wetsuit",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "dive_watch",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "pistol",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "pistol_rounds",
-     "min": 6,
-     "max": 12,
-     "w": 2
-    }
-   ],
-   "dark": [
-    {
-     "item": "iron",
-     "min": 2,
-     "max": 4,
-     "w": 4
-    },
-    {
-     "item": "tank_iron",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "vault_key",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "fins",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "glow_band",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "schematic_hard_suit",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "pistol",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "smg",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "pistol_rounds",
-     "min": 8,
-     "max": 16,
-     "w": 2
-    },
-    {
-     "item": "rifle_rounds",
-     "min": 4,
-     "max": 8,
-     "w": 1
-    }
-   ],
-   "crush": [
-    {
-     "item": "iron",
-     "min": 3,
-     "max": 5,
-     "w": 3
-    },
-    {
-     "item": "schematic_rebreather",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "schematic_hard_suit",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "vault_key",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "compass",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "tool_belt",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "smg",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "rifle",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "rifle_rounds",
-     "min": 6,
-     "max": 12,
-     "w": 2
-    }
-   ]
-  },
-  "residential": {
-   "dry": [
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 3,
-     "w": 4
-    },
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 3,
-     "w": 4
-    },
-    {
-     "item": "wood",
-     "min": 1,
-     "max": 3,
-     "w": 2
-    },
-    {
-     "item": "bandage",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ],
-   "shallows": [
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 2,
-     "w": 4
-    },
-    {
-     "item": "cloth",
-     "min": 2,
-     "max": 4,
-     "w": 3
-    },
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 3,
-     "w": 2
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ],
-   "cold": [
-    {
-     "item": "cloth",
-     "min": 2,
-     "max": 4,
-     "w": 3
-    },
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 2,
-     "w": 3
-    },
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    },
-    {
-     "item": "wetsuit",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "weight_belt",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ]
-  },
-  "commercial": {
-   "dry": [
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 3,
-     "w": 4
-    },
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 2,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    },
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "shallows": [
-    {
-     "item": "plastic",
-     "min": 2,
-     "max": 4,
-     "w": 4
-    },
-    {
-     "item": "scrap_metal",
-     "min": 1,
-     "max": 3,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 3,
-     "w": 2
-    },
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "cold": [
-    {
-     "item": "scrap_metal",
-     "min": 2,
-     "max": 4,
-     "w": 4
-    },
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 2,
-     "max": 4,
-     "w": 2
-    },
-    {
-     "item": "dive_watch",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "compass",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ]
-  },
-  "industrial": {
-   "dry": [
-    {
-     "item": "scrap_metal",
-     "min": 3,
-     "max": 5,
-     "w": 4
-    },
-    {
-     "item": "wood",
-     "min": 1,
-     "max": 3,
-     "w": 2
-    },
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "shallows": [
-    {
-     "item": "scrap_metal",
-     "min": 3,
-     "max": 6,
-     "w": 4
-    },
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 3,
-     "w": 2
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 2,
-     "w": 1
-    }
-   ],
-   "cold": [
-    {
-     "item": "iron",
-     "min": 2,
-     "max": 3,
-     "w": 4
-    },
-    {
-     "item": "scrap_metal",
-     "min": 3,
-     "max": 5,
-     "w": 3
-    },
-    {
-     "item": "bolt_cutters",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "tool_belt",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "tank_scrap",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ]
-  },
-  "safe": {
-   "dry": [
-    {
-     "item": "scrap_metal",
-     "min": 4,
-     "max": 6,
-     "w": 3
-    },
-    {
-     "item": "dive_watch",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "glow_band",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "bandage",
-     "min": 2,
-     "max": 3,
-     "w": 2
-    }
-   ],
-   "shallows": [
-    {
-     "item": "wetsuit",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "fins",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "tool_belt",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "tank_scrap",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    }
-   ],
-   "cold": [
-    {
-     "item": "tank_iron",
-     "min": 1,
-     "max": 1,
-     "w": 3
-    },
-    {
-     "item": "weight_belt",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "compass",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "vault_key",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "schematic_hard_suit",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "pistol",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "pistol_rounds",
-     "min": 12,
-     "max": 24,
-     "w": 2
-    }
-   ],
-   "dark": [
-    {
-     "item": "schematic_hard_suit",
-     "min": 1,
-     "max": 1,
-     "w": 3
-    },
-    {
-     "item": "vault_key",
-     "min": 1,
-     "max": 1,
-     "w": 3
-    },
-    {
-     "item": "fins",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "tank_iron",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "smg",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "rifle_rounds",
-     "min": 8,
-     "max": 16,
-     "w": 2
-    }
-   ],
-   "crush": [
-    {
-     "item": "schematic_rebreather",
-     "min": 1,
-     "max": 1,
-     "w": 4
-    },
-    {
-     "item": "rebreather",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "vault_key",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "compass",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "rifle",
-     "min": 1,
-     "max": 1,
-     "w": 2
-    },
-    {
-     "item": "rifle_rounds",
-     "min": 12,
-     "max": 24,
-     "w": 2
-    }
-   ]
-  },
-  "civil": {
-   "dry": [
-    {
-     "item": "bandage",
-     "min": 1,
-     "max": 3,
-     "w": 5
-    },
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 3,
-     "w": 3
-    },
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "shallows": [
-    {
-     "item": "bandage",
-     "min": 1,
-     "max": 3,
-     "w": 5
-    },
-    {
-     "item": "cloth",
-     "min": 2,
-     "max": 4,
-     "w": 2
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "cold": [
-    {
-     "item": "bandage",
-     "min": 2,
-     "max": 4,
-     "w": 4
-    },
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    },
-    {
-     "item": "dive_watch",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "wetsuit",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ]
-  },
-  "business": {
-   "dry": [
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 3,
-     "w": 4
-    },
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 2,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    },
-    {
-     "item": "cloth",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "shallows": [
-    {
-     "item": "plastic",
-     "min": 2,
-     "max": 4,
-     "w": 4
-    },
-    {
-     "item": "scrap_metal",
-     "min": 1,
-     "max": 3,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 3,
-     "w": 2
-    },
-    {
-     "item": "food_can",
-     "min": 1,
-     "max": 2,
-     "w": 2
-    }
-   ],
-   "cold": [
-    {
-     "item": "scrap_metal",
-     "min": 2,
-     "max": 4,
-     "w": 4
-    },
-    {
-     "item": "iron",
-     "min": 1,
-     "max": 2,
-     "w": 3
-    },
-    {
-     "item": "glowstick",
-     "min": 2,
-     "max": 4,
-     "w": 2
-    },
-    {
-     "item": "dive_watch",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "compass",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ]
-  },
-  "construction": {
-   "dry": [
-    {
-     "item": "wood",
-     "min": 3,
-     "max": 6,
-     "w": 4
-    },
-    {
-     "item": "scrap_metal",
-     "min": 2,
-     "max": 4,
-     "w": 3
-    },
-    {
-     "item": "rope",
-     "min": 2,
-     "max": 4,
-     "w": 2
-    },
-    {
-     "item": "plastic",
-     "min": 1,
-     "max": 2,
-     "w": 1
-    }
-   ],
-   "shallows": [
-    {
-     "item": "wood",
-     "min": 3,
-     "max": 5,
-     "w": 3
-    },
-    {
-     "item": "scrap_metal",
-     "min": 3,
-     "max": 5,
-     "w": 4
-    },
-    {
-     "item": "rope",
-     "min": 2,
-     "max": 4,
-     "w": 1
-    },
-    {
-     "item": "glowstick",
-     "min": 1,
-     "max": 2,
-     "w": 1
-    }
-   ],
-   "cold": [
-    {
-     "item": "scrap_metal",
-     "min": 4,
-     "max": 6,
-     "w": 4
-    },
-    {
-     "item": "wood",
-     "min": 2,
-     "max": 4,
-     "w": 2
-    },
-    {
-     "item": "pry_bar",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    },
-    {
-     "item": "hammer",
-     "min": 1,
-     "max": 1,
-     "w": 1
-    }
-   ]
   }
- }
 }
