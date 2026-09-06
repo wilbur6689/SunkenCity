@@ -57,6 +57,17 @@ func reveal_disc(center: Vector2i, radius: int) -> void:
 func revealed_count() -> int:
 	return revealed
 
+## Every cell at once (F4 admin reveal): sets the bits directly and asks the
+## map view for a full repaint instead of pushing ~1.6M cells through `dirty`.
+var full_dirty: bool = false
+func reveal_all() -> void:
+	bits.fill(0xFF)
+	revealed = bounds.size.x * bounds.size.y
+	dirty.clear()
+	full_dirty = true
+	if track_net:
+		net_dirty.clear() # clients keep revealing for themselves; the snapshot carries the bits on join
+
 ## Apply a batch of revealed map cells (a WorldSync delta on a client).
 func reveal_cells(cells: PackedVector2Array) -> void:
 	for c in cells:

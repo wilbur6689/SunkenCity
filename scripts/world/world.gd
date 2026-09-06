@@ -659,6 +659,8 @@ func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
 ## placed lamp or dropped glowstick stays revealed even with no line of
 ## sight from the player — each beacon casts its own sight.
 func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
+	if Admin.reveal: # F4 admin: no fog anywhere
+		return float(LightMap.MAX_LIGHT)
 	if grid.structure_at(cell) == WorldGrid.M.VOID:
 		return 0.0 # the blackness around interior pockets: never lit, no ray spent
 	if not has_back_wall_cell(cell) or CityGen.in_stage_gap(cell.y):

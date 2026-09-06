@@ -70,6 +70,10 @@ func _ready() -> void:
 			ui.open_panel()
 			if screen != "inventory":
 				ui.show_screen(screen)
+	for a in OS.get_cmdline_user_args(): # --worn=<suffix_id>: a Bolt-Action Rifle with that mod in the weapon slot (stats-window green deltas, 2026-09-06)
+		if a.begins_with("--worn="):
+			player.set_equipment("weapon", {"id": "rifle", "count": 1, "mods": {"suffix": {"id": a.substr(7)}}})
+			ui._refresh_all()
 	for a in OS.get_cmdline_user_args(): # --hover=N: show bag slot N's tooltip (badge preview, 2026-09-06)
 		if a.begins_with("--hover=hotbar:"): # the HUD's hotbar tooltip (2026-09-06)
 			var hud := get_tree().root.find_child("HUD", true, false)

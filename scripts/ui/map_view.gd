@@ -158,6 +158,10 @@ func _build_full() -> void:
 ## have changed: mining, pumping, building).
 func _update_pixels() -> void:
 	var b: Rect2i = World.map_bounds
+	if World.map_reveal.full_dirty: # admin reveal_all: repaint everything
+		World.map_reveal.full_dirty = false
+		_build_full()
+		return
 	for v in World.map_reveal.dirty:
 		var cell := Vector2i(v)
 		if b.has_point(cell): # reveals inside a pocket stay off the city map

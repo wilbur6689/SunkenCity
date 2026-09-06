@@ -46,7 +46,7 @@ var _chest_slots: Array = []
 var _equip_buttons: Dictionary = {}
 var preview: TextureRect
 var char_name: Label
-var stats_label: Label
+var stats_label: RichTextLabel # base stat + the modifier share in green (user request 2026-09-06)
 var stats_panel: PanelContainer
 var storage_panel: PanelContainer
 var equip_hint: Label
@@ -282,8 +282,14 @@ func _build_inventory_screen() -> void:
 	# Stats (steel panel; hidden while a storage unit is open)
 	stats_panel = _panel(Vector2(355, 46), Vector2(100, 148), UITheme.steel_panel())
 	s.add_child(stats_panel)
-	stats_label = UITheme.label("")
-	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stats_label = RichTextLabel.new()
+	stats_label.bbcode_enabled = true
+	stats_label.fit_content = true
+	stats_label.scroll_active = false
+	stats_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	stats_label.add_theme_font_size_override("normal_font_size", UITheme.FONT_SIZE)
+	stats_label.add_theme_color_override("default_color", Color(0.9, 0.93, 0.95))
+	stats_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stats_panel.add_child(stats_label)
 
 	# Storage side panel (user request: opening storage shows the inventory
@@ -1069,10 +1075,7 @@ func _refresh_all() -> void:
 		eb.icon.modulate = Color(1, 1, 1, 0.35) if lifted else Color.WHITE
 		var locked: bool = not player.slot_unlocked(slot_name)
 		eb.button.modulate = Color(0.55, 0.57, 0.62) if locked else Color.WHITE
-	var s := player.skills
-	stats_label.text = "Level %d\nPoints %d\n\nScrapping %d\nSwimming %d\nBuilding %d\n\nWeight %.1f\nSwim x%.2f" % [
-		s.player_level(), s.available_points(), s.level("scrapping"), s.level("swimming"), s.level("building"),
-		player.inventory.total_weight(), player.swim_factor()]
+	stats_label.text = _stats_bbcode()
 	var cur = _cursor_stack()
 	cursor_icon.texture = Data.icon(cur.id) if cur != null else null
 	cursor_count.text = str(cur.count) if (cur != null and cur.count > 1) else ""
@@ -1092,6 +1095,63 @@ func _refresh_grid(ui_slots: Array, inv: Inventory, is_bag: bool) -> void:
 		ui_slots[i].count.text = str(st.count) if (st != null and st.count > 1) else ""
 		if is_bag:
 			UITheme.style_slot(ui_slots[i].button, i == player.selected_slot)
+
+## The stats window (user request 2026-09-06): every line shows the stat as
+## it stands, and where worn MODIFIERS move it, the modifier share follows in
+## green (red when a mod hurts) - so "Rifle of the Attic" is visible as
+## "Weight 104.3 (-8.0)" and "Carry 70 (+10)", not buried in a tooltip.
+const GOOD := "#7be07b"
+const BAD := "#e07b7b"
+
+func _mod_total(stat: String) -> float: # modifier share across every worn piece
+	var v := 0.0
+	for slot_name in player.equipment:
+		var st = player.equipment[slot_name]
+		if st != null:
+			v += ItemMods.stat(st, stat)
+	return v
+
+func _delta(v: float, text: String, good_when_positive: bool = true) -> String:
+	if is_zero_approx(v):
+		return ""
+	var good: bool = (v > 0.0) == good_when_positive
+	return " [color=%s](%s)[/color]" % [GOOD if good else BAD, text]
+
+func _stats_bbcode() -> String:
+	var s := player.skills
+	var lines: Array = [
+		"Level %d" % s.player_level(), "Points %d" % s.available_points(), "",
+		"Scrapping %d" % s.level("scrapping"), "Swimming %d" % s.level("swimming"), "Building %d" % s.level("building"), "",
+	]
+	# Weight: the "of the Attic" share is the difference the multipliers make across the bag + worn gear.
+	var w_delta := 0.0
+	for st in player.inventory.slots:
+		if st != null:
+			w_delta += (ItemMods.unit_weight(st) - Data.weight(st.id)) * st.count
+	for slot_name in player.equipment:
+		var st = player.equipment[slot_name]
+		if st != null:
+			w_delta += (ItemMods.unit_weight(st) - Data.weight(st.id)) * st.count
+	lines.append("Weight %.1f%s" % [player.inventory.total_weight(), _delta(w_delta, "%+.1f" % w_delta, false)])
+	var carry := _mod_total("carry")
+	lines.append("Carry %d%s" % [roundi(Constants.WEIGHT_SWIM_REFERENCE + player.equip_stat("carry")), _delta(carry, "%+d" % roundi(carry))])
+	var swim := _mod_total("swim")
+	lines.append("Swim x%.2f%s" % [player.swim_factor(), _delta(swim, "%+d%%" % roundi(swim * 100))])
+	var air := _mod_total("oxygen")
+	lines.append("Air %ds%s" % [roundi(player.max_oxygen()), _delta(air, "%+ds" % roundi(air))])
+	var defense := _mod_total("defense")
+	lines.append("Defense %d%s" % [roundi(player.equip_stat("defense")), _delta(defense, "%+d" % roundi(defense))])
+	# Anything else a worn mod touches shows up only while it is non-zero.
+	for extra in [["light", "Light %d", 1.0], ["cold", "Cold %d", 1.0], ["crush", "Crush %d", 1.0],
+			["scrap_speed", "Scrap speed %+d%%", 100.0], ["yield_chance", "Double yield %+d%%", 100.0], ["reveal", "Map reveal %+d", 1.0]]:
+		var key: String = extra[0]
+		var total := player.equip_stat(key)
+		var m := _mod_total(key)
+		if is_zero_approx(total) and is_zero_approx(m):
+			continue
+		var scale: float = extra[2]
+		lines.append((extra[1] % roundi(total * scale)) + _delta(m, "%+d" % roundi(m * scale)))
+	return "\n".join(PackedStringArray(lines))
 
 func _stations() -> Array:
 	return World.stations_near(player.global_position, Constants.REACH_BLOCKS * Constants.BLOCK_SIZE * 1.5)

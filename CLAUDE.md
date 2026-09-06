@@ -221,7 +221,7 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   drives the player with `Input.action_press`) and `--headless res://scenes/test/m1_smoke.tscn`
   (the loop; feeds the player's input snapshot directly with `set_multiplayer_authority(2)`). Run
   both after touching the player, World, or data files; extend them when behaviour changes.
-  Further gates: `m2/m3/m4/m5/tower/save/pocket/roof/room_editor/furniture_editor/flora_editor/monster_editor/icon_editor_smoke.tscn` — `save_smoke`
+  Further gates: `m2/m3/m4/m5/tower/save/pocket/roof/admin/room_editor/furniture_editor/flora_editor/monster_editor/icon_editor_smoke.tscn` — `save_smoke`
   covers the full persistence round trip; run it after touching World state or SaveGame.
   `m4_smoke` covers enemies/combat/death loop/red moons; run it after touching enemies, combat,
   or the interaction layer.
@@ -576,6 +576,22 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   them from each gap's first row (the Dry/Shallows plates are unchanged). `SaveGame.WORLD_VERSION` 4
   (the grid is taller). Gate: `district_smoke` (splice geometry, plugs, no crossers, orphan pockets,
   relays on plugs, band of the gap, exterior visibility, hammer digs garbage); `m3/pocket` converted.
+- **F4 admin panel** (2026-09-06, user request): `scripts/dev/admin.gd` (`class_name Admin`, static
+  session flags, host/offline only — a LAN client's body is simulated by the host) behind **F4** in
+  `hud.gd` (`_build_admin`; `--f4` opens it at boot for shots): checkboxes **no-clip fly**
+  (`Player._admin_fly`: move keys, jump up, crouch down, sprint x2, `ADMIN_FLY_BLOCKS`; no state
+  machine/collision, camera + interaction keep running), **no death** (`apply_damage`/`start_bleeding`/
+  `_update_oxygen` guards), **reveal map + no fog** (`MapReveal.reveal_all` sets the bits + a
+  `full_dirty` repaint flag the map view honours; `World.visibility_at` returns full light; unticking
+  restores the fog, the map stays revealed); buttons **give 50 of every crafting resource**
+  (`Admin.RESOURCE_IDS`: the 7 materials + rope, not parts) and **teleport to the top of this
+  column** (`World.sky_row` → `travel_to`). F3 gains an `admin:` line while any is on. Gate:
+  `admin_smoke.tscn` (17 checks).
+- **Stats window shows modifier shares** (2026-09-06, user request): the Inventory tab's stats panel
+  is a `RichTextLabel` (`inventory_ui.gd _stats_bbcode`): Weight / Carry / Swim / Air / Defense
+  always, plus light/cold/crush/scrap speed/double yield/map reveal while non-zero, each followed by
+  the worn MODIFIERS' share in green (red when a mod hurts) — "Weight 14.3 (-1.0)", "Carry 68 (+8)".
+  Preview: `menu_preview --screen=inventory --worn=res_4` (a rifle with that suffix in the weapon slot).
 - **Monster chart** (2026-09-06, user request): `docs/monsters/Monsters.md` is the district × stage
   monster grid (companion to `docs/modifiers/Modifiers.md`): today's six shared monsters with their
   seeding odds read from `data/enemies.json` + `EnemyGen`, then a 6 districts (+ open water) × 5

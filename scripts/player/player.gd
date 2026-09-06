@@ -145,6 +145,9 @@ func _physics_process(delta: float) -> void:
 		_read_input()
 	elif _sync != null:
 		_sync.apply_input() # host: a remote peer's relayed snapshot (no-op offline)
+	if Admin.noclip and is_local(): # F4 admin flight (2026-09-06): no state machine, no collision
+		_admin_fly(delta)
+		return
 	_tick_timers(delta)
 	_apply_hotbar()
 	_sense()
@@ -180,6 +183,35 @@ func _physics_process(delta: float) -> void:
 	if state == State.SURFACE_SWIM or state == State.UNDERWATER:
 		skills.add_xp("swimming", Constants.XP_SWIM_PER_SECOND * delta)
 	# one-frame flags
+	wants_interact = false
+	wants_drop = false
+	hotbar_select = NO_HOTBAR_KEY
+
+## Admin no-clip flight (F4, scripts/dev/admin.gd): the local body drifts
+## through everything at ADMIN_FLY_BLOCKS (sprint x2) - move keys, jump = up,
+## crouch = down. Camera, sprite, hotbar and the interaction layer keep
+## running so the tester can still look around and click things.
+func _admin_fly(delta: float) -> void:
+	var dir := Vector2(Input.get_axis("move_left", "move_right"), Input.get_axis("move_up", "move_down"))
+	if Input.is_action_pressed("jump"):
+		dir.y -= 1.0
+	if Input.is_action_pressed("crouch"):
+		dir.y += 1.0
+	var speed := Constants.ADMIN_FLY_BLOCKS * Constants.BLOCK_SIZE * (2.0 if Input.is_action_pressed("sprint") else 1.0)
+	velocity = dir.limit_length(1.0) * speed
+	global_position += velocity * delta
+	_clamp_to_world_bounds()
+	state = State.AIRBORNE
+	fall_start_y = global_position.y
+	oxygen = max_oxygen()
+	drowning = false
+	_tick_timers(delta)
+	_apply_hotbar()
+	_sense()
+	_update_sprite(delta)
+	_update_swing(delta)
+	_update_camera(delta)
+	interaction.tick(delta)
 	wants_interact = false
 	wants_drop = false
 	hotbar_select = NO_HOTBAR_KEY
@@ -920,6 +952,10 @@ func _exit_water_to_air() -> void:
 
 func _update_oxygen(delta: float) -> void:
 	# Drains whenever the head is under — including pinned to a flooded ceiling.
+	if Admin.no_death: # F4 admin: never drowns
+		oxygen = max_oxygen()
+		drowning = false
+		return
 	if submerged:
 		# Free Diver (tech tree) slows the drain.
 		oxygen = minf(maxf(oxygen - delta * skills.effect("o2_drain", 1.0), 0.0), max_oxygen())
@@ -953,12 +989,17 @@ func hurt_from_enemy(damage: float, from_pos: Vector2, can_bleed: bool) -> void:
 	Audio.play_sfx("footstep_soft", global_position, 8, -4.0)
 
 func start_bleeding() -> void:
+	if Admin.no_death:
+		return
 	bleed_time = Constants.BLEED_DURATION
 	message.emit("You are bleeding — bandage it!")
 
 func apply_damage(amount: float) -> void:
 	if dying:
 		return # the body on the ground takes no further hits
+	if Admin.no_death: # F4 admin: nothing hurts
+		health = Constants.MAX_HEALTH
+		return
 	combat_timer = 0.0
 	health = maxf(health - amount, 0.0)
 	if health <= 0.0:

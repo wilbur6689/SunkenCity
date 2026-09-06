@@ -124,6 +124,7 @@ func _ready() -> void:
 	get_node("Root").add_child(_weight_icon)
 	_build_minimap()
 	_build_debug()
+	_build_admin()
 	_build_hover_panel()
 	_build_gain_feed()
 	_build_hotbar_tip()
@@ -371,11 +372,109 @@ func _build_debug() -> void:
 	if OS.get_cmdline_user_args().has("--f3"): # dev aid for screenshots
 		_debug_panel.visible = true
 		debug_label.visible = true
+	if OS.get_cmdline_user_args().has("--f4"): # dev aid: open the admin panel at boot
+		call_deferred("_toggle_admin")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
 		_debug_panel.visible = not _debug_panel.visible
 		debug_label.visible = _debug_panel.visible
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F4:
+		_toggle_admin()
+
+# --- F4 admin panel (user request 2026-09-06; scripts/dev/admin.gd) ---
+var _admin_panel: PanelContainer
+var _admin_status: Label
+var _admin_checks: Dictionary = {} # key -> CheckBox
+
+func _build_admin() -> void:
+	_admin_panel = PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.03, 0.03, 0.9)
+	style.border_color = Color(0.8, 0.35, 0.3, 0.9)
+	style.set_border_width_all(1)
+	style.set_content_margin_all(6)
+	_admin_panel.add_theme_stylebox_override("panel", style)
+	_admin_panel.position = Vector2(6, 200)
+	_admin_panel.visible = false
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 3)
+	_admin_panel.add_child(box)
+	var title := Label.new()
+	title.text = "ADMIN (F4) — testing aids"
+	title.add_theme_font_size_override("font_size", 9)
+	title.add_theme_color_override("font_color", Color(1.0, 0.7, 0.6))
+	box.add_child(title)
+	for spec in [["noclip", "No-clip fly (move keys · jump up · crouch down · sprint fast)"],
+			["no_death", "No death (no damage, bleeding or drowning)"],
+			["reveal", "Reveal map + no fog"]]:
+		var cb := CheckBox.new()
+		cb.text = spec[1]
+		cb.add_theme_font_size_override("font_size", 8)
+		cb.add_theme_icon_override("unchecked", _check_icon(false))
+		cb.add_theme_icon_override("checked", _check_icon(true))
+		cb.add_theme_icon_override("unchecked_disabled", _check_icon(false))
+		cb.add_theme_icon_override("checked_disabled", _check_icon(true))
+		cb.toggled.connect(_on_admin_toggle.bind(spec[0]))
+		box.add_child(cb)
+		_admin_checks[spec[0]] = cb
+	var give := Button.new()
+	give.text = "Give %d of every crafting resource" % Admin.RESOURCE_COUNT
+	give.add_theme_font_size_override("font_size", 8)
+	give.pressed.connect(func() -> void:
+		var n := Admin.give_resources(player)
+		_admin_say("%d resource stacks added" % n if n > 0 else "bag full"))
+	box.add_child(give)
+	var surf := Button.new()
+	surf.text = "Teleport to the top of this column"
+	surf.add_theme_font_size_override("font_size", 8)
+	surf.pressed.connect(func() -> void:
+		_admin_say("on the surface" if Admin.to_surface(player) else "nothing solid in this column"))
+	box.add_child(surf)
+	_admin_status = Label.new()
+	_admin_status.add_theme_font_size_override("font_size", 8)
+	_admin_status.add_theme_color_override("font_color", Color(0.85, 0.85, 0.8))
+	box.add_child(_admin_status)
+	get_node("Root").add_child(_admin_panel)
+
+## A crisp 9 px box (the default theme's check icons vanish at this UI scale).
+func _check_icon(on: bool) -> ImageTexture:
+	var img := Image.create(9, 9, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	for i in 9:
+		for c: Vector2i in [Vector2i(i, 0), Vector2i(i, 8), Vector2i(0, i), Vector2i(8, i)]:
+			img.set_pixelv(c, Color(0.9, 0.75, 0.7))
+	if on:
+		img.fill_rect(Rect2i(2, 2, 5, 5), Color(0.5, 1.0, 0.55))
+	return ImageTexture.create_from_image(img)
+
+func _toggle_admin() -> void:
+	_admin_panel.visible = not _admin_panel.visible
+	if _admin_panel.visible:
+		_admin_checks.noclip.button_pressed = Admin.noclip
+		_admin_checks.no_death.button_pressed = Admin.no_death
+		_admin_checks.reveal.button_pressed = Admin.reveal
+		for cb: CheckBox in _admin_checks.values():
+			cb.disabled = not Admin.available()
+		_admin_say("" if Admin.available() else "host only — the host simulates your body")
+
+func _on_admin_toggle(on: bool, key: String) -> void:
+	if not Admin.available():
+		return
+	match key:
+		"noclip":
+			Admin.set_noclip(player, on)
+			_admin_say("flying — jump up, crouch down" if on else "walking")
+		"no_death":
+			Admin.set_no_death(player, on)
+			_admin_say("nothing can hurt you" if on else "mortal again")
+		"reveal":
+			Admin.set_reveal(on)
+			_admin_say("map revealed, fog off" if on else "fog back (the map stays revealed)")
+
+func _admin_say(text: String) -> void:
+	if _admin_status != null:
+		_admin_status.text = text
 
 func _refresh_debug() -> void:
 	if not _debug_panel.visible or not World.is_ready():
@@ -463,6 +562,8 @@ func _refresh_debug() -> void:
 			var st: Dictionary = Net.world_sync.stats_last
 			lines.append("sync: %d packets/s · %d cells/s · %d water pairs/s" % [int(st.get("packets", 0)),
 				int(st.get("cells", 0)), int(st.get("water_pairs", 0))])
+	if Admin.any_on():
+		lines.append("admin: %s%s%s" % ["noclip " if Admin.noclip else "", "no-death " if Admin.no_death else "", "reveal" if Admin.reveal else ""])
 	_debug_text.text = "\n".join(PackedStringArray(lines))
 
 ## Top-right minimap (CC-25): a window of the fog-of-war world map centred

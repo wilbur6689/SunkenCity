@@ -107,6 +107,9 @@ const STRUCTURE_HP := {WorldGrid.M.WOOD: 30.0, WorldGrid.M.PLASTIC: 20.0, WorldG
 # junk, so each demolished cell rolls scrap metal and plastic independently.
 const GARBAGE_DROP_CHANCE: float = 0.3
 const GARBAGE_DROPS: Array = ["scrap_metal", "plastic"]
+
+# --- Admin / QA panel (F4, scripts/dev/admin.gd; user request 2026-09-06) ---
+const ADMIN_FLY_BLOCKS: float = 30.0 # no-clip flight speed, blocks/sec (sprint doubles it)
 # Mined drops must visibly pay out (user request): they pop toward the
 # miner (velocity = offset * factor + an upward kick) and then MAGNET home
 # to any player within radius once their pickup delay expires.
