@@ -211,10 +211,14 @@ func weight(id: String) -> float:
 ## row for fall back toward the surface, so a red-moon walker spawned on a
 ## dry rooftop and a straggler wandering deep both resolve to something.
 func enemy_stats(type_id: String, band: String) -> Dictionary:
-	var order := ["dry", "shallows", "cold", "dark", "crush"]
+	# T0 "roof" (2026-09-06) is its own row; a type without one (a red-moon
+	# walker landing on a roof) uses its Dry stats.
+	if band == "roof" and not (enemy_bands.get("roof", {}) as Dictionary).has(type_id):
+		band = "dry"
+	var order := ["roof", "dry", "shallows", "cold", "dark", "crush"]
 	var i := order.find(band)
 	if i < 0:
-		i = 0
+		i = 1
 	while i >= 0:
 		var row: Dictionary = enemy_bands.get(order[i], {})
 		if row.has(type_id):

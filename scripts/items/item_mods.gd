@@ -12,7 +12,7 @@ extends RefCounted
 const MAX_TIER := 5
 const ROLL_MOD_CHANCE := 0.6    # a found gear piece is modded (D5: every found piece is bench stock)
 const JUNK_CHANCE := 0.08       # ...or, on a tool/weapon, carries an unlearnable junk prefix
-const TIER_OF_BAND := {"dry": 1, "shallows": 2, "cold": 3, "dark": 4, "crush": 5}
+const TIER_OF_BAND := {"roof": 1, "dry": 1, "shallows": 2, "cold": 3, "dark": 4, "crush": 5}
 
 ## D2: colour = the highest tier on the piece, bucketed; both slots at T5 = gold.
 const RARITY_COLORS := {

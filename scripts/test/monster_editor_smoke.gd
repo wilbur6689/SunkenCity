@@ -19,7 +19,7 @@ func _ready() -> void:
 	ed.enemies_path = "user://enemies_test.json"
 	add_child(ed)
 	await get_tree().process_frame
-	check(ed.load_option.item_count == 7, "type list holds all 6 monsters (+ placeholder row)")
+	check(ed.load_option.item_count == 91, "type list holds all 90 monsters (+ placeholder row)")
 	var pm = ed.get_tree().get_first_node_in_group("pause_menu")
 	check(pm != null, "pause menu mounted")
 	ed._load_selected(_find(ed, "walker"))
@@ -37,7 +37,7 @@ func _ready() -> void:
 	ed.def.drops.append({"item": "wood", "min": 1, "max": 1, "chance": 0.2})
 	ed._save()
 	var lib = JSON.parse_string(FileAccess.get_file_as_string("user://enemies_test.json"))
-	check(lib.types.size() == 6, "saving replaces the type instead of duplicating")
+	check(lib.types.size() == 90, "saving replaces the type instead of duplicating")
 	check(int(lib.bands.dry.walker.hp) == 33, "edited band stat saved")
 	check(not lib.bands.crush.has("walker"), "disabled band row erased (seeds nowhere in The Crush)")
 	for t in lib.types:
@@ -58,7 +58,7 @@ func _ready() -> void:
 	ed.band_rows["shallows"]["hp"].value = 12
 	ed._save()
 	lib = JSON.parse_string(FileAccess.get_file_as_string("user://enemies_test.json"))
-	check(lib.types.size() == 7 and int(lib.bands.shallows.smoke_imp.hp) == 12,
+	check(lib.types.size() == 91 and int(lib.bands.shallows.smoke_imp.hp) == 12,
 		"new monster exported with its shallows row")
 	# roundtrip: the list regrouped by mode and the new type loads back
 	ed._load_selected(_find(ed, "smoke_imp"))

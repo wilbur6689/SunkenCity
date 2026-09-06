@@ -97,7 +97,27 @@ func _run() -> void:
 	var row := 23 # floor 2 standing row (dry band; 8 px cells)
 
 	print("== A. data + framework (GD-01/16/23)")
-	check(Data.enemies.size() == 6, "6 enemy types loaded (roster + fish)")
+	check(Data.enemies.size() == 90, "90 enemy types loaded (roster + fish school + prowler + 3 predator fish + 24 T0 + 28 T1 + 28 T2 grid fauna)")
+	var fauna := {"t0": 0, "t1": 0, "t2": 0}
+	var flying := 0
+	var shooters := 0
+	for e in Data.enemies.values():
+		if e.get("grid_fauna", false):
+			fauna[e.stage] += 1
+			if e.mode == "fly":
+				flying += 1
+			if e.get("ranged", false):
+				shooters += 1
+	check(fauna.t0 == 24 and fauna.t1 == 28 and fauna.t2 == 28 and flying == 11 and shooters == 5,
+			"24 T0 + 28 T1 + 28 T2 creatures from the Bestiary Grid, 11 fliers, 5 shooters (%s, %d, %d)" % [str(fauna), flying, shooters])
+	check(Data.enemies.scaffolding_barnacle.get("stationary", false) and Data.enemies.boiler_lamprey.get("lifesteal", 0.0) > 0.0
+			and Data.enemy_stats("sewer_gator", "shallows").hp == 18.0 and Data.enemies.sludge_crab.get("armor", 0.0) >= 0.3,
+			"T2 rules mapped: stationary shooters, lifesteal, armour, shallows stats")
+	check(Data.items.has("organic_material") and Data.items.has("paper") and Data.enemy_stats("glasswing_bat", "roof").speed == 3.5
+			and Data.enemy_stats("police_horse", "dry").hp == 10.0, "their drops and band stats loaded as designed")
+	check(Data.enemies.concrete_tortoise.get("knockback_resist", 0.0) > 0.0 and Data.enemies.butcher_dog.get("enrage_at", 1.0) == 0.5
+			and Data.enemies.water_strider.mode == "surface" and Data.enemies.drain_eel.get("water_only", false),
+			"special rules and water modes mapped from the sheet")
 	for band in ["dry", "shallows", "cold", "dark", "crush"]:
 		check(not Data.enemy_stats("walker", band).is_empty(), "walker stats authored for " + band)
 	check(float(Data.enemy_stats("walker", "crush").hp) > float(Data.enemy_stats("walker", "dry").hp),

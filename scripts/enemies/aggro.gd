@@ -9,7 +9,7 @@ extends RefCounted
 static func acquire(tree: SceneTree, pos: Vector2, radius_blocks: float) -> Node2D:
 	var radius := radius_blocks * Constants.BLOCK_SIZE
 	var band: String = World.band_at(World.cell_at(pos))
-	if World.is_night() and (band == "dry" or band == "shallows"):
+	if World.is_night() and (band == "roof" or band == "dry" or band == "shallows"):
 		radius *= Constants.AGGRO_NIGHT_MULT
 	var best: Node2D = null
 	var best_d := radius

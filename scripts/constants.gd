@@ -250,6 +250,7 @@ const CRUSH_DPS: float = 25.0  # in The Crush without a crush-rated suit
 const ENEMY_WINDOW: Vector2i = Vector2i(280, 120) # records in this window (cells) run as nodes (~10 floors; perf pass 2026-09-05)
 const AGGRO_NIGHT_MULT: float = 1.5      # surface-band aggro radii grow at night (GD-29)
 const ENEMY_TOUCH_COOLDOWN: float = 0.9  # seconds between contact hits on the player
+const ENEMY_SHOT_COOLDOWN: float = 2.2   # seconds between an enemy's ranged spits (Bestiary Grid shooters, 2026-09-06)
 const ENEMY_ATTACK_REACH_BLOCKS: float = 2.5 # a bite also lands this far IN FRONT of the
                                               # facing direction (user request 2026-09-01:
                                               # overlap-only contact felt like same-square attacks)

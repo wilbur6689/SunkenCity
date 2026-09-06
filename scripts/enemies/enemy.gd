@@ -74,6 +74,8 @@ func _ready() -> void:
 			var at := _load_strip(base + "_" + anim + ".png")
 			if at != null:
 				anim_tex[anim] = at
+	if def.has("stealth"): # hard to see against the night sky (T0 glasswing bat)
+		sprite.modulate = Color(1, 1, 1, 1.0 - float(def.stealth))
 	# Enemies never body-block players (contact damage is a check, not a
 	# collision); they still collide with the world tiles.
 	for p in get_tree().get_nodes_in_group("player"):
@@ -84,10 +86,11 @@ func _physics_process(delta: float) -> void:
 		_puppet_tick(delta)
 		return
 	attack_cd = maxf(attack_cd - delta, 0.0)
+	shot_cd = maxf(shot_cd - delta, 0.0)
 	pound_cd = maxf(pound_cd - delta, 0.0)
 	if _flash > 0.0:
 		_flash = maxf(_flash - delta, 0.0)
-		sprite.modulate = Color(1, 0.4, 0.4) if _flash > 0.0 else Color.WHITE
+		sprite.modulate = Color(1, 0.4, 0.4) if _flash > 0.0 else Color(1, 1, 1, 1.0 - float(def.get("stealth", 0.0)))
 	match def.get("mode", "ground"):
 		"ground":
 			_move_ground(delta)
@@ -95,10 +98,14 @@ func _physics_process(delta: float) -> void:
 			_move_surface(delta)
 		"swim":
 			_move_swim(delta)
+		"fly":
+			_move_fly(delta)
 		"fish":
 			_move_fish(delta)
 	if not def.get("passive", false):
 		_try_touch()
+		if def.get("ranged", false):
+			_try_shoot()
 	if absf(velocity.x) > 1.0:
 		facing = 1 if velocity.x > 0.0 else -1
 	sprite.flip_h = facing < 0
@@ -115,7 +122,7 @@ func _physics_process(delta: float) -> void:
 func _puppet_tick(delta: float) -> void:
 	if _flash > 0.0:
 		_flash = maxf(_flash - delta, 0.0)
-		sprite.modulate = Color(1, 0.4, 0.4) if _flash > 0.0 else Color.WHITE
+		sprite.modulate = Color(1, 0.4, 0.4) if _flash > 0.0 else Color(1, 1, 1, 1.0 - float(def.get("stealth", 0.0)))
 	var prev := global_position
 	if prev.distance_to(net_pos) > Constants.NET_ENEMY_SNAP_BLOCKS * Constants.BLOCK_SIZE:
 		global_position = net_pos
@@ -245,6 +252,9 @@ func _tick_wander(delta: float) -> void:
 		wander_timer = randf_range(1.5, 4.0)
 		wander_x = [-1.0, 0.0, 0.0, 1.0][randi() % 4]
 		swim_dir = Vector2.from_angle(randf() * TAU)
+	if def.get("ambush", false) and target == null: # lies still until something comes close (T0 leech / mantis / snake)
+		wander_x = 0.0
+		swim_dir = Vector2.ZERO
 
 # --- Ground (walker, crawler; GD-04) ---
 
@@ -297,7 +307,7 @@ func _handle_block(dir: float) -> void:
 	var fx := global_position.x + dir * (half.x + 3.0)
 	for row in ceili(half.y * 2.0 / Constants.BLOCK_SIZE) + 1:
 		var cell := World.cell_at(Vector2(fx, global_position.y + half.y - 2.0 - row * Constants.BLOCK_SIZE))
-		if World.pound_target(cell):
+		if World.pound_target(cell) and def.get("pounds", true): # T0 prowlers never breach a house
 			if pound_cd <= 0.0:
 				pound_cd = Constants.ENEMY_POUND_INTERVAL
 				World.pound(cell, Constants.ENEMY_POUND_DAMAGE)
@@ -343,7 +353,9 @@ func _move_swim(delta: float) -> void:
 	if velocity.length() > speed: # plunge drag: entry momentum bleeds off fast
 		velocity = velocity.move_toward(velocity.normalized() * speed, Constants.WATER_PLUNGE_DECEL * delta)
 	var desired := Vector2.ZERO
-	if target != null:
+	if def.get("stationary", false):
+		pass # barnacle colonies and urchins stay where they grew
+	elif target != null:
 		desired = (target.global_position - global_position).normalized() * speed
 	elif def.get("open_water", false):
 		# Shark patrol: level cruising, flipping at walls and building edges.
@@ -368,6 +380,34 @@ func _swimmable(pos: Vector2) -> bool:
 	if not World.is_water(pos):
 		return false
 	return not (def.get("open_water", false) and World.has_back_wall_cell(World.cell_at(pos)))
+
+# --- Fliers (T0 rooftop bats, crows, pigeons; 2026-09-06) ---
+
+## Air is their water: they glide toward a target (aiming a little above its
+## centre), bob about on the wander direction otherwise, and turn away from
+## solids and the water surface. No gravity, no ground contact.
+func _move_fly(delta: float) -> void:
+	_update_target()
+	_tick_wander(delta)
+	var speed: float = float(stats.speed) * Constants.BLOCK_SIZE
+	var desired := Vector2.ZERO
+	if target != null:
+		desired = (target.global_position + Vector2(0, -6.0) - global_position).normalized() * speed
+	else:
+		var bob := Vector2(0, sin(Time.get_ticks_msec() * 0.004 + global_position.x) * 0.3)
+		desired = (swim_dir + bob) * speed * Constants.ENEMY_WANDER_SPEED
+	velocity = velocity.move_toward(desired, 30.0 * Constants.BLOCK_SIZE * delta)
+	var next := global_position + velocity * delta
+	if not _flyable(Vector2(next.x, global_position.y)):
+		velocity.x = 0.0
+		swim_dir.x = -swim_dir.x
+	if not _flyable(Vector2(global_position.x, next.y)):
+		velocity.y = 0.0
+		swim_dir.y = -swim_dir.y
+	move_and_slide()
+
+func _flyable(pos: Vector2) -> bool:
+	return not World.is_solid(pos) and not World.is_water(pos)
 
 # --- Fish school (GD-09/28): ambience and food, caught by hand ---
 
@@ -394,6 +434,35 @@ func catch_fish(player) -> bool:
 		World.remove_enemy(rec)
 	return true
 
+# --- Ranged attack (Bestiary Grid T2: barnacle / urchin spines, squid ink,
+# jellyfish sting, lionfish spines; 2026-09-06) ---
+
+## A spit at any player within `range_blocks` with a clear line of sight:
+## instant hit (a tracer draws the shot), ENEMY_SHOT_COOLDOWN between shots,
+## damage = the type's stat. Stationary shooters never move, so this is their
+## whole game; swimmers shoot while closing in.
+func _try_shoot() -> void:
+	if shot_cd > 0.0:
+		return
+	var reach := float(def.get("range_blocks", 3.0)) * Constants.BLOCK_SIZE
+	for p in get_tree().get_nodes_in_group("player"):
+		var to: Vector2 = p.global_position - global_position
+		if to.length() > reach or to.length() < Constants.BLOCK_SIZE * 1.5:
+			continue
+		if World.sight_transmission(global_position, World.cell_at(p.global_position)) <= 0.05:
+			continue # a wall or door between them
+		shot_cd = Constants.ENEMY_SHOT_COOLDOWN
+		attack_cd = maxf(attack_cd, 0.3)
+		_play_oneshot("attack", 0.35)
+		World.spawn_tracer(global_position, p.global_position)
+		p.hurt_from_enemy(float(stats.damage), global_position, def.get("bleeds", false))
+		Audio.play_sfx("splash", global_position, 4, -10.0)
+		if def.has("lifesteal"):
+			rec.hp = minf(float(rec.hp) + float(stats.damage) * float(def.lifesteal), float(stats.hp))
+		return
+
+var shot_cd := 0.0
+
 # --- Contact damage ---
 
 ## Contact bite + a forward swipe (user request 2026-09-01): overlap-only
@@ -416,6 +485,8 @@ func _try_touch() -> void:
 			_play_oneshot("attack", 0.5) # the bite reads on the body (2026-09-01)
 			Net.on_enemy_event(rec, "anim:attack") # puppets play the bite too
 			p.hurt_from_enemy(float(stats.damage), global_position, def.get("bleeds", false))
+			if def.has("lifesteal"): # the boiler lamprey drinks what it bites
+				rec.hp = minf(float(rec.hp) + float(stats.damage) * float(def.lifesteal), float(stats.hp))
 			return
 
 # --- Health bar (shows only once hurt) ---
@@ -439,7 +510,16 @@ func _draw() -> void:
 func hurt(damage: float, from_pos: Vector2, knockback: float = 0.0) -> void:
 	if puppet: # damage is the host's call; the flash arrives as a "hurt" event
 		return
+	damage *= 1.0 - float(def.get("armor", 0.0)) # hard shells (T0 roach / statue pigeon)
 	rec.hp = float(rec.hp) - damage
+	knockback *= 1.0 - float(def.get("knockback_resist", 0.0)) # concrete tortoise stands its ground
+	# Gets meaner once hurt (dumpster raccoon), or below a health fraction (butcher dog: enrage_at 0.5).
+	if def.has("enrage") and not rec.get("enraged", false) \
+			and float(rec.hp) <= float(stats.hp) * float(def.get("enrage_at", 1.0)):
+		rec["enraged"] = true
+		stats = stats.duplicate()
+		stats.damage = float(stats.damage) * (1.0 + float(def.enrage))
+		stats.speed = float(stats.speed) * (1.0 + float(def.enrage) * 0.5)
 	Net.on_enemy_event(rec, "hurt")
 	queue_redraw()
 	_flash = 0.12

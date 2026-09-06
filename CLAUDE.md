@@ -592,6 +592,68 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   always, plus light/cold/crush/scrap speed/double yield/map reveal while non-zero, each followed by
   the worn MODIFIERS' share in green (red when a mod hurts) — "Weight 14.3 (-1.0)", "Carry 68 (+8)".
   Preview: `menu_preview --screen=inventory --worn=res_4` (a rifle with that suffix in the weapon slot).
+- **Bestiary Grid fauna** (2026-09-06, user designs): the design sheets are
+  `docs/monsters/t0_roof_fauna.json` (T0 Rooftops, 24), `docs/monsters/t1_dry_fauna.json` (T1 The
+  Dry, 24 + 4 "open water") and `docs/monsters/t2_shallows_fauna.json` (T2 The Shallows, 24 + 4
+  open-water hunters; free-text drops are mapped onto material families by `DROP_FAMILIES`, no trophy
+  items; Swims/Glides/Floats/Stationary/"Crawls/Swims" -> swim; `ranged` + `range_blocks` and
+  `stationary` flags; extra rules -> `armor` 0.3 (high defense / slime coat / reflects), `stealth` 0.5 +
+  `ambush` (semi-invisible / camouflage), `lifesteal` 0.5, `enrage` 0.3). Sprite drawers live in
+  **`tools/fauna_art/t0.py` / `t1.py` / `t2.py`** (per-stage modules, `DRAW`/`HITBOX`/`CELL` dicts,
+  contract in `fauna_art/common.py`, override the builder's built-ins; preview a sheet with
+  `python tools/fauna_art/preview.py t2 out.png`). **Enemy ranged attack** (`Enemy._try_shoot`):
+  a type with `ranged` spits at a player within `range_blocks` and line of sight every
+  `ENEMY_SHOT_COOLDOWN` (a tracer draws it, damage = its stat); `stationary` swimmers never move;
+  `lifesteal` heals on bites/shots. Seeding: `district_fauna.<band>` + `district_fauna_share.<band>`
+  now cover the flooded bands too (a share of each flooded-floor fish roll becomes a district unique)
+  and `open_water_fauna.<band>` + `open_water_fauna_spacing` scatter hunters per band.
+  **`python tools/build_fauna.py`** writes them into `data/enemies.json`
+  (types tagged `grid_fauna: true` + `stage` + `district`, replaced on re-run; `mode` from the verb:
+  Flies → **`fly`**, Swims → `swim` water-only, Skims / the mudskipper → `surface`, else ground; hitbox
+  per archetype; hp/damage/speed LITERAL; a stat row per band — T0 `roof`, T1 `dry`, the surface set
+  `dry`+`shallows`; aggro by size 22/24/28; drops parsed from the text — new items `organic_material`
+  and `paper` + icons; special rules → `armor` 0.25, `ambush` (no wander until a target), `stealth`
+  0.4 (translucent), `enrage` 0.5 (+ `enrage_at` 0.5 for "below half health"), `knockback_resist`
+  0.8), plus seeding `roof_night_types_by_district` (T0), `district_fauna.dry` +
+  `district_fauna_share.dry` 0.3 (T1: on a dry floor each zombie roll becomes one of the tower
+  district's four with that share — `EnemyGen`), `surface_fauna` + `surface_fauna_spacing` (T1 open
+  water: swimmers 1–6 rows under the waterline, surface modes on it, along open-water columns), and
+  draws 4-frame square strips from ~35 archetype drawers (palette from the "look" text, base art faces
+  RIGHT). Engine: `Enemy._move_fly` (no gravity, turns from solids/water, aims above the target),
+  `armor`/`enrage`/`knockback_resist` in `hurt`, `ambush` in `_tick_wander`; `World._tick_roof_night`
+  picks the T0 roster by `World.district_at_x`, fliers spawn 4 blocks up; the Prowler stays as the
+  district-less T0 fallback. Counts: 62 types (`m4`/`monster_editor` smokes); `district_smoke` checks
+  the T1 uniques sit in their own district's dry floors, the surface four at the waterline, and the
+  T0 night cycle. NB designed numbers are small (hp 2–10, bites 1–4 of 100 health, speed 0.75–4
+  blocks/s vs a walker's 4.4): nuisances in numbers — retune in the JSON + re-run the tool. Not
+  built from the sheets: slows/poison on hit, playing dead, cackle alerts, charge-ups.
+- **Predator fish** (2026-09-06, user request): three `mode: "swim"`, `water_only` types in
+  `data/enemies.json` with Shallows + Cold rows only — **`tropical_fish`** (easy: hp 10/14, fast, nippy),
+  **`catfish`** (medium: hp 35/45, slow), **`barracuda`** (hardest: hp 60/75, speed 14–15, `bleeds`);
+  all drop fish meat. They swim flooded interiors like the Drowned (no `open_water` flag). Seeding
+  (`enemies.json seeding`): flooded Shallows/Cold wing-floors — the old quiet rows — roll
+  `wing_fish_chance` (0.5, pity-boosted) for one fish from that band's `wing_fish_weights`
+  (`EnemyGen._weighted_pick`), and each type is scattered along open water in its bands at
+  `pred_fish_spacing` (tropical: shallows, catfish: both, barracuda: cold). Strips are procedural
+  square-cell 4-frame swims from `tools/gen_fish_art.py` (12 / 24 / 40 px cells, base art faces RIGHT;
+  NB the hand-made shark strip faces left, so it swims tail-first — a known cosmetic bug). Counts in
+  `m4`/`monster_editor` smokes are 10 types now; `district_smoke` checks all three seed in their bands
+  and indoors.
+- **T0 Rooftops** (2026-09-06, user request): a stage ABOVE The Dry. `World.band_at` returns
+  **`"roof"`** for cells above the waterline that are outside every tower footprint (the open air over
+  the crowns and between towers); inside a footprint (the dry cap), in the annex, or with no
+  `World.towers` (the test tower) it is still `"dry"`. `Data.enemy_stats` has a `roof` row first and
+  falls back to `dry` for types without one; `aggro.gd` counts roof as a surface band (night radii);
+  `ItemMods.TIER_OF_BAND.roof` = 1; the Monster Editor lists the roof band. **Night roof spawns:**
+  `World._tick_roof_night` (from `_tick_night`, floater cadence) — every player whose cell is in the
+  roof band and NOT inside a sealed room (`room_sealed_cells`, i.e. a house of their own) draws up to
+  `seeding.roof_night_max` (4) spawns of `seeding.roof_night_types` onto roof tops
+  `roof_night_min/max_blocks` (20–50) away (`_spawn_roof_night`: first roof top in the column via
+  `sky_row`, never over open water); records carry `night` + `roof` and clear at dawn. Placeholder
+  type **`prowler`** (`data/enemies.json`: ground, fast, roof stats only, **`pounds: false`** —
+  `Enemy._handle_block` honours it so a house holds; strips from `tools/gen_prowler_art.py`, a cold
+  recolour of walker_h). Gates: `district_smoke` (band + a midnight spawn/dawn clear cycle), `m3`.
+  The bestiary grid artifact and `docs/monsters/Monsters.md` carry a T0 row (42 slots).
 - **Monster chart** (2026-09-06, user request): `docs/monsters/Monsters.md` is the district × stage
   monster grid (companion to `docs/modifiers/Modifiers.md`): today's six shared monsters with their
   seeding odds read from `data/enemies.json` + `EnemyGen`, then a 6 districts (+ open water) × 5

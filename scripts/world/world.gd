@@ -110,6 +110,7 @@ var red_moon_active: bool = false
 var _was_night: bool = false
 var _wave_timer: float = 0.0
 var _floater_timer: float = 0.0
+var _roof_timer: float = 0.0 # T0 rooftop night spawns (2026-09-06)
 ## Per-system frame costs + counters for the F3 debug overlay.
 var perf: Dictionary = {"water_ms": 0.0, "light_ms": 0.0, "fog_ms": 0.0, "fog_cells": 0,
 	"water_draw_ms": 0.0, "water_cells": 0, "struct_ms": 0.0, "struct_cells": 0,
@@ -343,7 +344,13 @@ func depth_below_waterline(cell: Vector2i) -> int:
 func band_at(cell: Vector2i) -> String:
 	var d := depth_below_waterline(cell)
 	if d < 0:
-		return "dry"
+		# T0 Rooftops (user request 2026-09-06): the open air above the crowns
+		# and between towers is its own stage - night-only spawns live there.
+		# Inside a tower footprint (the dry cap floors), a pocket, or a scene
+		# without a city (the test tower) it is still The Dry.
+		if towers.is_empty() or in_annex(cell) or not CityGen.tower_at(towers, cell).is_empty():
+			return "dry"
+		return "roof"
 	if d < Constants.BAND_SHALLOWS_DEPTH:
 		return "shallows"
 	if d < Constants.BAND_COLD_DEPTH:
@@ -1626,6 +1633,86 @@ func _tick_night(delta: float) -> void:
 		if cell.x != -99999:
 			add_enemy_record("floater", cell_center(cell), 1.0, true)
 			live_night += 1
+	_tick_roof_night(Constants.NIGHT_FLOATER_INTERVAL) # same cadence as the floaters
+
+## T0 Rooftops (user request 2026-09-06): after dark the open roofs belong to
+## the night monsters. Every player standing OUTDOORS in the roof band and
+## not inside a sealed room of their own (World.room_sealed_cells - a
+## house with walls and a roof) draws `roof_night_max` night spawns onto
+## roof tops a ring of `roof_night_min/max_blocks` away; they hunt with the
+## night aggro radius, never pound player blocks (so the house holds) and
+## vanish at dawn with the other night records. Types + numbers live in
+## data/enemies.json `seeding` (roof_night_types / _max / _min_blocks / _max_blocks).
+func _tick_roof_night(interval: float) -> void:
+	var cfg: Dictionary = Data.enemy_seeding
+	var fallback: Array = cfg.get("roof_night_types", [])
+	var by_district: Dictionary = cfg.get("roof_night_types_by_district", {})
+	if (fallback.is_empty() and by_district.is_empty()) or towers.is_empty():
+		return
+	var max_per := int(cfg.get("roof_night_max", 4))
+	var near_blocks := float(cfg.get("roof_night_max_blocks", 50)) + 30.0
+	for p in get_tree().get_nodes_in_group("player"):
+		var cell := cell_at(p.global_position)
+		if band_at(cell) != "roof":
+			continue # indoors, or below the surface: the roofs are not their problem
+		if not room_sealed_cells(cell).is_empty():
+			continue # sheltered: a sealed room of their own keeps the night out
+		var live := 0
+		for rec in enemy_records:
+			if rec.get("roof", false) and Vector2(rec.pos).distance_to(p.global_position) < near_blocks * Constants.BLOCK_SIZE:
+				live += 1
+		# The roster is the district's own (Bestiary Grid T0 row, 2026-09-06):
+		# the tower under the player decides which four creatures the roofs breed.
+		var types: Array = by_district.get(district_at_x(cell.x), fallback)
+		if types.is_empty():
+			types = fallback
+		if types.is_empty():
+			continue
+		while live < max_per:
+			var tid := String(types[randi() % types.size()])
+			if not _spawn_roof_night(tid, p.global_position, int(cfg.get("roof_night_min_blocks", 20)), int(cfg.get("roof_night_max_blocks", 50))):
+				break
+			live += 1
+
+## District of the tower whose footprint spans column `x` (any row - roofs
+## included), or the nearest tower's when `x` is over a gap; "" with no city.
+func district_at_x(x: int) -> String:
+	var best := ""
+	var best_d := 1 << 30
+	for t in towers:
+		if x >= int(t.x0) and x <= int(t.x1):
+			return String(t.get("district", ""))
+		var dd := mini(absi(x - int(t.x0)), absi(x - int(t.x1)))
+		if dd < best_d:
+			best_d = dd
+			best = String(t.get("district", ""))
+	return best
+
+## One roof-night spawn on the first roof top in a ring column around `pos`
+## (open sky above the crowns only - never inside, never over open water).
+func _spawn_roof_night(tid: String, pos: Vector2, min_blocks: int, max_blocks: int) -> bool:
+	for attempt in 6:
+		var dx := randi_range(min_blocks, max_blocks) * (1 if randi() % 2 == 0 else -1)
+		var x := cell_at(pos).x + dx
+		if x <= city_bounds.position.x + 2 or x >= city_bounds.end.x - 2:
+			continue
+		var top := sky_row(x)
+		if top >= waterline_row:
+			continue # open water column: no roof here
+		var stand := Vector2i(x, top - 1)
+		if band_at(stand) != "roof" or is_solid_cell(stand) or is_solid_cell(stand + Vector2i.UP):
+			continue
+		var lift := Vector2(0, -6)
+		if String(Data.enemies.get(tid, {}).get("mode", "")) == "fly":
+			lift = Vector2(0, -Constants.BLOCK_SIZE * 4.0) # bats and birds start on the wing
+		var rec := add_enemy_record(tid, cell_center(stand) + lift, 1.0, true)
+		if rec.is_empty():
+			return false
+		rec["roof"] = true
+		if _enemy_in_window(rec):
+			_instantiate_enemy(rec)
+		return true
+	return false
 
 ## An open-water surface cell a random ring away from `pos` (for floaters
 ## drifting in / red-moon spawns over water); sentinel x on failure.

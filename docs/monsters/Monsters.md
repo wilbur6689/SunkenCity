@@ -1,13 +1,13 @@
 # Monsters — district × stage chart
 
 *2026-09-06. The monster counterpart to [../modifiers/Modifiers.md](../modifiers/Modifiers.md):
-one grid of **6 districts × 5 stages**, a shared roster that fills every cell today, and an empty
+one grid of **6 districts × 6 stages (T0 Rooftops through T5 The Crush)**, a shared roster that fills every cell today, and an empty
 **unique slot** in every cell to be named later. Numbers in §1–§2 are read from `data/enemies.json`
 (`seeding` + per-band `stats`) and `scripts/world/enemy_gen.gd` as they stand; §3–§5 are design
 proposals, nothing there is built.*
 
-Stage ↔ band vocabulary (GameOverview "Main Game Loop"): **T1 The Dry · T2 The Shallows · T3 The
-Cold · T4 The Dark · T5 The Crush.** A floor's band is its CEILING row's band (`World.floor_band_at`).
+Stage ↔ band vocabulary (GameOverview "Main Game Loop"): **T0 Rooftops (open air above the crowns,
+night-only spawns, 2026-09-06) · T1 The Dry · T2 The Shallows · T3 The Cold · T4 The Dark · T5 The Crush.** A floor's band is its CEILING row's band (`World.floor_band_at`).
 
 ## 1. Roster today (shared, district-blind)
 
@@ -22,6 +22,15 @@ monster below can appear in any district that has the right kind of space.
 | The Drowned | swim, water-only | flooded wing-floors of The Dark and The Crush | T4–T5 | cloth 1–2 (80 %), scrap metal 1–2 (50 %) |
 | Shark | swim, open water only | open water from The Cold down | T3–T5 | fish meat 2–4 |
 | Fish School | passive | open water below the surface | T2–T5 | — |
+| Tropical Fish | swim, water-only | flooded Shallows/Cold wing-floors (50 % per floor, band-weighted 60/30/10 in the Shallows, 20/40/40 in the Cold) + open water of the Shallows | T2–T3 | fish meat 1 (60 %) |
+| Catfish | swim, water-only | same flooded floors + open water of the Shallows and Cold | T2–T3 | fish meat 1–2 |
+| Barracuda | swim, water-only, bites bleed | same flooded floors + open water of the Cold | T2–T3 | fish meat 2–3 |
+| **T0 rooftop fauna** (24, user design 2026-09-06; `docs/monsters/t0_roof_fauna.json`) | ground or **fly**, all `pounds: false` | **T0 Rooftops, night only**, four per district — Industrial: rooftop rat, ironback roach, scrap mantis, cable leech · Construction: rebar spider, dust beetle, crane rat, brickback · Business: office crow, glasswing bat, window gecko, pigeon swarm · Residential: poison frog, chimney bat, gutter snake, roof cat · Commercial: grease rat, sign bat, dumpster raccoon, grease mantis · Civil: sewer rat, bell bat, statue pigeon, roof lizard. Spawn on roof tops 20–50 blocks from any player outdoors on a roof and not in a sealed room of their own, 4 per player from the tower's district, cleared at dawn | T0 | as designed (scrap, cloth, plastic, stone, wood, organic matter) |
+| **T1 district fauna** (24, user design 2026-09-06; `docs/monsters/t1_dry_fauna.json`) | ground / fly, `pounds: false` | **dry floors**, four per district — Industrial: boiler hyena, boiler scorpion, furnace centipede, oil slug · Construction: hammerhead mole, rebar tick, scaffold goat, concrete tortoise · Business: window cicada, suit owl, glass squirrel, elevator wasp · Residential: attic weasel, mold rabbit, chimney possum, ceiling mouse · Commercial: butcher dog, freezer cricket, shopping crab, meat fly · Civil: police horse, archive silverfish, firehouse salamander, chapel snail. Each zombie roll on a dry floor becomes one of the tower district's four with `district_fauna_share.dry` (30 %) | T1 | as designed (cloth, scrap, plastic, stone, organic matter, paper) |
+| **T2 district fauna** (24, user design 2026-09-06; `docs/monsters/t2_shallows_fauna.json`) | swim (water-only), some crawl the bottom, two **stationary shooters**, `pounds: false` | **flooded Shallows floors**, four per district — Industrial: rust-crested eel, sludge crab, boiler lamprey, grease viper · Construction: rebar snapping turtle, concrete ray, scaffolding barnacle, silt-dredger catfish · Business: silt stalker, document squid, LED anglerfish, vault moray · Residential: barnacle leech, submerged hound, gutter pike, aquarium betta · Commercial: neon jellyfish, display-case mantis shrimp, cart skeleton crabs, billboard stingray · Civil: drain pipe octopus, sewer gator, culvert hagfish, valve urchin. 30 % of each flooded-floor fish roll becomes one of the tower district's four | T2 | mapped onto scrap / plastic / stone / cloth / paper / organic matter |
+| **T2 open-water hunters** (4) | swim | reef shark, depth barracuda, swarm anchovy, chasm lionfish (ranged) along the open water of the Shallows at `open_water_fauna_spacing` | T2 | as above |
+| **T1 surface dwellers** (4) | drain eel + minnow school swim (water-only), water strider + mudskipper ride the surface | scattered along the open waterline between towers at `surface_fauna_spacing` | T1 (waterline) | organic matter, scrap |
+| Prowler | ground, `pounds: false` | the T0 fallback roster when a roof has no district (none in the city today) | T0 | cloth 1–2 (70 %) |
 
 Per-band stats scale with depth (walker hp 30 → 40 → 55 → 70 → 90 across T1–T5, damage 8 → 20);
 a T5 walker is a different fight from a T1 walker but the same monster.
@@ -33,7 +42,7 @@ a T5 walker is a different fight from a T1 walker but the same monster.
 | Floor state | What rolls | Chance | Expected per wing-floor |
 |---|---|---|---|
 | Dry (any stage) | 0 / 1 / 2 / 3 zombies at weights 0.15 / 0.25 / 0.35 / 0.25 | ≥1 zombie **85 %** | 1.7 zombies: **1.19 walkers + 0.51 crawlers** |
-| Flooded, T2–T3 | nothing (walkers are dry-only, the Drowned start in T4) | **0 %** | 0 — counts as a quiet floor |
+| Flooded, T2–T3 | one predator fish (tropical / catfish / barracuda by band weights) | **50 %** | 0.5 fish (was nothing before 2026-09-06) |
 | Flooded, T4–T5 | one Drowned | **80 %** | 0.8 Drowned |
 
 Pity timer (`wing_pity_boost` 0.5, `wing_pity_floors` 2): a quiet floor raises the next floor's
@@ -57,22 +66,24 @@ but is where the swimmers live. Each cell lists what seeds there **today** with 
 empty; fill the name in and add the entry in §4.
 
 Legend: **W** walker · **C** crawler · **D** the Drowned · **F** floater · **S** shark · **Fi** fish
-school · ☐ = unique slot, unnamed.
+school · **Tr / Cat / Bar** tropical fish / catfish / barracuda (2026-09-06) · ☐ = unique slot, unnamed.
 
 | Stage | Industrial | Construction | Business | Residential | Commercial | Civil | Open water |
 |---|---|---|---|---|---|---|---|
-| **T1 Dry** | W 70 % · C 30 % (1.7/floor) · ☐ ______ | W 70 % · C 30 % · ☐ ______ | W 70 % · C 30 % · ☐ ______ | W 70 % · C 30 % · ☐ ______ | W 70 % · C 30 % · ☐ ______ | W 70 % · C 30 % · ☐ ______ | — (no open water above the waterline) · ☐ ______ |
-| **T2 Shallows** | dry: W/C · flooded: **none** · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | F ~1/85 · Fi ~1/65 · ☐ ______ |
-| **T3 Cold** | dry: W/C · flooded: **none** · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | dry: W/C · flooded: none · ☐ ______ | S ~1/120 · Fi ~1/65 · ☐ ______ |
+| **T0 Rooftops** (night only) | rooftop rat · ironback roach · scrap mantis · cable leech | rebar spider · dust beetle · crane rat · brickback | office crow · glasswing bat · window gecko · pigeon swarm | poison frog · chimney bat · gutter snake · roof cat | grease rat · sign bat · dumpster raccoon · grease mantis | sewer rat · bell bat · statue pigeon · roof lizard | — · ☐ ______ |
+| **T1 Dry** | W/C 70 % · **30 %** boiler hyena · boiler scorpion · furnace centipede · oil slug | W/C · hammerhead mole · rebar tick · scaffold goat · concrete tortoise | W/C · window cicada · suit owl · glass squirrel · elevator wasp | W/C · attic weasel · mold rabbit · chimney possum · ceiling mouse | W/C · butcher dog · freezer cricket · shopping crab · meat fly | W/C · police horse · archive silverfish · firehouse salamander · chapel snail | waterline: drain eel · water strider · minnow school · mudskipper |
+| **T2 Shallows** | flooded fish 50 %, **30 %** of it: rust-crested eel · sludge crab · boiler lamprey · grease viper | rebar snapping turtle · concrete ray · scaffolding barnacle · silt-dredger catfish | silt stalker · document squid · LED anglerfish · vault moray | barnacle leech · submerged hound · gutter pike · aquarium betta | neon jellyfish · display-case mantis shrimp · cart skeleton crabs · billboard stingray | drain pipe octopus · sewer gator · culvert hagfish · valve urchin | F · Fi · Tr, Cat · reef shark · depth barracuda · swarm anchovy · chasm lionfish |
+| **T3 Cold** | dry: W/C · flooded: fish 50 % (Tr 20 / Cat 40 / Bar 40) · ☐ ______ | dry: W/C · flooded: fish 50 % · ☐ ______ | dry: W/C · flooded: fish 50 % · ☐ ______ | dry: W/C · flooded: fish 50 % · ☐ ______ | dry: W/C · flooded: fish 50 % · ☐ ______ | dry: W/C · flooded: fish 50 % · ☐ ______ | S ~1/120 · Fi ~1/65 · Cat, Bar ~1/100 · ☐ ______ |
 | **T4 Dark** | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | S ~1/120 · Fi ~1/65 · ☐ ______ |
 | **T5 Crush** | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | dry: W/C · flooded: D 80 % · ☐ ______ | S ~1/120 · Fi ~1/65 · ☐ ______ |
 
-Slot count: **30 interior + 5 open-water = 35 unique slots, 0 filled.** Six shared monsters exist.
+Slot count: **36 interior + 6 open-water = 42 unique slots, 20 filled** (the whole T0, T1 and T2 rows incl.
+their open-water cells, four creatures per slot, built 2026-09-06). Ten shared monsters exist. The editable
+version of this grid is the Bestiary Grid artifact (2026-09-06); its saved slots are what gets built.
 
-The two **quiet rows** are the flooded floors of T2 and T3 (every district): nothing can seed there
-today, the pity timer just skips them. They are the first slots worth filling — a flooded-Shallows
-swimmer and a flooded-Cold swimmer would end the "first dives feel safe" question left open on
-2026-09-05.
+The flooded floors of T2 and T3 were the **quiet rows** until 2026-09-06; the three predator fish now
+fill them (50 % per flooded wing-floor), which closes the "first dives feel safe" question left open on
+2026-09-05. The unique slots there are still open for district-specific swimmers.
 
 ### 3a. Identity hints per district (mirrors the modifier families)
 

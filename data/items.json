@@ -3490,6 +3490,30 @@
       "band": 5,
       "district": "residential",
       "found_only": true
+    },
+    {
+      "authored_icon": true,
+      "category": "material",
+      "id": "organic_material",
+      "name": "Organic Matter",
+      "desc": "Chitin, gristle and feathers off the rooftop fauna. Bait and fertiliser one day; scrap for now.",
+      "icon": [
+        0.0,
+        0.0
+      ],
+      "weight": 0.2
+    },
+    {
+      "authored_icon": true,
+      "category": "material",
+      "id": "paper",
+      "name": "Paper",
+      "desc": "Loose sheets and folders from the archives. Tinder, notes, and one day maps.",
+      "icon": [
+        0.0,
+        0.0
+      ],
+      "weight": 0.05
     }
   ],
   "cell_px": 8

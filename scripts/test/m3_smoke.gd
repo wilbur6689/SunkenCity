@@ -51,7 +51,7 @@ func _ready() -> void:
 	check(gen.towers >= 20, "city holds %d double-wide towers" % gen.towers)
 	check(World.spawn_position.y < CityGen.WATERLINE * B, "roof drop-off spawn is above the waterline")
 	check(await until(func(): return player.state == Player.State.GROUNDED, 120), "player lands on the drop-off roof")
-	check(World.band_at(World.cell_at(player.global_position)) == "dry", "spawn floor is in The Dry")
+	check(World.band_at(World.cell_at(player.global_position)) == "roof", "spawn roof is T0 Rooftops (2026-09-06)")
 	var ground_ok := true
 	for gx in [20, 800, CityGen.WORLD_W / 2, 6000, CityGen.WORLD_W - 20]:
 		if not World.has_block_cell(Vector2i(gx, CityGen.ground_row())):
@@ -84,7 +84,7 @@ func _ready() -> void:
 	check(dry_rooms >= gen.sealed.size() / 3, "%d/%d sealed floors kept their air (wear breached the rest)" % [dry_rooms, gen.sealed.size()])
 
 	print("== D. depth bands (GD-16)")
-	check(World.band_at(Vector2i(12, CityGen.WATERLINE - 20)) == "dry", "above waterline: dry")
+	check(World.band_at(Vector2i(12, CityGen.WATERLINE - 20)) == "roof", "open sky above the waterline: T0 roof band")
 	check(World.band_at(Vector2i(12, CityGen.WATERLINE + 20)) == "shallows", "shallows band")
 	check(World.band_at(Vector2i(12, CityGen.WATERLINE + 120)) == "cold", "cold band")
 	check(World.band_at(Vector2i(12, CityGen.WATERLINE + 300)) == "dark", "dark band")

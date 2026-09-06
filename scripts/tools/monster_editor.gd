@@ -15,7 +15,7 @@ extends Control
 
 const SPRITE_DIR := "res://assets/sprites/enemies/"
 const MODES := ["ground", "surface", "swim", "fish"]
-const BANDS := ["dry", "shallows", "cold", "dark", "crush"]
+const BANDS := ["roof", "dry", "shallows", "cold", "dark", "crush"] # roof = T0 rooftops, night-only (2026-09-06)
 const FLAGS := ["bleeds", "water_only", "open_water", "passive"]
 const STATS := ["hp", "damage", "speed", "aggro"]
 const PX := 4 # preview zoom

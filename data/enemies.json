@@ -24,6 +24,24 @@
         "damage": 13.0,
         "hp": 55.0,
         "speed": 4.8
+      },
+      "tropical_fish": {
+        "hp": 14.0,
+        "damage": 5.0,
+        "speed": 8.5,
+        "aggro": 12.0
+      },
+      "catfish": {
+        "hp": 45.0,
+        "damage": 12.0,
+        "speed": 6.5,
+        "aggro": 18.0
+      },
+      "barracuda": {
+        "hp": 75.0,
+        "damage": 20.0,
+        "speed": 15.0,
+        "aggro": 28.0
       }
     },
     "crush": {
@@ -102,6 +120,174 @@
         "damage": 8.0,
         "hp": 30.0,
         "speed": 4.4
+      },
+      "boiler_hyena": {
+        "hp": 7.0,
+        "damage": 3.0,
+        "speed": 2.5,
+        "aggro": 24.0
+      },
+      "boiler_scorpion": {
+        "hp": 6.0,
+        "damage": 4.0,
+        "speed": 2.0,
+        "aggro": 24.0
+      },
+      "furnace_centipede": {
+        "hp": 5.0,
+        "damage": 3.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "oil_slug": {
+        "hp": 5.0,
+        "damage": 2.0,
+        "speed": 1.0,
+        "aggro": 22.0
+      },
+      "hammerhead_mole": {
+        "hp": 7.0,
+        "damage": 3.0,
+        "speed": 2.0,
+        "aggro": 24.0
+      },
+      "rebar_tick": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 2.0,
+        "aggro": 22.0
+      },
+      "scaffold_goat": {
+        "hp": 6.0,
+        "damage": 3.0,
+        "speed": 2.5,
+        "aggro": 24.0
+      },
+      "concrete_tortoise": {
+        "hp": 9.0,
+        "damage": 3.0,
+        "speed": 1.0,
+        "aggro": 24.0
+      },
+      "window_cicada": {
+        "hp": 4.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "suit_owl": {
+        "hp": 5.0,
+        "damage": 3.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "glass_squirrel": {
+        "hp": 4.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "elevator_wasp": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 3.5,
+        "aggro": 22.0
+      },
+      "attic_weasel": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "mold_rabbit": {
+        "hp": 4.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "chimney_possum": {
+        "hp": 6.0,
+        "damage": 3.0,
+        "speed": 1.5,
+        "aggro": 24.0
+      },
+      "ceiling_mouse": {
+        "hp": 2.0,
+        "damage": 1.0,
+        "speed": 3.5,
+        "aggro": 22.0
+      },
+      "butcher_dog": {
+        "hp": 8.0,
+        "damage": 4.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "freezer_cricket": {
+        "hp": 4.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "shopping_crab": {
+        "hp": 6.0,
+        "damage": 3.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "meat_fly": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 4.0,
+        "aggro": 22.0
+      },
+      "police_horse": {
+        "hp": 10.0,
+        "damage": 4.0,
+        "speed": 3.0,
+        "aggro": 28.0
+      },
+      "archive_silverfish": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "firehouse_salamander": {
+        "hp": 5.0,
+        "damage": 3.0,
+        "speed": 1.5,
+        "aggro": 24.0
+      },
+      "chapel_snail": {
+        "hp": 7.0,
+        "damage": 2.0,
+        "speed": 0.75,
+        "aggro": 22.0
+      },
+      "drain_eel": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "water_strider": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.5,
+        "aggro": 22.0
+      },
+      "minnow_school": {
+        "hp": 5.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 24.0
+      },
+      "mudskipper": {
+        "hp": 5.0,
+        "damage": 3.0,
+        "speed": 2.0,
+        "aggro": 22.0
       }
     },
     "shallows": {
@@ -128,12 +314,374 @@
         "damage": 10.0,
         "hp": 40.0,
         "speed": 4.4
+      },
+      "tropical_fish": {
+        "hp": 10.0,
+        "damage": 4.0,
+        "speed": 8.0,
+        "aggro": 12.0
+      },
+      "catfish": {
+        "hp": 35.0,
+        "damage": 9.0,
+        "speed": 6.0,
+        "aggro": 16.0
+      },
+      "barracuda": {
+        "hp": 60.0,
+        "damage": 16.0,
+        "speed": 14.0,
+        "aggro": 26.0
+      },
+      "drain_eel": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "water_strider": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.5,
+        "aggro": 22.0
+      },
+      "minnow_school": {
+        "hp": 5.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 24.0
+      },
+      "mudskipper": {
+        "hp": 5.0,
+        "damage": 3.0,
+        "speed": 2.0,
+        "aggro": 22.0
+      },
+      "rust_crested_eel": {
+        "hp": 12.0,
+        "damage": 6.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "sludge_crab": {
+        "hp": 16.0,
+        "damage": 8.0,
+        "speed": 2.0,
+        "aggro": 24.0
+      },
+      "boiler_lamprey": {
+        "hp": 10.0,
+        "damage": 5.0,
+        "speed": 4.0,
+        "aggro": 24.0
+      },
+      "grease_viper": {
+        "hp": 11.0,
+        "damage": 7.0,
+        "speed": 4.0,
+        "aggro": 24.0
+      },
+      "rebar_snapping_turtle": {
+        "hp": 20.0,
+        "damage": 10.0,
+        "speed": 1.0,
+        "aggro": 24.0
+      },
+      "concrete_ray": {
+        "hp": 14.0,
+        "damage": 6.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "scaffolding_barnacle": {
+        "hp": 13.0,
+        "damage": 6.0,
+        "speed": 0.0,
+        "aggro": 24.0
+      },
+      "silt_dredger_catfish": {
+        "hp": 15.0,
+        "damage": 7.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "silt_stalker": {
+        "hp": 13.0,
+        "damage": 8.0,
+        "speed": 4.0,
+        "aggro": 24.0
+      },
+      "document_squid": {
+        "hp": 11.0,
+        "damage": 5.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "led_anglerfish": {
+        "hp": 12.0,
+        "damage": 7.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "vault_moray": {
+        "hp": 15.0,
+        "damage": 9.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "barnacle_leech": {
+        "hp": 12.0,
+        "damage": 4.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "submerged_hound": {
+        "hp": 14.0,
+        "damage": 8.0,
+        "speed": 4.0,
+        "aggro": 24.0
+      },
+      "gutter_pike": {
+        "hp": 11.0,
+        "damage": 7.0,
+        "speed": 5.0,
+        "aggro": 24.0
+      },
+      "aquarium_betta": {
+        "hp": 10.0,
+        "damage": 6.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "neon_jellyfish": {
+        "hp": 10.0,
+        "damage": 6.0,
+        "speed": 2.0,
+        "aggro": 24.0
+      },
+      "display_case_mantis_shrimp": {
+        "hp": 13.0,
+        "damage": 11.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "cart_skeleton_crabs": {
+        "hp": 15.0,
+        "damage": 5.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "billboard_stingray": {
+        "hp": 12.0,
+        "damage": 7.0,
+        "speed": 4.0,
+        "aggro": 24.0
+      },
+      "drain_pipe_octopus": {
+        "hp": 14.0,
+        "damage": 7.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "sewer_gator": {
+        "hp": 18.0,
+        "damage": 9.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "culvert_hagfish": {
+        "hp": 12.0,
+        "damage": 5.0,
+        "speed": 2.0,
+        "aggro": 24.0
+      },
+      "valve_urchin": {
+        "hp": 11.0,
+        "damage": 6.0,
+        "speed": 0.0,
+        "aggro": 24.0
+      },
+      "reef_shark": {
+        "hp": 15.0,
+        "damage": 8.0,
+        "speed": 4.0,
+        "aggro": 24.0
+      },
+      "depth_barracuda": {
+        "hp": 12.0,
+        "damage": 9.0,
+        "speed": 5.0,
+        "aggro": 24.0
+      },
+      "swarm_anchovy": {
+        "hp": 10.0,
+        "damage": 4.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "chasm_lionfish": {
+        "hp": 11.0,
+        "damage": 7.0,
+        "speed": 2.0,
+        "aggro": 24.0
+      }
+    },
+    "roof": {
+      "prowler": {
+        "hp": 28.0,
+        "damage": 9.0,
+        "speed": 6.4,
+        "aggro": 30.0
+      },
+      "rooftop_rat": {
+        "hp": 4.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "ironback_roach": {
+        "hp": 5.0,
+        "damage": 2.0,
+        "speed": 2.0,
+        "aggro": 22.0
+      },
+      "scrap_mantis": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 1.5,
+        "aggro": 24.0
+      },
+      "cable_leech": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 1.0,
+        "aggro": 22.0
+      },
+      "rebar_spider": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 2.5,
+        "aggro": 24.0
+      },
+      "dust_beetle": {
+        "hp": 6.0,
+        "damage": 2.0,
+        "speed": 2.0,
+        "aggro": 22.0
+      },
+      "crane_rat": {
+        "hp": 4.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "brickback": {
+        "hp": 7.0,
+        "damage": 3.0,
+        "speed": 1.0,
+        "aggro": 24.0
+      },
+      "office_crow": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "glasswing_bat": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.5,
+        "aggro": 22.0
+      },
+      "window_gecko": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "pigeon_swarm": {
+        "hp": 5.0,
+        "damage": 3.0,
+        "speed": 3.0,
+        "aggro": 24.0
+      },
+      "poison_frog": {
+        "hp": 3.0,
+        "damage": 3.0,
+        "speed": 2.0,
+        "aggro": 22.0
+      },
+      "chimney_bat": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "gutter_snake": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 2.0,
+        "aggro": 22.0
+      },
+      "roof_cat": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "grease_rat": {
+        "hp": 5.0,
+        "damage": 2.0,
+        "speed": 1.5,
+        "aggro": 22.0
+      },
+      "sign_bat": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "dumpster_raccoon": {
+        "hp": 6.0,
+        "damage": 3.0,
+        "speed": 1.5,
+        "aggro": 24.0
+      },
+      "grease_mantis": {
+        "hp": 4.0,
+        "damage": 3.0,
+        "speed": 1.5,
+        "aggro": 24.0
+      },
+      "sewer_rat": {
+        "hp": 5.0,
+        "damage": 3.0,
+        "speed": 2.0,
+        "aggro": 22.0
+      },
+      "bell_bat": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
+      },
+      "statue_pigeon": {
+        "hp": 4.0,
+        "damage": 2.0,
+        "speed": 2.5,
+        "aggro": 22.0
+      },
+      "roof_lizard": {
+        "hp": 3.0,
+        "damage": 2.0,
+        "speed": 3.0,
+        "aggro": 22.0
       }
     }
   },
   "comment": "M4 enemy roster (GD-01..29). types = behaviour identity; bands = AUTHORED per-band stat tables (GD-23, no formulas): hp / damage per hit / speed in blocks-per-sec / aggro radius in blocks. An enemy only seeds in bands it has a row for. drops are the light kind (GD-24): cloth and scrap bits from zombies, meat from fish.",
   "seeding": {
-    "comment": "Density doubled 2026-09-05 (user request) over the GD-27 baseline: a dry wing-floor now rolls 0..3 zombies (weights index = count, ~1.7 expected, was ~0.85), flooded Dark/Crush wings roll a Drowned at 0.8 (was 0.4), and open-water spacings are halved. Spacings are cell ranges walked along OPEN WATER columns only (gaps + ocean margins), not the whole world width. Pity timer per wing: every quiet floor adds wing_pity_boost to the next floor's chance of at least one spawn, and after wing_pity_floors quiet floors the next is guaranteed (when the floor can hold anything).",
+    "comment": "Density doubled 2026-09-05 (user request) over the GD-27 baseline: a dry wing-floor now rolls 0..3 zombies (weights index = count, ~1.7 expected, was ~0.85), flooded Dark/Crush wings roll a Drowned at 0.8 (was 0.4), and open-water spacings are halved. Spacings are cell ranges walked along OPEN WATER columns only (gaps + ocean margins), not the whole world width. Pity timer per wing: every quiet floor adds wing_pity_boost to the next floor's chance of at least one spawn, and after wing_pity_floors quiet floors the next is guaranteed (when the floor can hold anything). T0 rooftops (2026-09-06): after dark every player standing on an open roof, outside a sealed room of their own, draws roof_night_max spawns from roof_night_types onto roof tops roof_night_min..max_blocks away (same cadence as the night floaters); they clear at dawn. Predator fish (2026-09-06): flooded Shallows/Cold wing-floors roll wing_fish_chance for one fish drawn from that band's wing_fish_weights (so those floors are no longer quiet), and each fish type is also scattered along open water in its bands at pred_fish_spacing (tropical: shallows; catfish: shallows+cold; barracuda: cold).",
     "fish_spacing": [
       40.0,
       90.0
@@ -155,7 +703,172 @@
       0.25
     ],
     "wing_pity_floors": 2,
-    "wing_pity_boost": 0.5
+    "wing_pity_boost": 0.5,
+    "roof_night_types": [
+      "prowler"
+    ],
+    "roof_night_max": 4,
+    "roof_night_min_blocks": 20,
+    "roof_night_max_blocks": 50,
+    "wing_fish_chance": 0.5,
+    "wing_fish_weights": {
+      "shallows": {
+        "tropical_fish": 0.6,
+        "catfish": 0.3,
+        "barracuda": 0.1
+      },
+      "cold": {
+        "tropical_fish": 0.2,
+        "catfish": 0.4,
+        "barracuda": 0.4
+      }
+    },
+    "pred_fish_spacing": [
+      60.0,
+      140.0
+    ],
+    "roof_night_types_by_district": {
+      "industrial": [
+        "rooftop_rat",
+        "ironback_roach",
+        "scrap_mantis",
+        "cable_leech"
+      ],
+      "construction": [
+        "rebar_spider",
+        "dust_beetle",
+        "crane_rat",
+        "brickback"
+      ],
+      "business": [
+        "office_crow",
+        "glasswing_bat",
+        "window_gecko",
+        "pigeon_swarm"
+      ],
+      "residential": [
+        "poison_frog",
+        "chimney_bat",
+        "gutter_snake",
+        "roof_cat"
+      ],
+      "commercial": [
+        "grease_rat",
+        "sign_bat",
+        "dumpster_raccoon",
+        "grease_mantis"
+      ],
+      "civil": [
+        "sewer_rat",
+        "bell_bat",
+        "statue_pigeon",
+        "roof_lizard"
+      ]
+    },
+    "district_fauna": {
+      "dry": {
+        "industrial": [
+          "boiler_hyena",
+          "boiler_scorpion",
+          "furnace_centipede",
+          "oil_slug"
+        ],
+        "construction": [
+          "hammerhead_mole",
+          "rebar_tick",
+          "scaffold_goat",
+          "concrete_tortoise"
+        ],
+        "business": [
+          "window_cicada",
+          "suit_owl",
+          "glass_squirrel",
+          "elevator_wasp"
+        ],
+        "residential": [
+          "attic_weasel",
+          "mold_rabbit",
+          "chimney_possum",
+          "ceiling_mouse"
+        ],
+        "commercial": [
+          "butcher_dog",
+          "freezer_cricket",
+          "shopping_crab",
+          "meat_fly"
+        ],
+        "civil": [
+          "police_horse",
+          "archive_silverfish",
+          "firehouse_salamander",
+          "chapel_snail"
+        ]
+      },
+      "shallows": {
+        "industrial": [
+          "rust_crested_eel",
+          "sludge_crab",
+          "boiler_lamprey",
+          "grease_viper"
+        ],
+        "construction": [
+          "rebar_snapping_turtle",
+          "concrete_ray",
+          "scaffolding_barnacle",
+          "silt_dredger_catfish"
+        ],
+        "business": [
+          "silt_stalker",
+          "document_squid",
+          "led_anglerfish",
+          "vault_moray"
+        ],
+        "residential": [
+          "barnacle_leech",
+          "submerged_hound",
+          "gutter_pike",
+          "aquarium_betta"
+        ],
+        "commercial": [
+          "neon_jellyfish",
+          "display_case_mantis_shrimp",
+          "cart_skeleton_crabs",
+          "billboard_stingray"
+        ],
+        "civil": [
+          "drain_pipe_octopus",
+          "sewer_gator",
+          "culvert_hagfish",
+          "valve_urchin"
+        ]
+      }
+    },
+    "district_fauna_share": {
+      "dry": 0.3,
+      "shallows": 0.3
+    },
+    "surface_fauna": [
+      "drain_eel",
+      "water_strider",
+      "minnow_school",
+      "mudskipper"
+    ],
+    "surface_fauna_spacing": [
+      50.0,
+      120.0
+    ],
+    "open_water_fauna": {
+      "shallows": [
+        "reef_shark",
+        "depth_barracuda",
+        "swarm_anchovy",
+        "chasm_lionfish"
+      ]
+    },
+    "open_water_fauna_spacing": [
+      70.0,
+      150.0
+    ]
   },
   "types": [
     {
@@ -279,6 +992,2510 @@
         20.0,
         10.0
       ]
+    },
+    {
+      "id": "prowler",
+      "name": "Prowler",
+      "mode": "ground",
+      "size": [
+        12.0,
+        22.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "frames": 8,
+      "sprite_variants": 1,
+      "desc": "T0 rooftop night stalker (placeholder until the bestiary grid names the real ones): fast, thin, hunts the open roofs after dark and vanishes at dawn; cannot break a player's walls.",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.7
+        }
+      ]
+    },
+    {
+      "id": "tropical_fish",
+      "name": "Tropical Fish",
+      "mode": "swim",
+      "size": [
+        10.0,
+        8.0
+      ],
+      "water_only": true,
+      "bleeds": false,
+      "authored_sprites": true,
+      "desc": "Bright reef fish gone feral in the flooded floors: nippy, fast, dies to a knife. The easy one.",
+      "drops": [
+        {
+          "item": "fish_meat",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.6
+        }
+      ]
+    },
+    {
+      "id": "catfish",
+      "name": "Catfish",
+      "mode": "swim",
+      "size": [
+        22.0,
+        10.0
+      ],
+      "water_only": true,
+      "bleeds": false,
+      "authored_sprites": true,
+      "desc": "A fat bottom-feeder that has learned to bite: slow, tough, hunts by the whiskers along flooded floors.",
+      "drops": [
+        {
+          "item": "fish_meat",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 1.0
+        }
+      ]
+    },
+    {
+      "id": "barracuda",
+      "name": "Barracuda",
+      "mode": "swim",
+      "size": [
+        34.0,
+        8.0
+      ],
+      "water_only": true,
+      "bleeds": true,
+      "authored_sprites": true,
+      "desc": "A silver torpedo with a mouth of needles: the fastest thing in the water and the hardest of the three to kill. Its bite bleeds.",
+      "drops": [
+        {
+          "item": "fish_meat",
+          "min": 2.0,
+          "max": 3.0,
+          "chance": 1.0
+        }
+      ]
+    },
+    {
+      "id": "rooftop_rat",
+      "name": "Rooftop Rat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large brown rat with patchy oily fur, oversized teeth, and a long scarred tail - bites the player. Lives: Rooftops around vents, machinery, and maintenance areas. Quickly changes direction when approached",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.35
+        },
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "ironback_roach",
+      "name": "Ironback Roach",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Oversized black cockroach with a thick dark shell and unusually heavy abdomen - claws the player. Lives: Rooftops beneath machinery and inside maintenance structures. Hard shell reduces incoming damage slightly",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.4
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ],
+      "armor": 0.25
+    },
+    {
+      "id": "scrap_mantis",
+      "name": "Scrap Mantis",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        14.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large green-brown praying mantis with oversized forelegs and bits of metal debris caught in its body - slashes the player with its forelegs. Lives: Rooftops around piles of scrap and industrial equipment. Briefly freezes before making a fast attack",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.3
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "cable_leech",
+      "name": "Cable Leech",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        4.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Pale elongated leech with a circular mouth and tiny electrical burns along its body - latches onto the player and drains them. Lives: Rooftop electrical cabinets, conduits, and cable runs. Can remain motionless until the player gets close",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.35
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "rebar_spider",
+      "name": "Rebar Spider",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        14.0,
+        8.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large gray spider with long thin legs and a pale abdomen covered in dark markings - bites the player. Lives: Scaffolding, exposed rebar, and unfinished floors. Moves quickly across vertical surfaces",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "dust_beetle",
+      "name": "Dust Beetle",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large beetle with a dusty gray shell and thick armored legs - charges into the player. Lives: Concrete piles, rubble, and unfinished rooftop floors. Charges in a straight line when attacking",
+      "drops": [
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.35
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ]
+    },
+    {
+      "id": "crane_rat",
+      "name": "Crane Rat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Lean gray rat with oversized paws, a long balancing tail, and patches of missing fur - bites the player. Lives: Cranes, scaffolding, cables, and elevated construction platforms. Can cross narrow ledges without slowing down",
+      "drops": [
+        {
+          "item": "wood",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "brickback",
+      "name": "Brickback",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        14.0,
+        9.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Stocky armadillo-like creature with a rough reddish shell resembling chipped brick - rams the player. Lives: Rubble piles and sheltered areas of unfinished buildings. Tucks into its shell when heavily damaged",
+      "drops": [
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.35
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "office_crow",
+      "name": "Office Crow",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "business",
+      "mode": "fly",
+      "size": [
+        10.0,
+        8.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large black crow with an unusually long beak and patches of gray feathers - pecks the player. Lives: Skyscraper rooftops, signs, and window ledges. Can quickly fly over small obstacles",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "glasswing_bat",
+      "name": "Glasswing Bat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "business",
+      "mode": "fly",
+      "size": [
+        12.0,
+        7.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Pale bat with thin translucent wings and oversized ears - bites the player. Lives: Skyscraper roofs and dark spaces around office towers. Difficult to see against the night sky",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "stealth": 0.4
+    },
+    {
+      "id": "window_gecko",
+      "name": "Window Gecko",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "business",
+      "mode": "ground",
+      "size": [
+        11.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Pale blue-gray gecko with oversized adhesive feet and large reflective eyes - bites the player. Lives: Glass windows, ledges, and exterior walls. Can climb vertical glass surfaces",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "pigeon_swarm",
+      "name": "Pigeon Swarm",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "business",
+      "mode": "fly",
+      "size": [
+        18.0,
+        12.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dense flock of oversized gray pigeons with swollen eyes and ragged feathers - swarm attacks the player with pecks and wing strikes. Lives: Rooftops, signs, balconies, and building ledges. Temporarily scatters when damaged",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "poison_frog",
+      "name": "Poison Frog",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "residential",
+      "mode": "ground",
+      "size": [
+        8.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Green tree frog with dark green legs - jumps onto the player. Lives: Roofs (day and night).",
+      "drops": []
+    },
+    {
+      "id": "chimney_bat",
+      "name": "Chimney Bat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "residential",
+      "mode": "fly",
+      "size": [
+        12.0,
+        7.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large brown bat with oversized claws and torn ears - bites the player. Lives: Chimneys, attic vents, and rooftop structures. Can hide inside chimneys until disturbed",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "gutter_snake",
+      "name": "Gutter Snake",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "residential",
+      "mode": "ground",
+      "size": [
+        14.0,
+        4.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Thin dark snake with an unusually long body and pale eyes - bites the player. Lives: Gutters, drains, roof gardens, and sheltered roof spaces. Can remain hidden inside narrow spaces",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "roof_cat",
+      "name": "Roof Cat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "residential",
+      "mode": "ground",
+      "size": [
+        12.0,
+        9.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Lean feral cat with oversized claws, patchy fur, and glowing yellow eyes - slashes the player. Lives: Residential rooftops, patios, and abandoned homes. Can leap across narrow gaps",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "grease_rat",
+      "name": "Grease Rat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large fat rat with greasy black fur and a swollen belly - bites the player. Lives: Restaurant rooftops, exhaust systems, and dumpsters. Slow but difficult to stagger",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "sign_bat",
+      "name": "Sign Bat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "commercial",
+      "mode": "fly",
+      "size": [
+        12.0,
+        7.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dark brown bat with a broad wingspan and bright reflective eyes - dives at the player. Lives: Inside large rooftop signs and illuminated storefront signs. Begins combat from above when disturbed",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ]
+    },
+    {
+      "id": "dumpster_raccoon",
+      "name": "Dumpster Raccoon",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        14.0,
+        10.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Oversized raccoon with thick forearms, dirty gray fur, and a damaged black mask marking - swipes the player. Lives: Dumpsters, restaurant roofs, and commercial waste areas. Becomes more aggressive when damaged",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.35
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "enrage": 0.5
+    },
+    {
+      "id": "grease_mantis",
+      "name": "Grease Mantis",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        14.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large brown praying mantis with greasy black patches and elongated forelegs - slashes the player. Lives: Restaurant exhaust vents and rooftop kitchen equipment. Remains motionless near exhaust vents",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "sewer_rat",
+      "name": "Sewer Rat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "civil",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large scarred gray rat with missing patches of fur and a blunt tail - bites the player. Lives: Municipal drains, maintenance access points, and civic rooftops. Can emerge suddenly from drains",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "bell_bat",
+      "name": "Bell Bat",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "civil",
+      "mode": "fly",
+      "size": [
+        12.0,
+        7.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dark gray bat with oversized ears and a pale face - bites the player. Lives: Civic towers, bell towers, and dark rooftop structures. Uses sound to locate nearby movement",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "statue_pigeon",
+      "name": "Statue Pigeon",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "civil",
+      "mode": "fly",
+      "size": [
+        9.0,
+        8.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large gray pigeon with patches of hard stone-like skin across its wings and breast - pecks the player. Lives: Monuments, statues, courthouses, and public buildings. Hard patches make it slightly resistant to damage",
+      "drops": [
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "armor": 0.25
+    },
+    {
+      "id": "roof_lizard",
+      "name": "Roof Lizard",
+      "grid_fauna": true,
+      "stage": "t0",
+      "district": "civil",
+      "mode": "ground",
+      "size": [
+        11.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dark green lizard with unusually long legs, a narrow head, and bright yellow eyes - bites the player. Lives: Public building roofs, vents, and sun-warmed surfaces. Very fast over short distances",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "boiler_hyena",
+      "name": "Boiler Hyena",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        18.0,
+        11.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Lean gray hyena with patchy fur, oversized jaws, and dark stains around its mouth - bites the player. Lives: Dry industrial floors around boiler rooms, machinery, and maintenance corridors. Lets out a loud cackle that can alert nearby monsters",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "boiler_scorpion",
+      "name": "Boiler Scorpion",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        16.0,
+        8.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large dark scorpion with heat-scarred armor, thick pincers, and a swollen tail - stings the player with its tail. Lives: Boiler rooms, warm machinery spaces, and dry industrial floors. Poisoned sting briefly slows the player",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.3
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "furnace_centipede",
+      "name": "Furnace Centipede",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        18.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Long reddish-brown centipede with dozens of thin legs and a dark armored head - bites the player. Lives: Warm ventilation ducts, furnaces, and machinery spaces. Can squeeze through narrow gaps",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "oil_slug",
+      "name": "Oil Slug",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large black slug with a glossy oily body and pale feelers - covers the player in corrosive slime. Lives: Oil-stained floors, drainage channels, and dark machinery rooms. Leaves a slippery trail behind itself",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.35
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ]
+    },
+    {
+      "id": "hammerhead_mole",
+      "name": "Hammerhead Mole",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        14.0,
+        8.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large blind mole with an oversized flattened skull, thick claws, and gray dusty fur - charges into the player. Lives: Unfinished floors, rubble piles, and areas beneath construction debris. Can emerge suddenly from rubble",
+      "drops": [
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.35
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "rebar_tick",
+      "name": "Rebar Tick",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Oversized dark tick with thin rigid legs and a hard segmented body - latches onto the player. Lives: Scaffolding, exposed rebar, and dark construction cavities. Latches onto the player briefly, slowing movement",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "scaffold_goat",
+      "name": "Scaffold Goat",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        16.0,
+        14.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Thin feral goat with unusually long legs, oversized horns, and patchy gray fur - headbutts the player. Lives: Scaffolding, unfinished floors, and elevated construction platforms. Can cross narrow beams without slowing down",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "concrete_tortoise",
+      "name": "Concrete Tortoise",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "construction",
+      "mode": "ground",
+      "size": [
+        16.0,
+        9.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Heavy tortoise with a cracked shell coated in concrete dust and gray mineral growth - rams the player. Lives: Rubble piles, concrete floors, and sheltered construction areas. Resistant to knockback",
+      "drops": [
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.4
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "knockback_resist": 0.8
+    },
+    {
+      "id": "window_cicada",
+      "name": "Window Cicada",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "business",
+      "mode": "fly",
+      "size": [
+        10.0,
+        7.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large gray cicada with translucent wings and oversized red eyes - dives into the player. Lives: Office exteriors, ventilation openings, and illuminated windows. Produces a loud buzzing sound that briefly disrupts nearby enemies",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "suit_owl",
+      "name": "Suit Owl",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "business",
+      "mode": "fly",
+      "size": [
+        12.0,
+        12.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large dark owl with narrow black feather markings resembling a suit and unusually long talons - dives and claws the player. Lives: Office towers, rooftop ledges, and dark maintenance floors. Silent movement makes it difficult to detect before attacking",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "stealth": 0.4
+    },
+    {
+      "id": "glass_squirrel",
+      "name": "Glass Squirrel",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "business",
+      "mode": "ground",
+      "size": [
+        10.0,
+        7.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Hairless gray squirrel with translucent patches of skin and oversized black eyes - bites the player. Lives: Window ledges, office planters, and rooftop gardens. Moves erratically when threatened",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "elevator_wasp",
+      "name": "Elevator Wasp",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "business",
+      "mode": "fly",
+      "size": [
+        10.0,
+        7.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large black and yellow wasp with an elongated abdomen and unusually long stinger - stings the player. Lives: Elevator shafts, mechanical rooms, and office ventilation systems. Can attack from above and retreat quickly",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "attic_weasel",
+      "name": "Attic Weasel",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "residential",
+      "mode": "ground",
+      "size": [
+        12.0,
+        5.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Long thin weasel with pale fur, oversized teeth, and dark eyes - bites the player. Lives: Attics, wall cavities, insulation, and abandoned upper floors. Can move through narrow openings",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "mold_rabbit",
+      "name": "Mold Rabbit",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "residential",
+      "mode": "ground",
+      "size": [
+        10.0,
+        9.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large white rabbit with patchy fur and pale fungal growth around its ears and back - kicks the player. Lives: Abandoned apartments, roof gardens, and dry living spaces. Makes sudden long jumps when attacked",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "chimney_possum",
+      "name": "Chimney Possum",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "residential",
+      "mode": "ground",
+      "size": [
+        14.0,
+        8.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large gray possum with swollen eyes, long claws, and a partially hairless tail - claws the player. Lives: Chimneys, attics, and abandoned residential interiors. Plays dead briefly when severely injured",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "ceiling_mouse",
+      "name": "Ceiling Mouse",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "residential",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Tiny pale mouse with oversized ears and long thin limbs - bites the player. Lives: Ceiling cavities, walls, and abandoned apartments. Very difficult to hit while moving through ceiling gaps",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ]
+    },
+    {
+      "id": "butcher_dog",
+      "name": "Butcher Dog",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        18.0,
+        11.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large feral dog with powerful shoulders, an enlarged jaw, and patchy dirty fur - bites the player. Lives: Abandoned restaurants, food storage areas, and commercial kitchens. Becomes more aggressive below half health",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.3
+        }
+      ],
+      "enrage": 0.5,
+      "enrage_at": 0.5
+    },
+    {
+      "id": "freezer_cricket",
+      "name": "Freezer Cricket",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        10.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large pale cricket with long antennae and an unusually thick abdomen - leaps into the player. Lives: Cold storage areas, restaurant equipment rooms, and food warehouses. Can leap over obstacles",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ]
+    },
+    {
+      "id": "shopping_crab",
+      "name": "Shopping Crab",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        12.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Small red crab with oversized claws and a shell covered in scratches - snaps its claws at the player. Lives: Abandoned shopping areas, food courts, and storage rooms. Moves sideways at high speed",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "meat_fly",
+      "name": "Meat Fly",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "commercial",
+      "mode": "fly",
+      "size": [
+        10.0,
+        7.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Oversized blue-black fly with a swollen abdomen and cloudy compound eyes - lands on the player and bites. Lives: Food storage rooms, restaurants, garbage areas, and butcher shops. Moves unpredictably and can quickly change direction",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.35
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "police_horse",
+      "name": "Police Horse",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "civil",
+      "mode": "ground",
+      "size": [
+        24.0,
+        18.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large thin horse with an unusually muscular neck, cloudy eyes, and patchy coat - kicks the player. Lives: Police facilities, public courtyards, and abandoned civic buildings. Charges directly toward the player from a distance",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "archive_silverfish",
+      "name": "Archive Silverfish",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "civil",
+      "mode": "ground",
+      "size": [
+        11.0,
+        4.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large silverfish with an elongated metallic body and long trailing bristles - bites the player. Lives: Archives, libraries, records rooms, and document storage. Can hide beneath loose papers and debris",
+      "drops": [
+        {
+          "item": "paper",
+          "min": 1.0,
+          "max": 2.0,
+          "chance": 0.3
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ],
+      "ambush": true
+    },
+    {
+      "id": "firehouse_salamander",
+      "name": "Firehouse Salamander",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "civil",
+      "mode": "ground",
+      "size": [
+        11.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large black salamander with bright red markings and unusually thick limbs - bites the player. Lives: Fire stations, equipment rooms, and damp utility areas. Produces a mildly irritating skin secretion",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        },
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.15
+        }
+      ]
+    },
+    {
+      "id": "chapel_snail",
+      "name": "Chapel Snail",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "civil",
+      "mode": "ground",
+      "size": [
+        10.0,
+        8.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large pale snail with a thick spiral shell covered in faint mineral deposits - headbutts the player. Lives: Churches, chapels, public monuments, and sheltered civic buildings. Leaves a sticky trail that slows movement",
+      "drops": [
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.2
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "drain_eel",
+      "name": "Drain Eel",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "open_water",
+      "mode": "swim",
+      "size": [
+        14.0,
+        4.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Thin dark eel with pale eyes and a long flexible body - bites the player. Lives: Newly flooded drains, pipes, and shallow water channels. Can hide inside flooded pipes",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.3
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.1
+        }
+      ],
+      "water_only": true,
+      "ambush": true
+    },
+    {
+      "id": "water_strider",
+      "name": "Water Strider",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "open_water",
+      "mode": "surface",
+      "size": [
+        14.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Oversized dark water strider with extremely long thin legs - jumps onto the player. Lives: Shallow flooded floors and pools of standing water. Moves rapidly across the surface of water",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "id": "minnow_school",
+      "name": "Minnow School",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "open_water",
+      "mode": "swim",
+      "size": [
+        16.0,
+        10.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dense school of small silver fish with oversized mouths and dark swollen eyes - swarm bites the player. Lives: Shallow flooded rooms, pools, and submerged corridors. Moves as a group and surrounds nearby targets",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.3
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "mudskipper",
+      "name": "Mudskipper",
+      "grid_fauna": true,
+      "stage": "t1",
+      "district": "open_water",
+      "mode": "surface",
+      "size": [
+        12.0,
+        6.0
+      ],
+      "bleeds": true,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large brown mudskipper with oversized eyes, thick fins, and muscular front fins - bites the player. Lives: Shallow flooded floors, muddy debris, and waterlogged rooms. Can move between water and dry surfaces",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "id": "rust_crested_eel",
+      "name": "Rust-Crested Eel",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "industrial",
+      "mode": "swim",
+      "size": [
+        22.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Elongated metallic-grey eel with sharp rusted crests along its spine - shocks and bites the player. Lives: Flooded factory floors (0-92 ft). inflicts minor shock damage over time",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "sludge_crab",
+      "name": "Sludge Crab",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "industrial",
+      "mode": "ground",
+      "size": [
+        16.0,
+        9.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Bulky crab coated in dark oily sludge and pipe fragments - pinches with heavy claws. Lives: Submerged oil vats and pipes (0-92 ft). high defense, leaves oily slick",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "armor": 0.3
+    },
+    {
+      "id": "boiler_lamprey",
+      "name": "Boiler Lamprey",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "industrial",
+      "mode": "swim",
+      "size": [
+        18.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Thick leech-like fish with glowing red heated throat rings - latches on and drains health. Lives: Boiler room ruins (0-92 ft). heals slightly on damage dealt",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "lifesteal": 0.5
+    },
+    {
+      "id": "grease_viper",
+      "name": "Grease Viper",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "industrial",
+      "mode": "swim",
+      "size": [
+        18.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Slick black sea snake dripping slick chemical residue - strikes swiftly with venomous fangs. Lives: Submerged engine hulls (0-92 ft). poison attack",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "rebar_snapping_turtle",
+      "name": "Rebar Snapping Turtle",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "construction",
+      "mode": "swim",
+      "size": [
+        20.0,
+        12.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Massive snapping turtle with rebar fused into its shell and jaw - snaps with heavy rebar jaws. Lives: Flooded scaffolding debris (0-92 ft). reflects partial physical damage",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "armor": 0.3
+    },
+    {
+      "id": "concrete_ray",
+      "name": "Concrete Ray",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "construction",
+      "mode": "swim",
+      "size": [
+        22.0,
+        8.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Flat grey stingray disguised as a slab of cracked concrete - whips tail and buries player in silt. Lives: Submerged concrete foundations (0-92 ft). camouflages against floors",
+      "drops": [
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "stealth": 0.5,
+      "ambush": true
+    },
+    {
+      "id": "scaffolding_barnacle",
+      "name": "Scaffolding Barnacle",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "construction",
+      "mode": "swim",
+      "size": [
+        14.0,
+        10.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Colony of jagged barnacles attached to corroded iron structural beams - spits sharp calcified shell shards. Lives: Steel girders underwater (0-92 ft). stationary, ranged burst shooter",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "ranged": true,
+      "range_blocks": 4.0,
+      "stationary": true
+    },
+    {
+      "id": "silt_dredger_catfish",
+      "name": "Silt-Dredger Catfish",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "construction",
+      "mode": "swim",
+      "size": [
+        22.0,
+        10.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Armored catfish with heavy stone-like scales and long sensory barbels - rams player and stirs up blinding mud. Lives: Flooded pit foundations (0-92 ft). blinds player temporarily on charge",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "stone",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "silt_stalker",
+      "name": "Silt Stalker",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "business",
+      "mode": "swim",
+      "size": [
+        20.0,
+        8.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Translucent predatory fish with long dark stealth-like tentacles - ambushes from shadows and constricts. Lives: Submerged office corridors (0-92 ft). turns semi-invisible when stationary",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "paper",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "stealth": 0.5,
+      "ambush": true
+    },
+    {
+      "id": "document_squid",
+      "name": "Document Squid",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "business",
+      "mode": "swim",
+      "size": [
+        12.0,
+        18.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Pale squid draped in shredded waterlogged documents and office supplies - shoots ink infused with pulp shreds. Lives: Flooded file storage vaults (0-92 ft). blinds target with ink cloud",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "paper",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "ranged": true,
+      "range_blocks": 3.0
+    },
+    {
+      "id": "led_anglerfish",
+      "name": "Led Anglerfish",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "business",
+      "mode": "swim",
+      "size": [
+        16.0,
+        12.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Vicious deep-sea anglerfish with a flickering digital sign bulb stalk - blinds with bright flash then bites. Lives: Sunken lobby spaces (0-92 ft). stuns targets in range with light flash",
+      "drops": [
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "vault_moray",
+      "name": "Vault Moray",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "business",
+      "mode": "swim",
+      "size": [
+        22.0,
+        7.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dark sleek eel nesting inside rusted safe deposit boxes - strikes out from metal crevices. Lives: Flooded bank vaults (0-92 ft). high critical hit chance from hiding",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "barnacle_leech",
+      "name": "Barnacle Leech",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "residential",
+      "mode": "swim",
+      "size": [
+        16.0,
+        7.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Large segmented leech covered in sharp shell-like barnacle plating - attaches and drains blood. Lives: Flooded living rooms and roofs (0-92 ft). latches on reducing movement speed",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "submerged_hound",
+      "name": "Submerged Hound",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "residential",
+      "mode": "swim",
+      "size": [
+        18.0,
+        11.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Feral hound with webbed paws, slick skin, and external gills - pounces and bites with webbed jaws. Lives: Sunken apartment complexes (0-92 ft). fast swimmer, chases aggressively",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "gutter_pike",
+      "name": "Gutter Pike",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "residential",
+      "mode": "swim",
+      "size": [
+        24.0,
+        6.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Long narrow predatory fish with razor-sharp teeth protruding outward - thrusts forward with needle teeth. Lives: Flooded drainage and gutters (0-92 ft). fast burst forward attack",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "aquarium_betta",
+      "name": "Aquarium Betta",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "residential",
+      "mode": "swim",
+      "size": [
+        14.0,
+        12.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Overgrown vibrant red betta fish with sharp serrated tail fins - slaps with razor-sharp fins. Lives: Flooded home aquariums and bedrooms (0-92 ft). aggressive territory defense bonus",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "enrage": 0.3
+    },
+    {
+      "id": "neon_jellyfish",
+      "name": "Neon Jellyfish",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "commercial",
+      "mode": "swim",
+      "size": [
+        12.0,
+        16.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Glowing neon-colored jellyfish pulsing with static charge - stings with electrified tentacles. Lives: Submerged storefront windows (0-92 ft). shocks on physical contact",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "ranged": true,
+      "range_blocks": 2.0
+    },
+    {
+      "id": "display_case_mantis_shrimp",
+      "name": "Display-Case Mantis Shrimp",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        16.0,
+        8.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Colorful mantis shrimp carrying fragments of shattered glass as armor - delivers explosive cavitation punch. Lives: Flooded luxury displays (0-92 ft). high armor piercing punch",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "armor": 0.25
+    },
+    {
+      "id": "cart_skeleton_crabs",
+      "name": "Cart Skeleton Crabs",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "commercial",
+      "mode": "ground",
+      "size": [
+        20.0,
+        12.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Swarm of small skeleton crabs clinging to wire shopping carts - swarms and pinches in unison. Lives: Submerged supermarket aisles (0-92 ft). multi-target swarming attacks",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ]
+    },
+    {
+      "id": "billboard_stingray",
+      "name": "Billboard Stingray",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "commercial",
+      "mode": "swim",
+      "size": [
+        22.0,
+        8.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Wide flat ray with glowing marketing-patterned spots across its back - glides over player and whips tail. Lives: Flooded outdoor plazas (0-92 ft). sweeping area melee attack",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "drain_pipe_octopus",
+      "name": "Drain Pipe Octopus",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "civil",
+      "mode": "swim",
+      "size": [
+        16.0,
+        14.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dark mottled octopus emerging from a heavy cast-iron drain pipe - grabs with suckers and pulls into pipes. Lives: Drainage systems and main pipes (0-92 ft). pulls player closer on hit",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "sewer_gator",
+      "name": "Sewer Gator",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "civil",
+      "mode": "swim",
+      "size": [
+        26.0,
+        9.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Pale, blind alligator encrusted with sewer grime and iron rust - thrashes and bites viciously. Lives: Flooded subway lines and sewers (0-92 ft). death roll inflicts heavy bleed",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "culvert_hagfish",
+      "name": "Culvert Hagfish",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "civil",
+      "mode": "swim",
+      "size": [
+        18.0,
+        5.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Slimy eel-like hagfish wrapped around rusted civil plumbing - secretes thick slime and bites. Lives: Flooded culverts and water tunnels (0-92 ft). slime coat reduces incoming physical damage",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "armor": 0.3
+    },
+    {
+      "id": "valve_urchin",
+      "name": "Valve Urchin",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "civil",
+      "mode": "swim",
+      "size": [
+        12.0,
+        12.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Spiky sea urchin attached to a rusty valve handle - shoots sharp spines in all directions. Lives: Submerged water treatment valves (0-92 ft). 360-degree spine burst attack",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "ranged": true,
+      "range_blocks": 3.0,
+      "stationary": true
+    },
+    {
+      "id": "reef_shark",
+      "name": "Reef Shark",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "open_water",
+      "mode": "swim",
+      "size": [
+        28.0,
+        10.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Grey sleek reef shark with sharp serrated fins - swift direct bite. Lives: Open shallow sea (0-92 ft). gains speed when player is injured",
+      "drops": [
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "enrage": 0.3
+    },
+    {
+      "id": "depth_barracuda",
+      "name": "Depth Barracuda",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "open_water",
+      "mode": "swim",
+      "size": [
+        30.0,
+        7.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Silver long-bodied barracuda with glowing yellow eyes - charges at high speed with lower jaw strike. Lives: Sunken open channels (0-92 ft). high speed charge",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "scrap_metal",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "swarm_anchovy",
+      "name": "Swarm Anchovy",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "open_water",
+      "mode": "swim",
+      "size": [
+        20.0,
+        14.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Dense shimmering silver bait ball of hundreds of tiny fish - swarms and suffocates target. Lives: Open water currents (0-92 ft). hard to hit with single-target attacks",
+      "drops": [
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "plastic",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true
+    },
+    {
+      "id": "chasm_lionfish",
+      "name": "Chasm Lionfish",
+      "grid_fauna": true,
+      "stage": "t2",
+      "district": "open_water",
+      "mode": "swim",
+      "size": [
+        16.0,
+        14.0
+      ],
+      "bleeds": false,
+      "pounds": false,
+      "authored_sprites": true,
+      "desc": "Ornate red and white lionfish with long fan-like poisonous spines - fires venomous fin spines. Lives: Submerged chasm edges (0-92 ft). venomous projectile attack",
+      "drops": [
+        {
+          "item": "organic_material",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        },
+        {
+          "item": "cloth",
+          "min": 1.0,
+          "max": 1.0,
+          "chance": 0.5
+        }
+      ],
+      "water_only": true,
+      "ranged": true,
+      "range_blocks": 3.0
     }
   ],
   "cell_px": 8

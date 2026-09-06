@@ -162,6 +162,7 @@ the depth bands:
 
 | Stage | Band | Resource to master | The item it unlocks |
 |---|---|---|---|
+| Zero | Rooftops (T0, the open air above the crowns) | **Shelter** — after dark the roofs belong to the night monsters (they hunt anyone outdoors, cannot breach player walls, vanish at dawn) | A house of your own: walls and a roof that seal a room, or a hatch into the tower |
 | One | The Dry / roofs | **Wood** (farmed — trees, seeds, planters) | **Wooden tripod** → levers the roof vent hatch open, the metal-free way down |
 | Two | The Shallows | **Scrap & stone** (pumps, the Forge) | Drained camps, the Forge — the door to metalworking |
 | Three | The Cold | **Iron** | Bolt cutters, iron tools/tank — opens the metal doors left behind |
@@ -196,7 +197,8 @@ metal. Only once you are *down* does metal become the next resource to master.
 
 ## Game Dangers
 
-**Depth bands (shared vocabulary):** The Dry → The Shallows → The Cold → The Dark → The Crush.
+**Depth bands (shared vocabulary):** Rooftops (T0, 2026-09-06: the open air above the crowns and
+between towers; night-only spawns) → The Dry → The Shallows → The Cold → The Dark → The Crush.
 Enemy stats are authored per band; density is uniform (strength scales, not crowd size).
 **Stage gaps (2026-09-06):** each submerged boundary (Shallows/Cold, Cold/Dark, Dark/Crush; the
 waterline marks Dry/Shallows on its own) is an open **12-row middle ground** spliced in between the

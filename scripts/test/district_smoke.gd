@@ -277,7 +277,111 @@ func _ready() -> void:
 			parts += "%s %d KB · " % [k, kb]
 	print("  save composition: " + parts)
 	SaveGame.delete_world("__district_smoke__")
-	check(World.floor_band_at(World.cell_at(player.global_position)) == "dry", "spawn roof is in The Dry")
+	check(World.floor_band_at(World.cell_at(player.global_position)) == "roof", "spawn roof is T0 Rooftops (2026-09-06)")
+	print("== predator fish seed the flooded Shallows and Cold (2026-09-06)")
+	var fish_by_band := {}
+	var fish_wrong := 0
+	for rec in World.enemy_records:
+		if rec.type in ["tropical_fish", "catfish", "barracuda"]:
+			var bandr := String(rec.band)
+			fish_by_band[rec.type + "/" + bandr] = int(fish_by_band.get(rec.type + "/" + bandr, 0)) + 1
+			if bandr != "shallows" and bandr != "cold":
+				fish_wrong += 1
+	check(fish_by_band.get("tropical_fish/shallows", 0) > 20 and fish_by_band.get("catfish/shallows", 0) > 5 and fish_by_band.get("barracuda/cold", 0) > 20,
+			"a full city seeds all three fish in their bands %s" % str(fish_by_band))
+	check(fish_wrong == 0, "no predator fish outside The Shallows and The Cold")
+	var interior_fish := 0
+	for rec in World.enemy_records:
+		if rec.type in ["tropical_fish", "catfish", "barracuda"] and World.has_back_wall_cell(World.cell_at(rec.pos)):
+			interior_fish += 1
+	check(interior_fish > 100, "...including flooded interiors (%d indoors)" % interior_fish)
+	print("== T1 district fauna on dry floors + surface dwellers (2026-09-06)")
+	var dry_fauna: Dictionary = (Data.enemy_seeding.district_fauna as Dictionary).get("dry", {})
+	var uniques := 0
+	var misplaced := 0
+	var seen_districts := {}
+	for rec in World.enemy_records:
+		var e: Dictionary = Data.enemies.get(rec.type, {})
+		if not e.get("grid_fauna", false) or String(e.get("stage", "")) != "t1" or String(e.district) == "open_water":
+			continue
+		uniques += 1
+		var tw := CityGen.tower_at(World.towers, World.cell_at(rec.pos))
+		if tw.is_empty() or not (dry_fauna.get(String(tw.district), []) as Array).has(rec.type) or String(rec.band) != "dry":
+			misplaced += 1
+		else:
+			seen_districts[String(tw.district)] = true
+	check(uniques > 150 and misplaced == 0 and seen_districts.size() == 6,
+			"dry floors carry their district's own creatures: %d seeded, %d misplaced, %d districts" % [uniques, misplaced, seen_districts.size()])
+	var surf := {}
+	for rec in World.enemy_records:
+		if rec.type in ["drain_eel", "water_strider", "minnow_school", "mudskipper"]:
+			surf[rec.type] = int(surf.get(rec.type, 0)) + 1
+			if absi(World.cell_at(rec.pos).y - World.waterline_row) > 8:
+				misplaced += 1
+	check(surf.size() == 4 and misplaced == 0, "the four open-water T1 dwellers live at the waterline %s" % str(surf))
+	print("== T2 district fauna in flooded Shallows floors + open-water hunters (2026-09-06)")
+	var sh_fauna: Dictionary = (Data.enemy_seeding.district_fauna as Dictionary).get("shallows", {})
+	var sh_uniques := 0
+	var sh_bad := 0
+	var sh_districts := {}
+	var ow := {}
+	for rec in World.enemy_records:
+		var e: Dictionary = Data.enemies.get(rec.type, {})
+		if not e.get("grid_fauna", false) or String(e.get("stage", "")) != "t2":
+			continue
+		if String(e.district) == "open_water":
+			ow[rec.type] = int(ow.get(rec.type, 0)) + 1
+			if String(rec.band) != "shallows" or World.has_back_wall_cell(World.cell_at(rec.pos)):
+				sh_bad += 1
+			continue
+		sh_uniques += 1
+		var tw := CityGen.tower_at(World.towers, World.cell_at(rec.pos))
+		if tw.is_empty() or not (sh_fauna.get(String(tw.district), []) as Array).has(rec.type) or String(rec.band) != "shallows":
+			sh_bad += 1
+		else:
+			sh_districts[String(tw.district)] = true
+	check(sh_uniques > 60 and sh_districts.size() == 6, "flooded Shallows floors carry their district's own T2 creatures: %d seeded, %d districts" % [sh_uniques, sh_districts.size()])
+	check(ow.size() == 4 and sh_bad == 0, "the four T2 open-water hunters swim the Shallows between towers %s (%d misplaced)" % [str(ow), sh_bad])
+	print("== T0 rooftops: night spawns (2026-09-06)")
+	var roof_cell := World.cell_at(player.global_position)
+	var spawn_t: Dictionary = World.towers[0]
+	for t in World.towers:
+		if roof_cell.x >= int(t.x0) and roof_cell.x <= int(t.x1):
+			spawn_t = t
+	check(World.band_at(Vector2i(roof_cell.x, int(spawn_t.top) + 5)) == "dry", "just under the crown it is The Dry again")
+	check(Data.enemy_stats("prowler", "roof").speed > Data.enemy_stats("walker", "dry").speed, "the Prowler has roof stats and outruns a walker")
+	check(Data.enemy_stats("walker", "roof").hp == Data.enemy_stats("walker", "dry").hp, "a type without a roof row uses its Dry stats")
+	check(Data.enemies.prowler.get("pounds", true) == false, "the Prowler never pounds player blocks (a house holds)")
+	World.time_of_day = 0.0 # midnight
+	World._was_night = true
+	World._tick_roof_night(0.0)
+	var roofers := 0
+	var wrong := 0
+	var here := World.district_at_x(roof_cell.x)
+	var allowed: Array = (Data.enemy_seeding.roof_night_types_by_district as Dictionary).get(here, [])
+	check(here != "" and allowed.size() == 4, "the spawn roof is %s: four creatures of its own %s" % [here, str(allowed)])
+	for rec in World.enemy_records:
+		if rec.get("roof", false):
+			roofers += 1
+			var c := World.cell_at(rec.pos)
+			if not allowed.has(rec.type) or not rec.get("night", false) or World.band_at(c) != "roof" or World.is_solid_cell(c) \
+					or absf(rec.pos.x - player.global_position.x) > 60.0 * Constants.BLOCK_SIZE:
+				wrong += 1
+	check(roofers == int(Data.enemy_seeding.roof_night_max) and wrong == 0, "midnight on an open roof: %d of the district's creatures on roof tops in the ring, all night records (%d wrong)" % [roofers, wrong])
+	World._tick_roof_night(0.0)
+	var again := 0
+	for rec in World.enemy_records:
+		if rec.get("roof", false):
+			again += 1
+	check(again == roofers, "the roof cap holds while they live")
+	World.time_of_day = 0.5 # noon
+	World._tick_night(0.1)
+	var left := 0
+	for rec in World.enemy_records:
+		if rec.get("roof", false):
+			left += 1
+	check(left == 0 and not World.is_night(), "dawn clears the roofs")
+	World._was_night = false
 	# The hoppable gaps between towers are open to the ocean: every gap column
 	# holds water from the waterline down (user report 2026-09-05: dry gaps).
 	var dry_gaps := 0
