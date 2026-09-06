@@ -103,6 +103,8 @@ func remove_all(inputs: Array) -> void:
 		remove(inp.item, inp.count)
 
 func remove_from_slot(index: int, n: int = 1) -> int:
+	if index < 0 or index >= slots.size():
+		return 0 # the weapon hotbar slot (-1) is not a bag slot
 	var s = slots[index]
 	if s == null:
 		return 0

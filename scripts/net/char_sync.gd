@@ -149,7 +149,7 @@ func sanitize(st: Dictionary) -> Dictionary:
 	out["mod_library"] = SaveGame.clean_library(st.get("mod_library", {}))
 	out["health"] = clampf(float(st.get("health", Constants.MAX_HEALTH)), 0.0, Constants.MAX_HEALTH)
 	out["oxygen"] = maxf(float(st.get("oxygen", Constants.BASE_OXYGEN_SECONDS)), 0.0)
-	out["selected_slot"] = clampi(int(st.get("selected_slot", 0)), 0, Constants.HOTBAR_SLOTS - 1)
+	out["selected_slot"] = clampi(int(st.get("selected_slot", 0)), Constants.WEAPON_HOTBAR, Constants.HOTBAR_SLOTS - 1)
 	out["bare_hands"] = bool(st.get("bare_hands", false))
 	out["compact"] = bool(st.get("compact", false))
 	if st.get("pos") is Vector2:

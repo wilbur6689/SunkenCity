@@ -70,6 +70,15 @@ func _ready() -> void:
 			ui.open_panel()
 			if screen != "inventory":
 				ui.show_screen(screen)
+	for a in OS.get_cmdline_user_args(): # --hover=N: show bag slot N's tooltip (badge preview, 2026-09-06)
+		if a.begins_with("--hover=hotbar:"): # the HUD's hotbar tooltip (2026-09-06)
+			var hud := get_tree().root.find_child("HUD", true, false)
+			if hud != null:
+				ui.close()
+				hud._set_hotbar_hover(a.substr(15).to_int())
+		elif a.begins_with("--hover="):
+			ui._set_hover("inv", a.substr(8).to_int())
+			ui._update_hover_plate()
 	if shot != "":
 		await get_tree().create_timer(1.0).timeout
 		get_viewport().get_texture().get_image().save_png(shot)

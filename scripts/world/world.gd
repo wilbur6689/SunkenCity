@@ -17,7 +17,9 @@ var items_root: Node
 var objects_root: Node
 var spawn_position: Vector2 # feet position (bottom-center) of the spawn
 var water_sim: WaterSim
-var pumps: Array = [] # WorldObjects of kind "pump"
+var pumps: Array = []
+var heaters: Array = []          # live pot-belly stoves (kind heater), ticked like pumps
+var last_place_error: String = "" # why the last can_place_object refused (UI hint), "" when fine # WorldObjects of kind "pump"
 var light_map: LightMap
 var map_reveal: MapReveal # fog-of-war world map (CC-25); saved per character
 var _light_tick: int = 0
@@ -210,6 +212,7 @@ func _physics_process(delta: float) -> void:
 		_tick_night(delta)
 		_tick_red_moon(delta)
 		_tick_pumps()
+		_tick_heaters(delta)
 		var t0 := Time.get_ticks_usec()
 		water_sim.tick()
 		perf.water_ms = (Time.get_ticks_usec() - t0) / 1000.0
@@ -443,8 +446,8 @@ func _index_record(rec: Dictionary) -> void:
 	(_obj_buckets[b] as Array).append(rec)
 	if rec.def.kind == "door":
 		door_records.append(rec)
-	if rec.placed and rec.def.get("kind", "") == "light":
-		placed_light_records.append(rec)
+	if rec.placed and rec.def.get("kind", "") in ["light", "heater"]:
+		placed_light_records.append(rec) # a lit stove is a fog beacon too
 
 func _unindex_record(rec: Dictionary) -> void:
 	var b := _bucket_of(rec.cell)
@@ -658,7 +661,9 @@ func line_of_sight(from_pos: Vector2, to_cell: Vector2i) -> bool:
 func visibility_at(cell: Vector2i, viewer_pos: Vector2) -> float:
 	if grid.structure_at(cell) == WorldGrid.M.VOID:
 		return 0.0 # the blackness around interior pockets: never lit, no ray spent
-	if not has_back_wall_cell(cell):
+	if not has_back_wall_cell(cell) or CityGen.in_stage_gap(cell.y):
+		# (A stage gap keeps the towers' back walls as silhouettes but is open
+		# ground, 2026-09-06 - revealed like any exterior.)
 		# Exterior (WS-20): fully revealed by day, but dark at night (user
 		# request 2026-09-02) - only a small moonlit radius, placed lights,
 		# dropped glowsticks, and a worn head lamp cut through.
@@ -754,6 +759,8 @@ func _gather_light_sources(dynamic: bool = false) -> Array:
 				continue
 			if obj.def.kind == "light" and (not obj.def.get("powered", false) or obj.powered_on):
 				out.append({"cell": cell_at(obj.center()), "level": Constants.LAMP_LIGHT})
+			elif obj.def.kind == "heater" and obj.powered_on:
+				out.append({"cell": cell_at(obj.center()), "level": Constants.GLOWSTICK_LIGHT})
 	if items_root != null:
 		for it in items_root.get_children():
 			if it is WorldItem and it.light != null and not it.is_queued_for_deletion():
@@ -1043,13 +1050,15 @@ func _toss_velocity(from: Vector2, by: Vector2) -> Vector2:
 		return Vector2.ZERO
 	return (by - from) * Constants.MINE_TOSS_FACTOR + Vector2(0, -Constants.MINE_TOSS_UP)
 
-## Structure demolition (GL-01 amended): any structure block breaks under
-## the right tool tier (Constants.STRUCTURE_TIER), drops one matching
-## material, and — like any removal — wakes water, light, and fog.
+## Structure demolition (GL-01 re-amended 2026-09-06): any structure block
+## breaks under a plain hammer (Constants.STRUCTURE_TIER, tier 1 across the
+## board) and yields NOTHING — the cell simply opens; like any removal it
+## wakes water, light, and fog. Player-placed blocks (damage_block) still
+## drop themselves.
 var structure_damage: Dictionary = {} # cell -> hp left (partially hit cells)
 var damage_rev: int = 0 # bumped on any block damage; the crack overlay redraws on change
 
-func _damage_structure(cell: Vector2i, damage: float, tool_tier: int, by: Vector2 = Vector2.INF) -> String:
+func _damage_structure(cell: Vector2i, damage: float, tool_tier: int, _by: Vector2 = Vector2.INF) -> String:
 	var mat := grid.structure_at(cell)
 	var need: int = Constants.STRUCTURE_TIER.get(mat, 99)
 	if tool_tier < need or damage <= 0.0:
@@ -1064,12 +1073,13 @@ func _damage_structure(cell: Vector2i, damage: float, tool_tier: int, by: Vector
 	structure_damage.erase(cell)
 	grid.set_structure(cell, WorldGrid.M.AIR)
 	_cell_changed(cell)
-	var drop: String = Constants.STRUCTURE_DROP.get(mat, "")
-	if drop != "":
-		var it := spawn_item(drop, 1, cell_center(cell), _toss_velocity(cell_center(cell), by))
-		if it != null:
-			it.magnet = true
-	return "broken"
+	if mat == WorldGrid.M.GARBAGE: # the stage-gap plugs are junk: they pay scrap + plastic
+		for drop_id: String in Constants.GARBAGE_DROPS:
+			if randf() < Constants.GARBAGE_DROP_CHANCE:
+				var it := spawn_item(drop_id, 1, cell_center(cell), _toss_velocity(cell_center(cell), _by))
+				if it != null:
+					it.magnet = true
+	return "broken" # no drop otherwise: demolished structure is gone for good
 
 # --- Objects ---
 
@@ -1085,6 +1095,7 @@ func object_record_at(cell: Vector2i) -> Dictionary:
 
 func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) -> bool:
 	var def: Dictionary = Data.objects.get(id, {})
+	last_place_error = ""
 	if def.is_empty():
 		return false
 	var w: int = def.size[0]
@@ -1108,6 +1119,9 @@ func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) ->
 	for dx in w:
 		if not has_block_cell(Vector2i(cell.x + dx, cell.y + 1)):
 			return false
+	if def.kind == "heater" and room_sealed_cells(cell).is_empty(): # the stove wants a sealed room
+		last_place_error = "Seal the room first - close its doors and patch open walls"
+		return false
 	return true
 
 ## Register an object as data only (no node) — the bulk path city boot uses
@@ -1183,6 +1197,8 @@ func _instantiate_record(rec: Dictionary) -> WorldObject:
 	_live_records[int(rec.get("uid", 0))] = rec
 	if rec.def.kind == "pump":
 		pumps.append(obj)
+	elif rec.def.kind == "heater":
+		heaters.append(obj)
 	return obj
 
 ## Free a far node, banking its live state back into the record.
@@ -1194,6 +1210,7 @@ func _despawn_record(rec: Dictionary) -> void:
 		return
 	sync_record(rec, obj)
 	pumps.erase(obj)
+	heaters.erase(obj)
 	obj.queue_free()
 
 func sync_record(rec: Dictionary, obj: WorldObject) -> void:
@@ -1273,6 +1290,7 @@ func remove_object(obj: WorldObject) -> void:
 				water_sim.notify_changed(c)
 		Net.on_record_removed(rec)
 	pumps.erase(obj)
+	heaters.erase(obj)
 	obj.queue_free()
 
 ## Rooftop trees (user request 2026-09-01): each midnight every record whose
@@ -1357,6 +1375,58 @@ func stations_near(pos: Vector2, reach: float) -> Array:
 	return out
 
 ## Pumps (GL-16): suction and insertion through the connected body/airspace.
+## The cells of the sealed room around `cell` (top row first), or [] when
+## the fill escapes past STOVE_ROOM_MAX_CELLS / the grid - i.e. not a room.
+## Closed doors count as walls (is_solid_cell), open doors and gaps do not.
+func room_sealed_cells(cell: Vector2i) -> Array:
+	if is_solid_cell(cell) or not grid.bounds.has_point(cell):
+		return []
+	var seen := {cell: true}
+	var queue: Array = [cell]
+	var i := 0
+	while i < queue.size():
+		var c: Vector2i = queue[i]
+		i += 1
+		for n: Vector2i in [c + Vector2i.LEFT, c + Vector2i.RIGHT, c + Vector2i.UP, c + Vector2i.DOWN]:
+			if seen.has(n):
+				continue
+			if not grid.bounds.has_point(n):
+				return [] # open to the world edge
+			if is_solid_cell(n):
+				continue
+			seen[n] = true
+			queue.append(n)
+			if queue.size() > Constants.STOVE_ROOM_MAX_CELLS:
+				return []
+	queue.sort_custom(func(a: Vector2i, b: Vector2i): return a.y < b.y or (a.y == b.y and a.x < b.x))
+	return queue
+
+## Pot-belly stoves (2026-09-06): a lit stove boils STOVE_UNITS_PER_SECOND
+## off the top of its sealed room; it snuffs itself if the seal breaks.
+func _tick_heaters(delta: float) -> void:
+	for h in heaters:
+		if not is_instance_valid(h) or not h.powered_on:
+			continue
+		h.seal_tick -= 1
+		if h.seal_tick <= 0 or h.room_cells.is_empty():
+			h.room_cells = room_sealed_cells(h.cell)
+			h.seal_tick = Constants.STOVE_SEAL_CHECK_TICKS
+			if h.room_cells.is_empty():
+				h.set_powered(false) # breached: the heat just escapes
+				notify_record_state(h)
+				continue
+		h.stove_acc += Constants.STOVE_UNITS_PER_SECOND * delta
+		while h.stove_acc >= 1.0:
+			h.stove_acc -= 1.0
+			var took := 0
+			for c: Vector2i in h.room_cells: # top row first: it boils off the surface
+				if water_sim.level_at(c) > 0:
+					took = water_sim.remove_water(c, 1)
+					break
+			if took == 0:
+				h.stove_acc = 0.0 # room is dry; stay lit as a heater/light
+				break
+
 func _tick_pumps() -> void:
 	for pump in pumps:
 		if not is_instance_valid(pump) or pump.outlet_cell == WorldObject.NO_OUTLET:
@@ -1841,6 +1911,7 @@ func remove_record_replica(cell: Vector2i, id: String) -> void:
 	rec.node = null
 	if obj != null and is_instance_valid(obj):
 		pumps.erase(obj)
+		heaters.erase(obj)
 		obj.queue_free()
 	object_records.erase(rec)
 	_unindex_record(rec)

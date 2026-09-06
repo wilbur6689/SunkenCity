@@ -98,6 +98,11 @@ func _ready() -> void:
 	player.drop_held(1)
 	check(World.items_root.get_child_count() == drops_before and player.equipment.weapon != null, "dropping never sheds the worn weapon")
 	player.bare_hands = false
+	player.inventory.set_slot(0, {"id": "hammer", "count": 1})
+	player.selected_slot = Constants.WEAPON_HOTBAR
+	check(player.held_item() == "speargun" and player.holding_worn_weapon(), "the weapon hotbar slot (key 1) selects the worn weapon over a full hand")
+	check(player.inventory.remove_from_slot(Constants.WEAPON_HOTBAR, 1) == 0, "the weapon slot is never a bag slot")
+	player.selected_slot = 0
 	player.inventory.slots.fill(null)
 	player.set_equipment("weapon", null)
 
@@ -337,6 +342,48 @@ func _ready() -> void:
 	sk.xp["scrapping"] = 2.0 * Constants.SKILL_XP_PER_LEVEL
 	check(player.scrap_item("safe", 1, true), "...and yields at Scrapping 2")
 
+	print("== K2. plain weapons do not dismantle (user request 2026-09-06)")
+	var chair := World.place_object("chair", sc + Vector2i(30, -1), true)
+	check(chair != null, "a chair stands on the spawn floor")
+	player.inventory.slots.fill(null)
+	player.bare_hands = false
+	player.selected_slot = 0
+	check(player.interaction.can_harvest(chair), "bare hands dismantle a tier-0 chair")
+	player.inventory.set_slot(0, {"id": "scrap_sword", "count": 1})
+	check(not player.interaction.can_harvest(chair), "a sword in hand cannot dismantle it")
+	player.inventory.set_slot(0, {"id": "pry_bar", "count": 1})
+	check(player.interaction.can_harvest(chair), "a pry bar (tool) can")
+	player.inventory.set_slot(0, {"id": "fire_axe", "count": 1})
+	check(player.interaction.can_harvest(chair), "a tool-weapon (fire axe) counts as a tool - as bare hands off trees")
+	player.inventory.set_slot(0, null)
+	player.set_equipment("weapon", {"id": "scrap_sword", "count": 1})
+	check(player.interaction.can_harvest(chair), "a WORN sword with an empty hand is still bare hands")
+	player.set_equipment("weapon", null)
+	World.remove_object(chair)
+
+	print("== K3. found bench parts, stage benches, floor doors (2026-09-06)")
+	var part_counts := {}
+	var wing_doors := 0
+	for rec: Dictionary in World.object_records:
+		if rec.def.get("part", false):
+			part_counts[rec.id] = int(part_counts.get(rec.id, 0)) + 1
+		if rec.def.kind == "door" and not rec.placed and rec.id == "wood_door":
+			wing_doors += 1
+	var missing := []
+	for oid in Data.objects:
+		if Data.objects[oid].get("part", false) and int(part_counts.get(oid, 0)) == 0:
+			missing.append(oid)
+	check(missing.is_empty(), "every found part spawns somewhere in the city (missing: %s) - %s" % [str(missing), str(part_counts)])
+	check(wing_doors >= 200, "wing doorways carry doors by band (%d wood doors)" % wing_doors)
+	for bench in ["workbench", "forge", "machine_shop", "steel_works", "pressure_works", "weapon_bench", "pump_works", "dive_station", "med_station", "mod_bench"]:
+		var needs_part := false
+		for inp in Data.recipes[bench].inputs:
+			if Data.objects.get(String(inp.item), {}).get("part", false):
+				needs_part = true
+		check(needs_part, "%s costs its found part" % bench)
+	check(Data.recipes["sledgehammer"].station == "weapon_bench" and Data.recipes["steel"].station == "steel_works" and Data.recipes["pump"].station == "pump_works", "recipes moved to the stage benches")
+	check(Data.STATIONS.has("machine_shop") and Data.STATIONS.has("pressure_works"), "the new benches are stations")
+
 	print("== L. depletion pressure (GL-28/LT-27): the surface cannot finish the chain")
 	for zone in Data.loot.tables:
 		for band in ["dry", "shallows"]:
@@ -370,27 +417,32 @@ func _ready() -> void:
 	print("  surface iron obtainable: %d · chain needs: %d" % [surface_iron, chain_iron])
 	check(surface_iron < chain_iron, "iron above The Cold (%d) cannot cover the gear chain (%d) — you must dive" % [surface_iron, chain_iron])
 
-	print("== M. structure demolition (GL-01 amended: right tool tier breaks any block)")
+	print("== M. structure demolition (GL-01 re-amended 2026-09-06: a plain hammer breaks any block, nothing drops)")
 	var demo := sc + Vector2i(0, -20)
 	while World.has_block_cell(demo): # find open air above the spawn room
 		demo.y -= 1
 	World.grid.set_structure(demo, WorldGrid.M.WOOD)
 	check(World.damage_block(demo, 200.0, 0) == "too_hard", "bare hands cannot break structure")
 	var wood_drops_before := _world_item_count("wood")
-	check(World.damage_block(demo, 200.0, 1) == "broken", "scrap tools (tier 1) break wood structure")
-	check(_world_item_count("wood") > wood_drops_before, "mining pays out: the block's material drops")
+	check(World.damage_block(demo, 200.0, 1) == "broken", "a plain hammer (tier 1) breaks wood structure")
+	check(_world_item_count("wood") == wood_drops_before, "demolished wood yields nothing")
 	World.grid.set_structure(demo, WorldGrid.M.STONE)
-	check(World.damage_block(demo, 100.0, 1) == "too_hard", "stone refuses scrap tools")
+	var stone_before := _world_item_count("stone")
 	var rev := World.damage_rev
-	check(World.damage_block(demo, 25.0, 2) == "damaged", "iron tools (tier 2) chip stone away slowly") # per-cell HP is a quarter of the old block figure (8 px cells)
+	check(World.damage_block(demo, 25.0, 1) == "damaged", "the same hammer chips stone away")
 	check(World.structure_damage.has(demo), "partial damage tracked (crack stages + save)")
 	check(World.damage_rev > rev, "damage bumps the crack-overlay revision")
-	check(World.damage_block(demo, 40.0, 2) == "broken", "...and cracks through")
+	check(World.damage_block(demo, 40.0, 1) == "broken", "...and cracks through")
+	check(_world_item_count("stone") == stone_before, "demolished stone yields nothing")
 	World.grid.set_structure(demo, WorldGrid.M.METAL)
-	check(World.damage_block(demo, 100.0, 2) == "too_hard", "metal refuses iron tools")
-	check(World.damage_block(demo, 25.0, 3) == "damaged", "steel (tier 3) cuts metal over many hits")
-	check(World.damage_block(demo, 50.0, 3) == "broken", "...and through")
+	var scrap_before := _world_item_count("scrap_metal")
+	check(World.damage_block(demo, 25.0, 1) == "damaged", "tier 1 dents metal too (more hits, no better tool needed)")
+	check(World.damage_block(demo, 50.0, 1) == "broken", "...and through")
+	check(_world_item_count("scrap_metal") == scrap_before, "demolished metal yields nothing")
 	check(not World.has_block_cell(demo), "the demolished cell is open air")
+	World.grid.set_structure(demo, WorldGrid.M.VOID)
+	check(World.damage_block(demo, 500.0, 5) == "too_hard", "VOID stays unbreakable")
+	World.grid.set_structure(demo, WorldGrid.M.AIR)
 
 	print("\nM5 smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:

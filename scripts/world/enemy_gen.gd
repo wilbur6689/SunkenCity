@@ -34,8 +34,9 @@ static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 		for f in int(tower.floors):
 			if f == 0 and not spawn_tower.is_empty() and tower == spawn_tower:
 				continue # keep the roof drop-off tower's top floor clear — no ambush on landing
-			var ceiling: int = int(tower.top) + f * fh
-			var sr: int = ceiling + fh - 1
+			# World rows (the lattice is build-space; the stage gaps are spliced in).
+			var ceiling: int = CityGen.floor_ceiling(tower, f)
+			var sr: int = CityGen.floor_standing_row(tower, f)
 			for zi in tower.zones.size():
 				var zone = tower.zones[zi]
 				var zx0 := int(zone[0])

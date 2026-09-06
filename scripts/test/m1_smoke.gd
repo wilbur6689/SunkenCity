@@ -171,6 +171,7 @@ func _run() -> void:
 	inv.add("scrap_metal", 80)
 	inv.add("cloth", 15)
 	inv.add("plastic", 8)
+	player.inventory.add("part_drafting_table", 1) # the found part (docs/CraftingStages.md, 2026-09-06)
 	check(craft("workbench"), "workbench crafted by hand")
 	await goto(26)
 	check(hold_item("workbench"), "workbench in hand")
@@ -261,8 +262,10 @@ func _run() -> void:
 	check(await until(func(): return inv_count("wood_block") >= 2, 240), "mined drops home to the miner and are picked up (%d)" % inv_count("wood_block"))
 	await goto(34)
 	await hold_use(Vector2i(34, row + 1), func(): return false, 5)
-	check(World.has_block_cell(Vector2i(34, row + 1)) and player.interaction.message.begins_with("Needs a better tool"),
-			"metal slab shrugs off a scrap-tier hammer (GL-01 amended: metal needs steel)")
+	check(World.has_block_cell(Vector2i(34, row + 1)) and World.structure_damage.has(Vector2i(34, row + 1))
+			and not player.interaction.message.begins_with("Needs a better tool"),
+			"the plain hammer dents a metal slab too (GL-01 re-amended 2026-09-06: one tier for all structure)")
+	World.structure_damage.erase(Vector2i(34, row + 1)) # leave the floor whole for the rest of the run
 
 	print("== J2. ladders build two cells wide (user request 2026-09-05)")
 	var lc := Vector2i(40, row)
@@ -291,7 +294,7 @@ func _run() -> void:
 	inv.add("schematic_iron_knife", 1)
 	check(hold_item("schematic_iron_knife"), "schematic in hand")
 	player.use_item(0)
-	check(player.knows_recipe("iron_knife") and Data.recipes_for_station("forge", player.knows_recipe).any(func(r): return r.id == "iron_knife"), "schematic teaches the forge recipe (GL-06)")
+	check(player.knows_recipe("iron_knife") and Data.recipes_for_station(Data.recipes["iron_knife"].station, player.knows_recipe).any(func(r): return r.id == "iron_knife"), "schematic teaches the iron knife at its bench (GL-06; the Machine Shop since 2026-09-06)")
 
 	print("== M. chest + quick stack (LT-23)")
 	inv.add("chest", 1) # test grant: the chest UI path, not part of the gate

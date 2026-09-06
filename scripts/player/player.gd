@@ -38,7 +38,8 @@ var wants_use_secondary: bool = false # held
 var wants_interact: bool = false      # pressed this frame
 var wants_drop: bool = false          # pressed this frame
 var aim_position: Vector2 = Vector2.ZERO
-var hotbar_select: int = -1           # -1 = no change this frame
+const NO_HOTBAR_KEY := -99
+var hotbar_select: int = NO_HOTBAR_KEY # NO_HOTBAR_KEY = no change this frame; Constants.WEAPON_HOTBAR = the weapon slot
 
 # --- Timers ---
 var coyote_timer: float = 0.0
@@ -181,7 +182,7 @@ func _physics_process(delta: float) -> void:
 	# one-frame flags
 	wants_interact = false
 	wants_drop = false
-	hotbar_select = -1
+	hotbar_select = NO_HOTBAR_KEY
 
 ## Client-side body (LAN Step 4, MultiplayerImpl §5): no state machine, no
 ## move_and_slide, no vitals, no interaction ACTIONS - the host runs all of
@@ -211,7 +212,7 @@ func _puppet_tick(delta: float) -> void:
 				message.emit("Holding " + Data.item_name(held_item()))
 	wants_interact = false
 	wants_drop = false
-	hotbar_select = -1
+	hotbar_select = NO_HOTBAR_KEY
 
 # --- Input & timers ---
 
@@ -225,9 +226,13 @@ func _read_input() -> void:
 	wants_interact = Input.is_action_just_pressed("interact")
 	wants_drop = Input.is_action_just_pressed("drop")
 	aim_position = get_global_mouse_position()
-	for i in Constants.HOTBAR_SLOTS:
+	# Key 1 = the weapon slot (user request 2026-09-06); keys 2..0 = hotbar
+	# slots 1..9. The tenth hotbar slot is wheel/click only.
+	if Input.is_action_just_pressed("hotbar_1"):
+		hotbar_select = Constants.WEAPON_HOTBAR
+	for i in range(1, Constants.HOTBAR_SLOTS):
 		if Input.is_action_just_pressed("hotbar_%d" % (i + 1)):
-			hotbar_select = i
+			hotbar_select = i - 1
 	# View-only (not part of the replicated snapshot): wheel zoom.
 	if Input.is_action_just_pressed("zoom_in"):
 		zoom_step(1)
@@ -248,11 +253,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_multiplayer_authority() or ui_blocks_mouse:
 		return
 	if event is InputEventMouseButton and event.pressed and not event.ctrl_pressed:
+		# The wheel cycles weapon slot -> hotbar 1..10 -> weapon slot (11 stops).
+		var n := Constants.HOTBAR_SLOTS + 1
 		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			selected_slot = (selected_slot + 1) % Constants.HOTBAR_SLOTS
+			selected_slot = posmod(selected_slot + 2, n) - 1
 			bare_hands = false
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			selected_slot = (selected_slot - 1 + Constants.HOTBAR_SLOTS) % Constants.HOTBAR_SLOTS
+			selected_slot = posmod(selected_slot, n) - 1
 			bare_hands = false
 
 func _tick_timers(delta: float) -> void:
@@ -263,7 +270,7 @@ func _tick_timers(delta: float) -> void:
 	jump_buffer_timer = maxf(jump_buffer_timer - delta, 0.0)
 
 func _apply_hotbar() -> void:
-	if hotbar_select >= 0:
+	if hotbar_select != NO_HOTBAR_KEY:
 		selected_slot = hotbar_select
 		bare_hands = false # reselecting a slot takes the item in hand again
 
@@ -289,14 +296,21 @@ func held_item() -> String:
 ## An empty hand (Q, or an empty hotbar slot) holds the WORN weapon instead,
 ## so the weapon slot is what you fight with by default.
 func held_stack():
-	if bare_hands:
+	if bare_hands or selected_slot == Constants.WEAPON_HOTBAR:
 		return equipped_weapon()
 	var s = inventory.slots[selected_slot]
 	return s if s != null else equipped_weapon()
 
-## True when the hand is really empty and the worn weapon is standing in.
+## True when the hand is really empty (or the weapon slot is selected) and
+## the worn weapon is standing in.
 func holding_worn_weapon() -> bool:
-	return equipped_weapon() != null and (bare_hands or inventory.slots[selected_slot] == null)
+	return equipped_weapon() != null and (bare_hands or selected_slot == Constants.WEAPON_HOTBAR \
+		or inventory.slots[selected_slot] == null)
+
+## The hotbar slot index the bag would read for the hand: the weapon slot
+## maps to no bag slot (-1).
+func hand_bag_slot() -> int:
+	return selected_slot if selected_slot >= 0 else -1
 
 func held_tool() -> Dictionary:
 	return ItemMods.tool_of(held_stack())
@@ -402,7 +416,7 @@ func use_item(slot: int) -> void:
 
 func drop_held(n: int) -> void:
 	var id := held_item()
-	if id == "" or holding_worn_weapon():
+	if id == "" or holding_worn_weapon() or selected_slot < 0:
 		return # the worn weapon comes off in the inventory screen, never by dropping
 	var taken := inventory.remove_from_slot(selected_slot, n)
 	World.spawn_item(id, taken, global_position, Vector2(facing * 8.0 * Constants.BLOCK_SIZE, -4.0 * Constants.BLOCK_SIZE))

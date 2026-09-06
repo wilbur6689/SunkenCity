@@ -10,7 +10,8 @@ const BLOCK_ATLAS := "res://assets/tiles/placeholder_blocks.png" # the 16 px she
 const ICON_PX := 16 # icon sheets (items.png, the block atlas) are 16 px cells - independent of BLOCK_SIZE since 2026-09-04
 const OBJECT_SPRITE_DIR := "res://assets/sprites/objects/"
 const ICON_DIR := "res://assets/sprites/icons/" # Icon-Editor overrides (authored_icon)
-const STATIONS := ["hand", "workbench", "forge", "med_station", "dive_station", "mod_bench"]
+const STATIONS := ["hand", "workbench", "forge", "med_station", "dive_station", "mod_bench",
+	"machine_shop", "steel_works", "pressure_works", "weapon_bench", "pump_works"] # stage benches (docs/CraftingStages.md, 2026-09-06)
 
 var items: Dictionary = {}    # id -> item def
 var blocks: Dictionary = {}   # id -> block def

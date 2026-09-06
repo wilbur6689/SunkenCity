@@ -396,7 +396,7 @@ func unlock_ability(id: String) -> bool:
 
 ## Hotbar selection: local on every peer (a client's snapshot carries it to the host).
 func select_slot(i: int, bare: bool = false) -> bool:
-	if i < 0 or i >= Constants.HOTBAR_SLOTS:
+	if i < Constants.WEAPON_HOTBAR or i >= Constants.HOTBAR_SLOTS:
 		return false
 	player.selected_slot = i
 	player.bare_hands = bare

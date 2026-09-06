@@ -140,6 +140,18 @@ func _run() -> void:
 		"pump drains the sealed room to a shallow film (%d units left)" % region_units(2, 38, 77, 47))
 	check(region_units(2, 14, 77, 35) > room_before / 2, "pumped water ended up on floors 2-3 (conservation)")
 
+	print("== D2. pot-belly stove dries a sealed room (user request 2026-09-06)")
+	check(World.room_sealed_cells(Vector2i(40, 21)).is_empty(), "an open floor is not a sealed room")
+	check(not World.room_sealed_cells(Vector2i(50, 46)).is_empty(), "the patched room is")
+	check(World.can_place_object("pot_belly_stove", Vector2i(50, 47)), "the stove may stand in the sealed room")
+	var stove := World.place_object("pot_belly_stove", Vector2i(50, 47), true)
+	check(stove != null and World.heaters.has(stove), "stove placed and ticking")
+	stove.interact(player)
+	check(stove.powered_on, "lit with a click")
+	var film := region_units(2, 38, 77, 47)
+	check(await until(func(): return region_units(2, 38, 77, 47) <= film / 2, 3000),
+		"the lit stove boils the film down (%d -> %d units)" % [film, region_units(2, 38, 77, 47)])
+
 	print("== F. move in: breathe, bed, station (GL-17)")
 	player.global_position = Vector2(40 * B + 8, 48 * B - Player.FEET_Y)
 	player.velocity = Vector2.ZERO

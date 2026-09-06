@@ -28,6 +28,11 @@ func set_powered(v: bool) -> void:
 		_light.enabled = lit
 	if def.kind == "light":
 		sprite.modulate = Color.WHITE if lit else Color(0.55, 0.55, 0.6)
+	elif def.kind == "heater": # a lit stove glows warm
+		sprite.modulate = Color(1.3, 0.95, 0.75) if v else Color.WHITE
+var stove_acc: float = 0.0        # heater: fractional water units owed this tick
+var room_cells: Array = []        # heater: the sealed room it is drying (cached)
+var seal_tick: int = 0            # heater: ticks until the seal is re-verified
 var scrap_progress: float = 0.0   # 0..1 while being scrapped in place
 var placed_by_player: bool = false
 
@@ -101,6 +106,8 @@ func restore_state(st: Dictionary) -> void:
 		set_open_look(bool(st.get("open", false)))
 	if def.kind == "breaker":
 		powered_on = st.get("powered", false)
+	if def.kind == "heater":
+		set_powered(bool(st.get("powered", false)))
 	outlet_cell = st.get("outlet", NO_OUTLET)
 	if storage != null and st.has("storage"):
 		var slots: Array = (st.storage as Array).duplicate(true)
@@ -123,6 +130,8 @@ func apply_replica_state(st: Dictionary) -> void:
 		"light":
 			if def.get("powered", false):
 				set_powered(bool(st.get("powered", powered_on)))
+		"heater":
+			set_powered(bool(st.get("powered", powered_on)))
 
 func _set_door_open(v: bool) -> void:
 	open = v
@@ -284,6 +293,15 @@ func interact(player) -> String:
 		"station":
 			player.open_crafting(def.station)
 			return ""
+		"heater":
+			# Pot-belly stove (2026-09-06): light / snuff. Lighting re-checks the seal.
+			if not powered_on and World.room_sealed_cells(cell).is_empty():
+				return "The room isn't sealed - close its doors and patch the walls first"
+			set_powered(not powered_on)
+			room_cells = []
+			seal_tick = 0
+			World.notify_record_state(self)
+			return "Stove lit - the room will dry out, slowly" if powered_on else "Stove snuffed"
 		"scrapper":
 			# Tiered scrap bench: bulk-grind the bag's furniture of this tier.
 			return player.bulk_scrap(int(def.get("scrap_stage", 1)))
@@ -311,6 +329,8 @@ func roll_yields(full: bool, rng: RandomNumberGenerator, player = null) -> Array
 			n = player.roll_yield(n)
 		if not full:
 			n = int(ceil(n * field_frac))
+		if World.is_water(center()): # submerged salvage pays less (user request 2026-09-06)
+			n = int(n * (1.0 - Constants.UNDERWATER_SCRAP_YIELD_LOSS) + rng.randf())
 		if n > 0:
 			out.append({"item": y.item, "count": n})
 	return out

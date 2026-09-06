@@ -106,11 +106,12 @@ SunkenCity plays like Terraria (2D, blocks, side-scrolling) but loots like 7 Day
   always breaks falls.
 - **Inventory:** ~40 slots for organization; carried weight is a **soft cap** that progressively
   slows swimming — the player chooses when loot isn't worth the crawl home.
-- **Blocks & breakability:** **building structure (walls/floors/ceilings) is unbreakable** —
-  buildings keep their shape forever, and access is always through openings, doors, and breaches.
-  Breakable: furniture/contents, glass, interior partitions, and player-placed blocks — those
-  carry HP + hardness tiers (tool-gated). Background walls are cosmetic only; water sealing is
-  decided purely by solid blocks.
+- **Blocks & breakability:** **building structure (walls/floors/ceilings) breaks under a plain
+  hammer** (GL-01 re-amended 2026-09-06) — wood, plastic, stone and metal all at tool tier 1,
+  differing only in how many hits they take — and **demolished structure yields nothing**: the
+  shell is not a resource, materials come from furniture, roofs and the scrap chain. Player-placed
+  blocks carry their own HP + hardness and drop themselves. Background walls are cosmetic only;
+  water sealing is decided purely by solid blocks.
 - **Crafting loop:** hand-craft basics anywhere; five base stations (Workbench, Forge, Med
   Station, Dive Station, Modification Bench). Material tiers **Wood → Scrap → Iron → Steel**. Advanced recipes come
   from found **schematics** (modifiers are recipes at the bench, never schematics — see Loot).
@@ -197,6 +198,15 @@ metal. Only once you are *down* does metal become the next resource to master.
 
 **Depth bands (shared vocabulary):** The Dry → The Shallows → The Cold → The Dark → The Crush.
 Enemy stats are authored per band; density is uniform (strength scales, not crowd size).
+**Stage gaps (2026-09-06):** each submerged boundary (Shallows/Cold, Cold/Dark, Dark/Crush; the
+waterline marks Dry/Shallows on its own) is an open **12-row middle ground** spliced in between the
+stages' floors — every stage keeps its full floor count and the world grows three gaps taller.
+Inside a tower footprint the gap is bare back wall (the building's silhouette), so a floor cut by the
+line is simply two half-rooms with open water between; the inter-tower gaps and the ocean margins are
+**plugged with garbage** (hammer-breakable, the one structure that pays out: scrap + plastic) so the
+open-water column no longer offers a free dive — going deeper means a tower's stairwell. A gap belongs
+to the shallower band (hover safely, look down). Each deep stage has its own parallax backdrop
+(cold / dark / crush strips) hung from the top of its gap.
 
 | Danger | Description |
 |---|---|
@@ -253,7 +263,8 @@ no environmental hazards in MVP (electrified water is on the ideas list).
 - **Dimensions (districts, 2026-09-04):** **52 double-wide towers** (rare triple-wide in
   industrial/commercial) at **jumpable 5–10-cell gaps** everywhere; every crown within **10 cells**
   of the others (neighbours step 4–10), every tower a full shaft to the ground (~600 cells ≈ 600 ft).
-  World ≈ **7,600 × 800 cells** of city (~6,900 of towers plus ocean margins) + the pocket annex.
+  World ≈ **7,600 × 836 cells** of city (~6,900 of towers plus ocean margins; 800 rows of floors
+  plus three 12-row stage gaps) + the pocket annex.
   The city is divided into **districts** — clusters of 5–6 towers of one building type with a
   1-tower residential buffer between any two, a reserved 6-tower residential centre, and
   residential filling the rest — see [DistrictsOverhaul.md](DistrictsOverhaul.md).

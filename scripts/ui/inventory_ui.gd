@@ -63,6 +63,10 @@ var _last_stations: Array = []
 var hover_plate: PanelContainer
 var hover_name: Label
 var hover_mods: Label
+var hover_tier_row: HBoxContainer
+var hover_tier_badge: Control
+var hover_tier_text: Label
+const TIER_BADGE := preload("res://scripts/ui/tier_badge.gd")
 var _hover: Dictionary = {} # {which, index} for the slot under the mouse
 
 ## Popup window rect in design pixels; the screens keep absolute layout
@@ -170,6 +174,15 @@ func _ready() -> void:
 	hover_plate.add_child(hv)
 	hover_name = UITheme.label("", 8)
 	hv.add_child(hover_name)
+	# Tool tier (user request 2026-09-06): the same shield the object card
+	# shows for the tier an object NEEDS, here for the tier a tool CAN dismantle.
+	hover_tier_row = HBoxContainer.new()
+	hover_tier_row.add_theme_constant_override("separation", 3)
+	hover_tier_badge = TIER_BADGE.new()
+	hover_tier_row.add_child(hover_tier_badge)
+	hover_tier_text = UITheme.label("", 8, Color(0.75, 0.8, 0.82))
+	hover_tier_row.add_child(hover_tier_text)
+	hv.add_child(hover_tier_row)
 	hover_mods = UITheme.label("", 8, Color(0.75, 0.79, 0.83))
 	hv.add_child(hover_mods)
 	root.add_child(hover_plate)
@@ -728,6 +741,28 @@ func _refresh_modify() -> void:
 	else:
 		bench_info.add_child(UITheme.label("This cannot take modifiers.", 8, Color(0.7, 0.78, 0.85)))
 
+## The tier row under a tooltip title: a tool's dismantle tier (axes fell
+## trees only), or a plain weapon's "no dismantling" note.
+func _set_hover_tier(st) -> void:
+	hover_tier_row.visible = false
+	if st == null:
+		return
+	var it := Data.item(String(st.id))
+	var tool: Dictionary = it.get("tool", {})
+	if not tool.is_empty():
+		var tier := int(tool.get("tier", 0))
+		hover_tier_badge.set_tier(tier)
+		hover_tier_badge.visible = true
+		if String(tool.get("type", "")) == "axe":
+			hover_tier_text.text = "Fells trees (tier %d)" % tier
+		else:
+			hover_tier_text.text = "Dismantles tier %d and below" % tier
+		hover_tier_row.visible = true
+	elif it.has("weapon"):
+		hover_tier_badge.visible = false
+		hover_tier_text.text = "Weapon: no dismantling"
+		hover_tier_row.visible = true
+
 ## sel -> the first prefix / first suffix picked (what APPLY uses).
 func _sync_picks() -> void:
 	sel_prefix = ""
@@ -906,6 +941,7 @@ func _update_hover_plate() -> void:
 		return
 	hover_name.text = title
 	hover_name.add_theme_color_override("font_color", color)
+	_set_hover_tier(st)
 	hover_mods.text = "\n".join(lines)
 	hover_mods.visible = not lines.is_empty()
 	hover_plate.visible = true

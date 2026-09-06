@@ -54,7 +54,7 @@ func _ready() -> void:
 	check(World.band_at(World.cell_at(player.global_position)) == "dry", "spawn floor is in The Dry")
 	var ground_ok := true
 	for gx in [20, 800, CityGen.WORLD_W / 2, 6000, CityGen.WORLD_W - 20]:
-		if not World.has_block_cell(Vector2i(gx, CityGen.GROUND)):
+		if not World.has_block_cell(Vector2i(gx, CityGen.ground_row())):
 			ground_ok = false
 	check(ground_ok, "bare concrete ground spans the city (CT-07)")
 
@@ -126,7 +126,7 @@ func _ready() -> void:
 	var sc := Vector2i(-1, -1)
 	var floor_spot := Vector2i(-1, -1)
 	for f in range(1, 4):
-		var srr := int(st.top) + f * int(st.floor_h) + int(st.floor_h) - 1
+		var srr := CityGen.floor_standing_row(st, f) # world row
 		for fx in range(int(st.zones[0][0]) + 1, int(st.zones[0][1])):
 			if sc.x < 0 and World.has_back_wall_cell(Vector2i(fx, srr - 6)) \
 					and World.can_place_object("hos_eye_chart", Vector2i(fx, srr - 6)):
@@ -159,7 +159,7 @@ func _ready() -> void:
 	check(int(gen.debris) >= 5, "%d floating debris rafts on the surface (CT-23)" % int(gen.debris))
 	var blockages := 0
 	for tw in gen.tower_list:
-		blockages += CityGen.floor_blockages(World.grid, tw).size()
+		blockages += CityGen.floor_blockages(World.grid, tw, true).size()
 	check(blockages == 0, "two-jump rule holds on every assembled floor (WS-04)")
 	# Twin-wing towers: ladders on both sides, shaft down the middle, and
 	# submerged ladder runs broken into repairable gaps (user request).

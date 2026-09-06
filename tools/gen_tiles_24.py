@@ -7,7 +7,7 @@ texture with 9x the texels. StructureRenderer draws the layers at 1/3 scale
 (3.0) on a 1080p screen.
 
 Outputs:
-  assets/tiles/placeholder_blocks_24.png   120x216 atlas (5 variants x 9 rows)
+  assets/tiles/placeholder_blocks_24.png   120x240 atlas (5 variants x 10 rows)
   assets/tiles/placeholder_blocks_24.tres  TileSet: 24px tiles, physics +-12
 
 Run from the repo root:  python tools/gen_tiles_24.py
@@ -28,8 +28,8 @@ RAMPS = {
     "metal":   ((22, 28, 36), [(60, 70, 82), (80, 92, 106), (100, 114, 130), (120, 136, 152)], (154, 170, 186)),
     "plastic": ((20, 44, 32), [(54, 100, 74), (70, 126, 92), (90, 150, 110), (112, 172, 130)], (142, 196, 156)),
 }
-ROWS = ["stone", "wood", "metal", "plastic", "water", "ladder", "rope", "void", "woodwall"]
-SOLID_ROWS = {0, 1, 2, 3, 7}  # rows carrying physics in the tres
+ROWS = ["stone", "wood", "metal", "plastic", "water", "ladder", "rope", "void", "woodwall", "garbage"]
+SOLID_ROWS = {0, 1, 2, 3, 7, 9}  # rows carrying physics in the tres
 
 
 class Tile:
@@ -253,9 +253,40 @@ def void(rng, _o, _t, _h):
     return tile
 
 
+def garbage(rng, _o, _t, _h):
+    """Compacted junk (the stage-gap plugs, 2026-09-06): a dark silt base
+    packed with flattened cans, plastic shards, rag and bone-coloured bits -
+    reads as a landfill face, not a wall."""
+    base = (46, 40, 34)
+    tile = Tile((*base, 255))
+    for y in range(T):
+        for x in range(T):
+            n = rng.randint(-6, 6)
+            tile.set(x, y, (base[0] + n, base[1] + n, base[2] + n // 2))
+    bits = [(96, 102, 110), (70, 76, 84),      # metal
+            (44, 96, 84), (150, 120, 40), (120, 44, 40), (60, 70, 130),  # plastic colours
+            (118, 108, 90), (90, 82, 70),      # rag / cardboard
+            (156, 150, 130)]                    # pale shards
+    for _ in range(rng.randint(14, 20)):
+        c = bits[rng.randrange(len(bits))]
+        w = rng.randint(2, 7)
+        h = rng.randint(1, 3)
+        x0 = rng.randrange(T)
+        y0 = rng.randrange(T)
+        for yy in range(h):
+            for xx in range(w):
+                tile.set(x0 + xx, y0 + yy, c)
+        # a dark rim under every piece so the heap reads as layered
+        for xx in range(w):
+            tile.set(x0 + xx, y0 + h, (28, 24, 20))
+    for _ in range(10):
+        tile.set(rng.randrange(T), rng.randrange(T), (20, 18, 14))
+    return tile
+
+
 RECIPES = {"stone": stone, "wood": wood, "metal": metal, "plastic": plastic,
            "water": water, "ladder": ladder, "rope": rope, "void": void,
-           "woodwall": woodwall}
+           "woodwall": woodwall, "garbage": garbage}
 
 
 def build_atlas():

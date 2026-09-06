@@ -132,7 +132,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **WS-21.** Can the player place and remove background walls?
   - **A:** Yes, as decoration only (no simulation effect).
 - [x] **WS-22.** Do blocks have HP/hardness tiers requiring better tools to break?
-  - **A:** Yes — **HP + hardness tiers** (glass/drywall < wood < concrete/steel). **Re-amended with GL-01 (2026-08-31):** hardness tiers now cover EVERYTHING, structure included — wood/plastic at tool tier 1, stone at 2, metal at 3 (`Constants.STRUCTURE_TIER/HP/DROP`).
+  - **A:** Yes — **HP + hardness tiers** (glass/drywall < wood < concrete/steel). **Re-amended with GL-01 (2026-08-31):** hardness tiers now cover EVERYTHING, structure included. **Re-amended again (2026-09-06):** structure is a single tier — a plain hammer (tier 1) breaks wood, plastic, stone AND metal (only the hit count differs, `Constants.STRUCTURE_TIER/HP`), and demolished structure yields nothing.
 - [x] **WS-23.** How is water simulated — cellular per-tile flow, region/volume-based, or hybrid?
   - **A:** (From CC-13) Cellular per-tile flow — water is a block-like tile that flows downward and settles. Details: `technical/WaterPhysics.md`.
 - [x] **WS-24.** Does placing/removing blocks displace or release water in real time?
@@ -156,7 +156,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 ## 3. Main Game Loop (GL) — ✅ Reviewed 2026-08-30
 
 - [x] **GL-01.** What exactly gates each stage transition — gear thresholds only, or also milestones/quests?
-  - **A:** **Pure capability gating** — stages are emergent, enforced by physical/gear barriers (oxygen, tools, cold, pressure); no quest flags. Shallow-but-gear-locked pockets are a deliberate design tool. ~~Amendment: building structure is unbreakable~~ **Re-amended (2026-08-31, user decision): ANY structure block breaks under the right tool tier** — scrap tools (tier 1) break wood/plastic, iron (2) breaks stone, steel (3) cuts metal; each drops one matching material. Capability gating survives: the deep tool tiers ARE the gate on stone/metal demolition. Stairwell ladders/ropes and back walls keep their own rules.
+  - **A:** **Pure capability gating** — stages are emergent, enforced by physical/gear barriers (oxygen, tools, cold, pressure); no quest flags. Shallow-but-gear-locked pockets are a deliberate design tool. ~~Amendment: building structure is unbreakable~~ ~~Re-amended (2026-08-31): ANY structure block breaks under the right tool tier — scrap tools (tier 1) break wood/plastic, iron (2) breaks stone, steel (3) cuts metal; each drops one matching material.~~ **Re-amended (2026-09-06, user decision): every structure block breaks under a plain HAMMER (tier 1) — wood, plastic, stone and metal alike, differing only in hits — and demolished structure yields NOTHING** (the shell is not a resource; materials come from furniture, roofs and the scrap chain). Capability gating no longer runs through demolition — oxygen, cold, pressure and locks carry it. Stairwell ladders/ropes and back walls keep their own rules.
 - [x] **GL-02.** What is the exact starting scenario — waking on a rooftop, adrift on debris, a wrecked boat?
   - **A:** Wake **inside a dry medical room** — loot the room, learn the basics, exit toward water.
 - [x] **GL-03.** What are the first craftable tools, and from what starter materials?
@@ -178,7 +178,7 @@ get folded back into `GameOverview.md` and the `technical/` docs as sections com
 - [x] **GL-11.** What are the dive gear tiers (mask/fins → wetsuit → hard suit), and what does each unlock?
   - **A:** **Wetsuit** (iron tier — beats cold gate 1) → **hard dive suit** (steel — beats cold gate 2 and crush depth). Time (tanks) and depth (suits) are separate purchases.
 - [x] **GL-12.** Is there a pressure mechanic that blocks depth until the right suit, separate from oxygen?
-  - **A:** Yes — **cold is the soft gate** (slow, then damage; can be pushed briefly), **crush depth is the hard wall** (rapid lethal damage without the hard suit).
+  - **A:** Yes — **cold is the soft gate** (slow, then damage; can be pushed briefly), **crush depth is the hard wall** (rapid lethal damage without the hard suit). **Amended (2026-09-06, user decision): the three submerged stage boundaries are visible, open 12-row "middle ground" bands** spliced between the stages' floors (`Constants.STAGE_GAP_ROWS`; floor counts per stage unchanged, the world is 3 gaps taller): bare back wall across tower footprints, garbage plugs (breakable, drop scrap + plastic) across the inter-tower gaps and ocean margins so the open water no longer offers a free dive. A gap belongs to the shallower band, so the cold/crush gates begin right under it. The Dry/Shallows line stays the waterline.
 - [x] **GL-13.** How does the player manage light underwater (glowsticks, dive lamps, base lighting)?
   - **A:** **Glowsticks** (cheap sinking breadcrumbs) → **helmet lamp** (iron tier, directional) → **placeable lights** and building breakers (WS-17). Disposable → personal → infrastructural.
 - [x] **GL-14.** What does a functional base require (bed, storage, crafting, cooking, defenses)?

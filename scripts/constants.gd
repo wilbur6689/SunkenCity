@@ -64,6 +64,7 @@ const REACH_BLOCKS: float = 8.0
 # --- Inventory & weight (WS-13/14, LT-23) ---
 const INVENTORY_SLOTS: int = 40
 const HOTBAR_SLOTS: int = 10
+const WEAPON_HOTBAR: int = -1 # selected_slot value for the weapon slot left of the hotbar (key 1, 2026-09-06)
 const MATERIAL_STACK: int = 999
 const CHEST_SLOTS: int = 20
 const WEIGHT_SWIM_REFERENCE: float = 60.0 # carried weight at which swim speed is halved (soft cap)
@@ -78,19 +79,34 @@ const HAND_TOOL_TIER: int = 0
 const ROPE_DROP: int = 1 # cells a single rope placement drops: one per click, added at the BOTTOM of the line (user request 2026-09-04; was a run of 4 old blocks)
 const MORNING_TIME: float = 0.25 # time_of_day of dawn; trees advance one stage here (2026-09-02)
 const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
+const UNDERWATER_SCRAP_SLOW: float = 0.25       # dismantling a submerged object is this much slower (user request 2026-09-06)
+const UNDERWATER_SCRAP_YIELD_LOSS: float = 0.10 # ...and pays this share less (stochastic rounding)
+# Pot-belly stove (user request 2026-09-06): lit in a SEALED room it boils water off, slowly.
+const STOVE_UNITS_PER_SECOND: float = 8.0   # 8 units = one cell per second; a 30x10 room takes ~5 min
+const STOVE_ROOM_MAX_CELLS: int = 3000      # a fill bigger than this is not a room - refuse / snuff
+const STOVE_SEAL_CHECK_TICKS: int = 60      # re-verify the seal once a second while lit
+# Floor doors by band (user request 2026-09-06): a wing's two doorways get doors at this chance,
+# found OPEN below the waterline (the flood must pass) and half closed in The Dry.
+const FLOOR_DOOR_CHANCE := {"dry": 0.9, "shallows": 0.8, "cold": 0.7}
+const DRY_DOOR_CLOSED_CHANCE: float = 0.5
+const PART_COPIES: int = 3 # found bench parts placed per part type per city (docs/CraftingStages.md)
 
-# --- Structure demolition (GL-01 amended, user request 2026-08-31): any
-# structure block breaks under the right TOOL TIER — scrap tools (1) chew
-# wood/plastic, iron (2) cracks stone, steel (3) cuts metal. Keys are
-# WorldGrid.M materials; drops are 1 matching material per block. Structure
+# --- Structure demolition (GL-01 re-amended, user request 2026-09-06): any
+# structure block (wood/plastic/stone/metal) breaks under a plain HAMMER —
+# tool tier 1, the same gate for every material; only the hit count differs.
+# Demolished structure yields NOTHING: the material is lost (building shells
+# are not a resource - furniture, roofs and the scrap chain are). Keys are
+# WorldGrid.M materials; VOID has no entry and stays unbreakable. Structure
 # ladders/ropes and back walls keep their own rules.
-const STRUCTURE_TIER := {WorldGrid.M.WOOD: 1, WorldGrid.M.PLASTIC: 1, WorldGrid.M.STONE: 2, WorldGrid.M.METAL: 3}
-# Demolition is deliberate (user request): per 16 px of wall (a 2x2 group of
-# cells) at 0.25 s/hit that is ~3 s for wood (hammer, 10 dmg), ~10 s for stone
-# (iron tools, 4-5 dmg), ~20 s+ for metal (cutting torch, 3 dmg) - so per-cell
-# HP is a quarter of the old per-block figure. Cracks appear at 25/50/75% damage.
-const STRUCTURE_HP := {WorldGrid.M.WOOD: 30.0, WorldGrid.M.PLASTIC: 20.0, WorldGrid.M.STONE: 50.0, WorldGrid.M.METAL: 65.0}
-const STRUCTURE_DROP := {WorldGrid.M.WOOD: "wood", WorldGrid.M.PLASTIC: "plastic", WorldGrid.M.STONE: "stone", WorldGrid.M.METAL: "scrap_metal"}
+const STRUCTURE_TIER := {WorldGrid.M.WOOD: 1, WorldGrid.M.PLASTIC: 1, WorldGrid.M.STONE: 1, WorldGrid.M.METAL: 1, WorldGrid.M.GARBAGE: 1}
+# Demolition is deliberate (user request): with the basic hammer (10 dmg) at
+# 0.25 s/hit a 2x2 group of cells is ~3 s of wood, ~5 s of stone, ~7 s of
+# metal. Cracks appear at 25/50/75% damage.
+const STRUCTURE_HP := {WorldGrid.M.WOOD: 30.0, WorldGrid.M.PLASTIC: 20.0, WorldGrid.M.STONE: 50.0, WorldGrid.M.METAL: 65.0, WorldGrid.M.GARBAGE: 25.0}
+# GARBAGE (the stage-gap plugs) is the ONE structure that pays out: it is
+# junk, so each demolished cell rolls scrap metal and plastic independently.
+const GARBAGE_DROP_CHANCE: float = 0.3
+const GARBAGE_DROPS: Array = ["scrap_metal", "plastic"]
 # Mined drops must visibly pay out (user request): they pop toward the
 # miner (velocity = offset * factor + an upward kick) and then MAGNET home
 # to any player within radius once their pickup delay expires.
@@ -203,9 +219,24 @@ const POCKET_LOCK_CHANCE: float = 0.20   # wood door deadbolted (room_door_locke
 const POCKET_LOCK_TIER: int = 1          # pry bar or better forces a deadbolt
 const POCKET_SEAL_CHANCE: float = 0.40   # submerged pocket kept its air (user: 40% dry)
 
-const BAND_SHALLOWS_DEPTH: int = 80  # rows (ft) below the waterline where each band ends
-const BAND_COLD_DEPTH: int = 240
-const BAND_DARK_DEPTH: int = 440
+# Stage boundaries (user request 2026-09-06): each SUBMERGED boundary (Shallows/
+# Cold, Cold/Dark, Dark/Crush - never the waterline) is an open "middle ground"
+# of STAGE_GAP_ROWS rows INSERTED between the stages' floors: CityGen builds
+# the towers on a gap-free lattice, then splices the gap rows in, so every
+# stage keeps its full floor count and the world grows 3 gaps taller. Inside
+# a tower footprint the gap is bare back wall (the building's silhouette);
+# the inter-tower gaps and the ocean margins are plugged with GARBAGE so the
+# open water column no longer offers a free dive - going deeper means a
+# tower's stairwell. A gap belongs to the SHALLOWER band (hover safely, look
+# down). STAGE_FLOOR_DEPTH_* are the gap-free (build-space) depths; the
+# BAND_*_DEPTH world-row depths fold the inserted gaps in.
+const STAGE_GAP_ROWS: int = 12
+const STAGE_FLOOR_DEPTH_SHALLOWS: int = 80  # floor rows (ft) below the waterline where each stage's floors end
+const STAGE_FLOOR_DEPTH_COLD: int = 240
+const STAGE_FLOOR_DEPTH_DARK: int = 440
+const BAND_SHALLOWS_DEPTH: int = STAGE_FLOOR_DEPTH_SHALLOWS + STAGE_GAP_ROWS     # world rows below the waterline where each band ends
+const BAND_COLD_DEPTH: int = STAGE_FLOOR_DEPTH_COLD + 2 * STAGE_GAP_ROWS
+const BAND_DARK_DEPTH: int = STAGE_FLOOR_DEPTH_DARK + 3 * STAGE_GAP_ROWS
 # Cold/crush gates (CC-16, GL-12) — applied while submerged; drained rooms
 # are safe (forward camps, GL-17). Suit stats lift them from M5 onward.
 const COLD_SLOW_FACTOR: float = 0.65

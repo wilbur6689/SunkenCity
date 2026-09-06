@@ -76,7 +76,8 @@ func _ready() -> void:
 		if rect.position.x < annex_x0 or rect.end.x > g.bounds.end.x:
 			shell_ok = false
 		var host := CityGen.tower_at(r.tower_list, p.exit) # the pocket is as tall as its tower's floors (district pitch)
-		if sr != int(p.exit.y) or host.is_empty() or rect.size.y != int(host.floor_h) - CityGen.SLAB_T:
+		var fo := int(host.get("floor_h", CityGen.FLOOR_H)) - CityGen.SLAB_T if not host.is_empty() else -1
+		if sr != int(p.exit.y) or host.is_empty() or (rect.size.y != fo and rect.size.y != fo + CityGen.GAP_ROWS):
 			rows_ok = false # a pocket sits on exactly its doorway's floor rows
 		for y in range(rect.position.y, rect.end.y):
 			for x in range(rect.position.x, rect.end.x):

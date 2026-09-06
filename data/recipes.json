@@ -143,7 +143,7 @@
     },
     {
       "id": "standing_lamp",
-      "station": "workbench",
+      "station": "pump_works",
       "tier": 1,
       "known": true,
       "output": {
@@ -194,26 +194,6 @@
         {
           "item": "wood",
           "count": 1
-        }
-      ]
-    },
-    {
-      "id": "workbench",
-      "station": "hand",
-      "tier": 1,
-      "known": true,
-      "output": {
-        "item": "workbench",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "wood",
-          "count": 30
-        },
-        {
-          "item": "scrap_metal",
-          "count": 15
         }
       ]
     },
@@ -306,90 +286,6 @@
       ]
     },
     {
-      "id": "forge",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "forge",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "stone",
-          "count": 10
-        },
-        {
-          "item": "scrap_metal",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "id": "med_station",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "med_station",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 4
-        },
-        {
-          "item": "plastic",
-          "count": 4
-        },
-        {
-          "item": "cloth",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "id": "dive_station",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "dive_station",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 6
-        },
-        {
-          "item": "plastic",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "id": "mod_bench",
-      "station": "workbench",
-      "tier": 2,
-      "known": true,
-      "output": {
-        "item": "mod_bench",
-        "count": 1
-      },
-      "inputs": [
-        {
-          "item": "scrap_metal",
-          "count": 6
-        },
-        {
-          "item": "wood",
-          "count": 4
-        }
-      ]
-    },
-    {
       "id": "medkit_bandages",
       "station": "med_station",
       "tier": 2,
@@ -411,7 +307,7 @@
     },
     {
       "id": "iron_knife",
-      "station": "forge",
+      "station": "machine_shop",
       "tier": 3,
       "known": false,
       "output": {
@@ -431,7 +327,7 @@
     },
     {
       "id": "pump",
-      "station": "dive_station",
+      "station": "pump_works",
       "tier": 2,
       "known": true,
       "output": {
@@ -472,7 +368,7 @@
     },
     {
       "id": "steel",
-      "station": "forge",
+      "station": "steel_works",
       "tier": 1,
       "known": true,
       "inputs": [
@@ -492,7 +388,7 @@
     },
     {
       "id": "bolt_cutters",
-      "station": "forge",
+      "station": "machine_shop",
       "tier": 1,
       "known": true,
       "inputs": [
@@ -512,7 +408,7 @@
     },
     {
       "id": "cutting_torch",
-      "station": "forge",
+      "station": "steel_works",
       "tier": 2,
       "known": true,
       "inputs": [
@@ -664,7 +560,7 @@
     },
     {
       "id": "scrap_sword",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -688,7 +584,7 @@
     },
     {
       "id": "fire_axe",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -708,7 +604,7 @@
     },
     {
       "id": "iron_sword",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -728,7 +624,7 @@
     },
     {
       "id": "speargun",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -752,7 +648,7 @@
     },
     {
       "id": "speargun_bolt",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -768,7 +664,7 @@
     },
     {
       "id": "pistol_rounds",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -784,7 +680,7 @@
     },
     {
       "id": "rifle_rounds",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -936,7 +832,7 @@
     },
     {
       "id": "iron_scrap_bench",
-      "station": "forge",
+      "station": "machine_shop",
       "known": true,
       "tier": 2,
       "inputs": [
@@ -956,7 +852,7 @@
     },
     {
       "id": "steel_scrap_bench",
-      "station": "forge",
+      "station": "steel_works",
       "known": true,
       "tier": 3,
       "inputs": [
@@ -976,7 +872,7 @@
     },
     {
       "id": "master_scrap_bench",
-      "station": "forge",
+      "station": "pressure_works",
       "known": true,
       "tier": 3,
       "inputs": [
@@ -1000,7 +896,7 @@
     },
     {
       "id": "baseball_bat",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1021,7 +917,7 @@
     },
     {
       "id": "baton",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1042,7 +938,7 @@
     },
     {
       "id": "crowbar",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1063,7 +959,7 @@
     },
     {
       "id": "desk_leg",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1084,7 +980,7 @@
     },
     {
       "id": "fire_extinguisher",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1105,7 +1001,7 @@
     },
     {
       "id": "fireplace_poker",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1126,7 +1022,7 @@
     },
     {
       "id": "halligan_tool",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1147,7 +1043,7 @@
     },
     {
       "id": "hatchet",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1168,7 +1064,7 @@
     },
     {
       "id": "kitchen_knife",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1189,7 +1085,7 @@
     },
     {
       "id": "letter_opener",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1210,7 +1106,7 @@
     },
     {
       "id": "machete",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1231,7 +1127,7 @@
     },
     {
       "id": "nail_puller",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1252,7 +1148,7 @@
     },
     {
       "id": "paper_cutter",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1273,7 +1169,7 @@
     },
     {
       "id": "pipe_wrench",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1294,7 +1190,7 @@
     },
     {
       "id": "rebar_club",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1315,7 +1211,7 @@
     },
     {
       "id": "rescue_axe",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1336,7 +1232,7 @@
     },
     {
       "id": "stapler",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1357,7 +1253,7 @@
     },
     {
       "id": "utility_knife",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -1378,7 +1274,7 @@
     },
     {
       "id": "boarding_axe",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1399,7 +1295,7 @@
     },
     {
       "id": "breaching_tool",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1420,7 +1316,7 @@
     },
     {
       "id": "demolition_hammer",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1441,7 +1337,7 @@
     },
     {
       "id": "security_flashlight",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1462,7 +1358,7 @@
     },
     {
       "id": "lump_hammer",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1483,7 +1379,7 @@
     },
     {
       "id": "cane_machete",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1504,7 +1400,7 @@
     },
     {
       "id": "pickaxe",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1525,7 +1421,7 @@
     },
     {
       "id": "rescue_saw",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1546,7 +1442,7 @@
     },
     {
       "id": "riot_baton",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1567,7 +1463,7 @@
     },
     {
       "id": "sledgehammer",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1588,7 +1484,7 @@
     },
     {
       "id": "spear",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1609,7 +1505,7 @@
     },
     {
       "id": "splitting_maul",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -1630,7 +1526,7 @@
     },
     {
       "id": "breaching_hammer",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1651,7 +1547,7 @@
     },
     {
       "id": "dive_knife",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1672,7 +1568,7 @@
     },
     {
       "id": "harpoon",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1693,7 +1589,7 @@
     },
     {
       "id": "felling_axe",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1714,7 +1610,7 @@
     },
     {
       "id": "pinch_bar",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1735,7 +1631,7 @@
     },
     {
       "id": "broad_hatchet",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1756,7 +1652,7 @@
     },
     {
       "id": "hunting_knife",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1777,7 +1673,7 @@
     },
     {
       "id": "industrial_cutter",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -1798,7 +1694,7 @@
     },
     {
       "id": "breaching_sledge",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 4,
       "known": true,
       "output": {
@@ -1819,7 +1715,7 @@
     },
     {
       "id": "mattock",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 4,
       "known": true,
       "output": {
@@ -1840,7 +1736,7 @@
     },
     {
       "id": "hydraulic_cutter",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 4,
       "known": true,
       "output": {
@@ -1861,7 +1757,7 @@
     },
     {
       "id": "industrial_saw",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 4,
       "known": true,
       "output": {
@@ -1882,7 +1778,7 @@
     },
     {
       "id": "pole_hook",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 4,
       "known": true,
       "output": {
@@ -1903,7 +1799,7 @@
     },
     {
       "id": "rescue_spreader",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 4,
       "known": true,
       "output": {
@@ -1924,7 +1820,7 @@
     },
     {
       "id": "breaching_maul",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 5,
       "known": true,
       "output": {
@@ -1945,7 +1841,7 @@
     },
     {
       "id": "shock_baton",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 5,
       "known": true,
       "output": {
@@ -1966,7 +1862,7 @@
     },
     {
       "id": "whaling_harpoon",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 5,
       "known": true,
       "output": {
@@ -1987,7 +1883,7 @@
     },
     {
       "id": "tactical_axe",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 5,
       "known": true,
       "output": {
@@ -2008,7 +1904,7 @@
     },
     {
       "id": "arrows",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -2029,7 +1925,7 @@
     },
     {
       "id": "crossbow_bolts",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -2050,7 +1946,7 @@
     },
     {
       "id": "nails",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 1,
       "known": true,
       "output": {
@@ -2067,7 +1963,7 @@
     },
     {
       "id": "flares",
-      "station": "workbench",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -2088,7 +1984,7 @@
     },
     {
       "id": "rivets",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -2105,7 +2001,7 @@
     },
     {
       "id": "shotgun_shells",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 2,
       "known": true,
       "output": {
@@ -2126,7 +2022,7 @@
     },
     {
       "id": "harpoon",
-      "station": "forge",
+      "station": "weapon_bench",
       "tier": 3,
       "known": true,
       "output": {
@@ -2140,6 +2036,314 @@
         }
       ],
       "district_weapon": true
+    },
+    {
+      "id": "workbench",
+      "station": "hand",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "workbench",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "wood",
+          "count": 30
+        },
+        {
+          "item": "scrap_metal",
+          "count": 15
+        },
+        {
+          "item": "part_drafting_table",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "forge",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "forge",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "stone",
+          "count": 10
+        },
+        {
+          "item": "scrap_metal",
+          "count": 20
+        },
+        {
+          "item": "plastic",
+          "count": 10
+        },
+        {
+          "item": "part_cast_stove",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "machine_shop",
+      "station": "forge",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "machine_shop",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 20
+        },
+        {
+          "item": "scrap_metal",
+          "count": 20
+        },
+        {
+          "item": "wood",
+          "count": 10
+        },
+        {
+          "item": "part_engine_lathe",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "steel_works",
+      "station": "machine_shop",
+      "tier": 4,
+      "known": true,
+      "output": {
+        "item": "steel_works",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "iron",
+          "count": 30
+        },
+        {
+          "item": "stone",
+          "count": 20
+        },
+        {
+          "item": "plastic",
+          "count": 10
+        },
+        {
+          "item": "part_welding_rig",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "pressure_works",
+      "station": "steel_works",
+      "tier": 5,
+      "known": true,
+      "output": {
+        "item": "pressure_works",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "steel",
+          "count": 20
+        },
+        {
+          "item": "iron",
+          "count": 20
+        },
+        {
+          "item": "plastic",
+          "count": 10
+        },
+        {
+          "item": "part_generator",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "med_station",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "med_station",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 4
+        },
+        {
+          "item": "plastic",
+          "count": 4
+        },
+        {
+          "item": "cloth",
+          "count": 2
+        },
+        {
+          "item": "part_crash_cart",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "weapon_bench",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "weapon_bench",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "wood",
+          "count": 20
+        },
+        {
+          "item": "scrap_metal",
+          "count": 20
+        },
+        {
+          "item": "cloth",
+          "count": 5
+        },
+        {
+          "item": "part_site_toolbox",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "dive_station",
+      "station": "forge",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "dive_station",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 6
+        },
+        {
+          "item": "plastic",
+          "count": 4
+        },
+        {
+          "item": "cloth",
+          "count": 4
+        },
+        {
+          "item": "part_dive_tanks",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "pump_works",
+      "station": "forge",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "pump_works",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 10
+        },
+        {
+          "item": "plastic",
+          "count": 10
+        },
+        {
+          "item": "iron",
+          "count": 4
+        },
+        {
+          "item": "part_hose_reel",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "mod_bench",
+      "station": "machine_shop",
+      "tier": 3,
+      "known": true,
+      "output": {
+        "item": "mod_bench",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 6
+        },
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "iron",
+          "count": 4
+        },
+        {
+          "item": "part_tool_chest",
+          "count": 1
+        }
+      ],
+      "gen": "parts_v1"
+    },
+    {
+      "id": "pot_belly_stove",
+      "station": "workbench",
+      "tier": 2,
+      "known": true,
+      "output": {
+        "item": "pot_belly_stove",
+        "count": 1
+      },
+      "inputs": [
+        {
+          "item": "scrap_metal",
+          "count": 12
+        },
+        {
+          "item": "stone",
+          "count": 8
+        }
+      ],
+      "gen": "parts_v1",
+      "desc": "Place it in a sealed room and light it: the room dries out, slowly."
     }
   ]
 }

@@ -121,7 +121,12 @@ func _boot_generated() -> void:
 		if o.has("door"): # release button: the barred door it opens
 			rec["door"] = o.door
 	for dc in gen.doors:
-		World.add_object_record(dc.id, dc.cell, false)
+		var drec := World.add_object_record(dc.id, dc.cell, false)
+		if bool(dc.get("open", false)):
+			drec.open = true # a drainable floor's door is found open (the flood passes)
+	var n_parts := CityGen.place_parts(World, gen, seed_value) # found bench parts (2026-09-06)
+	if "--f3" in OS.get_cmdline_user_args():
+		print("CityGen: %d bench parts placed" % n_parts)
 	for p in gen.get("pockets", []):
 		World.pockets.append({"rect": p.rect, "exit": p.exit, "entry": p.entry})
 	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value, World.towers, World.pockets)

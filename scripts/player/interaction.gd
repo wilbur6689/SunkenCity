@@ -233,6 +233,8 @@ func _primary() -> void:
 				World.place_object(it.places_object, target_cell, true)
 				player.inventory.remove_from_slot(player.selected_slot, 1)
 				player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK * 2.0)
+			elif target_in_reach and not _used_last_tick and World.last_place_error != "":
+				say(World.last_place_error) # e.g. the stove wants a sealed room
 		"consumable", "schematic":
 			if not _used_last_tick:
 				player.use_item(player.selected_slot)
@@ -492,6 +494,10 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 	if obj == null or obj.def.kind != "scrap":
 		_stop_scrapping()
 		return
+	if _weapon_in_hand():
+		say("Weapons don't dismantle - use a tool")
+		_stop_scrapping()
+		return
 	var need_tool: String = obj.def.get("requires_tool", "")
 	if need_tool != "" and tool.get("type", "") != need_tool:
 		say("Needs an %s to cut down" % need_tool if need_tool == "axe" else "Needs a %s" % need_tool)
@@ -523,6 +529,8 @@ func _scrap(delta: float, tool: Dictionary) -> void:
 		_scrap_sfx_timer = Constants.SCRAP_SFX_INTERVAL
 		_sfx("creak_plastic", obj.center(), 3, -6.0)
 	var speed: float = float(tool.get("speed", Constants.HAND_SCRAP_SPEED)) * player.scrap_speed_mult()
+	if World.is_water(obj.center()): # working submerged is slower (user request 2026-09-06)
+		speed *= 1.0 - Constants.UNDERWATER_SCRAP_SLOW
 	scrap_progress += delta * speed / float(obj.def.get("scrap_time", 2.0))
 	obj.scrap_progress = scrap_progress
 	if scrap_progress >= 1.0:
@@ -572,9 +580,20 @@ func _stop_scrapping() -> void:
 ## don't highlight furniture that needs a higher-tier tool than the one held)?
 ## Mirrors the _scrap gate exactly. Only kind=="scrap" is gated - doors,
 ## chests, stations, beds, pumps, breakers stay actionable regardless.
+## A plain weapon (weapon block, no tool block) held in the HOTBAR hand
+## cannot dismantle anything (user request 2026-09-06); a worn weapon
+## standing in for an empty hand does not count - that is still bare hands.
+func _weapon_in_hand() -> bool:
+	if player.holding_worn_weapon():
+		return false
+	var it := Data.item(player.held_item())
+	return it.has("weapon") and not it.has("tool")
+
 func can_harvest(obj: WorldObject) -> bool:
 	if obj == null or obj.def.get("kind", "") != "scrap":
 		return true
+	if _weapon_in_hand():
+		return false
 	var tool: Dictionary = player.held_tool()
 	var need_tool: String = obj.def.get("requires_tool", "")
 	if need_tool != "" and tool.get("type", "") != need_tool:

@@ -29,46 +29,24 @@ var _hover_action: Label
 var _hover_shown: float = 0.0 # 0 = fully hidden, 1 = fully up
 var _hover_obj: WorldObject = null
 var _hover_mats: HBoxContainer
-var _hover_badge: _TierBadge
+var _hover_badge: Control
 
-## Tier badge (user request 2026-09-02): a little shield with the required
-## tool-tier number, colour-coded, shown on a harvestable object's card.
-class _TierBadge extends Control:
-	var tier: int = -1
-	const COLORS := {
-		0: Color(0.52, 0.54, 0.58), # hands - grey
-		1: Color(0.40, 0.74, 0.36), # pry/basic - green
-		2: Color(0.34, 0.62, 0.93), # iron - blue
-		3: Color(0.93, 0.60, 0.24), # steel/torch - orange
-	}
-	func _init() -> void:
-		custom_minimum_size = Vector2(13, 15)
-		mouse_filter = Control.MOUSE_FILTER_IGNORE
-	func set_tier(t: int) -> void:
-		if t == tier:
-			return
-		tier = t
-		queue_redraw()
-	func _draw() -> void:
-		var col: Color = COLORS.get(tier, COLORS[1])
-		var w := size.x
-		var h := size.y
-		var pts := PackedVector2Array([
-			Vector2(1, 1), Vector2(w - 1, 1), Vector2(w - 1, h * 0.52),
-			Vector2(w * 0.5, h - 1), Vector2(1, h * 0.52)])
-		draw_colored_polygon(pts, col)
-		var border := PackedVector2Array(pts)
-		border.append(pts[0])
-		draw_polyline(border, col.darkened(0.45), 1.0, true)
-		var fnt := ThemeDB.fallback_font
-		var s := str(tier)
-		var fs := 9
-		var tw: float = fnt.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
-		var ink := Color(1, 1, 1) if col.get_luminance() < 0.62 else Color(0.08, 0.09, 0.1)
-		draw_string(fnt, Vector2((w - tw) * 0.5, h * 0.66), s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, ink)
+const TIER_BADGE := preload("res://scripts/ui/tier_badge.gd") # shared with the inventory tooltips (2026-09-06)
 var _gain_box: VBoxContainer
 var _gain_rows: Dictionary = {} # item id -> {row, count_label, count, t}
 var _weight_icon: TextureRect
+var _weapon_slot: Dictionary = {} # {panel, style, icon, glyph}: the worn weapon, left of the hotbar (2026-09-06)
+## Hotbar tooltip (user request 2026-09-06): a plate above the hovered slot
+## with the item's name (rarity colour), tool tier badge, modifier lines and
+## description - the same facts the bag tooltip shows.
+const NO_HOTBAR_HOVER := -99
+var _hotbar_hover: int = NO_HOTBAR_HOVER
+var _tip_plate: PanelContainer
+var _tip_name: Label
+var _tip_tier_row: HBoxContainer
+var _tip_badge: Control
+var _tip_tier: Label
+var _tip_lines: Label
 
 func _ready() -> void:
 	UIScale.register($Root) # UI size scaling (2026-09-02)
@@ -93,7 +71,40 @@ func _ready() -> void:
 		panel.add_child(count)
 		panel.gui_input.connect(_on_hotbar_click.bind(i))
 		hotbar.add_child(panel)
+		panel.mouse_entered.connect(_set_hotbar_hover.bind(i))
+		panel.mouse_exited.connect(_set_hotbar_hover.bind(NO_HOTBAR_HOVER))
 		_slots.append({"panel": panel, "style": style, "icon": icon, "count": count})
+	# Weapon slot (user request 2026-09-06): the worn weapon, left of the
+	# hotbar with a gap; key 1 / click / the wheel select it.
+	var wpanel := PanelContainer.new()
+	wpanel.custom_minimum_size = Vector2(20, 20)
+	var wstyle := StyleBoxFlat.new()
+	wstyle.bg_color = Color(0.05, 0.05, 0.08, 0.75)
+	wstyle.border_color = Color(0.5, 0.5, 0.55, 0.8)
+	wstyle.set_border_width_all(1)
+	wpanel.add_theme_stylebox_override("panel", wstyle)
+	var wglyph := TextureRect.new()
+	var gat := AtlasTexture.new()
+	gat.atlas = load("res://assets/ui/equip_glyphs.png")
+	gat.region = Rect2(4 * Data.ICON_PX, 0, Data.ICON_PX, Data.ICON_PX)
+	wglyph.texture = gat
+	wglyph.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	wglyph.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	wglyph.custom_minimum_size = Vector2(16, 16)
+	wglyph.modulate = Color(1, 1, 1, 0.5)
+	wpanel.add_child(wglyph)
+	var wicon := TextureRect.new()
+	wicon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	wicon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	wicon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	wpanel.add_child(wicon)
+	wpanel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	wpanel.position = Vector2(hotbar.offset_left - 8 - 20, hotbar.offset_top) # gap of 8 px left of the bar
+	wpanel.gui_input.connect(_on_hotbar_click.bind(Constants.WEAPON_HOTBAR))
+	wpanel.mouse_entered.connect(_set_hotbar_hover.bind(Constants.WEAPON_HOTBAR))
+	wpanel.mouse_exited.connect(_set_hotbar_hover.bind(NO_HOTBAR_HOVER))
+	get_node("Root").add_child(wpanel)
+	_weapon_slot = {"panel": wpanel, "style": wstyle, "icon": wicon, "glyph": wglyph}
 	# The vitals bars must not swallow world clicks (ui_blocking checks the
 	# hovered control now that the hotbar is clickable).
 	for bar: Control in [health_bar, oxygen_bar, scrap_bar]:
@@ -115,6 +126,92 @@ func _ready() -> void:
 	_build_debug()
 	_build_hover_panel()
 	_build_gain_feed()
+	_build_hotbar_tip()
+
+func _build_hotbar_tip() -> void:
+	_tip_plate = PanelContainer.new()
+	_tip_plate.add_theme_stylebox_override("panel", UITheme.flat_panel(Color(0.03, 0.06, 0.09, 0.95)))
+	_tip_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tip_plate.visible = false
+	_tip_plate.z_index = 30
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 1)
+	_tip_plate.add_child(v)
+	_tip_name = UITheme.label("", 8)
+	v.add_child(_tip_name)
+	_tip_tier_row = HBoxContainer.new()
+	_tip_tier_row.add_theme_constant_override("separation", 3)
+	_tip_badge = TIER_BADGE.new()
+	_tip_tier_row.add_child(_tip_badge)
+	_tip_tier = UITheme.label("", 8, Color(0.75, 0.8, 0.82))
+	_tip_tier_row.add_child(_tip_tier)
+	v.add_child(_tip_tier_row)
+	_tip_lines = UITheme.label("", 8, Color(0.75, 0.79, 0.83))
+	_tip_lines.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tip_lines.custom_minimum_size = Vector2(120, 0)
+	v.add_child(_tip_lines)
+	get_node("Root").add_child(_tip_plate)
+
+func _set_hotbar_hover(i: int) -> void:
+	_hotbar_hover = i
+
+## The stack under the hovered hotbar slot (null when empty / no hover).
+func _hotbar_hover_stack():
+	if player == null or _hotbar_hover == NO_HOTBAR_HOVER:
+		return null
+	if _hotbar_hover == Constants.WEAPON_HOTBAR:
+		return player.equipped_weapon()
+	return player.inventory.slots[_hotbar_hover] if _hotbar_hover < player.inventory.slots.size() else null
+
+func _update_hotbar_tip() -> void:
+	var st = _hotbar_hover_stack()
+	var anchor: Control = null
+	if _hotbar_hover == Constants.WEAPON_HOTBAR and not _weapon_slot.is_empty():
+		anchor = _weapon_slot.panel
+	elif _hotbar_hover >= 0 and _hotbar_hover < _slots.size():
+		anchor = _slots[_hotbar_hover].panel
+	if st == null or anchor == null:
+		if _hotbar_hover == Constants.WEAPON_HOTBAR and anchor != null:
+			_tip_name.text = "Weapon slot"
+			_tip_name.add_theme_color_override("font_color", Color(0.75, 0.79, 0.83))
+			_tip_tier_row.visible = false
+			_tip_lines.text = "Wear a weapon in the inventory screen; key 1 selects it."
+			_tip_lines.visible = true
+		else:
+			_tip_plate.visible = false
+			return
+	else:
+		_tip_name.text = ItemMods.display_name(st)
+		_tip_name.add_theme_color_override("font_color", ItemMods.rarity_color(st))
+		var it := Data.item(String(st.id))
+		var tool: Dictionary = it.get("tool", {})
+		_tip_tier_row.visible = false
+		if not tool.is_empty():
+			var tier := int(tool.get("tier", 0))
+			_tip_badge.set_tier(tier)
+			_tip_badge.visible = true
+			_tip_tier.text = "Fells trees (tier %d)" % tier if String(tool.get("type", "")) == "axe" else "Dismantles tier %d and below" % tier
+			_tip_tier_row.visible = true
+		elif it.has("weapon"):
+			_tip_badge.visible = false
+			_tip_tier.text = "Weapon: no dismantling"
+			_tip_tier_row.visible = true
+		var lines: Array = ItemMods.describe(st)
+		var desc := Data.item_desc(String(st.id))
+		if desc != "":
+			lines.append(desc)
+		if int(st.get("count", 1)) > 1:
+			lines.append("x%d · %.1f wt" % [int(st.count), ItemMods.unit_weight(st) * int(st.count)])
+		_tip_lines.text = "
+".join(PackedStringArray(lines))
+		_tip_lines.visible = not lines.is_empty()
+	_tip_plate.visible = true
+	_tip_plate.reset_size()
+	var root: Control = get_node("Root")
+	var a := anchor.global_position
+	var pos := Vector2(a.x + anchor.size.x * 0.5 - _tip_plate.size.x * 0.5, a.y - _tip_plate.size.y - 4)
+	pos.x = clampf(pos.x, 2.0, root.size.x - _tip_plate.size.x - 2.0)
+	_tip_plate.position = pos
 
 func _on_hotbar_click(ev: InputEvent, i: int) -> void:
 	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT and player != null:
@@ -142,7 +239,7 @@ func _build_hover_panel() -> void:
 	var descrow := HBoxContainer.new()
 	descrow.add_theme_constant_override("separation", 3)
 	descrow.alignment = BoxContainer.ALIGNMENT_BEGIN
-	_hover_badge = _TierBadge.new()
+	_hover_badge = TIER_BADGE.new()
 	_hover_desc = Label.new()
 	_hover_desc.add_theme_font_size_override("font_size", 8)
 	_hover_desc.add_theme_color_override("font_color", Color(0.75, 0.8, 0.82))
@@ -192,7 +289,14 @@ func _hover_lines(obj: WorldObject) -> Array:
 		"chest":
 			what = "Container — %d slots" % obj.storage.slots.size()
 			how = "LMB: open · hold LMB: pick up (when empty) · RMB: scrap"
+		"heater":
+			what = "Pot-belly stove — lit in a SEALED room it slowly boils the water off"
+			how = "LMB: %s · hold LMB: pick up" % ("snuff it" if obj.powered_on else "light it")
 		_:
+			if def.has("needed_for"): # a found bench part (docs/CraftingStages.md)
+				var bench_name: String = Data.objects.get(def.needed_for, {}).get("name", String(def.needed_for))
+				return [title, "Bench part — builds the %s" % bench_name,
+					"Hold LMB: pick up and carry it home · RMB scraps it (you'd lose the part)"]
 			if obj.storage != null:
 				what = "Container — %d slots" % obj.storage.slots.size()
 				how = "LMB: open · hold LMB: pick up (when empty) · RMB: scrap"
@@ -434,6 +538,11 @@ func _process(delta: float) -> void:
 		ui.icon.texture = Data.icon(s.id) if s != null else null
 		ui.count.text = str(s.count) if (s != null and s.count > 1) else ""
 		ui.style.border_color = Color(1.0, 0.85, 0.4) if i == player.selected_slot else Color(0.5, 0.5, 0.55, 0.8)
+	if not _weapon_slot.is_empty():
+		var worn = player.equipped_weapon()
+		_weapon_slot.icon.texture = Data.icon(worn.id) if worn != null else null
+		_weapon_slot.glyph.visible = worn == null
+		_weapon_slot.style.border_color = Color(1.0, 0.85, 0.4) if player.selected_slot == Constants.WEAPON_HOTBAR else Color(0.5, 0.5, 0.55, 0.8)
 
 	var wf: float = player.weight_swim_factor()
 	_weight_icon.visible = wf <= 0.8
@@ -455,6 +564,7 @@ func _process(delta: float) -> void:
 		_refresh_debug()
 
 	_update_hover_panel(delta)
+	_update_hotbar_tip()
 	_tick_gain_feed(delta)
 
 	var inter := player.interaction

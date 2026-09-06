@@ -13,7 +13,7 @@ const CHAR_EXT := ".char"
 const VERSION := 2 # 2 = 8 px cells (2026-09-04); v1 worlds/characters are refused, not migrated
 ## World files carry their own version: 3 = compact object records (districts city, 2026-09-04:
 ## ~50k records as an id table + PackedInt32Array instead of one Dictionary each - 20 MB -> ~1 MB).
-const WORLD_VERSION := 3
+const WORLD_VERSION := 4 # 4: stage gaps spliced into the grid (2026-09-06); 3: compact object records
 const OBJ_PLACED := 1
 const OBJ_OPEN := 2
 const OBJ_POWERED := 4

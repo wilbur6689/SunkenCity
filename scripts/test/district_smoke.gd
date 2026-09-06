@@ -98,7 +98,7 @@ func _ready() -> void:
 				var step: int = absi(int(t.top) - int(towers[k - 1].top))
 				if step < CityGen.LIFT_STEP_MIN or step > CityGen.LIFT_STEP_MAX:
 					steps_ok = false
-			blockages += CityGen.floor_blockages(r.grid, t).size()
+			blockages += CityGen.floor_blockages(r.grid, t, true).size()
 		check(top_max - top_min <= CityGen.SKYLINE_BAND, "seed %d: crowns span %d cells (<= %d)" % [s, top_max - top_min, CityGen.SKYLINE_BAND])
 		check(top_max < CityGen.WATERLINE, "seed %d: every crown is above the waterline (The Dry is one layer)" % s)
 		check(ground_ok, "seed %d: every tower reaches the ground (floors x pitch + plinth)" % s)
@@ -118,7 +118,7 @@ func _ready() -> void:
 				ind = t
 		if not con.is_empty():
 			var stone := 0
-			for y in range(int(con.top), CityGen.GROUND):
+			for y in range(int(con.top), CityGen.ground_row()):
 				for x in range(int(con.x0), int(con.x1) + 1):
 					if r.grid.structure_at(Vector2i(x, y)) == WorldGrid.M.STONE:
 						stone += 1
@@ -136,10 +136,10 @@ func _ready() -> void:
 		# floor-level band: a floor straddling the shallows/cold line takes shallows
 		var probe: Dictionary = towers[0]
 		var fh := int(probe.floor_h)
-		var boundary := CityGen.WATERLINE + Constants.BAND_SHALLOWS_DEPTH
+		var boundary := CityGen.WATERLINE + Constants.STAGE_FLOOR_DEPTH_SHALLOWS # build lattice
 		var f := (boundary - int(probe.top)) / fh
-		var ceiling := int(probe.top) + f * fh
-		var sr := ceiling + fh - 1
+		var ceiling := CityGen.floor_ceiling(probe, f) # world rows: above the gap
+		var sr := CityGen.floor_standing_row(probe, f) # ... and below it
 		var cell := Vector2i(int(probe.zones[0][0]) + 1, sr)
 		check(CityGen.band_row(towers, cell) == ceiling and CityGen.band_row(towers, Vector2i(5, sr)) == sr,
 				"seed %d: band row is the floor's ceiling inside a tower, the cell's own row outside" % s)
@@ -149,6 +149,84 @@ func _ready() -> void:
 			floors_total += int(t.floors)
 		var density := float((r.pockets as Array).size()) / floors_total
 		check(density > 0.38, "seed %d: %.0f%% of floors carry an apartment doorway (target ~50%%)" % [s, density * 100.0])
+		# stage gaps (user request 2026-09-06): three open bands spliced in,
+		# bare back wall across every footprint, garbage everywhere else.
+		var gaps: Array = CityGen.stage_gaps()
+		check(r.grid.bounds.size.y == CityGen.world_h() and gaps.size() == 3 and CityGen.ground_row() == CityGen.GROUND + 3 * CityGen.GAP_ROWS,
+				"seed %d: the grid is %d rows (3 gaps of %d spliced in), ground at %d" % [s, r.grid.bounds.size.y, CityGen.GAP_ROWS, CityGen.ground_row()])
+		var gap_bad := 0
+		var plug_bad := 0
+		var wet_above := 0
+		for g: Vector2i in gaps:
+			for x in range(0, int(r.city_w)):
+				var in_tower := false
+				for t in towers:
+					if x >= int(t.x0) and x <= int(t.x1):
+						in_tower = true
+						break
+				var edge_d := 99999 # distance from the nearest footprint edge (the heap may spill this far)
+				for t in towers:
+					if x >= int(t.x0) and x <= int(t.x1):
+						edge_d = mini(x - int(t.x0), int(t.x1) - x)
+				for y in range(g.x, g.y):
+					var c := Vector2i(x, y)
+					if in_tower:
+						var m: int = r.grid.structure_at(c)
+						var heap: bool = m == WorldGrid.M.GARBAGE and edge_d < CityGen.plug_reach(y - g.x)
+						if (m != WorldGrid.M.AIR and not heap) or r.grid.back_at(c) == WorldGrid.M.AIR or r.grid.climb_at(c) != WorldGrid.C.NONE:
+							gap_bad += 1
+					elif r.grid.structure_at(c) == WorldGrid.M.AIR: # garbage, or a relay's floor slab
+						plug_bad += 1
+				if not in_tower and r.grid.structure_at(Vector2i(x, g.x - 1)) == WorldGrid.M.AIR:
+					wet_above += 1
+		check(gap_bad == 0, "seed %d: every gap row inside a footprint is bare back wall, bar the heap's slope (%d bad cells)" % [s, gap_bad])
+		var heap_ok := true
+		if towers.size() > 1: # the heap between towers 0 and 1: gap-wide on top, PLUG_SLOPE cells wider per row below
+			var hx0 := int(towers[0].x1) + 1
+			var hx1 := int(towers[1].x0) - 1
+			for k in CityGen.GAP_ROWS:
+				var reach := CityGen.plug_reach(k)
+				var y: int = (gaps[0] as Vector2i).x + k
+				if r.grid.structure_at(Vector2i(hx0 - reach, y)) != WorldGrid.M.GARBAGE or r.grid.structure_at(Vector2i(hx1 + reach, y)) != WorldGrid.M.GARBAGE 						or r.grid.structure_at(Vector2i(hx0 - reach - 1, y)) == WorldGrid.M.GARBAGE:
+					heap_ok = false
+		check(heap_ok, "seed %d: the plug is a heap - gap-wide at the top, one cell wider each side per %d rows" % [s, CityGen.PLUG_SLOPE])
+		check(plug_bad == 0, "seed %d: every open-water column is plugged solid through the whole gap (%d holes)" % [s, plug_bad])
+		check(wet_above > 200, "seed %d: open water sits right on top of the plugs (%d columns)" % [s, wet_above])
+		var crossing := 0
+		var straddles := func(y0: int, y1: int) -> bool:
+			for g: Vector2i in gaps:
+				if y0 < g.y and g.x <= y1:
+					return true
+			return false
+		for o in r.objects:
+			var h := int(Data.objects[o.id].size[1])
+			if straddles.call(int(o.cell.y) - h + 1, int(o.cell.y)):
+				crossing += 1
+		for dd in r.doors:
+			var h := int(Data.objects[dd.id].size[1])
+			if straddles.call(int(dd.cell.y) - h + 1, int(dd.cell.y)):
+				crossing += 1
+		for rect: Rect2i in r.sealed:
+			if straddles.call(rect.position.y, rect.end.y - 1):
+				crossing += 1
+		check(crossing == 0, "seed %d: no object, door or sealed room crosses a gap (%d)" % [s, crossing])
+		var portal_cells := {}
+		for o in r.objects:
+			if o.has("link"):
+				portal_cells[o.cell] = true
+		var orphan_pockets := 0
+		for p in r.pockets:
+			if not portal_cells.has(p.exit) or not portal_cells.has(p.entry):
+				orphan_pockets += 1
+		check(orphan_pockets == 0, "seed %d: every surviving pocket keeps both doorways (%d orphans)" % [s, orphan_pockets])
+		var relays_on_plugs := 0
+		for shell: Rect2i in r.relays:
+			for g: Vector2i in gaps:
+				if shell.end.y == g.x:
+					relays_on_plugs += 1
+		check((r.relays as Array).size() == 3 and relays_on_plugs == 3, "seed %d: the three relay pylons stand on the plugs (%d/%d)" % [s, relays_on_plugs, (r.relays as Array).size()])
+		check(r.grid.structure_at(Vector2i(int(r.city_w) / 2, CityGen.ground_row())) == WorldGrid.M.STONE
+				and r.grid.structure_at(Vector2i(3, CityGen.ground_row() - 1)) == WorldGrid.M.AIR, "seed %d: the ground moved down with the splice" % s)
 		# construction rooms are furnished from their own pool only
 		var con_ids := {}
 		var con_foreign := 0
@@ -157,7 +235,7 @@ func _ready() -> void:
 				continue
 			for o in r.objects:
 				var c: Vector2i = o.cell
-				if c.x >= int(t.x0) and c.x <= int(t.x1) and c.y >= int(t.top) and c.y < CityGen.GROUND:
+				if c.x >= int(t.x0) and c.x <= int(t.x1) and c.y >= int(t.top) and c.y < CityGen.ground_row():
 					var oid: String = o.id
 					if oid.begins_with("con_"):
 						con_ids[oid] = true
@@ -218,11 +296,22 @@ func _ready() -> void:
 	check(dry_gaps == 0, "every inter-tower gap is flooded to the waterline (%d dry; %s)" % [dry_gaps, gap_probe])
 	var probe_t: Dictionary = World.towers[0]
 	var fh2 := int(probe_t.floor_h)
-	var f2 := (World.waterline_row + Constants.BAND_SHALLOWS_DEPTH - int(probe_t.top)) / fh2
-	var sr2 := int(probe_t.top) + f2 * fh2 + fh2 - 1
+	var f2 := (World.waterline_row + Constants.STAGE_FLOOR_DEPTH_SHALLOWS - int(probe_t.top)) / fh2
+	var sr2 := CityGen.floor_standing_row(probe_t, f2)
 	var straddle := Vector2i(int(probe_t.x0) + 14, sr2)
 	check(World.floor_band_at(straddle) == "shallows" and World.band_at(straddle) == "cold",
 			"a floor straddling the Shallows/Cold line: floor band shallows, cell band cold (gates stay per cell)")
+	print("== stage gaps in the live world (2026-09-06)")
+	var g0: Vector2i = CityGen.stage_gaps()[0]
+	check(World.band_at(Vector2i(10, g0.x)) == "shallows" and World.band_at(Vector2i(10, g0.y - 1)) == "shallows"
+			and World.band_at(Vector2i(10, g0.y)) == "cold", "the gap belongs to the shallower band; The Cold starts right under it")
+	World.time_of_day = 0.5
+	var gap_in_tower := Vector2i(int(probe_t.x0) + 20, g0.x + 3)
+	check(World.has_back_wall_cell(gap_in_tower) and World.visibility_at(gap_in_tower, Vector2.ZERO) >= float(LightMap.MAX_LIGHT),
+			"a gap cell inside a tower keeps its back wall yet is revealed like an exterior")
+	var plug := Vector2i(int(probe_t.x0) - 3, g0.x + 5) # the inter-tower gap west of tower 0 (or the margin)
+	check(World.grid.structure_at(plug) == WorldGrid.M.GARBAGE and World.is_solid_cell(plug), "the plug is solid garbage")
+	check(World.damage_block(plug, 100.0, 1) == "broken" and not World.has_block_cell(plug), "a plain hammer digs through a garbage cell")
 	print("\n%d checks, %d failures" % [checks, failures.size()])
 	for f in failures:
 		print("  FAIL: " + f)

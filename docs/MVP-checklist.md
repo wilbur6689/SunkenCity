@@ -84,7 +84,7 @@ them; respawn.
 - [x] Block placement/removal with 4-block reach, ghost preview, body-overlap + neighbour-support checks (WS-12)
 - [x] Placeable set: wood/scrap/stone blocks, door, rope, ladder, chest, bed, standing lamp
 - [x] Player-placed blocks have HP + hardness (`data/blocks.json`); hammer tier-gated breaking, paced hits (WS-22)
-- [x] ~~Structure unbreakable (GL-01)~~ **GL-01 re-amended (2026-08-31): any structure block breaks under the right tool tier** — wood/plastic tier 1 (scrap), stone tier 2 (iron), metal tier 3 (steel); drops one matching material; partial damage persists in the save (`World.structure_damage`)
+- [x] ~~Structure unbreakable (GL-01)~~ **GL-01 re-amended (2026-08-31, again 2026-09-06): any structure block breaks under a plain hammer (tier 1)** — wood/plastic/stone/metal differ only in HP; demolished structure drops NOTHING; partial damage persists in the save (`World.structure_damage`)
 - [x] Chests: opening storage shows the inventory screen with the unit's own grid beside it + quick-stack (LT-23); a full chest cannot be picked up
 - [x] Interactables (chests, cabinets, breakers, doors, stations, pumps…) glow softly under the mouse when in reach; **LMB click interacts, LMB hold (~0.5s) picks up** (E stays as legacy)
 - [x] Bed sets spawn (GL-23) — per-character once characters exist (M3 saves)
@@ -190,6 +190,7 @@ object/storage/door state, character inventory/skills/position, map reveal. **M3
 - [x] Bands: enemies, loot and the HUD/F3 label resolve from the floor's ceiling row; cold/crush gates stay per cell
 - [x] Floor heights: Res/Bus 12 · Com/Civ 14 · Ind 20 · Con 12; room widths Res 16–24 · Bus 16–28 · Com/Civ 20–38 · Ind 28–whole wing · Con 16–24
 - [x] Construction palette: metal frame + wood flooring/partitions only, back walls only below the waterline; keeps the dry cap, barrier and hatch; below the waterline breaches are near-certain, no sealed rooms
+- [x] Stage gaps (2026-09-06): 12-row open bands spliced in at the three submerged boundaries (`CityGen._insert_stage_gaps`), bare back wall across footprints, garbage plugs (new `WorldGrid.M.GARBAGE`, atlas row 9, hammer tier 1, drops scrap + plastic) across gaps and margins, relay pylons standing on the plugs, per-stage backdrops (`tools/gen_stage_backdrops.py`), `WORLD_VERSION` 4; covered in `district_smoke`
 - [x] Triple-wide towers weighted to industrial/commercial, never residential or construction
 - [x] Budget fence: gen ≤ 5 s · world RAM ≤ 64 MB · save ≤ 10 MB · water asleep seconds after load
 

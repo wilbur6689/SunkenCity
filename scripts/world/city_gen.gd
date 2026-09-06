@@ -136,6 +136,91 @@ const POCKET_SPACER := 4 # VOID columns between neighbouring pockets in a lane
 static func annex_width(world_w: int) -> int:
 	return 2 * POCKET_VIEW_MARGIN + maxi(ANNEX_W - 2 * POCKET_VIEW_MARGIN, world_w * 35 / 100)
 
+# --- Stage gaps (user request 2026-09-06) ---------------------------------
+## The three SUBMERGED stage boundaries (Shallows/Cold, Cold/Dark, Dark/
+## Crush; the waterline is left alone) are open "middle ground" bands of
+## GAP_ROWS rows SPLICED INTO the world after the towers are built: the
+## build runs on a gap-free lattice ("build rows": WATERLINE, GROUND, tower
+## `top` + f * floor_h ...), then `_insert_stage_gaps` copies the grid into a
+## taller one with GAP_ROWS of new rows before each boundary row. Inside a
+## tower footprint the new rows are bare back wall (the silhouette marks the
+## building); the inter-tower gaps and the ocean margins are plugged solid
+## with GARBAGE (hammer-breakable, drops scrap + plastic) so the open water
+## column no longer offers a free dive. A floor that straddles a boundary is
+## simply cut in two (the user chose ruler-straight bands over intact rooms);
+## objects, doors and sealed rooms crossing a gap are dropped, a pocket
+## crossing one just grows taller. Everything AFTER the splice - stations,
+## debris, enemies, loot, parts, runtime queries - lives in WORLD rows and
+## converts with expand_row / compact_row.
+const GAP_ROWS := Constants.STAGE_GAP_ROWS
+const PLUG_SLOPE := 2 # the garbage heap spreads 1 cell into each neighbouring footprint per this many rows
+                      # (user request 2026-09-06: a pyramid, gap-wide at the top, spilling outward below;
+                      # 6 cells over 12 rows keeps the stairwell gap x0+4..x0+9 mostly open)
+
+## Build-space rows a gap is inserted BEFORE (the first row of each deeper stage).
+static func gap_rows_build() -> Array:
+	return [WATERLINE + Constants.STAGE_FLOOR_DEPTH_SHALLOWS,
+		WATERLINE + Constants.STAGE_FLOOR_DEPTH_COLD,
+		WATERLINE + Constants.STAGE_FLOOR_DEPTH_DARK]
+
+## Build row -> world row.
+static func expand_row(r: int) -> int:
+	var out := r
+	for b: int in gap_rows_build():
+		if r >= b:
+			out += GAP_ROWS
+	return out
+
+## World row -> build row; a row inside gap i maps to the first build row
+## after it (the deeper stage's first row).
+static func compact_row(r: int) -> int:
+	var shift := 0
+	var i := 0
+	for b: int in gap_rows_build():
+		var g0 := b + i * GAP_ROWS
+		if r < g0:
+			break
+		if r < g0 + GAP_ROWS:
+			return b
+		shift += GAP_ROWS
+		i += 1
+	return r - shift
+
+## The gaps in world rows: Vector2i(first row, one past the last row) each.
+static func stage_gaps() -> Array:
+	var out: Array = []
+	var i := 0
+	for b: int in gap_rows_build():
+		out.append(Vector2i(b + i * GAP_ROWS, b + (i + 1) * GAP_ROWS))
+		i += 1
+	return out
+
+## Cells a plug reaches into a footprint on gap row k (0 = the top row).
+static func plug_reach(k: int) -> int:
+	return k / PLUG_SLOPE
+
+static func in_stage_gap(row: int) -> bool:
+	for g: Vector2i in stage_gaps():
+		if row >= g.x and row < g.y:
+			return true
+	return false
+
+## The concrete ground / the grid height in WORLD rows.
+static func ground_row() -> int:
+	return expand_row(GROUND)
+
+static func world_h() -> int:
+	return WORLD_H + GAP_ROWS * gap_rows_build().size()
+
+## World rows of a tower floor (the lattice is build-space; a floor cut by a
+## gap has its ceiling above it and its standing row below it).
+static func floor_ceiling(t: Dictionary, f: int) -> int:
+	return expand_row(int(t.top) + f * int(t.get("floor_h", FLOOR_H)))
+
+static func floor_standing_row(t: Dictionary, f: int) -> int:
+	var fh := int(t.get("floor_h", FLOOR_H))
+	return expand_row(int(t.top) + f * fh + fh - 1)
+
 static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
@@ -242,9 +327,12 @@ static func generate(seed_value: int, world_w: int = WORLD_W) -> Dictionary:
 		spawn_tower = result.tower_list[n / 2]
 	if not spawn_tower.is_empty():
 		_set_roof_spawn(spawn_tower, result)
+	# Stage gaps (user request 2026-09-06): splice the three open bands in.
+	# From here on every row is a WORLD row.
+	grid = _insert_stage_gaps(grid, result, world_w)
 	# Mega-pump infrastructure shells (CT-08/26, CC-26): the station on the
-	# concrete ground plus relay pylons at the band boundaries - in the open
-	# water outside the slab now that inter-tower gaps are hoppable.
+	# concrete ground plus relay pylons standing on the stage-gap plugs - in
+	# the open water outside the slab now that inter-tower gaps are hoppable.
 	_author_stations(grid, rng, objects, result, world_w)
 	# Light floating debris on the open surface for mood (CT-23).
 	_scatter_surface_debris(grid, rng, objects, result, world_w)
@@ -315,38 +403,96 @@ static func _crown_step(rng: RandomNumberGenerator, prev: int) -> int:
 		return rng.randi_range(0, SKYLINE_BAND)
 	return cands[rng.randi_range(0, cands.size() - 1)]
 
-## The tower whose footprint holds `cell` (x0..x1, top..GROUND), or {}.
+## Band of a standing row for the floor-door roll (dry / shallows / cold; "" deeper).
+static func _door_band(sr: int) -> String: # sr is a BUILD row
+	var d := sr - WATERLINE
+	if d < 0:
+		return "dry"
+	if d < Constants.STAGE_FLOOR_DEPTH_SHALLOWS:
+		return "shallows"
+	if d < Constants.STAGE_FLOOR_DEPTH_COLD:
+		return "cold"
+	return ""
+
+## Found bench parts (docs/CraftingStages.md, 2026-09-06): every object with
+## `part: true` is dropped PART_COPIES times into its district's towers on a
+## floor of its band, on free floor space. Runs after the door records exist
+## (World.can_place_object sees them). Deterministic off the world seed.
+static func place_parts(world, gen: Dictionary, seed_value: int) -> int:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([seed_value, "parts"])
+	var placed := 0
+	var ids: Array = Data.objects.keys()
+	ids.sort()
+	for id in ids:
+		var def: Dictionary = Data.objects[id]
+		if not def.get("part", false):
+			continue
+		var district := String((def.get("zones", ["residential"]) as Array)[0])
+		var band := String(def.get("band", "dry"))
+		var towers: Array = []
+		for t in gen.tower_list:
+			if String(t.get("district", "")) == district:
+				towers.append(t)
+		if towers.is_empty():
+			continue
+		var copies := 0
+		var attempts := 0
+		var w := int(def.size[0])
+		while copies < Constants.PART_COPIES and attempts < towers.size() * 8:
+			attempts += 1
+			var t: Dictionary = towers[rng.randi_range(0, towers.size() - 1)]
+			var f := rng.randi_range(0, int(t.floors) - 1)
+			var sr := floor_standing_row(t, f) # world row
+			if world.floor_band_at(Vector2i(int(t.x0) + 8, sr)) != band:
+				continue
+			var zone = t.zones[rng.randi_range(0, t.zones.size() - 1)]
+			if int(zone[1]) - int(zone[0]) <= w + 2:
+				continue
+			for k in 12:
+				var cell := Vector2i(rng.randi_range(int(zone[0]) + 1, int(zone[1]) - w - 1), sr)
+				if world.can_place_object(id, cell):
+					world.add_object_record(id, cell, false)
+					copies += 1
+					placed += 1
+					break
+	return placed
+
+## The tower whose footprint holds `cell` (x0..x1, top..ground), or {}. World rows.
 static func tower_at(towers: Array, cell: Vector2i) -> Dictionary:
+	var ground := ground_row()
 	for t in towers:
-		if cell.x >= int(t.x0) and cell.x <= int(t.x1) and cell.y >= int(t.top) and cell.y < GROUND:
+		if cell.x >= int(t.x0) and cell.x <= int(t.x1) and cell.y >= int(t.top) and cell.y < ground:
 			return t
 	return {}
 
 ## The row a cell's depth band is measured at (DistrictsOverhaul "Bands"):
 ## inside a tower's floor lattice it is the floor's CEILING row, so a floor
 ## straddling a band boundary takes the shallower band; elsewhere the cell's own row.
-static func band_row(towers: Array, cell: Vector2i) -> int:
+static func band_row(towers: Array, cell: Vector2i) -> int: # world rows in and out
 	var t := tower_at(towers, cell)
 	if t.is_empty():
 		return cell.y
 	var fh := int(t.get("floor_h", FLOOR_H))
 	var top := int(t.top)
-	var f := (cell.y - top) / fh
+	var f := (compact_row(cell.y) - top) / fh
 	if f >= int(t.floors):
 		return cell.y # the plinth
-	return top + f * fh
+	return expand_row(top + f * fh)
 
 ## Two-jump rule check (WS-04): every column of a floor cavity must stay
 ## passable — a jump clears JUMP_CELLS rows and a crawl fits a CRAWL_GAP, so
 ## the only true blockage is an authored obstacle taller than the jump from
 ## the standing row (too high to mount, no room to crawl over). Returns the
 ## offending columns.
-static func floor_blockages(grid: WorldGrid, tower: Dictionary) -> Array:
+static func floor_blockages(grid: WorldGrid, tower: Dictionary, world_rows: bool = false) -> Array:
 	var out: Array = []
 	var top: int = tower.top
 	var fh: int = int(tower.get("floor_h", FLOOR_H))
 	for f in tower.floors:
 		var sr: int = top + f * fh + fh - 1
+		if world_rows: # after the stage-gap splice (gates probe the finished grid)
+			sr = expand_row(sr)
 		for zone in tower.zones:
 			for vx in range(int(zone[0]), int(zone[1]) + 1):
 				var blocked := true
@@ -531,17 +677,25 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 			if seal_this:
 				# Deeper sealed rooms hide behind tougher doors (GL-09): wood
 				# in The Shallows, chained metal in The Cold, vaults below.
-				var dd := sr - WATERLINE
+				var dd := sr - WATERLINE # build rows
 				var did := "wood_door"
-				if dd > Constants.BAND_COLD_DEPTH:
+				if dd > Constants.STAGE_FLOOR_DEPTH_COLD:
 					did = "vault_door"
-				elif dd > Constants.BAND_SHALLOWS_DEPTH:
+				elif dd > Constants.STAGE_FLOOR_DEPTH_SHALLOWS:
 					did = "metal_door"
 				doors.append({"cell": Vector2i(door_x, sr), "id": did}) # a DOOR_W x DOOR_H door fills the doorway
 				for wy in range(sr - DOOR_H + 1, sr + 1): # the far side walled solid
 					for t in WALL_T:
 						grid.set_structure(Vector2i(solid_x + t, wy), frame_mat)
 				sealed.append(Rect2i(zone_x, ceiling + SLAB_T, zone_end - zone_x + 1, fo))
+			elif not construction and rng.randf() < float(Constants.FLOOR_DOOR_CHANCE.get(_door_band(sr), 0.0)):
+				# Drainable floors (user request 2026-09-06): both doorways of the
+				# wing get a wood door so the player can close up and pump or
+				# stove the room dry. Found open below the waterline (the flood
+				# passes through), half of them closed in The Dry.
+				var found_open: bool = sr > WATERLINE or rng.randf() >= Constants.DRY_DOOR_CLOSED_CHANCE
+				doors.append({"cell": Vector2i(door_x, sr), "id": "wood_door", "open": found_open})
+				doors.append({"cell": Vector2i(solid_x, sr), "id": "wood_door", "open": found_open})
 			# Interior pocket doorway (user request): on the back wall beside
 			# the stairwell entrance — the wing's first (west) / last (east)
 			# columns; the rooms then start POCKET_DOOR_INSET columns in.
@@ -556,7 +710,7 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 				var did := "room_door"
 				var is_open := false
 				var barred := false
-				if sr - WATERLINE > Constants.BAND_SHALLOWS_DEPTH:
+				if sr - WATERLINE > Constants.STAGE_FLOOR_DEPTH_SHALLOWS:
 					did = "room_door_metal"
 				elif rng.randf() < Constants.POCKET_LOCK_CHANCE:
 					did = "room_door_locked"
@@ -646,7 +800,7 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 			# floors in air). Deeper breaches stay open as the flood inlets,
 			# so interiors fill to the waterline; the shallow, reachable
 			# openings still need a pry tool.
-			if sr - WATERLINE <= Constants.BAND_SHALLOWS_DEPTH:
+			if sr - WATERLINE <= Constants.STAGE_FLOOR_DEPTH_SHALLOWS:
 				objects.append({"id": "side_vent", "cell": Vector2i(side, sr)}) # BREACH x BREACH grate
 		if f > 0 and rng.randf() < 0.10:
 			var cy := top + f * fh
@@ -786,7 +940,7 @@ static func _stamp_room(grid: WorldGrid, rng: RandomNumberGenerator, t: Dictiona
 	# A rare wall safe (LT-14, a 2x2 piece) tucked into the room's free space.
 	# Safes are the only iron above The Cold; with 52 towers (districts,
 	# 2026-09-04) the surface rate is cut so GL-28 still forces the dive.
-	var safe_p := 0.04 if sr - WATERLINE > Constants.BAND_SHALLOWS_DEPTH else SURFACE_SAFE_CHANCE
+	var safe_p := 0.04 if sr - WATERLINE > Constants.STAGE_FLOOR_DEPTH_SHALLOWS else SURFACE_SAFE_CHANCE
 	if rng.randf() < safe_p:
 		var sx := M * rng.randi_range(0, maxi(tw / M - 1, 0))
 		if not _interval_taken(taken, sx, sx + M) and cx + sx + M <= zone_end:
@@ -1041,28 +1195,26 @@ static func _author_stations(grid: WorldGrid, rng: RandomNumberGenerator,
 		if score > best_score:
 			best_score = score
 			best_x = mid
+	var ground := ground_row()
 	if best_x >= 0:
-		var hall := Rect2i(best_x - HALL_W / 2, GROUND - HALL_H, HALL_W, HALL_H)
+		var hall := Rect2i(best_x - HALL_W / 2, ground - HALL_H, HALL_W, HALL_H)
 		_station_room(grid, hall, objects, true)
 		result["central"] = hall
-	# Relay pylons at the shallows/cold, cold/dark, dark/crush boundaries.
-	var relay_rows: Array = [
-		WATERLINE + Constants.BAND_SHALLOWS_DEPTH,
-		WATERLINE + Constants.BAND_COLD_DEPTH,
-		WATERLINE + Constants.BAND_DARK_DEPTH,
-	]
+	# Relay pylons at the shallows/cold, cold/dark, dark/crush boundaries:
+	# each stands ON its stage-gap plug (floor slab in the garbage's top rows).
+	var gaps: Array = stage_gaps()
 	var fracs: Array = [0.25, 0.58, 0.8]
-	for i in relay_rows.size():
-		var row: int = relay_rows[i]
-		var px0 := _find_open_span(grid, int(world_w * float(fracs[i])), row, RELAY_W, row - RELAY_H, row + SLAB_T)
+	for i in gaps.size():
+		var row: int = int((gaps[i] as Vector2i).x) - 1 # standing row: the last open row above the plug
+		var px0 := _find_open_span(grid, int(world_w * float(fracs[i])), row, RELAY_W, row - RELAY_H + 1, row)
 		if px0 < 0:
 			continue
 		var shell := Rect2i(px0, row - RELAY_H + 1, RELAY_W, RELAY_H)
 		_station_room(grid, shell, objects, false)
-		# Support legs (WALL_T wide) drop until they meet something solid (a
-		# roof or the ground) — never through a tower's interior (keeps WS-04 intact).
+		# Support legs (WALL_T wide) drop until they meet something solid (the
+		# plug, a roof or the ground) — never through a tower's interior (keeps WS-04 intact).
 		for lx: int in [px0 + WALL_T, px0 + RELAY_W - 2 * WALL_T]:
-			for y in range(shell.end.y + SLAB_T, GROUND + 1):
+			for y in range(shell.end.y + SLAB_T, ground + 1):
 				var hit := false
 				for t in WALL_T:
 					if grid.structure_at(Vector2i(lx + t, y)) != WorldGrid.M.AIR:
@@ -1100,7 +1252,9 @@ static func _station_room(grid: WorldGrid, rect: Rect2i, objects: Array, central
 		objects.append({"id": "chest", "cell": Vector2i(x0 + 24, sr)})
 
 ## Leftmost x of a `w`-wide span centred near want_x whose rows y0..y1 are
-## clear of structure; scans outward, -1 if the city is too dense there.
+## open water - clear of structure AND back wall (a tall industrial floor
+## right above a stage gap is 18 open rows of interior: not a pylon site);
+## scans outward, -1 if the city is too dense there.
 static func _find_open_span(grid: WorldGrid, want_x: int, _row: int, w: int, y0: int, y1: int) -> int:
 	for off in range(0, grid.bounds.end.x, 8):
 		for sgn: int in [1, -1]:
@@ -1110,7 +1264,7 @@ static func _find_open_span(grid: WorldGrid, want_x: int, _row: int, w: int, y0:
 			var clear := true
 			for x in range(x0, x0 + w):
 				for y in range(y0, y1 + 1):
-					if grid.structure_at(Vector2i(x, y)) != WorldGrid.M.AIR:
+					if grid.structure_at(Vector2i(x, y)) != WorldGrid.M.AIR or grid.back_at(Vector2i(x, y)) != WorldGrid.M.AIR:
 						clear = false
 						break
 				if not clear:
@@ -1142,6 +1296,126 @@ static func _scatter_surface_debris(grid: WorldGrid, rng: RandomNumberGenerator,
 			objects.append({"id": "ret_box", "cell": Vector2i(x + 2, WATERLINE - 1)})
 		result.debris += 1
 
+## Splice the stage gaps into a freshly built city (see "Stage gaps" above):
+## returns the taller grid and rewrites every row-bearing list in `result`
+## (objects, doors, sealed, pockets) from build rows to world rows.
+static func _insert_stage_gaps(grid: WorldGrid, result: Dictionary, world_w: int) -> WorldGrid:
+	var gaps_b: Array = gap_rows_build()
+	var gw := grid.bounds.size.x
+	var out := WorldGrid.new(Rect2i(0, 0, gw, WORLD_H + GAP_ROWS * gaps_b.size()))
+	var structure := PackedByteArray()
+	var back := PackedByteArray()
+	var climb := PackedByteArray()
+	var towers: Array = result.tower_list
+	var src_y := 0
+	for i in gaps_b.size() + 1:
+		var stop: int = int(gaps_b[i]) if i < gaps_b.size() else WORLD_H
+		structure.append_array(grid.structure.slice(src_y * gw, stop * gw))
+		back.append_array(grid.back.slice(src_y * gw, stop * gw))
+		climb.append_array(grid.climb.slice(src_y * gw, stop * gw))
+		src_y = stop
+		if i >= gaps_b.size():
+			break
+		# One template row per gap: garbage plugs in the open water (gaps +
+		# margins), bare back wall across every tower footprint, and the annex
+		# (pocket lanes, VOID) continuing whatever the row above held.
+		var srow := PackedByteArray()
+		srow.resize(gw)
+		var brow := PackedByteArray()
+		brow.resize(gw)
+		var above := (stop - 1) * gw
+		for x in gw:
+			if x >= world_w:
+				srow[x] = grid.structure[above + x]
+				brow[x] = grid.back[above + x]
+			else:
+				srow[x] = WorldGrid.M.GARBAGE
+				brow[x] = WorldGrid.M.AIR
+		for t in towers:
+			var bm: int = WorldGrid.M.METAL if String(t.get("district", "")) == "construction" else WorldGrid.M.STONE
+			for x in range(int(t.x0), int(t.x1) + 1):
+				srow[x] = WorldGrid.M.AIR
+				brow[x] = bm
+		var crow := PackedByteArray()
+		crow.resize(gw)
+		for k in GAP_ROWS:
+			# Heap profile: each row down, the plug reaches plug_reach(k) cells
+			# into the footprints either side (over the back wall).
+			var reach := plug_reach(k)
+			var row := srow.duplicate()
+			if reach > 0:
+				for t in towers:
+					var x0 := int(t.x0)
+					var x1 := int(t.x1)
+					for j in reach:
+						if x0 + j <= x1:
+							row[x0 + j] = WorldGrid.M.GARBAGE
+						if x1 - j >= x0:
+							row[x1 - j] = WorldGrid.M.GARBAGE
+			structure.append_array(row)
+			back.append_array(brow)
+			climb.append_array(crow)
+	out.structure = structure
+	out.back = back
+	out.climb = climb
+	result.grid = out
+	# Row-bearing lists: anything crossing a gap goes (a portal takes its twin
+	# and its pocket with it), everything else moves to world rows.
+	var straddles := func(y0: int, y1: int) -> bool: # inclusive build rows
+		for b: int in gaps_b:
+			if y0 < b and b <= y1:
+				return true
+		return false
+	var dead_portals := {} # build-row cell -> true, for both twins
+	for o in result.objects:
+		if o.has("link"):
+			var h := int(Data.objects[o.id].size[1])
+			var c: Vector2i = o.cell
+			if straddles.call(c.y - h + 1, c.y):
+				dead_portals[c] = true
+				dead_portals[o.link] = true
+	var kept: Array = []
+	for o in result.objects:
+		var h := int(Data.objects[o.id].size[1])
+		var c: Vector2i = o.cell
+		if dead_portals.has(c) or straddles.call(c.y - h + 1, c.y):
+			continue
+		o.cell = Vector2i(c.x, expand_row(c.y))
+		if o.has("link"):
+			o.link = Vector2i(o.link.x, expand_row(o.link.y))
+		if o.has("door"):
+			o.door = Vector2i(o.door.x, expand_row(o.door.y))
+		kept.append(o)
+	result.objects.assign(kept)
+	kept = []
+	for d in result.doors:
+		var h := int(Data.objects[d.id].size[1])
+		var c: Vector2i = d.cell
+		if straddles.call(c.y - h + 1, c.y):
+			continue
+		d.cell = Vector2i(c.x, expand_row(c.y))
+		kept.append(d)
+	result.doors.assign(kept)
+	kept = []
+	for r: Rect2i in result.sealed:
+		if straddles.call(r.position.y, r.end.y - 1):
+			continue # the gap opened the room: no longer dry
+		kept.append(Rect2i(r.position.x, expand_row(r.position.y), r.size.x, r.size.y))
+	result.sealed.assign(kept)
+	kept = []
+	for p in result.pockets:
+		if dead_portals.has(p.exit) or dead_portals.has(p.entry):
+			continue # unreachable: its doorway crossed a gap
+		var r: Rect2i = p.rect
+		var y0 := expand_row(r.position.y)
+		var y1 := expand_row(r.end.y - 1)
+		p.rect = Rect2i(r.position.x, y0, r.size.x, y1 - y0 + 1) # taller when it crossed a gap
+		p.exit = Vector2i(p.exit.x, expand_row(p.exit.y))
+		p.entry = Vector2i(p.entry.x, expand_row(p.entry.y))
+		kept.append(p)
+	result.pockets.assign(kept)
+	return out
+
 ## Connectivity flooding (CT-12/13): everything reachable from the ocean at
 ## or below the waterline floods to full; sealed pockets keep their air.
 ## Runs after objects exist so closed doors seal (World solidity = structure
@@ -1161,9 +1435,21 @@ static func flood(world) -> void:
 	var y_min := WATERLINE - by0 # local rows at/below the waterline only
 	var y_max := b.size.y - 1
 	var stack := PackedInt32Array()
-	for y in range(y_min, mini(GROUND - by0, y_max + 1)):
+	for y in range(y_min, mini(ground_row() - by0, y_max + 1)):
 		stack.append(y * bw)
 		stack.append(y * bw + bw - 1)
+	# The stage-gap plugs (2026-09-06) cut the open-water column into
+	# basins: the garbage was dumped INTO the sea, so every open cell in the
+	# city proper right above a plug is ocean too - without these seeds the
+	# Shallows gaps (whose breaches are vent-sealed) stayed a dry slit.
+	var city_w: int = world.city_bounds.size.x
+	for g: Vector2i in stage_gaps():
+		var ly := g.x - 1 - by0
+		if ly < y_min or ly > y_max:
+			continue
+		for x in mini(city_w - bx0, bw):
+			if structure[ly * bw + x] == 0:
+				stack.append(ly * bw + x)
 	var door_idx := {} # grid index -> true for every closed-door cell
 	for c: Vector2i in doors:
 		if b.has_point(c):

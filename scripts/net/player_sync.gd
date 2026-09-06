@@ -111,7 +111,7 @@ func send_input() -> void:
 	if player.wants_interact: bits |= 32
 	if player.bare_hands: bits |= 64
 	b.encode_u8(2, bits)
-	b.encode_u8(3, clampi(player.selected_slot, 0, 255))
+	b.encode_u8(3, 255 if player.selected_slot == Constants.WEAPON_HOTBAR else clampi(player.selected_slot, 0, 254))
 	b.encode_float(4, player.aim_position.x)
 	b.encode_float(8, player.aim_position.y)
 	_in.rpc_id(1, _seq_out, b)
@@ -136,7 +136,8 @@ func _in(seq: int, packed: PackedByteArray) -> void:
 	if bits & 32:
 		_interact_pending = true
 	_in_bare = bits & 64 != 0
-	_in_slot = clampi(packed.decode_u8(3), 0, Constants.INVENTORY_SLOTS - 1)
+	var raw_slot := packed.decode_u8(3)
+	_in_slot = Constants.WEAPON_HOTBAR if raw_slot == 255 else clampi(raw_slot, 0, Constants.INVENTORY_SLOTS - 1)
 	_in_aim = Vector2(packed.decode_float(4), packed.decode_float(8))
 	_in_age = 0
 
@@ -166,7 +167,7 @@ func apply_input() -> void:
 	player.selected_slot = _in_slot
 	player.bare_hands = _in_bare
 	player.wants_drop = false # Q is folded into bare_hands client-side
-	player.hotbar_select = -1
+	player.hotbar_select = Player.NO_HOTBAR_KEY # the snapshot already carries selected_slot (-1 would now mean the weapon slot)
 
 # --- Host -> all: per-tick state ---
 
