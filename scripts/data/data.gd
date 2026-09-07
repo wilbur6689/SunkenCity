@@ -198,6 +198,133 @@ func item(id: String) -> Dictionary:
 func item_desc(id: String) -> String:
 	return items.get(id, {}).get("desc", "")
 
+## Band ids -> the names players know (source lines, hover plates).
+const BAND_LABEL := {"roof": "Rooftops", "dry": "The Dry", "shallows": "The Shallows",
+	"cold": "The Cold", "dark": "The Dark", "crush": "The Crush"}
+const SOURCE_BANDS := ["roof", "dry", "shallows", "cold", "dark", "crush"] # BAND_ORDER + the roof
+var _source_cache: Dictionary = {}
+
+## "Where to find it" for a recipe ingredient (user request 2026-09-06): the
+## crafting station that makes it, a found part's district + band, which
+## furniture scraps into it (by zone), which enemies drop it and which loot
+## tables carry it. Short lines, wrapped for the hover plate. Cached.
+func source_lines(item_id: String) -> Array:
+	if _source_cache.has(item_id):
+		return _source_cache[item_id]
+	var out: Array = []
+	for r in recipe_list:
+		if String(r.output.item) == item_id:
+			var st: String = "by hand" if r.station == "hand" else String(objects.get(r.station, {}).get("name", String(r.station)))
+			out.append("Craft: %s (tier %d)" % [st, int(r.get("tier", 1))])
+	var odef: Dictionary = objects.get(item_id, {})
+	if odef.get("part", false):
+		var zones: Array = odef.get("zones", [])
+		var zone_caps: Array = []
+		for z in zones:
+			zone_caps.append(String(z).capitalize())
+		var where: String = " / ".join(zone_caps) if not zone_caps.is_empty() else "any"
+		out.append("Found: %s district towers" % where)
+		out.append("Floors: %s (a few per world)" % BAND_LABEL.get(odef.get("band", ""), "any band"))
+		var bench: String = String(objects.get(odef.get("needed_for", ""), {}).get("name", String(odef.get("needed_for", ""))))
+		if bench != "":
+			out.append("Carry it home: it builds the %s" % bench)
+	if item_id in Constants.GARBAGE_DROPS:
+		out.append("Dig: garbage heaps between towers (hammer)")
+	# Scrap sources by zone (trees are their own line).
+	var by_zone: Dictionary = {} # zone -> [names]
+	var trees := false
+	for oid in objects:
+		var d: Dictionary = objects[oid]
+		if d.get("kind", "") != "scrap" or d.get("part", false):
+			continue
+		var gives := false
+		for y in d.get("yields", []):
+			if String(y.item) == item_id and float(y.get("max", 0)) > 0.0:
+				gives = true
+				break
+		if not gives:
+			continue
+		if d.get("category", "") == "flora" and d.get("requires_tool", "") == "axe":
+			trees = true # grown trees of every district
+			continue
+		for z in d.get("zones", ["any"]):
+			if not by_zone.has(z):
+				by_zone[z] = []
+			(by_zone[z] as Array).append(String(d.get("name", oid)))
+	if trees:
+		out.append("Harvest: rooftop trees (axe)")
+	var zone_names: Array = by_zone.keys()
+	zone_names.sort()
+	for z in zone_names:
+		var names: Array = by_zone[z]
+		var sample: Array = names.slice(0, 3)
+		var more: String = " +%d more" % (names.size() - sample.size()) if names.size() > sample.size() else ""
+		out.append("Scrap (%s): %s%s" % [String(z).capitalize(), ", ".join(sample), more])
+	# Enemy drops.
+	var droppers: Array = []
+	var drop_bands: Dictionary = {}
+	for tid in enemies:
+		for dr in enemies[tid].get("drops", []):
+			if String(dr.item) == item_id:
+				droppers.append(String(enemies[tid].get("name", tid)))
+				for b in SOURCE_BANDS:
+					if (enemy_bands.get(b, {}) as Dictionary).has(tid):
+						drop_bands[b] = true
+				break
+	if not droppers.is_empty():
+		var sample: Array = droppers.slice(0, 3)
+		var more: String = " +%d more" % (droppers.size() - sample.size()) if droppers.size() > sample.size() else ""
+		var bands: Array = []
+		for b in SOURCE_BANDS:
+			if drop_bands.has(b):
+				bands.append(BAND_LABEL[b])
+		out.append("Drops: %s%s" % [", ".join(sample), more])
+		if not bands.is_empty():
+			out.append("  in %s" % ", ".join(bands))
+	# Loot tables (district x band).
+	var loot_d: Dictionary = {}
+	var loot_b: Dictionary = {}
+	var tables: Dictionary = loot.get("tables", loot)
+	for dist in tables:
+		if not (tables[dist] is Dictionary):
+			continue
+		for b in tables[dist]:
+			for e in tables[dist][b]:
+				if e is Dictionary and String(e.get("item", "")) == item_id:
+					loot_d[dist] = true
+					loot_b[b] = true
+	if not loot_d.is_empty():
+		var ds: Array = []
+		for k in loot_d:
+			ds.append(String(k).capitalize())
+		var bs: Array = []
+		for b in SOURCE_BANDS:
+			if loot_b.has(b):
+				bs.append(BAND_LABEL[b])
+		out.append("Loot: containers in %s" % ", ".join(ds))
+		if not bs.is_empty():
+			out.append("  on %s floors" % ", ".join(bs))
+	if out.is_empty():
+		out.append("No known source yet")
+	var wrapped: Array = []
+	for line in out:
+		wrapped.append_array(_wrap(String(line), 46))
+	_source_cache[item_id] = wrapped
+	return wrapped
+
+static func _wrap(text: String, width: int) -> Array:
+	var lines: Array = []
+	var cur := ""
+	for word in text.split(" "):
+		if cur != "" and cur.length() + 1 + word.length() > width:
+			lines.append(cur)
+			cur = "    " + word
+		else:
+			cur = word if cur == "" else cur + " " + word
+	if cur != "":
+		lines.append(cur)
+	return lines
+
 func item_name(id: String) -> String:
 	return items.get(id, {}).get("name", id)
 
@@ -271,12 +398,14 @@ func icon(id: String) -> Texture2D:
 	var it: Dictionary = items.get(id, {})
 	# A file in the icons dir IS the icon (blocks included - rope has no
 	# items.json entry to carry the authored_icon flag, 2026-09-01).
-	if FileAccess.file_exists(ICON_DIR + id + ".png"):
+	var path := ICON_DIR + id + ".png"
+	if FileAccess.file_exists(path) or ResourceLoader.exists(path):
 		# Icon-Editor-authored icons load RAW from disk (the import cache is
-		# stale after an in-game save; same rule as authored sprites).
-		var img := Image.load_from_file(ProjectSettings.globalize_path(ICON_DIR + id + ".png"))
-		if img != null:
-			tex = ImageTexture.create_from_image(img)
+		# stale after an in-game save; same rule as authored sprites) - in
+		# an EXPORTED build only the imported texture exists.
+		tex = load_texture_fresh(path)
+	if tex != null:
+		pass
 	elif it.has("icon"):
 		tex = _atlas(ITEM_ICON_SHEET, Vector2i(it.icon[0], it.icon[1]))
 	elif blocks.has(id):
@@ -289,6 +418,36 @@ func icon(id: String) -> Texture2D:
 ## An object's sprite: a region of its pack's sprite sheet when it has one,
 ## otherwise its standalone PNG.
 func object_texture(id: String) -> Texture2D:
+	var tex := object_strip_texture(id)
+	var n := strip_frames(id)
+	if tex != null and n > 1: # a sway strip: icons / editors / cards want the rest frame
+		var at := AtlasTexture.new()
+		at.atlas = tex
+		at.region = Rect2(0, 0, tex.get_width() / n, tex.get_height())
+		return at
+	return tex
+
+## How many sway frames an object's sprite holds: its PNG width over the
+## def's size in px (frames are laid out horizontally; a plain sprite is 1).
+## Flora strips come from tools/build_flora.py (docs/Flora/flora.md 5).
+func strip_frames(id: String) -> int:
+	var def: Dictionary = objects.get(id, {})
+	if def.is_empty() or def.has("sheet") or not def.has("size"):
+		return 1
+	if _strip_frames_cache.has(id):
+		return _strip_frames_cache[id]
+	var n := 1
+	var tex := object_strip_texture(id)
+	var fw := int(def.size[0]) * Constants.BLOCK_SIZE
+	if tex != null and fw > 0 and tex.get_width() > fw and tex.get_width() % fw == 0:
+		n = tex.get_width() / fw
+	_strip_frames_cache[id] = n
+	return n
+
+var _strip_frames_cache: Dictionary = {}
+
+## The whole sprite PNG (every frame) - WorldObject sets hframes from it.
+func object_strip_texture(id: String) -> Texture2D:
 	var def: Dictionary = objects.get(id, {})
 	if def.has("sheet"):
 		var at := AtlasTexture.new()
@@ -301,13 +460,26 @@ func object_texture(id: String) -> Texture2D:
 	# disk, never through the import cache: a plain game run does not
 	# re-import a changed PNG, so the cache serves stale art after an
 	# in-game save (user report 2026-09-01 - "old tree variations").
-	if def.get("authored", false) and FileAccess.file_exists(path):
+	if def.get("authored", false):
+		return load_texture_fresh(path)
+	return load_texture_fresh(path, false)
+
+## A texture that may have been rewritten on disk by an in-game editor
+## (icons, authored sprites, enemy strips). A dev run (editor binary: `godot
+## --path .` or the editor itself) reads the PNG RAW when `prefer_raw`, since
+## the import cache is stale after an in-game save; an EXPORTED build has no
+## loose PNGs - only the imported texture - so it always goes through
+## load() (user report 2026-09-06: every material icon was a placeholder
+## blob on the exported client build). Null when neither exists.
+static func load_texture_fresh(path: String, prefer_raw: bool = true) -> Texture2D:
+	var on_disk := FileAccess.file_exists(path)
+	if prefer_raw and on_disk and OS.has_feature("editor"):
 		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
 		if img != null:
 			return ImageTexture.create_from_image(img)
 	if ResourceLoader.exists(path):
 		return load(path)
-	if FileAccess.file_exists(path):
+	if on_disk: # a file with no .import yet (saved by an editor this run)
 		var raw := Image.load_from_file(ProjectSettings.globalize_path(path))
 		if raw != null:
 			return ImageTexture.create_from_image(raw)

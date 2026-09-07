@@ -412,63 +412,6 @@ def _knot(d, x, y):
     d.point((x + 1, y), fill=t[2])
 
 
-def draw_tree_sapling(d, W, H):
-    wd = RAMPS["wood"]
-    d.rectangle([W // 2 - 1, H - 12, W // 2, H - 1], fill=wd[1][1], outline=wd[0])  # stem
-    d.point((W // 2 - 1, H - 8), fill=wd[1][3])
-    d.point((W // 2, H - 5), fill=wd[1][0])
-    _leafy(d, [(1, 2, 14, 15), (0, 6, 11, 18), (5, 5, 15, 17), (3, 0, 13, 9)], W, H, seed=5)
-    d.rectangle([W // 2 - 4, H - 3, W // 2 + 3, H - 1], fill=(90, 70, 50))  # soil mound
-    d.point((W // 2 - 3, H - 3), fill=(120, 96, 66))
-
-
-def draw_tree_young(d, W, H):
-    # Lanky adolescent (user reference): a thin trunk most of the height,
-    # separate leaf clumps at the branch points, a small crown on top.
-    wd = RAMPS["wood"]
-    cx = W // 2
-    _trunk(d, cx - 2, 16, cx + 2, H - 1, taper=1)
-    d.polygon([(cx - 5, H - 1), (cx - 2, H - 7), (cx - 1, H - 1)], fill=wd[1][1], outline=wd[0])  # root flare
-    d.polygon([(cx + 1, H - 1), (cx + 2, H - 7), (cx + 5, H - 1)], fill=wd[1][0], outline=wd[0])
-    _knot(d, cx - 1, H - 40)
-    # short branches, alternating sides, each ending in its own clump
-    d.line([cx - 2, 44, cx - 10, 36], fill=wd[1][1])
-    d.line([cx - 2, 45, cx - 10, 37], fill=wd[1][0])
-    d.line([cx + 2, 66, cx + 11, 57], fill=wd[1][1])
-    d.line([cx + 2, 67, cx + 11, 58], fill=wd[1][0])
-    d.line([cx - 2, 88, cx - 11, 80], fill=wd[1][1])
-    d.line([cx - 2, 89, cx - 11, 81], fill=wd[1][0])
-    _leafy(d, [(1, 24, 19, 40), (4, 30, 16, 44)], W, H, seed=9)            # clump 1
-    _leafy(d, [(W - 20, 46, W - 2, 62), (W - 16, 52, W - 4, 66)], W, H, seed=13)  # clump 2
-    _leafy(d, [(2, 70, 18, 85), (5, 76, 15, 89)], W, H, seed=17)           # clump 3
-    _leafy(d, [(cx - 9, 0, cx + 9, 20), (cx - 6, 8, cx + 11, 26)], W, H, seed=2)  # crown
-
-
-def draw_tree_mature(d, W, H):
-    wd = RAMPS["wood"]
-    cx = W // 2
-    _trunk(d, cx - 6, 100, cx + 6, H - 1, taper=2)
-    # flared roots
-    d.polygon([(cx - 14, H - 1), (cx - 6, H - 14), (cx - 4, H - 1)], fill=wd[1][1], outline=wd[0])
-    d.polygon([(cx + 4, H - 1), (cx + 6, H - 14), (cx + 14, H - 1)], fill=wd[1][0], outline=wd[0])
-    d.line([cx - 12, H - 2, cx - 6, H - 12], fill=wd[1][3])
-    _knot(d, cx - 3, H - 60)
-    _knot(d, cx + 1, H - 96)
-    # branch stubs, Terraria-style: short diagonals ending in leaf tufts
-    d.line([cx - 6, H - 84, cx - 17, H - 95], fill=wd[1][1])
-    d.line([cx - 6, H - 83, cx - 17, H - 94], fill=wd[1][0])
-    d.line([cx + 6, H - 116, cx + 18, H - 127], fill=wd[1][1])
-    d.line([cx + 6, H - 115, cx + 18, H - 126], fill=wd[1][0])
-    _leafy(d, [(2, H - 112, 26, H - 88)], W, H, seed=21)        # left tuft
-    _leafy(d, [(W - 26, H - 144, W - 2, H - 120)], W, H, seed=27)  # right tuft
-    # the crown: a big lumpy union reaching just past the trunk top
-    _leafy(d, [(8, 8, W - 8, 116), (0, 34, 44, 108), (W - 44, 28, W, 104),
-               (18, 0, W - 14, 56), (2, 14, 38, 68), (W - 40, 4, W - 2, 70),
-               (14, 40, W - 10, 122)], W, H, seed=3)
-    d.rectangle([cx - 8, H - 2, cx + 7, H - 1], fill=(90, 70, 50))  # root soil
-    d.point((cx - 6, H - 2), fill=(120, 96, 66))
-
-
 def _y(i, mn, mx):
     return {"item": i, "min": mn, "max": mx}
 
@@ -602,28 +545,6 @@ ITEMS = [
      "kind": "door", "fixed": True, "no_item": True, "lock_tier": 1,
      "desc": "Bolted over the shaft. A pry bar or better forces it - the way inside.",
      "draw": draw_roof_hatch},
-    # Trees (user request): a growth-stage roll each midnight; wood on harvest.
-    {"id": "tree_sapling", "name": "Tree Sapling", "category": "flora", "flora_weight": 3,
-     "size": [1, 2], "zones": ["roof"], "room_type": "roof",
-     "weight": 2, "tool_tier": 0, "skill": 0, "scrap_time": 1.0, "xp": 2,
-     "yields": [_y("wood", 1, 2)],
-     "grows_into": "tree_young", "grow_chance": 0.5,
-     "desc": "Plant it on a sunny roof; it grows a little every night.",
-     "draw": draw_tree_sapling},
-    {"id": "tree_young", "name": "Young Tree", "category": "flora", "flora_weight": 1,
-     "size": [3, 8], "zones": ["roof"], "room_type": "roof",
-     "weight": 30, "tool_tier": 1, "skill": 0, "scrap_time": 6.0, "xp": 6,
-     "requires_tool": "axe",
-     "yields": [_y("wood", 8, 14)],
-     "grows_into": "tree_mature", "grow_chance": 0.35, "no_item": True,
-     "draw": draw_tree_young},
-    {"id": "tree_mature", "name": "Mature Tree", "category": "flora", "flora_weight": 1,
-     "size": [5, 15], "zones": ["roof"], "room_type": "roof",
-     "weight": 90, "tool_tier": 1, "skill": 1, "scrap_time": 14.0, "xp": 12,
-     "requires_tool": "axe",
-     "yields": [_y("wood", 25, 40)],
-     "no_item": True,
-     "draw": draw_tree_mature},
 ]
 
 
@@ -638,13 +559,6 @@ def draw_side_vent(d, W, H):
         d.point(c, fill=mt[1][3])
     d.rectangle([W // 2 - 2, H - 6, W // 2 + 2, H - 4], fill=YELLOW, outline=OUT)  # latch
     d.point((W // 2, H - 5), fill=OUT)                            # padlock eye
-
-
-def draw_roof_bush(d, W, H):
-    wd = RAMPS["wood"]
-    d.rectangle([W // 2 - 1, H - 6, W // 2, H - 1], fill=wd[1][1], outline=wd[0])  # stub stems
-    d.line([W // 2 - 4, H - 2, W // 2 - 2, H - 6], fill=wd[1][0])
-    _leafy(d, [(1, 4, W - 2, H - 4), (0, 9, W // 2 + 3, H - 2), (W // 2 - 4, 1, W - 1, H - 8)], W, H, seed=31)
 
 
 def draw_roof_grass(d, W, H):
@@ -737,16 +651,6 @@ ITEMS.extend([
      "kind": "door", "fixed": True, "no_item": True, "lock_tier": 1,
      "desc": "A padlocked grate over a breach in the wall. A pry bar or better forces it.",
      "draw": draw_side_vent},
-    {"id": "roof_bush", "name": "Rooftop Bush", "category": "flora", "flora_weight": 2,
-     "size": [2, 2], "zones": ["roof"], "room_type": "bush",
-     "weight": 6, "tool_tier": 0, "skill": 0, "scrap_time": 1.5, "xp": 2,
-     "yields": [{"item": "wood", "min": 1, "max": 2}],
-     "draw": draw_roof_bush},
-    {"id": "roof_grass", "name": "Grass Tuft", "category": "flora", "flora_weight": 3,
-     "size": [1, 1], "zones": ["roof"], "room_type": "grass",
-     "weight": 1, "tool_tier": 0, "skill": 0, "scrap_time": 0.5, "xp": 1,
-     "yields": [],
-     "draw": draw_roof_grass},
 ])
 
 _JUNK = [

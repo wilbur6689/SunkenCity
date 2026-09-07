@@ -58,6 +58,9 @@ func _try_recover() -> void:
 	if Net.is_client():
 		return # host-only; the take replicates as _pack_remove
 	for p in get_tree().get_nodes_in_group("player"):
+		if p.get("dying"):
+			continue # the corpse lies here for the whole death scene (3 s > the 1.5 s pickup
+			# delay) and used to scoop its own pack back up before respawning (user report 2026-09-06)
 		if p.global_position.distance_to(global_position) > 3.0 * Constants.BLOCK_SIZE: # 24 px
 			continue
 		var kept: Array = []

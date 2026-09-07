@@ -10,6 +10,11 @@ const CNAME := "__test_diver"
 const OLD_W := "__old_world"
 const OLD_W2 := "__old_world_2"
 const OLD_C := "__old_diver"
+# Named worlds (2026-09-06): display name vs file key.
+const NAMED := "Harbour Home"
+const NAMED_KEY := "harbour_home"
+const NAMED_KEY2 := "harbour_home_2"
+const NAMED_SEED := 424243
 
 var failures: PackedStringArray = []
 var checks := 0
@@ -126,6 +131,61 @@ func _ready() -> void:
 	check(not title3.clear_old.visible and title3.hint.text.begins_with("Removed %d" % (base + 2)), "button hides once nothing old is left (%s)" % title3.hint.text)
 	title3.queue_free()
 	_delete_saves()
+
+	print("== E. naming a new world (user request 2026-09-06): display name in the list, slug on disk")
+	var nk: Dictionary = SaveGame.new_world_key("", 7)
+	check(nk.key == "world_7" and nk.name == "world_7", "blank name keeps the world_<seed> default for key and name")
+	nk = SaveGame.new_world_key("  Harbour   Home  ", NAMED_SEED)
+	check(nk.key == NAMED_KEY and nk.name == NAMED, "typed name trims/collapses and slugs to the file key (%s / %s)" % [nk.key, nk.name])
+	nk = SaveGame.new_world_key("a|b/c: D", 1)
+	check(nk.key == "ab_c_d" and nk.name == "ab/c: D", "the beacon separator is dropped, other symbols only leave the key (%s / %s)" % [nk.key, nk.name])
+	nk = SaveGame.new_world_key("???", NAMED_SEED + 1)
+	check(nk.key == "world_%d" % (NAMED_SEED + 1) and nk.name == "???", "a name with no slug characters falls back to the seed key")
+	var title4: Control = load("res://scenes/ui/title.tscn").instantiate()
+	add_child(title4)
+	title4.world_list.select(0)
+	title4.world_list.item_selected.emit(0)
+	title4.char_list.select(0)
+	check(title4.pickers.world_name_edit != null and title4.pickers.world_name_edit.editable, "the world column has a name field, editable on '+ New world'")
+	title4.seed_spin.value = NAMED_SEED
+	title4.pickers.world_name_edit.text = "  Harbour Home  "
+	title4.name_edit.text = CNAME
+	title4._apply_selection()
+	check(SaveGame.pending_seed == NAMED_SEED and SaveGame.pending_world_name == NAMED, "the typed world name hands over with the seed")
+	remove_child(title4)
+	title4.queue_free()
+	var city2: Node2D = load("res://scenes/city/city.tscn").instantiate()
+	add_child(city2)
+	city2.player.set_multiplayer_authority(2)
+	check(city2.world_name == NAMED_KEY and city2.world_title == NAMED, "city boots with the slug as file key and the name as title (%s / %s)" % [city2.world_name, city2.world_title])
+	check(SaveGame.pending_world_name == "", "the pending name is consumed")
+	for i in 5:
+		await get_tree().physics_frame
+	city2.save_now()
+	check(SaveGame.world_names().has(NAMED_KEY) and SaveGame.world_display_name(NAMED_KEY) == NAMED, "the file is the slug and stores the display name")
+	var payload := SaveGame.read_world(NAMED_KEY)
+	check(String(payload.get("key", "")) == NAMED_KEY and String(payload.get("name", "")) == NAMED, "payload carries key + name")
+	nk = SaveGame.new_world_key(NAMED, NAMED_SEED)
+	check(nk.key == NAMED_KEY2 and nk.name == NAMED + " (2)", "a second world with the same name gets a _2 key and a (2) name")
+	remove_child(city2)
+	city2.queue_free()
+	var title5: Control = load("res://scenes/ui/title.tscn").instantiate()
+	add_child(title5)
+	var named_row := -1
+	for i in title5.world_list.item_count:
+		if title5.world_list.get_item_text(i) == NAMED:
+			named_row = i
+	check(named_row > 0 and title5.world_list.get_item_metadata(named_row).name == NAMED_KEY, "the rebuilt title lists the world by its display name (row metadata = file key)")
+	title5.world_list.select(named_row)
+	title5.world_list.item_selected.emit(named_row)
+	check(not title5.pickers.world_name_edit.editable, "picking a saved world greys the name field out")
+	SaveGame.pending_world = ""
+	title5._apply_selection()
+	check(SaveGame.pending_world == NAMED_KEY and SaveGame.pending_world_name == "", "diving a saved named world hands over its file key")
+	SaveGame.pending_world = ""
+	SaveGame.pending_character = ""
+	title5.queue_free()
+	_delete_saves()
 	print("\nTitle smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:
 		print("  FAIL: " + f)
@@ -139,6 +199,7 @@ func _write_old(path: String) -> void: # a save from a format this build refuses
 
 func _delete_saves() -> void:
 	for p: String in [SaveGame.WORLD_DIR + WNAME + SaveGame.WORLD_EXT, SaveGame.CHAR_DIR + CNAME + SaveGame.CHAR_EXT,
-			SaveGame.WORLD_DIR + OLD_W + SaveGame.WORLD_EXT, SaveGame.WORLD_DIR + OLD_W2 + SaveGame.WORLD_EXT, SaveGame.CHAR_DIR + OLD_C + SaveGame.CHAR_EXT]:
+			SaveGame.WORLD_DIR + OLD_W + SaveGame.WORLD_EXT, SaveGame.WORLD_DIR + OLD_W2 + SaveGame.WORLD_EXT, SaveGame.CHAR_DIR + OLD_C + SaveGame.CHAR_EXT,
+			SaveGame.WORLD_DIR + NAMED_KEY + SaveGame.WORLD_EXT, SaveGame.WORLD_DIR + NAMED_KEY2 + SaveGame.WORLD_EXT]:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))

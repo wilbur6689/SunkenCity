@@ -38,6 +38,8 @@ var wants_use_secondary: bool = false # held
 var wants_interact: bool = false      # pressed this frame
 var wants_drop: bool = false          # pressed this frame
 var aim_position: Vector2 = Vector2.ZERO
+## Dev drivers (net_probe --net-harvest) aim without a mouse: INF = use the mouse.
+var aim_override: Vector2 = Vector2.INF
 const NO_HOTBAR_KEY := -99
 var hotbar_select: int = NO_HOTBAR_KEY # NO_HOTBAR_KEY = no change this frame; Constants.WEAPON_HOTBAR = the weapon slot
 
@@ -85,6 +87,7 @@ var _sync: Node = null
 # a client have no inventory or interaction of their own).
 var puppet_held: String = ""
 var puppet_scrapping: bool = false
+var puppet_scrap_progress: float = 0.0 # the host's Interaction.scrap_progress for this body (owner HUD bar)
 var puppet_dying: bool = false
 var puppet_lamp: bool = false  # LAN: a remote body's worn head lamp (state stream bit)
 var puppet_suit: String = ""   # LAN: a remote body's suit id (tint), from the state stream
@@ -257,7 +260,7 @@ func _read_input() -> void:
 	wants_use_secondary = Input.is_action_pressed("use_secondary") and not ui_blocking()
 	wants_interact = Input.is_action_just_pressed("interact")
 	wants_drop = Input.is_action_just_pressed("drop")
-	aim_position = get_global_mouse_position()
+	aim_position = aim_override if aim_override != Vector2.INF else get_global_mouse_position()
 	# Key 1 = the weapon slot (user request 2026-09-06); keys 2..0 = hotbar
 	# slots 1..9. The tenth hotbar slot is wheel/click only.
 	if Input.is_action_just_pressed("hotbar_1"):
@@ -645,7 +648,7 @@ func bulk_scrap(stage: int) -> String:
 		total += n
 	if total == 0:
 		return "Nothing here to grind down" + (" - needs a higher Scrapping skill" if blocked else "")
-	Audio.play_sfx("dismantle_rattle", global_position)
+	Audio.play_world_sfx("dismantle_rattle", global_position)
 	return "Ground down %d object%s to materials" % [total, "" if total == 1 else "s"]
 
 func open_container(obj: WorldObject) -> void:
@@ -768,6 +771,10 @@ func _try_enter_climb() -> bool:
 		return true
 	var below := _feet_point() + Vector2(0, 2.0)
 	if input_dir.y > 0.0 and climbable_below and not World.is_solid(below):
+		# Centre on the run first: a rope through a body-narrow hole leaves
+		# the hitbox touching the hole's edge, and is_on_floor() would bounce
+		# the climb straight back to GROUNDED (rope tops as platforms, 2026-09-06).
+		global_position.x = World.climbable_center_x(below)
 		_enter_climbing()
 		return true
 	return false
@@ -813,6 +820,12 @@ func _state_grounded(delta: float) -> void:
 	_apply_gravity(delta)
 	if _consume_jump():
 		_jump()
+		return
+	# Standing on a rope/ladder top that sits in a hole no wider than the body
+	# (the body also touches the hole's edge, so is_on_floor() is true): down
+	# still climbs through it (rope tops as platforms, 2026-09-06).
+	if is_on_floor() and input_dir.y > 0.0 and climbable_below and not is_nan(_ladder_top_surface()):
+		_enter_climbing()
 		return
 	if not is_on_floor():
 		# Going down a ladder/rope (user request 2026-09-02): pressing down
@@ -902,8 +915,8 @@ func _state_climbing(delta: float) -> void:
 	# Center on the rope/ladder column (walk anim reuse, WS-27).
 	var dx := World.climbable_center_x(_center_point()) - global_position.x
 	velocity.x = clampf(dx / delta, -Constants.WALK_SPEED, Constants.WALK_SPEED)
-	if input_dir.y > 0.0 and is_on_floor():
-		state = State.GROUNDED
+	if input_dir.y > 0.0 and is_on_floor() and is_nan(_ladder_top_surface()):
+		state = State.GROUNDED # reached the floor at the bottom (not merely brushing a hole's edge at the top)
 
 func _state_surface_swim(delta: float) -> void:
 	if not in_water:
@@ -986,13 +999,38 @@ func hurt_from_enemy(damage: float, from_pos: Vector2, can_bleed: bool) -> void:
 	apply_damage(mitigated)
 	if can_bleed and bleed_time <= 0.0 and randf() < Constants.BLEED_CHANCE and health > 0.0:
 		start_bleeding()
-	Audio.play_sfx("footstep_soft", global_position, 8, -4.0)
+	Audio.play_world_sfx("footstep_soft", global_position, 8, -4.0)
 
 func start_bleeding() -> void:
 	if Admin.no_death:
 		return
 	bleed_time = Constants.BLEED_DURATION
 	message.emit("You are bleeding — bandage it!")
+
+## Hit feedback (user request 2026-09-06): the screen flash is a timer the
+## HUD drains (seconds left); the burst + thud happen where the body is.
+var hurt_flash: float = 0.0
+var death_marks: Array = [] # world positions where this body died this session (map dots)
+var _hurt_fx_at_ms: int = -100000
+
+func _hurt_fx(amount: float) -> void:
+	if amount < Constants.HURT_FX_MIN_DAMAGE:
+		return # drains tick per frame: no strobing
+	var now := Time.get_ticks_msec()
+	if now - _hurt_fx_at_ms < int(Constants.HURT_FX_COOLDOWN * 1000.0):
+		return
+	_hurt_fx_at_ms = now
+	World.spawn_break_puff(_center_point(), "blood") # replicated to clients as a puff effect
+	Audio.play_world_sfx("player_hurt", global_position, 3, -2.0) # relayed to clients
+	flash_hurt()
+	var relay := _relay()
+	if relay != null:
+		relay.ev_hurt() # the owning client flashes its own screen
+
+## The red screen flash (local screens only; a relayed client calls this itself).
+func flash_hurt() -> void:
+	if is_local():
+		hurt_flash = Constants.HURT_FLASH_SECONDS
 
 func apply_damage(amount: float) -> void:
 	if dying:
@@ -1002,6 +1040,7 @@ func apply_damage(amount: float) -> void:
 		return
 	combat_timer = 0.0
 	health = maxf(health - amount, 0.0)
+	_hurt_fx(amount)
 	if health <= 0.0:
 		_die()
 
@@ -1009,6 +1048,9 @@ func apply_damage(amount: float) -> void:
 ## from where you fell (or pins under a flooded ceiling); worn gear stays on
 ## the body. Respawn at the bed (GL-23), swim back down, touch to recover.
 func _die() -> void:
+	death_marks.append(_center_point())
+	if Net.is_online():
+		Net.notice_all("%s died" % character_name)
 	var dropped: Array = []
 	for i in inventory.slots.size():
 		if inventory.slots[i] != null:

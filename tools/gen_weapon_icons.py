@@ -145,6 +145,14 @@ def bat(c, ramp=WOOD):
     c.line(2, 14, 3, 13, DARK, 2)
 
 
+def club(c, ramp=WOOD):
+    # A knotted rooftop branch: thin grip, thick head (hand-crafted Stage 1 weapon).
+    c.line(2, 14, 7, 9, ramp, 2)
+    c.line(7, 9, 12, 4, ramp, 4)
+    c.px(9, 5, DARK[0]); c.px(12, 6, DARK[0]); c.px(11, 3, ramp[2])
+    c.line(2, 14, 3, 13, DARK, 2)
+
+
 def rod(c, m, hook=False, w=2, ramp=None):
     ramp = ramp or m
     c.line(2, 14, 13, 3, ramp, w)
@@ -434,6 +442,7 @@ def spec(name, band, fn, **kw):
 
 MELEE = {
     "baseball_bat": spec("Baseball Bat", 1, bat),
+    "wood_club": spec("Wooden Club", 1, club),  # hand-crafted rooftop weapon (2026-09-06), not a district weapon
     "baton": spec("Baton", 1, baton),
     "crowbar": spec("Crowbar", 1, crowbar),
     "desk_leg": spec("Desk Leg", 1, desk_leg),
@@ -527,7 +536,7 @@ AMMO = {
     "flares": spec("Flares", 1, flares),
     "harpoon": spec("Harpoon Bolt", 3, harpoon_bolt),
 }
-NO_METAL = {bat, extinguisher, desk_leg, flaregun, shells, flares, baton}
+NO_METAL = {bat, club, extinguisher, desk_leg, flaregun, shells, flares, baton}
 
 
 def draw(item_id, band, fn, kw):

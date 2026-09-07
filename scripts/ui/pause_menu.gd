@@ -286,6 +286,16 @@ func _refresh_players() -> void:
 		return
 	for i in range(players_box.get_child_count() - 1, 0, -1): # keep the header
 		players_box.get_child(i).queue_free()
+	# The header names the world (its display name, 2026-09-06).
+	var header := players_box.get_child(0) as Label
+	if header != null:
+		var title := String(Net.world_name)
+		var scene := get_tree().current_scene
+		if scene != null:
+			var wt = scene.get("world_title")
+			if wt is String and wt != "":
+				title = wt
+		header.text = "PLAYERS" if title == "" else "PLAYERS · " + title
 	var ids: Array = Net.peers.keys()
 	ids.sort()
 	for id in ids:

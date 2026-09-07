@@ -23,6 +23,14 @@ func spawn_for(peer_id: int, character_name: String) -> Player:
 		if other is Player and not other.is_queued_for_deletion():
 			p.add_collision_exception_with(other)
 			other.add_collision_exception_with(p)
+	# Enemies alive BEFORE this body existed never got their Enemy._ready
+	# exception with it (2026-09-06 LAN audit): a joiner would be shoved and
+	# walled in by the zombies already standing around the host.
+	for grp in ["enemies", "fish_schools"]:
+		for e in get_tree().get_nodes_in_group(grp):
+			if e is PhysicsBody2D and not e.is_queued_for_deletion():
+				e.add_collision_exception_with(p)
+				p.add_collision_exception_with(e)
 	add_child(p)
 	p.camera.enabled = local # only the local body drives the viewport
 	if local:

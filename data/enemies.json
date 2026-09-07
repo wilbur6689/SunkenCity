@@ -681,7 +681,7 @@
   },
   "comment": "M4 enemy roster (GD-01..29). types = behaviour identity; bands = AUTHORED per-band stat tables (GD-23, no formulas): hp / damage per hit / speed in blocks-per-sec / aggro radius in blocks. An enemy only seeds in bands it has a row for. drops are the light kind (GD-24): cloth and scrap bits from zombies, meat from fish.",
   "seeding": {
-    "comment": "Density doubled 2026-09-05 (user request) over the GD-27 baseline: a dry wing-floor now rolls 0..3 zombies (weights index = count, ~1.7 expected, was ~0.85), flooded Dark/Crush wings roll a Drowned at 0.8 (was 0.4), and open-water spacings are halved. Spacings are cell ranges walked along OPEN WATER columns only (gaps + ocean margins), not the whole world width. Pity timer per wing: every quiet floor adds wing_pity_boost to the next floor's chance of at least one spawn, and after wing_pity_floors quiet floors the next is guaranteed (when the floor can hold anything). T0 rooftops (2026-09-06): after dark every player standing on an open roof, outside a sealed room of their own, draws roof_night_max spawns from roof_night_types onto roof tops roof_night_min..max_blocks away (same cadence as the night floaters); they clear at dawn. Predator fish (2026-09-06): flooded Shallows/Cold wing-floors roll wing_fish_chance for one fish drawn from that band's wing_fish_weights (so those floors are no longer quiet), and each fish type is also scattered along open water in its bands at pred_fish_spacing (tropical: shallows; catfish: shallows+cold; barracuda: cold).",
+    "comment": "Density doubled 2026-09-05 (user request) over the GD-27 baseline: a dry wing-floor now rolls 0..3 zombies (weights index = count, ~1.7 expected, was ~0.85), flooded Dark/Crush wings roll a Drowned at 0.8 (was 0.4), and open-water spacings are halved. Spacings are cell ranges walked along OPEN WATER columns only (gaps + ocean margins), not the whole world width. Pity timer per wing: every quiet floor adds wing_pity_boost to the next floor's chance of at least one spawn, and after wing_pity_floors quiet floors the next is guaranteed (when the floor can hold anything). T0 rooftops (2026-09-06): after dark every player standing on an open roof, outside a sealed room of their own, draws roof_night_max spawns from roof_night_types onto roof tops roof_night_min..max_blocks away (same cadence as the night floaters); they clear at dawn. Predator fish (2026-09-06): flooded Shallows/Cold wing-floors roll wing_fish_chance for one fish drawn from that band's wing_fish_weights (so those floors are no longer quiet), and each fish type is also scattered along open water in its bands at pred_fish_spacing (tropical: shallows; catfish: shallows+cold; barracuda: cold). Interior pockets (user request 2026-09-06): each pocket rolls pocket_monster_chance for ONE elite guardian at pocket_monster_mult x hp/damage - a dry pocket draws from the tower district's dry uniques (else a walker), a flooded one from its flooded uniques (else a barracuda).",
     "fish_spacing": [
       40.0,
       90.0
@@ -868,7 +868,9 @@
     "open_water_fauna_spacing": [
       70.0,
       150.0
-    ]
+    ],
+    "pocket_monster_chance": 0.75,
+    "pocket_monster_mult": 2.0
   },
   "types": [
     {

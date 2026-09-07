@@ -28,9 +28,10 @@ extends Node
 ##   17 u8  drowning 1 · dying 2 · scrapping 4
 ##   18 f16 health   20 f16 oxygen   22 f16 bleed_time   24 f16 swing_time
 ##   26 u16 held item index (Data.items key order; 0xFFFF = empty hands)
+##   28 u16 suit item index   30 u8 scrap progress * 255 (the owner's HUD bar)
 
 const IN_BYTES := 12
-const ST_BYTES := 30 # + u16 suit item index at [28] (2026-09-05 integration)
+const ST_BYTES := 31
 const NO_ITEM := 0xFFFF
 ## Beyond this the puppet snaps instead of sliding (respawn, portal, lag spike).
 const SNAP_DIST_PX := 6.0 * Constants.BLOCK_SIZE
@@ -211,6 +212,8 @@ func _pack_state() -> PackedByteArray:
 	b.encode_half(24, player._swing_time)
 	b.encode_u16(26, _held_index(player.held_item()))
 	b.encode_u16(28, _held_index(player.equipped("suit")))
+	var prog := player.interaction.scrap_progress if player.interaction != null else 0.0
+	b.encode_u8(30, int(clampf(prog, 0.0, 1.0) * 255.0))
 	return b
 
 @rpc("authority", "call_remote", "unreliable")
@@ -244,6 +247,7 @@ func _st(packed: PackedByteArray) -> void:
 		player._swing_time = swing # a fresh hammer hit; the local decay carries it
 	player.puppet_held = _held_id(packed.decode_u16(26))
 	player.puppet_suit = _held_id(packed.decode_u16(28))
+	player.puppet_scrap_progress = packed.decode_u8(30) / 255.0
 	# Interpolation: slide from where the puppet is now to the new host
 	# position over one tick; a big jump (respawn, portal, lag) snaps.
 	if not _have_state or player.global_position.distance_to(pos) > SNAP_DIST_PX:
@@ -306,6 +310,10 @@ func ev_died() -> void:
 	if _relaying():
 		_ev_died.rpc_id(player.peer_id)
 
+func ev_hurt() -> void:
+	if _relaying():
+		_ev_hurt.rpc_id(player.peer_id)
+
 func ev_respawn(feet: Vector2) -> void:
 	if _relaying():
 		_ev_respawn.rpc_id(player.peer_id, feet)
@@ -355,7 +363,13 @@ func _ev_travel(feet: Vector2) -> void:
 @rpc("authority", "call_remote", "reliable")
 func _ev_died() -> void:
 	if _owner_event():
+		player.death_marks.append(player.global_position) # map dot (user request 2026-09-06)
 		player._begin_death_scene()
+
+@rpc("authority", "call_remote", "reliable")
+func _ev_hurt() -> void:
+	if _owner_event():
+		player.flash_hurt()
 
 @rpc("authority", "call_remote", "reliable")
 func _ev_respawn(feet: Vector2) -> void:

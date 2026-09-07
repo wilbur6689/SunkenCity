@@ -199,13 +199,22 @@ func _run() -> void:
 	print("== G. station crafting + full-yield scrapping")
 	var wood_before := inv_count("wood")
 	await goto(42)
-	# Long LMB press picks furniture up whole (short click only hints)
+	# Long LMB press picks furniture up whole - with the HAMMER only (2026-09-06;
+	# a bare/knife hold no longer lifts anything, so LMB stays free to fight).
+	check(hold_item("scrap_knife"), "knife in hand")
 	aim(Vector2i(44, row))
 	player.wants_use = true
 	await ticks(40)
 	player.wants_use = false
 	await ticks(2)
-	check(inv_count("chair") == 1 and obj_at(Vector2i(44, row)) == null, "long press picked up the second chair whole")
+	check(inv_count("chair") == 0 and obj_at(Vector2i(44, row)) != null, "a long press without the hammer leaves the chair where it is")
+	check(hold_item("hammer"), "hammer in hand")
+	aim(Vector2i(44, row))
+	player.wants_use = true
+	await ticks(40)
+	player.wants_use = false
+	await ticks(2)
+	check(inv_count("chair") == 1 and obj_at(Vector2i(44, row)) == null, "the hammer's long press picked up the second chair whole")
 	await goto(26)
 	check(player.scrap_item("chair", 1) and inv_count("wood") >= wood_before + 5, "station scrap = full yield (wood %d -> %d)" % [wood_before, inv_count("wood")])
 	var stations := World.stations_near(player.global_position, Constants.REACH_BLOCKS * B * 1.5)
@@ -276,6 +285,38 @@ func _run() -> void:
 	check(str(World.ladder_pair(lc + Vector2i.RIGHT)) == str([lc, lc + Vector2i.RIGHT]), "either half resolves to the same pair")
 	check(World.pickup_climbable(lc + Vector2i.RIGHT) == "ladder" and not World.is_ladder_cell(lc) and not World.is_ladder_cell(lc + Vector2i.RIGHT),
 			"picking up one half lifts the whole ladder as one item")
+
+	print("== J3. an axe chops placed wood only (user request 2026-09-06)")
+	inv.add("wood_axe", 1)
+	var wb_before := inv_count("wood_block")
+	check(hold_item("wood_block"), "wood block in hand")
+	await press_use(Vector2i(40, row))
+	check(World.placed_block_id(Vector2i(40, row)) == "wood_block", "a wood block placed for the axe")
+	check(hold_item("wood_axe"), "wooden axe in hand")
+	check(await hold_use(Vector2i(40, row), func(): return not World.has_block_cell(Vector2i(40, row)), 120), "the axe chops the placed wood block down")
+	check(await until(func(): return inv_count("wood_block") >= wb_before, 240), "...and the drop homes back to the bag")
+	check(World.place_block("scrap_block", Vector2i(40, row)), "a scrap metal block placed")
+	await hold_use(Vector2i(40, row), func(): return false, 12)
+	check(World.placed_block_id(Vector2i(40, row)) == "scrap_block" and World.placed_blocks[Vector2i(40, row)].hp == float(Data.blocks["scrap_block"].hp)
+			and player.interaction.message.begins_with("An axe only cuts"), "the axe leaves a placed metal block untouched")
+	World.remove_block(Vector2i(40, row)) # tidy up: the cell is reused below
+	await hold_use(Vector2i(34, row + 1), func(): return false, 12)
+	check(World.has_block_cell(Vector2i(34, row + 1)) and not World.structure_damage.has(Vector2i(34, row + 1)), "the axe cannot dent a structure slab")
+	# RMB with the axe takes a PLACED wood back wall down (the tower's own
+	# back walls still want the hammer). Test grant, removed again below so
+	# K's exact wood-wall count holds.
+	await goto(38)
+	var wc := Vector2i(42, row - 3)
+	World.erase_back_wall(wc) # the tower's structure wall; a placed one goes here
+	inv.add("wood_wall", 1)
+	check(hold_item("wood_wall"), "a wood wall in hand")
+	await press_secondary(wc)
+	check(World.placed_block_id(wc, "back") == "wood_wall", "a wood back wall placed")
+	check(hold_item("wood_axe"), "wooden axe back in hand")
+	await ticks(20) # let the hit cooldown expire so the RMB press lands
+	await press_secondary(wc)
+	check(not World.has_back_wall_cell(wc) and inv_count("wood_wall") == 1, "the axe takes a placed wood wall back down")
+	inv.remove("wood_wall", 1)
 
 	print("== K. background walls (WS-21)")
 	await goto(38)

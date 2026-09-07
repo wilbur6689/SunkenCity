@@ -7169,15 +7169,15 @@
    "depth_max": -2,
    "objects": [
     {
-     "id": "tree_mature",
+     "id": "res_plane",
      "x": 0
     },
     {
-     "id": "tree_sapling",
+     "id": "res_maple_seedling",
      "x": 12
     },
     {
-     "id": "tree_young",
+     "id": "res_apple_midling",
      "x": 16
     },
     {
@@ -7197,19 +7197,19 @@
    "depth_max": -2,
    "objects": [
     {
-     "id": "tree_young",
+     "id": "res_apple_midling",
      "x": 0
     },
     {
-     "id": "tree_sapling",
+     "id": "res_maple_seedling",
      "x": 8
     },
     {
-     "id": "tree_mature",
+     "id": "res_plane",
      "x": 12
     },
     {
-     "id": "tree_sapling",
+     "id": "res_maple_seedling",
      "x": 22
     }
    ],

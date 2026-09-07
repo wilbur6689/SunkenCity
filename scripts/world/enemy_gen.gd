@@ -96,6 +96,35 @@ static func seed_city(gen: Dictionary, seed_value: int) -> Array:
 							ftid = String(band_uniques[rng.randi_range(0, band_uniques.size() - 1)])
 						_stand(out, rng, grid, ftid, zx0, zx1, sr)
 				streaks[zi] = 0 if out.size() > before else streak + 1
+	# --- Interior pockets (user request 2026-09-06): the rooms behind the
+	# apartment doors are worth guarding. Each pocket rolls
+	# pocket_monster_chance for ONE elite - the tower district's own creature
+	# for the pocket's state (dry -> the dry uniques, flooded -> the flooded
+	# ones), falling back to a walker / a barracuda - at pocket_monster_mult
+	# x hp and damage. Records carry `mult`, which World.add_enemy_record applies.
+	var p_chance := float(cfg.get("pocket_monster_chance", 0.0))
+	var p_mult := float(cfg.get("pocket_monster_mult", 2.0))
+	for pocket in gen.get("pockets", []):
+		if rng.randf() >= p_chance:
+			continue
+		var rect: Rect2i = pocket.rect
+		var host := CityGen.tower_at(gen.tower_list, pocket.exit)
+		var district := String(host.get("district", "")) if not host.is_empty() else ""
+		var flooded: bool = pocket.get("flooded", false)
+		var pool: Array = []
+		if flooded:
+			pool = (fauna.get("shallows", {}) as Dictionary).get(district, [])
+			if pool.is_empty():
+				pool = ["barracuda"]
+		else:
+			pool = (fauna.get("dry", {}) as Dictionary).get(district, [])
+			if pool.is_empty():
+				pool = ["walker"]
+		var before := out.size()
+		_stand(out, rng, grid, String(pool[rng.randi_range(0, pool.size() - 1)]), rect.position.x + 1, rect.end.x - 2, rect.end.y - 1)
+		if out.size() > before:
+			out[out.size() - 1]["mult"] = p_mult
+			out[out.size() - 1]["pocket"] = true
 	# --- Open water ---
 	# Only the city proper: the gap + VOID annex east of it (interior pockets)
 	# is dry air and blackness, not ocean.

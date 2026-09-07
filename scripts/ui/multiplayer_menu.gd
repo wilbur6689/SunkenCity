@@ -13,6 +13,7 @@ const TITLE_SCENE := "res://scenes/ui/title.tscn"
 const FONT := SavePickers.FONT
 const HOST_HINT := "Pick a world and a character, then host. Others on your network join from the JOIN page."
 const JOIN_HINT := "Hosts on your network appear as they broadcast. Type ip:port for one that doesn't."
+const PORT_BUSY_STATUS := "LAN browsing: port busy, retrying… (ip:port joining still works)"
 
 var frame: Control
 var page: String = "host"
@@ -42,8 +43,10 @@ func _ready() -> void:
 	browser = LanBrowser.new()
 	add_child(browser)
 	browser.changed.connect(_refresh_hosts)
-	if browser.start() != OK:
-		_set_status("LAN browsing unavailable: " + browser.last_error)
+	browser.listening_changed.connect(_on_listening_changed)
+	if browser.start() != OK: # port held by another instance on this PC: the browser retries every 2 s
+		_set_status(PORT_BUSY_STATUS)
+		_refresh_hosts()
 	Net.status.connect(_set_status)
 	Net.join_failed.connect(_on_join_failed)
 	Net.joined.connect(func(_id): _set_status("accepted - downloading world"))
@@ -263,7 +266,7 @@ func _host() -> void:
 		hint.text = "Port must be between 1024 and 65535."
 		return
 	var err := Net.start_hosting(host_pickers.selected_world(), host_pickers.seed_value(), character,
-		p_port, int(cap_spin.value))
+		p_port, int(cap_spin.value), host_pickers.new_world_name())
 	if err != OK:
 		hint.text = "Could not open port %d (%s) - is another host running?" % [p_port, error_string(err)]
 
@@ -289,10 +292,23 @@ func _refresh_hosts() -> void:
 		if key == keep:
 			host_list.select(idx)
 	if rows.is_empty():
-		host_list.add_item("(listening for hosts...)")
+		var listening: bool = browser != null and browser.is_listening()
+		host_list.add_item("(listening for hosts...)" if listening else "(LAN port busy - retrying; type ip:port)")
 		host_list.set_item_disabled(0, true)
 		host_list.set_item_selectable(0, false)
 	_update_buttons()
+
+## The beacon listener bound (or lost its port): the status line follows it
+## unless a join is in progress and owns the line.
+func _on_listening_changed(listening: bool) -> void:
+	if _joining:
+		return
+	if listening:
+		if status != null and (status.text == PORT_BUSY_STATUS or status.text == "idle"):
+			_set_status("listening for hosts")
+	else:
+		_set_status(PORT_BUSY_STATUS)
+	_refresh_hosts()
 
 func _host_row_selected(idx: int) -> void:
 	var md = host_list.get_item_metadata(idx)

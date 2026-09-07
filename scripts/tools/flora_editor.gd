@@ -626,6 +626,12 @@ func _load_selected(index: int) -> void:
 					if loaded != null:
 						image = loaded
 						image.convert(Image.FORMAT_RGBA8)
+						# Generated sway strips (tools/build_flora.py) hold N frames
+						# side by side: edit the REST frame (a save writes a static
+						# single-frame sprite - re-run the build tool for the sway).
+						var fw: int = int(def.size[0]) * Constants.BLOCK_SIZE
+						if fw > 0 and image.get_width() > fw and image.get_width() % fw == 0:
+							image = image.get_region(Rect2i(0, 0, fw, image.get_height()))
 			_sync_to_ui()
 			_say("Loaded " + def.id)
 			return
@@ -643,6 +649,8 @@ func _save() -> void:
 	# Data.object_texture reads the exported file.
 	def.erase("sheet")
 	def.erase("rect")
+	def.erase("frames")
+	def.erase("generated_flora") # an editor save owns the entry from now on
 	def["authored"] = true # pack rebuilds keep their hands off editor saves
 	var lib := _read_library()
 	if grow != "":

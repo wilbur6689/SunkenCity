@@ -14,7 +14,7 @@ extends Control
 ## strips) and tools/gen_placeholder_art.py (placeholders).
 
 const SPRITE_DIR := "res://assets/sprites/enemies/"
-const MODES := ["ground", "surface", "swim", "fish"]
+const MODES := ["ground", "surface", "swim", "fly", "fish"] # fly: Bestiary Grid fliers (2026-09-06)
 const BANDS := ["roof", "dry", "shallows", "cold", "dark", "crush"] # roof = T0 rooftops, night-only (2026-09-06)
 const FLAGS := ["bleeds", "water_only", "open_water", "passive"]
 const STATS := ["hp", "damage", "speed", "aggro"]
@@ -168,7 +168,7 @@ func _build_ui() -> void:
 	sv.add_child(row1)
 	sv.add_child(UITheme.label("Movement mode", 8, Color(0.6, 0.66, 0.72)))
 	mode_option = OptionButton.new()
-	mode_option.tooltip_text = "ground: stands/walks with gravity and edge sense. surface: bobs prone at the waterline. swim: moves freely in water. fish: passive catchable ambience."
+	mode_option.tooltip_text = "ground: stands/walks with gravity and edge sense. surface: bobs prone at the waterline. swim: moves freely in water. fly: airborne, no gravity. fish: passive catchable ambience."
 	mode_option.add_theme_font_size_override("font_size", 8)
 	for m in MODES:
 		mode_option.add_item(m)
@@ -427,10 +427,20 @@ func _draw_preview() -> void:
 		fw * PX, fh * PX)
 	preview.draw_texture_rect_region(_tex, dst, Rect2(frame * fw, 0, fw, fh))
 	if hitbox_check.button_pressed:
+		# Standing bodies: the game stands the art's lowest opaque row on the
+		# hitbox bottom (Enemy foot alignment, 2026-09-06); swimmers/fliers
+		# centre the box on the cell. Mirror that here so the overlay is true.
 		var hw := float(w_spin.value) * PX
 		var hh := float(h_spin.value) * PX
-		preview.draw_rect(Rect2(dst.get_center().x - hw * 0.5, dst.position.y + dst.size.y - hh,
-			hw, hh), Color(0.9, 0.4, 0.4, 0.8), false)
+		var mode: String = MODES[mode_option.selected] if mode_option.selected >= 0 else "ground"
+		var box_bottom := dst.get_center().y + hh * 0.5
+		if mode in ["ground", "surface"]:
+			var img: Image = _tex.get_image()
+			var used: Rect2i = img.get_used_rect() if img != null else Rect2i()
+			var art_bottom: float = float(used.end.y) if used.size.y > 0 else fh
+			box_bottom = dst.position.y + art_bottom * PX
+		preview.draw_rect(Rect2(dst.get_center().x - hw * 0.5, box_bottom - hh, hw, hh),
+			Color(0.9, 0.4, 0.4, 0.8), false)
 
 # --- Sync + library I/O ---
 

@@ -4,6 +4,13 @@ extends Node2D
 ## a rect of cells near the view is ever painted (tiles carry collision, so
 ## physics exists exactly where the player is — Terraria-style). Creates its
 ## three layers (back walls, solid blocks, climbables) as children.
+##
+## Anchors (2026-09-06, user report: a LAN client fell through floors and
+## walls far from the host): the painted area is the UNION of one rect per
+## anchor — the camera view (+MARGIN) and, on the host, an ENEMY_WINDOW-sized
+## rect around EVERY simulated player body (the local one too), so a remote
+## player and the enemies streamed in around it always stand on physics. A
+## client paints only around its own camera (it simulates nothing).
 
 ## Tile art density (2026-09-04, half-size blocks): 24 px tiles drawn at 1/3
 ## scale onto the 8 px cell grid — 1 texel per monitor pixel at the default
@@ -18,7 +25,7 @@ const SHRINK_SLACK := 20  # how far the view must move before erasing
 var back_layer: TileMapLayer
 var blocks_layer: TileMapLayer
 var climb_layer: TileMapLayer
-var painted := Rect2i() # currently painted cell rect (zero = nothing)
+var painted: Dictionary = {} # anchor key -> painted cell rect (the union is what exists)
 
 func _ready() -> void:
 	back_layer = TileMapLayer.new()
@@ -73,45 +80,90 @@ class _CrackLayer extends Node2D:
 func _physics_process(_delta: float) -> void:
 	if World.grid == null:
 		return
-	var cam := get_viewport().get_camera_2d()
-	if cam == null:
-		return
 	var s := Constants.BLOCK_SIZE
-	var half := get_viewport_rect().size * 0.5 / cam.zoom.x
-	var c0 := Vector2i(floori((cam.get_screen_center_position().x - half.x) / s), floori((cam.get_screen_center_position().y - half.y) / s))
-	var c1 := Vector2i(ceili((cam.get_screen_center_position().x + half.x) / s), ceili((cam.get_screen_center_position().y + half.y) / s))
-	var want := Rect2i(c0 - Vector2i(MARGIN, MARGIN), (c1 - c0) + Vector2i(MARGIN * 2, MARGIN * 2))
-	want = want.intersection(World.grid.bounds)
-	World.perf.struct_cells = painted.size.x * painted.size.y
-	if painted == Rect2i():
-		var t0 := Time.get_ticks_usec()
+	var wants: Dictionary = {}
+	var cam := get_viewport().get_camera_2d()
+	if cam != null:
+		var half := get_viewport_rect().size * 0.5 / cam.zoom.x
+		var c0 := Vector2i(floori((cam.get_screen_center_position().x - half.x) / s), floori((cam.get_screen_center_position().y - half.y) / s))
+		var c1 := Vector2i(ceili((cam.get_screen_center_position().x + half.x) / s), ceili((cam.get_screen_center_position().y + half.y) / s))
+		wants["cam"] = Rect2i(c0 - Vector2i(MARGIN, MARGIN), (c1 - c0) + Vector2i(MARGIN * 2, MARGIN * 2))
+	if Net.is_server():
+		# Physics wherever the host simulates a body (and the enemies around it).
+		var bhalf: Vector2i = Constants.ENEMY_WINDOW / 2
+		for p in get_tree().get_nodes_in_group("player"):
+			if p is Node2D and is_instance_valid(p):
+				wants[p.get("peer_id")] = Rect2i(World.cell_at(p.global_position) - bhalf, Constants.ENEMY_WINDOW)
+	if wants.is_empty():
+		return
+	var t0 := Time.get_ticks_usec()
+	for key in wants:
+		wants[key] = (wants[key] as Rect2i).intersection(World.grid.bounds)
+	for key in painted.keys():
+		if not wants.has(key):
+			_drop_anchor(key)
+	for key in wants:
+		_update_anchor(key, wants[key])
+	var cells := 0
+	for key in painted:
+		cells += (painted[key] as Rect2i).size.x * (painted[key] as Rect2i).size.y
+	World.perf.struct_cells = cells
+	World.perf.struct_ms = (Time.get_ticks_usec() - t0) / 1000.0
+
+## Bring one anchor's painted rect up to `want`: paint fresh, grow by delta
+## strips while the merged rect stays sane, else drop the old rect and paint
+## the new one. Cells another anchor still covers are never erased.
+func _update_anchor(key, want: Rect2i) -> void:
+	if not painted.has(key):
 		_paint_rect(want)
-		painted = want
-		World.perf.struct_ms = (Time.get_ticks_usec() - t0) / 1000.0
+		painted[key] = want
 		return
-	if painted.encloses(want):
-		World.perf.struct_ms = 0.0
+	var cur: Rect2i = painted[key]
+	if cur.encloses(want):
 		return
-	var t1 := Time.get_ticks_usec()
-	var new_rect := painted.merge(want)
-	# Repaint fully if the merged area drifted too large; else paint the delta strips.
+	var new_rect := cur.merge(want)
 	if new_rect.size.x * new_rect.size.y > (want.size.x + SHRINK_SLACK * 2) * (want.size.y + SHRINK_SLACK * 2) * 2:
-		_clear_all()
+		painted.erase(key)
+		_erase_rect_uncovered(cur)
 		_paint_rect(want)
-		painted = want
+		painted[key] = want
 	else:
 		for y in range(new_rect.position.y, new_rect.end.y):
 			for x in range(new_rect.position.x, new_rect.end.x):
 				var c := Vector2i(x, y)
-				if not painted.has_point(c):
+				if not cur.has_point(c):
 					_paint_cell(c)
-		painted = new_rect
-	World.perf.struct_ms = (Time.get_ticks_usec() - t1) / 1000.0
+		painted[key] = new_rect
+
+func _drop_anchor(key) -> void:
+	var cur: Rect2i = painted[key]
+	painted.erase(key)
+	_erase_rect_uncovered(cur)
+
+## True when some painted anchor rect contains the cell.
+func _is_painted(cell: Vector2i) -> bool:
+	for key in painted:
+		if (painted[key] as Rect2i).has_point(cell):
+			return true
+	return false
+
+func _erase_rect_uncovered(rect: Rect2i) -> void:
+	for y in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			var c := Vector2i(x, y)
+			if not _is_painted(c):
+				_erase_cell(c)
+
+func _erase_cell(cell: Vector2i) -> void:
+	blocks_layer.erase_cell(cell)
+	back_layer.erase_cell(cell)
+	climb_layer.erase_cell(cell)
 
 func _clear_all() -> void:
 	back_layer.clear()
 	blocks_layer.clear()
 	climb_layer.clear()
+	painted.clear()
 
 func _paint_rect(rect: Rect2i) -> void:
 	for y in range(rect.position.y, rect.end.y):
@@ -147,8 +199,8 @@ func _paint_cell(cell: Vector2i) -> void:
 
 ## A grid cell changed: repaint it if it is inside the painted window.
 func refresh_cell(cell: Vector2i) -> void:
-	if painted != Rect2i() and painted.has_point(cell):
+	if _is_painted(cell):
 		_paint_cell(cell)
 		for n: Vector2i in [cell + Vector2i.LEFT, cell + Vector2i.RIGHT]: # a ladder half's art depends on its neighbour
-			if painted.has_point(n) and World.grid.climb_at(n) != WorldGrid.C.NONE:
+			if _is_painted(n) and World.grid.climb_at(n) != WorldGrid.C.NONE:
 				_paint_cell(n)

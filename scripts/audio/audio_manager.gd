@@ -136,7 +136,12 @@ const SFX_DIR := "res://assets/audio/sfx/"
 
 ## Positional one-shot from assets/audio/sfx. With variants > 1 a random
 ## numbered take plays (e.g. "wood_hit" -> wood_hit_1 / wood_hit_2).
+## SFX requests since boot (counted headless too - the LAN harness asserts a
+## client RECEIVED relayed world sounds even though nothing plays there).
+var sfx_requests: int = 0
+
 func play_sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 0.0) -> void:
+	sfx_requests += 1
 	if _headless:
 		return
 	var sfx_name := base if variants <= 1 else "%s_%d" % [base, randi() % variants + 1]
@@ -153,6 +158,16 @@ func play_sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 
 	p.global_position = pos
 	p.finished.connect(p.queue_free)
 	p.play()
+
+## A sound the SIMULATION makes (a hit, a door, a harvest creak): plays here
+## and, while hosting, on every client too - the host runs every player's
+## actions, so a client would otherwise hear nothing it does itself (user
+## report 2026-09-06). Sounds that every machine derives on its own from
+## replicated state (footsteps, the enemy "died" event) stay on play_sfx.
+func play_world_sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 0.0) -> void:
+	var sfx_name := base if variants <= 1 else "%s_%d" % [base, randi() % variants + 1]
+	play_sfx(sfx_name, pos, 1, volume_db)
+	Net.on_effect("sfx", pos, "%s@%.1f" % [sfx_name, volume_db])
 
 ## The pool the current situation calls for: threat music in the deep
 ## danger bands, adventure everywhere else (title screen included).

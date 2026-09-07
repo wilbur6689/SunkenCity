@@ -33,17 +33,21 @@ func _net() -> Node:
 ## it) and start streaming it to `peer_id`.
 func send_to(peer_id: int) -> void:
 	var net := _net()
-	var wn := String(net.world_name)
+	var title := String(net.world_name) # the display name (what the beacon / _accepted carry)
 	if net.has_method("_current_world_name"):
-		wn = String(net._current_world_name())
+		title = String(net._current_world_name())
+	var wn := title # the file key: the city scene's world_name (2026-09-06: names are separate)
 	var seed_value := 1
 	var tree := get_tree()
 	if tree != null and tree.current_scene != null:
 		var sv = tree.current_scene.get("seed_value")
 		if sv != null:
 			seed_value = int(sv)
+		var key = tree.current_scene.get("world_name")
+		if key is String and key != "":
+			wn = key
 	var t0 := Time.get_ticks_msec()
-	var data := SaveGame.world_payload(wn, seed_value)
+	var data := SaveGame.world_payload(wn, seed_value, title)
 	var bytes := var_to_bytes(data)
 	var total := int(ceil(float(bytes.size()) / float(Constants.NET_CHUNK_BYTES)))
 	total = maxi(total, 1)

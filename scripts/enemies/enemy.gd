@@ -65,8 +65,7 @@ func _ready() -> void:
 	var tex := _load_strip(path)
 	if tex != null:
 		walk_tex = tex
-		sprite.texture = tex
-		sprite.hframes = _frames_of(tex)
+		_set_strip(tex) # also stands the art on the hitbox bottom (foot alignment)
 		# Optional clips beside the walk strip (urban pack, 2026-09-01):
 		# <strip>_idle / _attack / _hurt / _dead play when present.
 		var base := path.trim_suffix(".png")
@@ -180,25 +179,48 @@ func _frames_of(tex: Texture2D) -> int:
 		return maxi(tex.get_width() / h, 1)
 	return maxi(int(def.get("frames", 1)), 1)
 
-## A strip texture, honouring the authored-sprites raw-load rule.
+## Foot alignment (user report 2026-09-06 "monsters clipped into the floor"):
+## a strip's cell is usually taller than the hitbox - the square-cell fauna
+## draw a 6 px rat near the bottom of a 16 px cell, a 4 px snake at the foot
+## of a 24 px one, and the hand-made 26 px walker strips carry a 22 px box -
+## so a Sprite2D centred on the hitbox painted the visible feet 2-9 px below
+## the hitbox bottom, i.e. inside the floor slab. Standing bodies (ground /
+## surface modes) now shift the sprite so the art's lowest opaque row rests
+## on the hitbox bottom (the Monster Editor's overlay contract); swimmers
+## and fliers stay centred, their hitbox IS the body. Measured once per
+## strip file and cached by path; per node, per texture for the clip swaps.
+static var _art_bottom_cache: Dictionary = {} # path -> lowest opaque row's bottom edge, px below the cell centre
+var _tex_foot: Dictionary = {}                 # Texture2D -> sprite.offset.y for that strip
+
+func _stands() -> bool:
+	return def.get("mode", "ground") in ["ground", "surface"]
+
+static func _art_bottom_of(path: String, tex: Texture2D) -> float:
+	if _art_bottom_cache.has(path):
+		return float(_art_bottom_cache[path])
+	var below := tex.get_height() * 0.5 # fallback: the cell bottom
+	var img := tex.get_image()
+	if img != null:
+		var used := img.get_used_rect()
+		if used.size.y > 0:
+			below = float(used.end.y) - tex.get_height() * 0.5
+	_art_bottom_cache[path] = below
+	return below
+
+## A strip texture, honouring the authored-sprites raw-load rule; remembers
+## the foot offset that stands its art on the hitbox bottom.
 func _load_strip(path: String) -> Texture2D:
-	if def.get("authored_sprites", false) and FileAccess.file_exists(path):
-		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
-		if img != null:
-			return ImageTexture.create_from_image(img)
-	if ResourceLoader.exists(path):
-		return load(path)
-	if FileAccess.file_exists(path):
-		var raw := Image.load_from_file(ProjectSettings.globalize_path(path))
-		if raw != null:
-			return ImageTexture.create_from_image(raw)
-	return null
+	var tex := Data.load_texture_fresh(path, def.get("authored_sprites", false))
+	if tex != null:
+		_tex_foot[tex] = (half.y - _art_bottom_of(path, tex)) if _stands() else 0.0
+	return tex
 
 func _set_strip(tex: Texture2D) -> void:
 	if sprite.texture != tex:
 		sprite.texture = tex
 		sprite.hframes = _frames_of(tex)
 		sprite.frame = 0
+		sprite.offset.y = float(_tex_foot.get(tex, 0.0))
 
 func _play_oneshot(anim: String, dur: float) -> void:
 	if not anim_tex.has(anim):
@@ -311,7 +333,7 @@ func _handle_block(dir: float) -> void:
 			if pound_cd <= 0.0:
 				pound_cd = Constants.ENEMY_POUND_INTERVAL
 				World.pound(cell, Constants.ENEMY_POUND_DAMAGE)
-				Audio.play_sfx("wood_hit", World.cell_center(cell), 2, -4.0)
+				Audio.play_world_sfx("wood_hit", World.cell_center(cell), 2, -4.0)
 			return
 	if is_on_floor():
 		velocity.y = -sqrt(2.0 * Constants.gravity * Constants.ENEMY_HOP_BLOCKS * Constants.BLOCK_SIZE)
@@ -429,7 +451,7 @@ func catch_fish(player) -> bool:
 		return false
 	player.inventory.add("fish_meat", 1)
 	rec.stock = int(rec.get("stock", 1)) - 1
-	Audio.play_sfx("splash", global_position, 5, -12.0)
+	Audio.play_world_sfx("splash", global_position, 5, -12.0)
 	if rec.stock <= 0:
 		World.remove_enemy(rec)
 	return true
@@ -456,7 +478,7 @@ func _try_shoot() -> void:
 		_play_oneshot("attack", 0.35)
 		World.spawn_tracer(global_position, p.global_position)
 		p.hurt_from_enemy(float(stats.damage), global_position, def.get("bleeds", false))
-		Audio.play_sfx("splash", global_position, 4, -10.0)
+		Audio.play_world_sfx("splash", global_position, 4, -10.0)
 		if def.has("lifesteal"):
 			rec.hp = minf(float(rec.hp) + float(stats.damage) * float(def.lifesteal), float(stats.hp))
 		return
@@ -512,6 +534,10 @@ func hurt(damage: float, from_pos: Vector2, knockback: float = 0.0) -> void:
 		return
 	damage *= 1.0 - float(def.get("armor", 0.0)) # hard shells (T0 roach / statue pigeon)
 	rec.hp = float(rec.hp) - damage
+	# Hit feedback (user request 2026-09-06): green ichor flies off and a wet
+	# crunch plays; both replicate to clients as effects.
+	World.spawn_break_puff(global_position, "ichor")
+	Audio.play_world_sfx("enemy_hit", global_position, 3, -4.0) # relayed to clients
 	knockback *= 1.0 - float(def.get("knockback_resist", 0.0)) # concrete tortoise stands its ground
 	# Gets meaner once hurt (dumpster raccoon), or below a health fraction (butcher dog: enrage_at 0.5).
 	if def.has("enrage") and not rec.get("enraged", false) \
@@ -559,6 +585,7 @@ func _spawn_corpse() -> void:
 	c.texture = anim_tex["dead"]
 	c.hframes = _frames_of(anim_tex["dead"])
 	c.flip_h = sprite.flip_h
+	c.offset.y = float(_tex_foot.get(anim_tex["dead"], 0.0)) # the corpse lies on the floor, not in it
 	get_parent().add_child(c)
 	c.global_position = global_position
 	var n := c.hframes

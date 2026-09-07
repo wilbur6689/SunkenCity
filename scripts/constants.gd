@@ -77,6 +77,9 @@ const SCRAP_SPEED_MULT: float = 2.0 # global scrap-speed multiplier (2.0 = testi
 const FIELD_SCRAP_YIELD: float = 0.5 # fraction of full yield when scrapping in place
 const HAND_TOOL_TIER: int = 0
 const ROPE_DROP: int = 1 # cells a single rope placement drops: one per click, added at the BOTTOM of the line (user request 2026-09-04; was a run of 4 old blocks)
+const DEFAULT_SEEDLING: String = "res_plane_seedling" # what a species-less legacy tree_seed grows (flora rebuild 2026-09-06)
+const PLANTER_SLOT_CELLS: int = 2 # a planter section = one 2-cell-wide seedling
+const FLORA_SWAY_FPS: float = 2.5 # sway strip frames per second (ping-pong; docs/Flora/flora.md 5.1)
 const MORNING_TIME: float = 0.25 # time_of_day of dawn; trees advance one stage here (2026-09-02)
 const HAND_SCRAP_SPEED: float = 0.6 # bare-hand scrap speed multiplier
 const UNDERWATER_SCRAP_SLOW: float = 0.25       # dismantling a submerged object is this much slower (user request 2026-09-06)
@@ -103,10 +106,35 @@ const STRUCTURE_TIER := {WorldGrid.M.WOOD: 1, WorldGrid.M.PLASTIC: 1, WorldGrid.
 # 0.25 s/hit a 2x2 group of cells is ~3 s of wood, ~5 s of stone, ~7 s of
 # metal. Cracks appear at 25/50/75% damage.
 const STRUCTURE_HP := {WorldGrid.M.WOOD: 30.0, WorldGrid.M.PLASTIC: 20.0, WorldGrid.M.STONE: 50.0, WorldGrid.M.METAL: 65.0, WorldGrid.M.GARBAGE: 25.0}
+# Player-placed block ids an AXE chops (user request 2026-09-06): the wood
+# block on LMB, the wood back wall on RMB. Never structure, other materials
+# or ladders (a ladder lifts out whole under the hammer's long press).
+const AXE_BLOCKS: Array = ["wood_block", "wood_wall"]
 # GARBAGE (the stage-gap plugs) is the ONE structure that pays out: it is
 # junk, so each demolished cell rolls scrap metal and plastic independently.
 const GARBAGE_DROP_CHANCE: float = 0.3
 const GARBAGE_DROPS: Array = ["scrap_metal", "plastic"]
+## Roof vent hatches + wall vent grates take their tower's district colour
+## (user request 2026-09-06): read a tower's district from its roof.
+const DISTRICT_TINT: Dictionary = {
+	"residential": Color(1.0, 0.86, 0.62),   # warm amber
+	"business": Color(0.62, 0.82, 1.0),      # steel blue
+	"commercial": Color(1.0, 0.66, 0.88),    # neon pink
+	"civil": Color(0.70, 1.0, 0.74),         # civic green
+	"industrial": Color(1.0, 0.60, 0.42),    # rust orange
+	"construction": Color(1.0, 0.95, 0.40),  # hi-vis yellow
+}
+
+# --- Hit feedback (user request 2026-09-06): every discrete hit on the player
+# flashes the screen red, bursts red debris off the body and plays a thud;
+# every hit on a monster bursts green ichor and plays a wet crunch. Per-second
+# drains (cold, crush, bleeding, drowning) tick in tiny amounts and never
+# trigger it - only hits of HURT_FX_MIN_DAMAGE or more, at most one burst per
+# HURT_FX_COOLDOWN.
+const HURT_FX_MIN_DAMAGE: float = 1.0
+const HURT_FX_COOLDOWN: float = 0.12
+const HURT_FLASH_SECONDS: float = 0.35
+const HURT_FLASH_ALPHA: float = 0.32
 
 # --- Admin / QA panel (F4, scripts/dev/admin.gd; user request 2026-09-06) ---
 const ADMIN_FLY_BLOCKS: float = 30.0 # no-clip flight speed, blocks/sec (sprint doubles it)
@@ -128,6 +156,9 @@ const HAND_BLOCK_DAMAGE: float = 0.0 # bare hands cannot break placed blocks
 const BLOCK_HIT_INTERVAL: float = 0.25 # seconds between tool hits while holding use
 
 # --- Water sim (M2, WaterPhysics.md) ---
+const WATER_EVAP_MAX_LEVEL: int = 2      # puddles this thin (of 8 levels) dry out when resting on a floor (user request 2026-09-06)
+const WATER_EVAP_SECONDS: float = 30.0   # seconds a settled puddle waits before losing one level
+const WATER_EVAP_PER_TICK: int = 256     # thin cells examined per tick
 const WATER_BUDGET_PER_TICK: int = 12000 # awake cells processed per physics tick (4x cells per area since 2026-09-04)
 const PUMP_UNITS_PER_TICK: int = 8      # 8 units = one cell; 8/tick @60 = 60 cells/sec (= 15 old blocks)
 const PUMP_RANGE_BLOCKS: float = 48.0   # how far a pump's outlet can be set

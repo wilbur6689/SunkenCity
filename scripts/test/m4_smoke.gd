@@ -159,8 +159,29 @@ func _run() -> void:
 	wfn.facing = -1
 	wfn.attack_cd = 0.0
 	var hpf := player.health
+	player.hurt_flash = 0.0
+	player._hurt_fx_at_ms = -100000 # headless frames run faster than the burst cooldown
 	wfn._try_touch()
 	check(player.health < hpf, "a bite lands one block in front (reach, not same-square)")
+	check(player.hurt_flash > 0.0, "the hit flashes the screen (hurt_flash armed for the HUD)")
+	var puffs := 0
+	for n in World.items_root.get_children():
+		if n is CPUParticles2D and n.color == World.HARVEST_TINT.blood:
+			puffs += 1
+	check(puffs >= 1, "red debris bursts off the player on a hit")
+	player.hurt_flash = 0.0
+	player.apply_damage(0.2)
+	check(player.hurt_flash == 0.0, "a per-frame drain tick does not flash")
+	var e_puffs0 := 0
+	for n in World.items_root.get_children():
+		if n is CPUParticles2D and n.color == World.HARVEST_TINT.ichor:
+			e_puffs0 += 1
+	wfn.hurt(1.0, player.global_position)
+	var e_puffs := 0
+	for n in World.items_root.get_children():
+		if n is CPUParticles2D and n.color == World.HARVEST_TINT.ichor:
+			e_puffs += 1
+	check(e_puffs > e_puffs0, "green ichor bursts off a hit monster")
 	player.health = Constants.MAX_HEALTH
 	wfn.facing = 1
 	wfn.attack_cd = 0.0

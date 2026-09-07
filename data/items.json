@@ -855,7 +855,7 @@
     {
       "authored_icon": true,
       "category": "weapon",
-      "desc": "Slow, heavy, and sends things flying. Worst weapon underwater; a fine tree-feller.",
+      "desc": "Slow, heavy, and sends things flying. Worst weapon underwater; a fine tree-feller that also chops placed wood.",
       "icon": [
         2.0,
         7.0
@@ -993,7 +993,7 @@
     {
       "authored_icon": true,
       "category": "tool",
-      "desc": "Mostly wood, a little scrap. Fells rooftop trees - the bigger, the longer.",
+      "desc": "Mostly wood, a little scrap. Fells rooftop trees - the bigger, the longer - and chops through wood blocks and walls you placed.",
       "icon": [
         4.0,
         1.0
@@ -1015,8 +1015,29 @@
       "weight": 3.0
     },
     {
+      "id": "wood_club",
+      "name": "Wooden Club",
+      "category": "weapon",
+      "desc": "A knotted rooftop branch, hand-shaped. The first thing you swing at what climbs onto the roof at night.",
+      "weight": 2.2,
+      "stack": 1,
+      "weapon": {
+        "melee": true,
+        "damage": 3.5,
+        "speed": 1.1,
+        "knockback": 12.0,
+        "water_factor": 0.4
+      },
+      "scrap": [
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ]
+    },
+    {
       "id": "tree_seed",
-      "name": "Tree Seed",
+      "name": "Tree Seed (plane)",
       "category": "seed",
       "stack": 20.0,
       "weight": 0.1,
@@ -1024,7 +1045,8 @@
         3.0,
         8.0
       ],
-      "desc": "Plant it in a planter. Under open sky it grows into a tree to fell for wood."
+      "desc": "An old mixed seed packet. Plant it in a planter; it comes up as a London plane.",
+      "plants": "res_plane_seedling"
     },
     {
       "id": "wood_bucket",
@@ -3514,6 +3536,186 @@
         0.0
       ],
       "weight": 0.05
+    },
+    {
+      "id": "bus_cypress_seed",
+      "name": "Cypress Cone",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "bus_cypress_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into columnar cypress to fell for wood."
+    },
+    {
+      "id": "bus_ficus_seed",
+      "name": "Fig Seed",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "bus_ficus_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into tub ficus to fell for wood."
+    },
+    {
+      "id": "bus_locust_seed",
+      "name": "Locust Pod",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "bus_locust_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into honey locust to fell for wood."
+    },
+    {
+      "id": "civ_birch_seed",
+      "name": "Birch Catkin",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "civ_birch_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into weeping birch to fell for wood."
+    },
+    {
+      "id": "civ_linden_seed",
+      "name": "Linden Seed",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "civ_linden_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into linden to fell for wood."
+    },
+    {
+      "id": "civ_oak_seed",
+      "name": "Acorn",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "civ_oak_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into park oak to fell for wood."
+    },
+    {
+      "id": "com_bougainvillea_seed",
+      "name": "Bougainvillea Cutting",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "com_bougainvillea_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into bougainvillea to fell for wood."
+    },
+    {
+      "id": "com_magnolia_seed",
+      "name": "Magnolia Seed",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "com_magnolia_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into magnolia to fell for wood."
+    },
+    {
+      "id": "com_palm_seed",
+      "name": "Palm Nut",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "com_palm_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into fan palm to fell for wood."
+    },
+    {
+      "id": "con_elder_seed",
+      "name": "Elderberry",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "con_elder_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into elder to fell for wood."
+    },
+    {
+      "id": "con_poplar_seed",
+      "name": "Poplar Fluff",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "con_poplar_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into poplar to fell for wood."
+    },
+    {
+      "id": "con_willow_seed",
+      "name": "Willow Catkin",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "con_willow_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into willow to fell for wood."
+    },
+    {
+      "id": "ind_ailanthus_seed",
+      "name": "Ailanthus Key",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "ind_ailanthus_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into tree of heaven to fell for wood."
+    },
+    {
+      "id": "ind_birch_seed",
+      "name": "Birch Catkin",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "ind_birch_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into pioneer birch to fell for wood."
+    },
+    {
+      "id": "ind_sumac_seed",
+      "name": "Sumac Drupe",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "ind_sumac_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into sumac thicket to fell for wood."
+    },
+    {
+      "id": "res_apple_seed",
+      "name": "Apple Pip",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "res_apple_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into apple tree to fell for wood."
+    },
+    {
+      "id": "res_maple_seed",
+      "name": "Maple Samara",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "res_maple_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into ornamental maple to fell for wood."
+    },
+    {
+      "id": "res_plane_seed",
+      "name": "Plane Seed Ball",
+      "category": "seed",
+      "stack": 20,
+      "weight": 0.1,
+      "plants": "res_plane_seedling",
+      "generated_flora": true,
+      "desc": "Plant it in a planter. Under open sky it grows into london plane to fell for wood."
     }
   ],
   "cell_px": 8

@@ -76,16 +76,16 @@ func _ready() -> void:
 	check(ed.image.get_pixel(16, 10).a > 0.9, "load restores the sprite pixels")
 	# The generator's pool: shipped flora is picked up by category + weight.
 	var pool := CityGen._zone_details("roof", "flora")
-	check(pool.has("tree_sapling") and pool.has("roof_bush") and pool.has("roof_grass"),
+	check(pool.has("res_plane_seedling") and pool.has("res_hedge") and pool.has("res_lawn"),
 		"roof sprinkle pool sees shipped flora (trees, bush, grass)")
 	var weighted := {}
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
-	for i in 200:
+	for i in 4000: # the pool is every district's flora now (126 ids): a big sample keeps the weight check honest
 		var id: String = CityGen._weighted_flora(rng, pool)
 		weighted[id] = int(weighted.get(id, 0)) + 1
-	check(int(weighted.get("tree_sapling", 0)) > int(weighted.get("tree_mature", 0)),
-		"flora_weight biases picks (saplings over mature trees)")
+	check(int(weighted.get("res_lawn", 0)) > int(weighted.get("res_lawn_midling", 0)),
+		"flora_weight biases picks (grown lawn over young lawn)")
 	DirAccess.remove_absolute("user://flora_test.json")
 	DirAccess.remove_absolute("user://smoke_bush.png")
 	print("\nFlora editor smoke: %d checks, %d failures" % [checks, failures])

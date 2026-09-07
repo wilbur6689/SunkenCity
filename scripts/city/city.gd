@@ -6,7 +6,8 @@ extends Node2D
 
 var gen: Dictionary
 var seed_value := 1
-var world_name := ""
+var world_name := ""  # the world's FILE KEY (save file stem, character position tables)
+var world_title := "" # its display name (title list, beacon, JOIN list, pause menu); = world_name by default
 var character_name := "diver"
 
 @onready var structure_renderer: StructureRenderer = $StructureRenderer
@@ -38,7 +39,9 @@ func _ready() -> void:
 		var snap: Dictionary = Net.pending_snapshot
 		Net.pending_snapshot = {}
 		SaveGame.pending_world = ""
-		world_name = String(snap.get("name", ""))
+		SaveGame.pending_world_name = ""
+		world_name = String(snap.get("key", snap.get("name", "")))
+		world_title = SaveGame.display_name_of(snap, world_name)
 		_boot_loaded(snap)
 		loaded = true
 		if Net.world_sync != null and Net.world_sync.has_method("_ready_for_world"):
@@ -49,13 +52,20 @@ func _ready() -> void:
 		var data := SaveGame.read_world(SaveGame.pending_world)
 		if not data.is_empty():
 			world_name = SaveGame.pending_world
+			world_title = SaveGame.display_name_of(data, world_name)
 			SaveGame.pending_world = ""
+			SaveGame.pending_world_name = ""
 			_boot_loaded(data)
 			loaded = true
 		else:
 			SaveGame.pending_world = ""
 	if not loaded:
-		world_name = "world_%d" % seed_value
+		# Key + display name: `world_<seed>` for both unless the player typed
+		# a name (SaveGame.new_world_key slugs it and dodges an existing file).
+		var named := SaveGame.new_world_key(SaveGame.pending_world_name, seed_value)
+		SaveGame.pending_world_name = ""
+		world_name = named.key
+		world_title = named.name
 		_boot_generated()
 	if Net.mode == Net.Mode.HOST:
 		print("NETHOST ready port=%d" % Net.port) # MultiplayerImpl §8: drivers wait for this
@@ -131,7 +141,7 @@ func _boot_generated() -> void:
 		World.pockets.append({"rect": p.rect, "exit": p.exit, "entry": p.entry})
 	LootGen.fill_containers(World.object_records, gen.waterline_row, seed_value, World.towers, World.pockets)
 	for e in EnemyGen.seed_city(gen, seed_value): # M4: seeded once, no respawn (GD-02)
-		World.add_enemy_record(e.type, e.pos)
+		World.add_enemy_record(e.type, e.pos, float(e.get("mult", 1.0))) # pocket guardians come in at x2
 	var t_flood0 := Time.get_ticks_msec()
 	CityGen.flood(World) # after doors exist: sealing is solidity (WS-20)
 	var t_flood := Time.get_ticks_msec() - t_flood0
@@ -250,7 +260,7 @@ func save_now() -> void:
 	if Net.is_client():
 		_save_local_character()
 		return
-	SaveGame.save_world(world_name, seed_value)
+	SaveGame.save_world(world_name, seed_value, world_title)
 	SaveGame.save_character(character_name, player, world_name)
 	if Net.mode == Net.Mode.HOST and Net.char_sync != null and Net.char_sync.has_method("save_all_characters"):
 		Net.char_sync.save_all_characters()
@@ -317,7 +327,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			if Net.is_client():
 				body.message.emit("Saved '%s' (the host keeps the world)" % character_name)
 			else:
-				body.message.emit("Saved '%s' / '%s'" % [world_name, character_name])
+				body.message.emit("Saved '%s' / '%s'" % [world_title, character_name])
 		elif event.keycode == KEY_F9:
 			if Net.is_client():
 				body.message.emit("Only the host can reload the world")

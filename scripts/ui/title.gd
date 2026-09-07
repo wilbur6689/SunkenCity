@@ -78,7 +78,8 @@ func _dev_host(args: PackedStringArray) -> void:
 	var seed_value := int(_arg(args, "--seed", "0"))
 	var character := _arg(args, "--character", "diver")
 	var cap := int(_arg(args, "--cap", str(Constants.NET_MAX_PLAYERS)))
-	var err := Net.start_hosting(world, seed_value, character, port, cap)
+	var display := _arg(args, "--name", "") # a display name for a NEW world (2026-09-06)
+	var err := Net.start_hosting(world, seed_value, character, port, cap, display)
 	if err != OK:
 		push_error("--host: could not start hosting (%s)" % error_string(err))
 		get_tree().quit(2)

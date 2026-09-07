@@ -619,6 +619,15 @@ static func _build_tower(grid: WorldGrid, rng: RandomNumberGenerator, rooms: Dic
 		for t in LADDER_W:
 			grid.set_climb(Vector2i(lad_w + t, y), WorldGrid.C.LADDER)
 			grid.set_climb(Vector2i(lad_e + t, y), WorldGrid.C.LADDER)
+	# Shaft-mouth ladders (user request 2026-09-06): both shaft walls carry a
+	# ladder from just under the roof vent hatch down to the top floor's
+	# standing row (its shaft doorway), so prying the vent and dropping in
+	# lands you on rungs beside the first floor instead of fifty floors down.
+	for sh in shafts:
+		for y in range(top + SLAB_T, top + fh):
+			for t in LADDER_W:
+				grid.set_climb(Vector2i(int(sh[0]) + t, y), WorldGrid.C.LADDER)
+				grid.set_climb(Vector2i(int(sh[1]) - t, y), WorldGrid.C.LADDER)
 	# Room pool: the district's zone only (mixed-use per floor is gone),
 	# filtered by depth range and the district's template width range.
 	var pool: Array = rooms.get(district, [])
@@ -1005,7 +1014,7 @@ static func _stamp_roofs(grid: WorldGrid, rng: RandomNumberGenerator, pool: Arra
 	if roofr < WATERLINE:
 		for sh in shafts: # one hatch per shaft mouth (a triple-wide tower has two)
 			objects.append({"id": "roof_hatch", "cell": Vector2i(int(sh[0]), int(tower.top) + SLAB_T - 1)})
-	var flora := _zone_details("roof", "flora")
+	var flora := _district_flora(String(tower.get("district", "")))
 	var grasses: Array = flora.filter(func(id): return Data.objects[id].get("room_type", "") == "grass" and int(Data.objects[id].size[0]) == M)
 	var woody: Array = flora.filter(func(id): return Data.objects[id].get("room_type", "") != "grass")
 	for zone in tower.zones:
@@ -1023,6 +1032,10 @@ static func _stamp_roofs(grid: WorldGrid, rng: RandomNumberGenerator, pool: Arra
 			if def.is_empty() or def.get("wall_mounted", false):
 				continue
 			var oid: String = o.id
+			if def.get("category", "") == "flora": # a template's plant becomes one of THIS district's (flora rebuild 2026-09-06)
+				if woody.is_empty():
+					continue
+				oid = _weighted_flora(rng, woody)
 			if rng.randf() < 0.3 and Data.objects.has(oid + "_vined"):
 				oid += "_vined" # a coat of vines (user request: overgrown roofs)
 			_roof_drop(rng, objects, taken, zx, zend, roofr, oid)
@@ -1061,6 +1074,20 @@ static func _stamp_roofs(grid: WorldGrid, rng: RandomNumberGenerator, pool: Arra
 				objects.append({"id": _weighted_flora(rng, grasses), "cell": Vector2i(x, roofr)})
 
 const _ROOF_JUNK: Array = ["roof_junk_pile", "roof_fallen_mast", "roof_tarp_crates"]
+
+## The roof flora pool for a district (flora rebuild 2026-09-06, docs/Flora/
+## flora.md 6): every roof-zone flora def tagged `district` == this one. All
+## six districts ship a set (tools/flora_art/<district>.py); a district
+## somehow without one falls back to the residential set so no roof stands
+## bare (the test tower has no district and gets the union).
+static func _district_flora(district: String) -> Array:
+	var all := _zone_details("roof", "flora")
+	if district == "":
+		return all
+	var own: Array = all.filter(func(id): return String(Data.objects[id].get("district", "")) == district)
+	if own.is_empty():
+		own = all.filter(func(id): return String(Data.objects[id].get("district", "")) == "residential")
+	return own
 
 ## One flora id from the pool, weighted by each def's flora_weight (>= 1).
 static func _weighted_flora(rng: RandomNumberGenerator, pool: Array) -> String:

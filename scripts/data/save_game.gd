@@ -24,6 +24,11 @@ const OBJ_UNLOCKED := 8
 static var pending_world: String = ""
 static var pending_character: String = ""
 static var pending_seed: int = -1
+## Display name typed for a NEW world (2026-09-06, user request); "" keeps the
+## default `world_<seed>`. Consumed by city.gd with pending_seed.
+static var pending_world_name: String = ""
+const WORLD_NAME_MAX := 32 # display-name length cap (the beacon carries it)
+const WORLD_KEY_MAX := 40  # file-key length cap
 ## A line for the title screen's hint after an involuntary trip back to it
 ## (LAN: "Disconnected: ..."); shown once, then cleared.
 static var pending_notice: String = ""
@@ -50,13 +55,85 @@ static func character_names() -> Array:
 static func delete_world(world_name: String) -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(WORLD_DIR + world_name + WORLD_EXT))
 
+# --- World names (2026-09-06, user request: "name your world") ---
+# A world has a FILE KEY (the filename stem, filename-safe, what SaveGame /
+# pending_world / character position tables use) and a DISPLAY NAME (the
+# payload's "name": what the title list, the beacon, the JOIN host list and
+# the pause menu show). Left blank, both are `world_<seed>` as before.
+
+## A display name fit for the list and the beacon: trimmed, no control chars
+## or the beacon's '|' separator, whitespace collapsed, capped.
+static func clean_world_name(raw: String) -> String:
+	var out := ""
+	var last_space := true
+	for ch in raw.strip_edges():
+		var code := ch.unicode_at(0)
+		if code < 32 or ch == "|":
+			continue
+		if ch == " " or ch == "\t":
+			if not last_space:
+				out += " "
+			last_space = true
+		else:
+			out += ch
+			last_space = false
+	return out.strip_edges().left(WORLD_NAME_MAX)
+
+## The filename-safe slug of a display name ("" when nothing survives).
+static func world_slug(display_name: String) -> String:
+	var out := ""
+	var last_us := true
+	for ch in display_name.to_lower():
+		var code := ch.unicode_at(0)
+		var ok := (code >= 97 and code <= 122) or (code >= 48 and code <= 57)
+		if ok:
+			out += ch
+			last_us = false
+		elif not last_us:
+			out += "_"
+			last_us = true
+	return out.trim_suffix("_").left(WORLD_KEY_MAX).trim_suffix("_")
+
+## The key + display name for a NEW world. Blank name -> `world_<seed>` for
+## both (unchanged behaviour: a re-run with the same seed overwrites, as the
+## --seed dev runs and tools/lan_smoke.py expect). A typed name slugs to the
+## key; when that file already exists the pair gets a "_2" / " (2)" suffix.
+static func new_world_key(display_name: String, seed_value: int) -> Dictionary:
+	var disp := clean_world_name(display_name)
+	if disp == "":
+		var k := "world_%d" % seed_value
+		return {"key": k, "name": k}
+	var base := world_slug(disp)
+	if base == "":
+		base = "world_%d" % seed_value
+	if not world_exists(base):
+		return {"key": base, "name": disp}
+	var n := 2
+	while world_exists("%s_%d" % [base, n]):
+		n += 1
+	return {"key": "%s_%d" % [base, n], "name": "%s (%d)" % [disp, n]}
+
+static func world_exists(world_key: String) -> bool:
+	return FileAccess.file_exists(WORLD_DIR + world_key + WORLD_EXT)
+
+## The display name stored in a world file (its key when the file has none or
+## is unreadable / old-format — existing saves keep showing `world_<seed>`).
+static func world_display_name(world_key: String) -> String:
+	return display_name_of(read_world(world_key), world_key)
+
+static func display_name_of(data: Dictionary, world_key: String) -> String:
+	var n := String(data.get("name", "")).strip_edges()
+	return n if n != "" else world_key
+
 static func delete_character(char_name: String) -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(CHAR_DIR + char_name + CHAR_EXT))
 
 # --- World ---
 
-static func save_world(world_name: String, seed_value: int) -> void:
-	var data := world_payload(world_name, seed_value)
+## `world_name` is the FILE KEY; `display_name` (default: the key) is what the
+## payload's "name" shows in lists and on the LAN.
+static func save_world(world_name: String, seed_value: int, display_name: String = "") -> void:
+	var data := world_payload(world_name, seed_value, display_name)
 	DirAccess.make_dir_recursive_absolute(WORLD_DIR)
 	var f := FileAccess.open(WORLD_DIR + world_name + WORLD_EXT, FileAccess.WRITE)
 	f.store_var(data)
@@ -65,8 +142,8 @@ static func save_world(world_name: String, seed_value: int) -> void:
 ## The world-save dictionary: one builder for the disk file and the LAN join
 ## snapshot (MultiplayerImpl §3 - `Net/Snapshot` var_to_bytes this and streams
 ## it in chunks, and the client boots from it through city._boot_loaded like a
-## disk load).
-static func world_payload(world_name: String, seed_value: int) -> Dictionary:
+## disk load). "key" = the file key, "name" = the display name.
+static func world_payload(world_name: String, seed_value: int, display_name: String = "") -> Dictionary:
 	var g: WorldGrid = World.grid
 	# Object records, compact: an id table, four ints per record (id index,
 	# x, y, flag bits) and a sparse dict of the rare fields (doorway links,
@@ -133,7 +210,8 @@ static func world_payload(world_name: String, seed_value: int) -> Dictionary:
 			st["stock"] = rec.stock
 		enemies.append(st)
 	var data := {
-		"version": WORLD_VERSION, "name": world_name, "seed": seed_value,
+		"version": WORLD_VERSION, "key": world_name, "seed": seed_value,
+		"name": display_name if display_name.strip_edges() != "" else world_name,
 		"waterline_row": World.waterline_row, "time_of_day": World.time_of_day,
 		"bounds": g.bounds, "spawn": World.spawn_position,
 		"structure": g.structure.compress(FileAccess.COMPRESSION_ZSTD),

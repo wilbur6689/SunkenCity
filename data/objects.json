@@ -7330,114 +7330,6 @@
       ]
     },
     {
-      "authored": true,
-      "category": "flora",
-      "desc": "Plant it on a sunny roof; it grows a little every night.",
-      "flora_weight": 3.0,
-      "grow_chance": 0.5,
-      "grows_into": "tree_young",
-      "id": "tree_sapling",
-      "kind": "scrap",
-      "name": "Tree Sapling",
-      "room_type": "tree",
-      "scrap_time": 1.0,
-      "size": [
-        2.0,
-        4.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 2.0,
-      "xp": 2.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 2.0,
-          "min": 1.0
-        },
-        {
-          "item": "tree_seed",
-          "max": 1.0,
-          "min": 0.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 1.0,
-      "grow_chance": 0.35,
-      "grows_into": "tree_mature",
-      "id": "tree_young",
-      "kind": "scrap",
-      "name": "Young Tree 01",
-      "no_item": true,
-      "requires_tool": "axe",
-      "room_type": "tree",
-      "scrap_time": 1.5,
-      "size": [
-        2.0,
-        6.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 4.0,
-      "xp": 2.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 2.0,
-          "min": 1.0
-        },
-        {
-          "item": "tree_seed",
-          "max": 1.0,
-          "min": 0.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 1.0,
-      "id": "tree_mature",
-      "kind": "scrap",
-      "name": "Mature Tree",
-      "no_item": true,
-      "requires_tool": "axe",
-      "room_type": "tree",
-      "scrap_time": 14.0,
-      "size": [
-        10.0,
-        30.0
-      ],
-      "skill": 1.0,
-      "tool_tier": 1.0,
-      "weight": 90.0,
-      "xp": 12.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 40.0,
-          "min": 25.0
-        },
-        {
-          "item": "tree_seed",
-          "max": 3.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
       "category": "roof",
       "desc": "Bolted over the shaft. A pry bar or better forces it - the way inside.",
       "fixed": true,
@@ -8434,203 +8326,6 @@
       ]
     },
     {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 2.0,
-      "id": "roof_bush",
-      "kind": "scrap",
-      "name": "Rooftop Bush",
-      "room_type": "bush",
-      "scrap_time": 1.5,
-      "size": [
-        4.0,
-        4.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 6.0,
-      "xp": 2.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 2.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 3.0,
-      "id": "roof_grass",
-      "kind": "scrap",
-      "name": "Grass Tuft",
-      "room_type": "grass",
-      "scrap_time": 0.5,
-      "size": [
-        2.0,
-        2.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 1.0,
-      "xp": 1.0,
-      "yields": [
-        {
-          "item": "stone",
-          "max": 2.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 1.0,
-      "id": "new_flora",
-      "kind": "scrap",
-      "name": "New Flora",
-      "no_item": true,
-      "room_type": "tree",
-      "scrap_time": 1.5,
-      "size": [
-        2.0,
-        6.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 4.0,
-      "xp": 2.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 2.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 1.0,
-      "id": "pine_tree_young",
-      "kind": "scrap",
-      "name": "Young Tree 01",
-      "room_type": "tree",
-      "scrap_time": 1.5,
-      "size": [
-        2.0,
-        6.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 4.0,
-      "xp": 2.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 2.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 1.0,
-      "id": "large_tree",
-      "kind": "scrap",
-      "name": "Large Tree",
-      "room_type": "tree",
-      "scrap_time": 1.5,
-      "size": [
-        4.0,
-        6.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 4.0,
-      "xp": 2.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 2.0,
-          "min": 3.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 3.0,
-      "id": "roof_grass02",
-      "kind": "scrap",
-      "name": "Grass Tuft",
-      "room_type": "grass",
-      "scrap_time": 0.5,
-      "size": [
-        2.0,
-        2.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 1.0,
-      "xp": 1.0,
-      "yields": [
-        {
-          "item": "stone",
-          "max": 2.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 3.0,
-      "id": "roof_grass01",
-      "kind": "scrap",
-      "name": "Grass Tuft",
-      "room_type": "grass",
-      "scrap_time": 0.5,
-      "size": [
-        2.0,
-        2.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 1.0,
-      "xp": 1.0,
-      "yields": [
-        {
-          "item": "stone",
-          "max": 3.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
-      ]
-    },
-    {
       "desc": "A wood door faced with metal bars. A release button is hidden somewhere in this room - clear it to find the switch.",
       "fixed": true,
       "id": "room_door_barred",
@@ -8918,34 +8613,6 @@
           "max": 3.0,
           "min": 2.0
         }
-      ]
-    },
-    {
-      "authored": true,
-      "category": "flora",
-      "flora_weight": 1.0,
-      "id": "Kindy",
-      "kind": "scrap",
-      "name": "kindy tree",
-      "room_type": "tree",
-      "scrap_time": 1.5,
-      "size": [
-        4.0,
-        6.0
-      ],
-      "skill": 0.0,
-      "tool_tier": 0.0,
-      "weight": 4.0,
-      "xp": 2.0,
-      "yields": [
-        {
-          "item": "wood",
-          "max": 2.0,
-          "min": 1.0
-        }
-      ],
-      "zones": [
-        "roof"
       ]
     },
     {
@@ -9839,6 +9506,4413 @@
       ],
       "authored": true,
       "gen": "parts_v1"
+    },
+    {
+      "id": "bus_box_cube",
+      "name": "Boxwood Trough",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        6,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "bus_box_cube_midling",
+      "name": "Boxwood Trough Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "bus_box_cube"
+    },
+    {
+      "id": "bus_box_cube_seedling",
+      "name": "Boxwood Trough Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "bus_box_cube_midling",
+      "desc": "Boxwood in a steel trough. Squares off into a plaza hedge - hand-harvest wood."
+    },
+    {
+      "id": "bus_box_sphere",
+      "name": "Boxwood Sphere",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        4,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "bus_box_sphere_midling",
+      "name": "Boxwood Sphere Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "bus_box_sphere"
+    },
+    {
+      "id": "bus_box_sphere_seedling",
+      "name": "Boxwood Sphere Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "bus_box_sphere_midling",
+      "desc": "Boxwood sprigs. Clipped into a tight topiary ball - hand-harvest wood."
+    },
+    {
+      "id": "bus_cypress",
+      "name": "Columnar Cypress",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        6,
+        24
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "item": "bus_cypress_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 14.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "bus_cypress_midling",
+      "name": "Columnar Cypress Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        4,
+        12
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "bus_cypress_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "bus_cypress"
+    },
+    {
+      "id": "bus_cypress_seedling",
+      "name": "Columnar Cypress Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "bus_cypress_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "bus_cypress_midling",
+      "desc": "A cypress spike. Grows into the tall narrow flame that lines the office plazas."
+    },
+    {
+      "id": "bus_ficus",
+      "name": "Tub Ficus",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        6,
+        10
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 6,
+          "max": 10
+        },
+        {
+          "item": "bus_ficus_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 7.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "bus_ficus_midling",
+      "name": "Tub Ficus Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        4,
+        6
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "bus_ficus_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "bus_ficus"
+    },
+    {
+      "id": "bus_ficus_seedling",
+      "name": "Tub Ficus Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "bus_ficus_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "bus_ficus_midling",
+      "desc": "A ficus sprout in a steel tub. Lobby greenery: a glossy round crown on a straight stem."
+    },
+    {
+      "id": "bus_fountain_grass",
+      "name": "Fountain Grass",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "bus_fountain_grass_midling",
+      "name": "Fountain Grass Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "bus_fountain_grass"
+    },
+    {
+      "id": "bus_fountain_grass_seedling",
+      "name": "Fountain Grass Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "bus_fountain_grass_midling",
+      "desc": "Ornamental fountain grass. Arcing blades with pale seed plumes when grown."
+    },
+    {
+      "id": "bus_locust",
+      "name": "Honey Locust",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        8,
+        16
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 12,
+          "max": 20
+        },
+        {
+          "item": "bus_locust_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 10.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "bus_locust_midling",
+      "name": "Honey Locust Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        6,
+        9
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "bus_locust_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "bus_locust"
+    },
+    {
+      "id": "bus_locust_seedling",
+      "name": "Honey Locust Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "bus_locust_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "bus_locust_midling",
+      "desc": "A locust whip. An airy feathered crown you can see the trunk through when grown."
+    },
+    {
+      "id": "bus_turf",
+      "name": "Turf Strip",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "bus_turf_midling",
+      "name": "Turf Strip Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "bus_turf"
+    },
+    {
+      "id": "bus_turf_seedling",
+      "name": "Turf Strip Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "business",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "bus_turf_midling",
+      "desc": "Mown turf. Even, short, corporate."
+    },
+    {
+      "id": "civ_birch",
+      "name": "Weeping Birch",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        6,
+        10
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 6,
+          "max": 10
+        },
+        {
+          "item": "civ_birch_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 7.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "civ_birch_midling",
+      "name": "Weeping Birch Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        4,
+        6
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "civ_birch_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "civ_birch"
+    },
+    {
+      "id": "civ_birch_seedling",
+      "name": "Weeping Birch Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "civ_birch_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "civ_birch_midling",
+      "desc": "A birch whip. White flecked bark and long drooping strands when grown."
+    },
+    {
+      "id": "civ_ivy",
+      "name": "Ivy",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "civ_ivy_midling",
+      "name": "Ivy Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "civ_ivy"
+    },
+    {
+      "id": "civ_ivy_seedling",
+      "name": "Ivy Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "civ_ivy_midling",
+      "desc": "Trailing ivy along the parapet."
+    },
+    {
+      "id": "civ_linden",
+      "name": "Linden",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        8,
+        16
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 12,
+          "max": 20
+        },
+        {
+          "item": "civ_linden_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 10.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "civ_linden_midling",
+      "name": "Linden Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        6,
+        9
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "civ_linden_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "civ_linden"
+    },
+    {
+      "id": "civ_linden_seedling",
+      "name": "Linden Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "civ_linden_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "civ_linden_midling",
+      "desc": "A linden sapling. A tidy heart-shaped crown with a pale glint - the avenue tree of the civic squares."
+    },
+    {
+      "id": "civ_meadow",
+      "name": "Meadow Tuft",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "civ_meadow_midling",
+      "name": "Meadow Tuft Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "civ_meadow"
+    },
+    {
+      "id": "civ_meadow_seedling",
+      "name": "Meadow Tuft Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "civ_meadow_midling",
+      "desc": "Tall meadow grass. Poppies when left alone."
+    },
+    {
+      "id": "civ_oak",
+      "name": "Park Oak",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        10,
+        24
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "item": "civ_oak_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 14.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "civ_oak_midling",
+      "name": "Park Oak Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        6,
+        12
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "civ_oak_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "civ_oak"
+    },
+    {
+      "id": "civ_oak_seedling",
+      "name": "Park Oak Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "civ_oak_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "civ_oak_midling",
+      "desc": "An oak seedling. The grandest tree in the city: a massive spreading crown on a thick forked trunk."
+    },
+    {
+      "id": "civ_rhodo",
+      "name": "Rhododendron",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        6,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "civ_rhodo_midling",
+      "name": "Rhododendron Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "civ_rhodo"
+    },
+    {
+      "id": "civ_rhodo_seedling",
+      "name": "Rhododendron Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "civ_rhodo_midling",
+      "desc": "A rhododendron sprig. A wide dome of big dark leaves and purple trusses - hand-harvest wood."
+    },
+    {
+      "id": "civ_yew",
+      "name": "Memorial Yew",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        4,
+        6
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "civ_yew_midling",
+      "name": "Memorial Yew Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        4,
+        4
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "civ_yew"
+    },
+    {
+      "id": "civ_yew_seedling",
+      "name": "Memorial Yew Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "civil",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "civ_yew_midling",
+      "desc": "A yew seedling. Clipped into a dark memorial cone - hand-harvest wood."
+    },
+    {
+      "id": "com_bed",
+      "name": "Planter Bed",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        6,
+        2
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "com_bed_midling",
+      "name": "Planter Bed Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        4,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "com_bed"
+    },
+    {
+      "id": "com_bed_seedling",
+      "name": "Planter Bed Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "com_bed_midling",
+      "desc": "A concrete planter bed of mixed bedding plants. Hand-harvest."
+    },
+    {
+      "id": "com_bougainvillea",
+      "name": "Bougainvillea",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        6,
+        10
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 6,
+          "max": 10
+        },
+        {
+          "item": "com_bougainvillea_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 7.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "com_bougainvillea_midling",
+      "name": "Bougainvillea Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        4,
+        6
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "com_bougainvillea_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "com_bougainvillea"
+    },
+    {
+      "id": "com_bougainvillea_seedling",
+      "name": "Bougainvillea Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "com_bougainvillea_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "com_bougainvillea_midling",
+      "desc": "A bougainvillea cutting tied to a post. Cascades magenta over its frame when grown."
+    },
+    {
+      "id": "com_fern",
+      "name": "Fern",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "com_fern_midling",
+      "name": "Fern Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "com_fern"
+    },
+    {
+      "id": "com_fern_seedling",
+      "name": "Fern Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "com_fern_midling",
+      "desc": "Arching fern fronds in the shade of the signs."
+    },
+    {
+      "id": "com_hibiscus",
+      "name": "Hibiscus",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        4,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "com_hibiscus_midling",
+      "name": "Hibiscus Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "com_hibiscus"
+    },
+    {
+      "id": "com_hibiscus_seedling",
+      "name": "Hibiscus Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "com_hibiscus_midling",
+      "desc": "A hibiscus sprig. Big leaves and red flowers - hand-harvest wood."
+    },
+    {
+      "id": "com_magnolia",
+      "name": "Magnolia",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        8,
+        16
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 12,
+          "max": 20
+        },
+        {
+          "item": "com_magnolia_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 10.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "com_magnolia_midling",
+      "name": "Magnolia Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        6,
+        9
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "com_magnolia_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "com_magnolia"
+    },
+    {
+      "id": "com_magnolia_seedling",
+      "name": "Magnolia Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "com_magnolia_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "com_magnolia_midling",
+      "desc": "A magnolia sapling. Glossy dark leaves and big pink blossoms when grown."
+    },
+    {
+      "id": "com_monstera",
+      "name": "Monstera",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "com_monstera_midling",
+      "name": "Monstera Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "com_monstera"
+    },
+    {
+      "id": "com_monstera_seedling",
+      "name": "Monstera Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "com_monstera_midling",
+      "desc": "Broad split leaves. Escaped lobby decor."
+    },
+    {
+      "id": "com_palm",
+      "name": "Fan Palm",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        8,
+        20
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "item": "com_palm_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 14.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "com_palm_midling",
+      "name": "Fan Palm Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        4,
+        10
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "com_palm_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "com_palm"
+    },
+    {
+      "id": "com_palm_seedling",
+      "name": "Fan Palm Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "commercial",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "com_palm_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "com_palm_midling",
+      "desc": "A palm sprout. Grows a ringed trunk and a crown of fronds - mall-front greenery."
+    },
+    {
+      "id": "con_elder",
+      "name": "Elder",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        6,
+        9
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 6,
+          "max": 10
+        },
+        {
+          "item": "con_elder_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 7.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "con_elder_midling",
+      "name": "Elder Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        4,
+        6
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "con_elder_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "con_elder"
+    },
+    {
+      "id": "con_elder_seedling",
+      "name": "Elder Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        3
+      ],
+      "flora_weight": 5,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "con_elder_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "con_elder_midling",
+      "desc": "An elder sprout. A shrubby small tree: cream flower plates, black berries."
+    },
+    {
+      "id": "con_horsetail",
+      "name": "Horsetail",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "con_horsetail_midling",
+      "name": "Horsetail Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "con_horsetail"
+    },
+    {
+      "id": "con_horsetail_seedling",
+      "name": "Horsetail Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "con_horsetail_midling",
+      "desc": "Jointed horsetail stems in the wet rubble."
+    },
+    {
+      "id": "con_moss",
+      "name": "Moss on Rubble",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 2,
+      "frames": 1,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "con_moss_midling",
+      "name": "Moss on Rubble Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 2,
+      "frames": 1,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "con_moss"
+    },
+    {
+      "id": "con_moss_seedling",
+      "name": "Moss on Rubble Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 3,
+      "frames": 1,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "con_moss_midling",
+      "desc": "A moss pad over a lump of broken concrete."
+    },
+    {
+      "id": "con_poplar",
+      "name": "Poplar",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        6,
+        20
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "item": "con_poplar_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 14.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "con_poplar_midling",
+      "name": "Poplar Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        4,
+        10
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "con_poplar_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "con_poplar"
+    },
+    {
+      "id": "con_poplar_seedling",
+      "name": "Poplar Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 5,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "con_poplar_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "con_poplar_midling",
+      "desc": "A poplar whip. A narrow column whose leaves flicker light and dark in the wind."
+    },
+    {
+      "id": "con_ragwort",
+      "name": "Ragwort Clump",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        4,
+        4
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "con_ragwort_midling",
+      "name": "Ragwort Clump Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "con_ragwort"
+    },
+    {
+      "id": "con_ragwort_seedling",
+      "name": "Ragwort Clump Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 4,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "con_ragwort_midling",
+      "desc": "Ragwort. Ragged upright stems with yellow heads - hand-harvest."
+    },
+    {
+      "id": "con_rebar_ivy",
+      "name": "Rebar Ivy",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        4,
+        7
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "con_rebar_ivy_midling",
+      "name": "Rebar Ivy Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        5
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "con_rebar_ivy"
+    },
+    {
+      "id": "con_rebar_ivy_seedling",
+      "name": "Rebar Ivy Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 4,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "con_rebar_ivy_midling",
+      "desc": "Ivy climbing a bent rebar rod, hi-vis tape still on the tip - hand-harvest."
+    },
+    {
+      "id": "con_willow",
+      "name": "Willow",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        10,
+        22
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "item": "con_willow_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 14.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "con_willow_midling",
+      "name": "Willow Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        6,
+        12
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "con_willow_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "con_willow"
+    },
+    {
+      "id": "con_willow_seedling",
+      "name": "Willow Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "construction",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 5,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "con_willow_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "con_willow_midling",
+      "desc": "A willow sprout. Grows where the site flooded: a weeping mass of strands over a leaning trunk."
+    },
+    {
+      "id": "ind_ailanthus",
+      "name": "Tree of Heaven",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        8,
+        24
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "item": "ind_ailanthus_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 14.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "ind_ailanthus_midling",
+      "name": "Tree of Heaven Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        6,
+        12
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "ind_ailanthus_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "ind_ailanthus"
+    },
+    {
+      "id": "ind_ailanthus_seedling",
+      "name": "Tree of Heaven Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "ind_ailanthus_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "ind_ailanthus_midling",
+      "desc": "A tree-of-heaven sprout. Grows tall and gangly with sparse leaf layers and rust seed clusters - the weed tree of the yards."
+    },
+    {
+      "id": "ind_birch",
+      "name": "Pioneer Birch",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        6,
+        16
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 12,
+          "max": 20
+        },
+        {
+          "item": "ind_birch_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 10.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "ind_birch_midling",
+      "name": "Pioneer Birch Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        4,
+        9
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "ind_birch_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "ind_birch"
+    },
+    {
+      "id": "ind_birch_seedling",
+      "name": "Pioneer Birch Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "ind_birch_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "ind_birch_midling",
+      "desc": "A birch whip leaning into the wind. Thin, white-barked, a small crown for its height."
+    },
+    {
+      "id": "ind_bramble",
+      "name": "Bramble",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        6,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "ind_bramble_midling",
+      "name": "Bramble Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "ind_bramble"
+    },
+    {
+      "id": "ind_bramble_seedling",
+      "name": "Bramble Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "ind_bramble_midling",
+      "desc": "Bramble canes. Arching, thorny, sparse-leaved, dark berries - hand-harvest wood."
+    },
+    {
+      "id": "ind_buddleia",
+      "name": "Buddleia",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        6,
+        5
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "ind_buddleia_midling",
+      "name": "Buddleia Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "ind_buddleia"
+    },
+    {
+      "id": "ind_buddleia_seedling",
+      "name": "Buddleia Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "ind_buddleia_midling",
+      "desc": "A buddleia sprig. A ragged spray with dusty purple spikes - hand-harvest wood."
+    },
+    {
+      "id": "ind_sumac",
+      "name": "Sumac Thicket",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        6,
+        10
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 6,
+          "max": 10
+        },
+        {
+          "item": "ind_sumac_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 7.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "ind_sumac_midling",
+      "name": "Sumac Thicket Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        4,
+        6
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "ind_sumac_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "ind_sumac"
+    },
+    {
+      "id": "ind_sumac_seedling",
+      "name": "Sumac Thicket Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "ind_sumac_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "ind_sumac_midling",
+      "desc": "Sumac suckers. A multi-stemmed thicket with red-brown cone tips when grown."
+    },
+    {
+      "id": "ind_thistle",
+      "name": "Thistle",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "ind_thistle_midling",
+      "name": "Thistle Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "ind_thistle"
+    },
+    {
+      "id": "ind_thistle_seedling",
+      "name": "Thistle Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "ind_thistle_midling",
+      "desc": "Spiny thistle with a purple crown."
+    },
+    {
+      "id": "ind_weeds",
+      "name": "Concrete Weeds",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "ind_weeds_midling",
+      "name": "Concrete Weeds Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "ind_weeds"
+    },
+    {
+      "id": "ind_weeds_seedling",
+      "name": "Concrete Weeds Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "industrial",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "ind_weeds_midling",
+      "desc": "Weeds through a crack in the slab."
+    },
+    {
+      "id": "res_apple",
+      "name": "Apple Tree",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        8,
+        16
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 12,
+          "max": 20
+        },
+        {
+          "item": "res_apple_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 10.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "res_apple_midling",
+      "name": "Apple Tree Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        6,
+        9
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "res_apple_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "res_apple"
+    },
+    {
+      "id": "res_apple_seedling",
+      "name": "Apple Tree Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "res_apple_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "res_apple_midling",
+      "desc": "An apple sapling. Grows a round crown with red fruit over a short thick trunk."
+    },
+    {
+      "id": "res_clover",
+      "name": "Clover",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "organic_material",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "res_clover_midling",
+      "name": "Clover Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "organic_material",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "res_clover"
+    },
+    {
+      "id": "res_clover_seedling",
+      "name": "Clover Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "organic_material",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "res_clover_midling",
+      "desc": "A clover patch. Fodder and fertiliser one day; organic matter for now."
+    },
+    {
+      "id": "res_hedge",
+      "name": "Privet Hedge",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        6,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "res_hedge_midling",
+      "name": "Privet Hedge Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "res_hedge"
+    },
+    {
+      "id": "res_hedge_seedling",
+      "name": "Privet Hedge Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "res_hedge_midling",
+      "desc": "Privet sprigs. Left alone they knit into a long low hedge - hand-harvest wood, no axe."
+    },
+    {
+      "id": "res_lawn",
+      "name": "Lawn Tuft",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 3,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1
+    },
+    {
+      "id": "res_lawn_midling",
+      "name": "Lawn Tuft Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "res_lawn"
+    },
+    {
+      "id": "res_lawn_seedling",
+      "name": "Lawn Tuft Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "grass",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        1
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "stone",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 0.5,
+      "weight": 1,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "res_lawn_midling",
+      "desc": "Lawn grass. Daisies when it is left to grow."
+    },
+    {
+      "id": "res_maple",
+      "name": "Ornamental Maple",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        6,
+        10
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 6,
+          "max": 10
+        },
+        {
+          "item": "res_maple_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 7.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "res_maple_midling",
+      "name": "Ornamental Maple Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        4,
+        6
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "res_maple_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "res_maple"
+    },
+    {
+      "id": "res_maple_seedling",
+      "name": "Ornamental Maple Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        3
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "res_maple_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "res_maple_midling",
+      "desc": "A maple whip. A thin bent trunk under a flat amber-edged umbrella when grown."
+    },
+    {
+      "id": "res_plane",
+      "name": "London Plane",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        10,
+        24
+      ],
+      "flora_weight": 2,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "item": "res_plane_seed",
+          "min": 1,
+          "max": 3
+        }
+      ],
+      "scrap_time": 14.0,
+      "weight": 90,
+      "tool_tier": 1,
+      "skill": 1,
+      "xp": 12,
+      "requires_tool": "axe",
+      "no_item": true,
+      "desc": "Fell it with an axe for wood and its seeds."
+    },
+    {
+      "id": "res_plane_midling",
+      "name": "London Plane Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        6,
+        12
+      ],
+      "flora_weight": 1,
+      "frames": 4,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 3,
+          "max": 8
+        },
+        {
+          "item": "res_plane_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 5.0,
+      "weight": 30,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 6,
+      "requires_tool": "axe",
+      "no_item": true,
+      "grows_into": "res_plane"
+    },
+    {
+      "id": "res_plane_seedling",
+      "name": "London Plane Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "tree",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "res_plane_seed",
+          "min": 0,
+          "max": 1
+        }
+      ],
+      "scrap_time": 1.0,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "res_plane_midling",
+      "desc": "A plane sapling. Pale mottled bark, a broad ragged crown when grown - the big wood tree of the housing blocks."
+    },
+    {
+      "id": "res_rose",
+      "name": "Rose Bush",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        4,
+        4
+      ],
+      "flora_weight": 2,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 2,
+          "max": 4
+        }
+      ],
+      "scrap_time": 1.5,
+      "weight": 6,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2
+    },
+    {
+      "id": "res_rose_midling",
+      "name": "Rose Bush Young",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        4,
+        3
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 2
+        }
+      ],
+      "scrap_time": 1.2,
+      "weight": 4,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 2,
+      "grows_into": "res_rose"
+    },
+    {
+      "id": "res_rose_seedling",
+      "name": "Rose Bush Seedling",
+      "category": "flora",
+      "kind": "scrap",
+      "room_type": "bush",
+      "zones": [
+        "roof"
+      ],
+      "district": "residential",
+      "generated_flora": true,
+      "size": [
+        2,
+        2
+      ],
+      "flora_weight": 1,
+      "frames": 2,
+      "grow_chance": 1.0,
+      "yields": [
+        {
+          "item": "wood",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "scrap_time": 0.8,
+      "weight": 2,
+      "tool_tier": 0,
+      "skill": 0,
+      "xp": 1,
+      "grows_into": "res_rose_midling",
+      "desc": "A rose sprig. Thorny stems and pink blossoms once it fills out - hand-harvest wood."
     }
   ]
 }

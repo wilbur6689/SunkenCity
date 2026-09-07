@@ -141,8 +141,15 @@ func notify_changed(cell: Vector2i) -> void:
 # --- Tick ---
 
 var _settled_recently: Dictionary = {} # index -> true; flatten seeds
+## Thin puddles evaporate (user request 2026-09-06): a settled cell at
+## <= WATER_EVAP_MAX_LEVEL that RESTS ON A FLOOR (solid or dry below, nothing
+## above) loses one level every WATER_EVAP_SECONDS. The surface film of a
+## real body sits on water, so lakes and flooded rooms never lose volume.
+var _thin: Dictionary = {} # index -> tick it settled at
+var _tick_n: int = 0
 
 func tick() -> void:
+	_tick_n += 1
 	flow.clear()
 	if awake.is_empty():
 		processed_last_tick = 0
@@ -150,6 +157,7 @@ func tick() -> void:
 		if not _settled_recently.is_empty():
 			_flatten_settled()
 			changed_last_tick = 1 # flattening moved levels; light may care
+		_evaporate()
 		return
 	var order := awake.keys()
 	order.sort_custom(func(a, b): return a > b) # bottom-up (higher index = lower row)
@@ -166,8 +174,41 @@ func tick() -> void:
 			awake.erase(i) # settle; a neighbour change re-wakes it
 			if levels[i] > 0:
 				_settled_recently[i] = true
+				if levels[i] <= Constants.WATER_EVAP_MAX_LEVEL and not _thin.has(i):
+					_thin[i] = _tick_n
 	processed_last_tick = processed
 	changed_last_tick = moved_n
+	_evaporate()
+
+## Dry out settled puddles whose timer ran down (a few per tick).
+func _evaporate() -> void:
+	if _thin.is_empty():
+		return
+	var due: int = _tick_n - int(Constants.WATER_EVAP_SECONDS * Engine.physics_ticks_per_second)
+	var n := 0
+	for i in _thin.keys():
+		n += 1
+		if n > Constants.WATER_EVAP_PER_TICK:
+			break
+		var l := int(levels[i])
+		if l == 0 or l > Constants.WATER_EVAP_MAX_LEVEL or awake.has(i):
+			_thin.erase(i) # gone, grew, or moving again (re-registers when it settles)
+			continue
+		if int(_thin[i]) > due:
+			continue
+		var c := _cell(i)
+		var below := c + Vector2i.DOWN
+		var rests := _blocked(below) or level_at(below) == 0
+		if not rests or level_at(c + Vector2i.UP) > 0:
+			_thin.erase(i) # a body's surface film, not a puddle
+			continue
+		levels[i] = l - 1
+		_touch(i)
+		_thin[i] = _tick_n # next level after another period
+		if levels[i] == 0:
+			_thin.erase(i)
+			wake_around(c) # a neighbour film may now slide into the gap
+		changed_last_tick += 1
 
 ## When a body finishes moving, redistribute it to true equilibrium: the
 ## flow rules freeze slope-1 staircases (diff >= 2 only), so a settled body

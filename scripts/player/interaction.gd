@@ -7,9 +7,14 @@ extends Node2D
 ## Held item decides the primary action:
 ##   placeable block/object -> place at the aimed cell (ghost shows validity)
 ##   knife / bare hand      -> hold-to-scrap the aimed furniture (GL-07)
-##   hammer                 -> hit player-placed blocks / pick up placeables (WS-22)
+##   hammer                 -> hit player-placed blocks / pick up placeables (WS-22);
+##                             the ONLY tool that long-press-picks-up furniture,
+##                             ladders and ropes (user request 2026-09-06: a bare
+##                             LMB hold got in the way of fighting indoors)
+##   axe                    -> chop PLAYER-PLACED wood blocks (Constants.AXE_BLOCKS,
+##                             user request 2026-09-06); trees stay RMB harvest
 ##   consumable             -> use on press
-## Secondary: place/remove background walls (WS-21).
+## Secondary: place/remove background walls (WS-21; an axe takes down placed wood walls).
 
 var player: Player
 ## LAN Step 4 (MultiplayerImpl §0/§5): on a client the layer only AIMS -
@@ -22,8 +27,10 @@ var scrapping: WorldObject = null
 var scrap_progress: float = 0.0
 var pending_pump: WorldObject = null # click a pump -> next use click sets its outlet
 var hovered: WorldObject = null      # interactable under the mouse (glows)
-# LMB-on-object lifecycle: short press interacts on release, holding
-# OBJECT_LONG_PRESS picks the object up (user request).
+# LMB-on-object lifecycle: short press interacts on release; holding
+# OBJECT_LONG_PRESS picks the object up ONLY with the hammer in hand
+# (2026-09-06). With a weapon out and a monster near the aim, LMB skips the
+# object press altogether and swings.
 var press_obj: WorldObject = null
 var press_time: float = 0.0
 var press_consumed: bool = false
@@ -92,13 +99,19 @@ func tick(delta: float) -> void:
 var press_climb := Vector2i(-1, -1) # ladder/rope cell under a held LMB (picked up on a long hold)
 
 func _object_press(delta: float) -> void:
+	var hammer := Data.is_tool(player.held_item(), "hammer")
 	if player.wants_use:
 		if not _used_last_tick and pending_pump == null:
 			press_obj = hovered if target_in_reach else null
 			press_climb = Vector2i(-1, -1)
-			# Ladders and ropes lift out on a long hold too (user request
-			# 2026-09-04) - unless a rope is held, which extends the line instead.
-			if press_obj == null and target_in_reach and World.is_climbable_cell(target_cell) and player.held_item() != "rope":
+			# A fight comes first (user request 2026-09-06): with a weapon out
+			# and a monster in swing range the click is an attack, never an
+			# object press - furniture no longer soaks up the swing indoors.
+			if press_obj != null and not hammer and _weapon_ready() and _enemy_near_aim() != null:
+				press_obj = null
+			# Ladders and ropes lift out on a long hold - hammer only (2026-09-06),
+			# and never while a rope is held (that extends the line instead).
+			if press_obj == null and hammer and target_in_reach and World.is_climbable_cell(target_cell) and player.held_item() != "rope":
 				press_climb = target_cell
 			press_time = 0.0
 			press_consumed = false
@@ -116,8 +129,8 @@ func _object_press(delta: float) -> void:
 				press_obj = null # dragged off: cancel (press_lock stays until release)
 			else:
 				press_time += delta
-				if press_time >= Constants.OBJECT_LONG_PRESS and not press_consumed:
-					press_consumed = true
+				if hammer and press_time >= Constants.OBJECT_LONG_PRESS and not press_consumed:
+					press_consumed = true # only the hammer lifts furniture on a long hold
 					_pickup_object(press_obj)
 	else:
 		if press_obj != null and is_instance_valid(press_obj) and not press_consumed:
@@ -127,6 +140,10 @@ func _object_press(delta: float) -> void:
 		press_obj = null
 		press_climb = Vector2i(-1, -1)
 		press_lock = false
+
+## A melee or ranged weapon is in hand (hotbar or the worn weapon standing in for an empty hand).
+func _weapon_ready() -> bool:
+	return not ItemMods.weapon_of(player.held_stack()).is_empty()
 
 func _pickup_climbable(cell: Vector2i) -> void:
 	var id := "ladder" if World.grid.climb_at(cell) == WorldGrid.C.LADDER else "rope"
@@ -163,9 +180,12 @@ func say(text: String) -> void:
 func _visuals() -> bool:
 	return player.is_local()
 
+## Action sounds are the simulation's: the host plays them (positional, so a
+## nearby player is heard working) and relays them to every client - a
+## client's own harvest/hammer/gunshot would otherwise be silent, since the
+## host runs its actions (user report 2026-09-06).
 func _sfx(base: String, pos: Vector2, variants: int = 1, volume_db: float = 0.0) -> void:
-	if player.is_local():
-		Audio.play_sfx(base, pos, variants, volume_db)
+	Audio.play_world_sfx(base, pos, variants, volume_db)
 
 # --- Actions ---
 
@@ -245,8 +265,12 @@ func _primary() -> void:
 		"weapon":
 			var w: Dictionary = ItemMods.weapon_of(player.held_stack()) # prefix mods folded in
 			if w.get("melee", false):
-				_melee(float(w.damage), float(w.speed), float(w.get("knockback", 8.0)),
-					float(w.get("water_factor", Constants.MELEE_WATER_FACTOR)))
+				# A tool-weapon axe (fire axe) chops placed wood when nothing is in swing range.
+				if Data.is_tool(held, "axe") and _enemy_near_aim() == null and _axe_target():
+					_axe(Data.tool_of(held))
+				else:
+					_melee(float(w.damage), float(w.speed), float(w.get("knockback", 8.0)),
+						float(w.get("water_factor", Constants.MELEE_WATER_FACTOR)))
 			elif w.has("projectile"):
 				_fire_projectile(w)
 			else:
@@ -264,6 +288,8 @@ func _primary() -> void:
 				# least slowed underwater (GD-08).
 				_melee(float(tool.get("damage", 2)), 1.0 + float(tool.get("speed", 1.0)), 3.0,
 					Constants.KNIFE_WATER_FACTOR)
+			elif tool.get("type", "") == "axe":
+				_axe(tool)
 
 ## Plant a tree seed in a planter (user request 2026-09-02): a sapling sprouts
 ## on the pot and grows nightly - full-size only under open sky (a roof).
@@ -274,7 +300,9 @@ func _plant_seed() -> void:
 	if obj == null or obj.def.get("kind", "") != "planter":
 		say("Plant seeds in a planter pot")
 		return
-	if World.plant_in_planter(obj, target_cell):
+	var seed_item: Dictionary = Data.item(player.held_item())
+	var species: String = String(seed_item.get("plants", Constants.DEFAULT_SEEDLING))
+	if World.plant_in_planter(obj, target_cell, species):
 		player.inventory.remove_from_slot(player.selected_slot, 1)
 		player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
 		say("Planted a seed - give it open sky to grow")
@@ -330,6 +358,17 @@ func _secondary(delta: float) -> void:
 			elif not World.erase_back_wall(target_cell):
 				return
 			hit_cooldown = Constants.BLOCK_HIT_INTERVAL
+	elif Data.is_tool(held, "axe") and World.object_at(target_cell) == null \
+			and World.placed_block_id(target_cell, "back") in Constants.AXE_BLOCKS:
+		# An axe takes down wood back walls the player put up (2026-09-06);
+		# structure walls and other materials still want the hammer.
+		_stop_scrapping()
+		if hit_cooldown <= 0.0 or not _used_secondary_last_tick:
+			var removed := World.remove_block(target_cell, "back")
+			if removed != "":
+				player.inventory.add(removed, 1)
+				_sfx("wood_break", World.cell_center(target_cell), 4)
+			hit_cooldown = Constants.BLOCK_HIT_INTERVAL
 	else:
 		_scrap(delta, Data.tool_of(held))
 
@@ -371,6 +410,35 @@ func _hammer(tool: Dictionary) -> void:
 			say("Building structure cannot be broken")
 		"too_hard":
 			say("Needs a better tool")
+		"broken":
+			_sfx("wood_break", World.cell_center(target_cell), 4)
+		"damaged":
+			_sfx("wood_hit", World.cell_center(target_cell), 2)
+		_:
+			pass
+
+## The aimed cell holds a player-placed block an axe may chop.
+func _axe_target() -> bool:
+	return target_in_reach and World.placed_block_id(target_cell) in Constants.AXE_BLOCKS
+
+## Axe on LMB (user request 2026-09-06): chops PLAYER-PLACED wood blocks at
+## the axe's tool tier with the hammer's cadence and feedback. It never
+## touches structure, other materials, ladders or furniture (no pickup:
+## the long-press lift stays hammer-only; trees are the RMB harvest path).
+func _axe(tool: Dictionary) -> void:
+	if not target_in_reach or (hit_cooldown > 0.0 and _used_last_tick):
+		return
+	if World.object_at(target_cell) != null or not World.has_block_cell(target_cell):
+		return
+	hit_cooldown = Constants.BLOCK_HIT_INTERVAL
+	player.play_swing()
+	if not _axe_target():
+		say("An axe only cuts wood you placed - use a hammer")
+		return
+	var result := World.damage_block(target_cell, float(tool.get("damage", 0)), int(tool.get("tier", 0)), player.global_position)
+	match result:
+		"too_hard":
+			say("Needs a better axe")
 		"broken":
 			_sfx("wood_break", World.cell_center(target_cell), 4)
 		"damaged":
@@ -455,11 +523,7 @@ func _fire_gun(w: Dictionary) -> void:
 		if best != null:
 			best.hurt(float(w.damage), player.global_position, 3.0 + float(w.get("knockback", 0.0)) * 0.25)
 		World.spawn_tracer(origin, origin + dir * best_t) # the streak flies to where the shot stopped
-	# Three gunshot takes; the host also relays the bang to every client
-	# (a client shooter never runs this path itself, so it would hear nothing).
-	var take := randi() % 3 + 1
-	_sfx("gunshot_%d" % take, origin, 1, 0.0)
-	Net.on_effect("sfx", origin, "gunshot_%d" % take)
+	_sfx("gunshot", origin, 3, 0.0) # three takes; relayed to every client by _sfx
 	player.play_swing()
 
 ## Projectile weapons (GD-08, LT-16; generalised 2026-09-05): a spear gun,

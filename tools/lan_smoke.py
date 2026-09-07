@@ -13,6 +13,7 @@ Scenarios (all on by default; disable with --no-<name>):
              * A's character file exists on disk afterwards (client-side save)
   rejoin   client B joins with A's character name: its last lp is within a few blocks of
              A's last lp (host-side resume / the client's own file)
+  harvest  a client runs --net-harvest (scraps an object; progress + sounds must reach it)
   mutate   the host runs --net-mutate (places/mines blocks, pours water, edits a chest,
              spawns an item beside the joining player 2 s after READY); grid and records must
              still match at the end (water may drift out of the client's window: reported)
@@ -221,6 +222,42 @@ def scenario_session(a, port, mutate, closes):
         check(script_errors(host_log) == 0, "host log has no script errors (%s)" % tag)
 
 
+def scenario_harvest(a, port):
+    """A client harvests: the host runs the scrap, streams the progress and relays the sounds."""
+    host_log = os.path.join(OUT_DIR, "host_harvest.log")
+    c_log = os.path.join(OUT_DIR, "client_harvest.log")
+    client_secs = 40
+    host_secs = client_secs + 25
+    print("== scenario harvest: host port %d seed %d (host %d s, client %d s)" % (port, a.seed, host_secs, client_secs))
+    host, hlog = launch(["--host=%d" % port, "--seed=%d" % a.seed, "--character=%s" % HOST_CHAR,
+                         "--net-probe=%d" % host_secs], host_log)
+    try:
+        if not wait_for_line(host_log, "NETHOST ready", 120.0, host):
+            check(False, "host printed NETHOST ready (see %s)" % host_log)
+            return
+        print("   host up")
+        cp = run_client("client H", CLIENT_CHAR, port, client_secs, ["--net-harvest"], c_log, client_secs + 90.0)
+        txt = read_log(c_log)
+        m = re.search(r"NETPROBE harvest: DONE record gone after ([\d.]+) s \(held \w+, sfx_requests=(\d+), progress_seen=([\d.]+)\)", txt)
+        target = re.search(r"NETPROBE harvest: target=(\w+)", txt)
+        print("   client target: %s" % (target.group(1) if target else "none"))
+        check(target is not None, "client H found a hand-harvestable object near its spawn")
+        check(m is not None, "client H's harvest finished (record gone on the client)")
+        if m:
+            print("   harvested in %s s, sfx_requests=%s, progress_seen=%s" % m.groups())
+            check(int(m.group(2)) > 0, "client H received relayed world sounds (sfx_requests=%s)" % m.group(2))
+            check(float(m.group(3)) > 0.0, "client H saw the host's scrap progress stream (%s)" % m.group(3))
+        hp_now = probes_in(host_log)
+        if cp and hp_now:
+            h = host_probe_at(hp_now, None, 2)
+            check(h["records"] == cp[-1]["records"], "records equal after the harvest (%d vs %d)" % (h["records"], cp[-1]["records"]))
+    finally:
+        if not wait_exit(host, host_secs + 60.0):
+            check(False, "host exited by itself")
+        hlog.close()
+        check(script_errors(host_log) == 0, "host log has no script errors (harvest)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--port", type=int, default=47140)
@@ -229,17 +266,22 @@ def main():
     ap.add_argument("--no-rejoin", dest="rejoin", action="store_false")
     ap.add_argument("--no-mutate", dest="mutate", action="store_false")
     ap.add_argument("--no-closes", dest="closes", action="store_false")
+    ap.add_argument("--no-harvest", dest="harvest", action="store_false")
+    ap.add_argument("--only-harvest", action="store_true", help="run just the harvest scenario")
     ap.add_argument("--keep-saves", action="store_true", help="don't delete the test world/character files first")
     a = ap.parse_args()
 
     os.makedirs(OUT_DIR, exist_ok=True)
     if not a.keep_saves:
         clean_saves(a.seed)
-    scenario_session(a, a.port, mutate=False, closes=False)
-    if a.mutate:
-        scenario_session(a, a.port + 1, mutate=True, closes=False)
-    if a.closes:
-        scenario_session(a, a.port + 2, mutate=False, closes=True)
+    if not a.only_harvest:
+        scenario_session(a, a.port, mutate=False, closes=False)
+        if a.mutate:
+            scenario_session(a, a.port + 1, mutate=True, closes=False)
+        if a.closes:
+            scenario_session(a, a.port + 2, mutate=False, closes=True)
+    if a.harvest or a.only_harvest:
+        scenario_harvest(a, a.port + 3)
     print("== lan_smoke: %d failures" % len(failures))
     for f in failures:
         print("  FAIL: " + f)

@@ -15,6 +15,10 @@ var esc_consumed_frame: int = -1
 var root: Control
 var map_rect: TextureRect
 var marker: ColorRect
+var _clip: Control
+var _other_marks: Dictionary = {} # peer_id -> {rect, label} (other players, LAN)
+var _pack_marks: Array = []       # ColorRects on death backpacks
+var _death_marks: Array = []      # dim dots where the local player died this session
 var zoom: float = 2.0
 var pan := Vector2.ZERO
 var _img: Image
@@ -54,7 +58,8 @@ func _ready() -> void:
 	marker.size = Vector2(5, 5)
 	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	clip.add_child(marker)
-	var hint := UITheme.label("Drag to pan · wheel zooms · M / Esc closes", 8, Color(0.6, 0.68, 0.74))
+	_clip = clip
+	var hint := UITheme.label("Drag to pan · wheel zooms · M / Esc closes  ·  cyan: players · red: death packs", 8, Color(0.6, 0.68, 0.74))
 	hint.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	hint.offset_top = -14
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -86,6 +91,61 @@ func _process(delta: float) -> void:
 		var cell := World.map_macro_for(player.global_position) - World.map_bounds.position
 		marker.position = pan + Vector2(cell) * zoom - marker.size * 0.5
 	marker.visible = int(Time.get_ticks_msec() / 400) % 2 == 0 # blink
+	_update_overlays(player)
+
+## Other players (cyan, named) and death backpacks (red) on the map, plus
+## dim dots where this character died this session (user request 2026-09-06).
+func _update_overlays(local) -> void:
+	var seen: Dictionary = {}
+	for p in Net.players():
+		if p == local or not (p is Node2D):
+			continue
+		var pid: int = p.get("peer_id")
+		seen[pid] = true
+		if not _other_marks.has(pid):
+			var r := ColorRect.new()
+			r.color = Color(0.35, 0.9, 1.0)
+			r.size = Vector2(5, 5)
+			r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_clip.add_child(r)
+			var l := UITheme.label(String(p.get("character_name")), 8, Color(0.6, 0.95, 1.0))
+			l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_clip.add_child(l)
+			_other_marks[pid] = {"rect": r, "label": l}
+		var m: Dictionary = _other_marks[pid]
+		var at := _map_pos(p.global_position)
+		(m.rect as ColorRect).position = at - Vector2(2.5, 2.5)
+		(m.label as Label).position = at + Vector2(4, -6)
+	for pid in _other_marks.keys():
+		if not seen.has(pid):
+			(_other_marks[pid].rect as ColorRect).queue_free()
+			(_other_marks[pid].label as Label).queue_free()
+			_other_marks.erase(pid)
+	var packs: Array = get_tree().get_nodes_in_group("backpacks")
+	_fit_marks(_pack_marks, packs.size(), Color(1.0, 0.3, 0.3), Vector2(5, 5))
+	for i in packs.size():
+		(_pack_marks[i] as ColorRect).position = _map_pos((packs[i] as Node2D).global_position) - Vector2(2.5, 2.5)
+	var deaths: Array = []
+	if local != null and local.get("death_marks") != null:
+		deaths = local.get("death_marks")
+	_fit_marks(_death_marks, deaths.size(), Color(0.75, 0.2, 0.2, 0.8), Vector2(3, 3))
+	for i in deaths.size():
+		(_death_marks[i] as ColorRect).position = _map_pos(deaths[i]) - Vector2(1.5, 1.5)
+
+func _fit_marks(pool: Array, n: int, color: Color, size: Vector2) -> void:
+	while pool.size() < n:
+		var r := ColorRect.new()
+		r.color = color
+		r.size = size
+		r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_clip.add_child(r)
+		pool.append(r)
+	for i in pool.size():
+		(pool[i] as ColorRect).visible = i < n
+
+func _map_pos(world_pos: Vector2) -> Vector2:
+	var cell := World.map_macro_for(world_pos) - World.map_bounds.position
+	return pan + Vector2(cell) * zoom
 
 func open_map() -> void:
 	open = true

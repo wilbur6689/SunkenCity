@@ -174,6 +174,13 @@ func _run() -> void:
 	check(await until(func(): return grounded() and feet_y() <= 12 * B + 0.5, 180),
 		"tops out through the hole onto floor 1 (feet row %.1f, %s)" % [feet_y() / B, st()])
 	release_all()
+	# Rope tops are platforms like ladder tops (user request 2026-09-06): a
+	# fall onto the rope's top cell lands there instead of dropping through.
+	await place(30, 9)
+	check(await until(grounded, 90) and absf(feet_y() - 12 * B) < 1.0, "falling onto the rope top lands on it (feet row %.1f)" % (feet_y() / B))
+	press(["move_down"]); await ticks(6)
+	check(st() == "CLIMBING", "pressing down climbs through the rope top (%s)" % st())
+	release_all()
 
 	print("== G. water entry from height is safe (shaft drop)")
 	await place(68, 5) # 32 cells down to the waterline

@@ -51,6 +51,7 @@ signal snapshot_ready(data: Dictionary)                     # client: full world
 signal status(text: String)                                 # client: join progress in plain words
 signal roster_changed                                       # both: peers table changed (names/pings)
 signal peer_ready(peer_id: int)                             # host: a client finished loading the world (WorldSync._ready_for_world)
+signal notice(text: String)                                 # both: a session event for the HUD (joined / left / died), user request 2026-09-06
 
 var world_sync: Node = null
 var enemy_sync: Node = null
@@ -217,6 +218,13 @@ func on_power_changed() -> void:
 
 ## Cosmetic one-shots every peer should see: "puff" (break debris, arg = item id),
 ## "sfx" (arg = sfx name) — position in world px.
+## A session event everyone should read (joined / left / died): shown on
+## this screen and, while hosting, relayed reliably to every READY client.
+func notice_all(text: String) -> void:
+	notice.emit(text)
+	if mode == Mode.HOST and world_sync != null and world_sync.has_method("send_notice"):
+		world_sync.send_notice(text)
+
 func on_effect(kind: String, pos: Vector2, arg: String) -> void:
 	if mode == Mode.HOST and world_sync != null:
 		world_sync.on_effect(kind, pos, arg)
@@ -315,17 +323,24 @@ func close_world(reason: String = "host closed the world") -> void:
 	roster_changed.emit()
 
 ## Menu / dev-arg entry: bank the pickers into SaveGame's handoff, open the
-## server and boot the city like DIVE. `world` == "" means a new world from `seed`.
+## server and boot the city like DIVE. `world` == "" means a new world from `seed`;
+## `display_name` is the typed name for that new world (2026-09-06; "" = world_<seed>).
 func start_hosting(world: String, seed_value: int, character: String, p_port: int = Constants.LAN_PORT,
-		p_cap: int = Constants.NET_MAX_PLAYERS) -> Error:
+		p_cap: int = Constants.NET_MAX_PLAYERS, display_name: String = "") -> Error:
+	SaveGame.pending_world_name = ""
 	if world != "":
 		SaveGame.pending_world = world
 	elif seed_value > 0:
 		SaveGame.pending_seed = seed_value
+		SaveGame.pending_world_name = display_name
 	if character != "":
 		SaveGame.pending_character = character
 	host_character = character if character != "" else "host"
-	var wn := world if world != "" else "world_%d" % (seed_value if seed_value > 0 else 1)
+	# What the beacon says until the city scene is up (it then advertises the
+	# scene's world_title): the saved world's display name, or the typed one.
+	var wn := SaveGame.world_display_name(world) if world != "" else SaveGame.clean_world_name(display_name)
+	if wn == "":
+		wn = "world_%d" % (seed_value if seed_value > 0 else 1)
 	var err := host(p_port, p_cap, wn)
 	if err != OK:
 		return err
@@ -381,6 +396,7 @@ func _teardown() -> void:
 	roster_changed.emit()
 
 func _on_peer_connected(id: int) -> void:
+	print("[net] t=%.2f peer_connected %d (mode %d)" % [_now(), id, mode])
 	if mode == Mode.HOST:
 		var ep := peer.get_peer(id) if peer != null else null
 		if ep != null:
@@ -392,10 +408,12 @@ func _on_peer_connected(id: int) -> void:
 			ep.set_timeout(32, Constants.NET_PEER_TIMEOUT_MS, Constants.NET_PEER_TIMEOUT_MS * 2)
 
 func _on_peer_disconnected(id: int) -> void:
+	print("[net] t=%.2f peer_disconnected %d (mode %d)" % [_now(), id, mode])
 	if mode == Mode.HOST:
 		_pending_hello.erase(id)
 		_hello_deadline.erase(id)
 		if peers.has(id):
+			notice_all("%s left the world" % String(peers[id].get("name", "someone")))
 			peer_left.emit(id) # listeners read the entry (name, char_state) before it goes
 			peers.erase(id)
 			_send_roster()
@@ -438,7 +456,7 @@ func _on_server_disconnected() -> void:
 	_teardown()
 
 func _status(text: String) -> void:
-	print("[net] " + text)
+	print("[net] t=%.2f %s" % [_now(), text]) # the log carries the clock; the UI gets the bare text
 	status.emit(text)
 
 func _now() -> float:
@@ -452,12 +470,15 @@ func _peer_live(id: int) -> bool:
 	var ep := peer.get_peer(id)
 	return ep != null and ep.get_state() == ENetPacketPeer.STATE_CONNECTED
 
+## The world name the beacon / _accepted advertise: the city scene's DISPLAY
+## name (`world_title`, 2026-09-06), else its file key, else what host() got.
 func _current_world_name() -> String:
 	var tree := get_tree()
 	if tree != null and tree.current_scene != null:
-		var wn = tree.current_scene.get("world_name")
-		if wn is String and wn != "":
-			return wn
+		for prop in ["world_title", "world_name"]:
+			var wn = tree.current_scene.get(prop)
+			if wn is String and wn != "":
+				return wn
 	return world_name
 
 # --- Handshake RPCs (MultiplayerImpl §3) ---

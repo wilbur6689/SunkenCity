@@ -16,26 +16,46 @@ func check(cond: bool, msg: String) -> void:
 	if not cond:
 		failures.append(msg)
 
+## Flora trees carry a district prefix now (res_plane...), so match by data.
+func _is_tree(id: String) -> bool:
+	var d: Dictionary = Data.objects.get(id, {})
+	return d.get("category", "") == "flora" and d.get("room_type", "") == "tree"
+
 func _ready() -> void:
 	print("== A. data")
-	for id: String in ["tree_sapling", "tree_young", "tree_mature", "roof_hvac", "roof_crane",
+	for id: String in ["res_plane_seedling", "res_plane_midling", "res_plane", "roof_hvac", "roof_crane",
 			"roof_comm_mast", "decal_broken_wall_a", "int_wall_vent", "int_wall_pipes", "statue_stone"]:
 		check(Data.objects.has(id), id + " is defined")
-	check(Data.objects.tree_sapling.get("grows_into", "") == "tree_young" \
-			and Data.objects.tree_young.get("grows_into", "") == "tree_mature" \
-			and not Data.objects.tree_mature.has("grows_into"), "growth chain: sapling -> young -> mature")
-	check(not Data.item("tree_sapling").is_empty(), "saplings have an item form (replantable)")
-	check(Data.item("tree_young").is_empty() and Data.item("tree_mature").is_empty(),
+	check(Data.objects.res_plane_seedling.get("grows_into", "") == "res_plane_midling" \
+			and Data.objects.res_plane_midling.get("grows_into", "") == "res_plane" \
+			and not Data.objects.res_plane.has("grows_into"), "growth chain: seedling -> midling -> full")
+	var lineage_ok := true
+	var species := 0
+	for oid in Data.objects:
+		var fd: Dictionary = Data.objects[oid]
+		if fd.get("category", "") != "flora" or String(fd.get("district", "")) != "residential" or String(oid).ends_with("_seedling") or String(oid).ends_with("_midling"):
+			continue
+		species += 1
+		var sd: Dictionary = Data.objects.get(String(oid) + "_seedling", {})
+		var md: Dictionary = Data.objects.get(String(oid) + "_midling", {})
+		lineage_ok = lineage_ok and sd.get("grows_into", "") == String(oid) + "_midling" and md.get("grows_into", "") == oid \
+				and not fd.has("grows_into") and int(sd.size[0]) % 2 == 0 and int(fd.size[0]) % 2 == 0 \
+				and Data.strip_frames(String(oid)) >= 2 and Data.strip_frames(String(oid) + "_seedling") >= 2
+	check(species == 7 and lineage_ok, "every residential species (%d) is a seedling -> midling -> full lineage with sway strips" % species)
+	check(Data.item("res_plane_seed").get("plants", "") == "res_plane_seedling" and Data.item("res_apple_seed").get("plants", "") == "res_apple_seedling",
+			"tree seeds plant their own species")
+	check(not Data.item("res_plane_seedling").is_empty(), "saplings have an item form (replantable)")
+	check(Data.item("res_plane_midling").is_empty() and Data.item("res_plane").is_empty(),
 			"grown trees have no item form (harvest, not haul)")
 	var wood_ok := true
-	for id: String in ["tree_sapling", "tree_young", "tree_mature"]:
+	for id: String in ["res_plane_seedling", "res_plane_midling", "res_plane"]:
 		var got := false
 		for y in Data.objects[id].yields:
 			if y.item == "wood":
 				got = true
 		wood_ok = wood_ok and got
 	check(wood_ok, "every tree stage yields wood")
-	check(int(Data.objects.tree_mature.size[1]) >= 24, "a mature tree stands 2x-3x a room tall (%d cells)" % int(Data.objects.tree_mature.size[1]))
+	check(int(Data.objects.res_plane.size[1]) >= 24, "a mature tree stands 2x-3x a room tall (%d cells)" % int(Data.objects.res_plane.size[1]))
 	check(Data.objects.decal_broken_wall_a.get("kind", "") == "decal" \
 			and Data.objects.decal_broken_wall_a.get("no_item", false) \
 			and (Data.objects.decal_broken_wall_a.get("yields", []) as Array).is_empty(),
@@ -62,9 +82,9 @@ func _ready() -> void:
 	check(wb_wood >= 25, "the workbench takes multiple resource runs (%d wood)" % wb_wood)
 	check(int(Data.recipes.pry_bar.inputs[0].count) >= 20, "tool costs run 5x (pry bar: %d scrap)" % int(Data.recipes.pry_bar.inputs[0].count))
 	check(Data.tool_of("wood_axe").get("type", "") == "axe", "the wooden axe is an axe-type tool")
-	check(Data.objects.tree_young.get("requires_tool", "") == "axe" 			and Data.objects.tree_mature.get("requires_tool", "") == "axe" 			and not Data.objects.tree_sapling.has("requires_tool"),
+	check(Data.objects.res_plane_midling.get("requires_tool", "") == "axe" 			and Data.objects.res_plane.get("requires_tool", "") == "axe" 			and not Data.objects.res_plane_seedling.has("requires_tool"),
 			"grown trees need the axe; saplings hand-pluck (no wood deadlock)")
-	check(float(Data.objects.tree_mature.scrap_time) > float(Data.objects.tree_young.scrap_time) 			and float(Data.objects.tree_young.scrap_time) > float(Data.objects.tree_sapling.scrap_time),
+	check(float(Data.objects.res_plane.scrap_time) > float(Data.objects.res_plane_midling.scrap_time) 			and float(Data.objects.res_plane_midling.scrap_time) > float(Data.objects.res_plane_seedling.scrap_time),
 			"bigger trees take longer to fell")
 	check(Data.blocks.wood_wall.atlas_row == 8, "the wood wall has its own dark plank tile row")
 	print("== B. generation")
@@ -89,7 +109,7 @@ func _ready() -> void:
 		var cell: Vector2i = o.cell
 		if id == "roof_hatch":
 			continue # sits one row up on the slab; the hatch checks below cover it
-		if id.begins_with("roof_") or id.begins_with("tree_"):
+		if id.begins_with("roof_") or _is_tree(id):
 			var on_roof := false
 			for span: Array in roof_rows.get(cell.y, []):
 				if cell.x >= int(span[0]) and cell.x <= int(span[1]):
@@ -99,7 +119,7 @@ func _ready() -> void:
 				stray += 1
 			if Data.objects.get(id, {}).get("room_type", "") == "grass":
 				continue # the grass blanket is uncapped; density counts the rest
-		if id.begins_with("tree_"):
+		if _is_tree(id):
 			trees += 1
 			if cell.y >= CityGen.WATERLINE:
 				wet_trees += 1
@@ -108,6 +128,29 @@ func _ready() -> void:
 		if id.begins_with("statue_"):
 			statues += 1
 	check(stray == 0, "roof gear and trees appear only on tower roofs (%d strays)" % stray)
+	# District flora (flora rebuild 2026-09-06): a roof only grows its own
+	# district's set; districts without a set borrow the residential one.
+	var built := {}
+	for fid in Data.objects:
+		var fdd: Dictionary = Data.objects[fid]
+		if fdd.get("category", "") == "flora" and fdd.has("district"):
+			built[String(fdd.district)] = true
+	var wrong_district := 0
+	var placed_by_district := {}
+	var rf := CityGen.generate(101) # the full city: the 1600-wide slice holds only residential towers
+	for o in rf.objects:
+		var fd2: Dictionary = Data.objects.get(o.id, {})
+		if fd2.get("category", "") != "flora" or not fd2.has("district"):
+			continue
+		for t4 in rf.tower_list:
+			if o.cell.x >= int(t4.x0) and o.cell.x <= int(t4.x1):
+				var want: String = String(t4.get("district", "")) if built.has(String(t4.get("district", ""))) else "residential"
+				placed_by_district[want] = int(placed_by_district.get(want, 0)) + 1
+				if String(fd2.district) != want:
+					wrong_district += 1
+				break
+	check(wrong_district == 0, "every roof plant belongs to its tower's district set (%d wrong)" % wrong_district)
+	check(built.has("business") and int(placed_by_district.get("business", 0)) > 0, "business roofs grow the business set (%d plants)" % int(placed_by_district.get("business", 0)))
 	check(roofed.size() >= r.tower_list.size() * 8 / 10,
 			"most towers carry roof gear (%d of %d)" % [roofed.size(), r.tower_list.size()])
 	check(trees >= 3, "%d trees rooted across the skyline" % trees)
@@ -130,7 +173,7 @@ func _ready() -> void:
 			vined_placed += 1
 		if oid2.begins_with("roof_junk") or oid2 == "roof_fallen_mast" or oid2 == "roof_tarp_crates":
 			junk_placed += 1
-		if (oid2.begins_with("roof_") or oid2.begins_with("tree_")) 				and Data.objects.get(oid2, {}).get("room_type", "") != "grass":
+		if (oid2.begins_with("roof_") or _is_tree(oid2)) 				and Data.objects.get(oid2, {}).get("room_type", "") != "grass":
 			for span2: Array in roof_rows.get(o.cell.y, []):
 				if o.cell.x >= int(span2[0]) and o.cell.x <= int(span2[1]):
 					var tk2: int = o.cell.y * 100000 + int(span2[0])
@@ -233,50 +276,52 @@ func _ready() -> void:
 	add_child(items_root)
 	add_child(objects_root)
 	World.register(g, Vector2(60 * B, 60 * B), items_root, objects_root, null, 70)
-	World.add_object_record("tree_sapling", Vector2i(40, 59), false)
+	World.add_object_record("res_plane_seedling", Vector2i(40, 59), false)
 	for i in 60:
 		World.day_count += 1 # deterministic growth advances one stage per day (2026-09-02)
 		World._grow_trees()
-	check(World.object_record_at(Vector2i(40, 59)).get("id", "") == "tree_mature",
+	check(World.object_record_at(Vector2i(40, 59)).get("id", "") == "res_plane",
 			"a sapling grows to maturity over enough midnights")
-	check(World.object_record_at(Vector2i(40, 59)) == World.object_record_at(Vector2i(40, 59 - int(Data.objects.tree_mature.size[1]) + 1)),
+	check(World.object_record_at(Vector2i(40, 59)) == World.object_record_at(Vector2i(40, 59 - int(Data.objects.res_plane.size[1]) + 1)),
 			"the grown canopy registers its cells")
-	World.add_object_record("tree_sapling", Vector2i(80, 59), false)
+	World.add_object_record("res_plane_seedling", Vector2i(80, 59), false)
 	# hem the young stage in: wall off its projected footprint row (computed
 	# from the live defs - the trees are editor-authored and resizable)
-	var yw := int(Data.objects.tree_young.size[0])
-	var hx := 80 - (yw - int(Data.objects.tree_sapling.size[0])) / 2
-	var hem_y := 59 - mini(int(Data.objects.tree_young.size[1]) - 1, 6)
+	var yw := int(Data.objects.res_plane_midling.size[0])
+	var hx := 80 - (yw - int(Data.objects.res_plane_seedling.size[0])) / 2
+	var hem_y := 59 - mini(int(Data.objects.res_plane_midling.size[1]) - 1, 6)
 	for hdx in yw:
 		g.set_structure(Vector2i(hx + hdx, hem_y), WorldGrid.M.STONE)
 	for i in 60:
 		World.day_count += 1 # deterministic growth advances one stage per day (2026-09-02)
 		World._grow_trees()
-	check(World.object_record_at(Vector2i(80, 59)).get("id", "") == "tree_sapling", "a hemmed-in tree waits")
-	World.add_object_record("tree_sapling", Vector2i(20, 59), false)
+	check(World.object_record_at(Vector2i(80, 59)).get("id", "") == "res_plane_seedling", "a hemmed-in tree waits")
+	World.add_object_record("res_plane_seedling", Vector2i(20, 59), false)
 	World.water_sim.seed_cell(Vector2i(20, 59), WaterSim.MAX_LEVEL)
 	for i in 60:
 		World.day_count += 1 # deterministic growth advances one stage per day (2026-09-02)
 		World._grow_trees()
-	check(World.object_record_at(Vector2i(20, 59)).get("id", "") == "tree_sapling", "a drowned tree never grows")
+	check(World.object_record_at(Vector2i(20, 59)).get("id", "") == "res_plane_seedling", "a drowned tree never grows")
 	# Deterministic 2-day growth (user request 2026-09-02): fully grown on the
 	# 2nd morning after planting; no growth the day it is planted.
-	World.add_object_record("tree_sapling", Vector2i(100, 59), false)
+	World.add_object_record("res_plane_seedling", Vector2i(100, 59), false)
 	World._grow_trees()
-	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_sapling", "no growth the day it's planted")
+	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "res_plane_seedling", "no growth the day it's planted")
 	World.day_count += 1; World._grow_trees()
-	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_young", "1st morning: sapling -> young")
+	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "res_plane_midling", "1st morning: sapling -> young")
 	World.day_count += 1; World._grow_trees()
-	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "tree_mature", "2nd morning: young -> mature (fully grown)")
+	check(World.object_record_at(Vector2i(100, 59)).get("id", "") == "res_plane", "2nd morning: young -> mature (fully grown)")
 	# Planter box (user request 2026-09-04): three sections, a tree each.
 	var box := World.place_object("planter_box", Vector2i(10, 59), true)
-	check(box != null and World.plant_in_planter(box, Vector2i(10, 59)) and World.plant_in_planter(box, Vector2i(13, 59)) \
-			and World.plant_in_planter(box, Vector2i(15, 59)), "a planter box takes a seed over each of its three sections")
-	check(World.object_record_at(Vector2i(10, 57)).get("id", "") == "tree_sapling" and World.object_record_at(Vector2i(12, 57)).get("id", "") == "tree_sapling" \
-			and World.object_record_at(Vector2i(14, 57)).get("id", "") == "tree_sapling", "three saplings stand on the box")
+	check(box != null and World.plant_in_planter(box, Vector2i(10, 59), "res_plane_seedling") and World.plant_in_planter(box, Vector2i(13, 59), "res_apple_seedling") \
+			and World.plant_in_planter(box, Vector2i(15, 59), "res_maple_seedling"), "a planter box takes a seed over each of its three sections")
+	check(World.object_record_at(Vector2i(10, 57)).get("id", "") == "res_plane_seedling" and World.object_record_at(Vector2i(12, 57)).get("id", "") == "res_apple_seedling" \
+			and World.object_record_at(Vector2i(14, 57)).get("id", "") == "res_maple_seedling", "three seedlings of three species stand on the box")
 	check(not World.plant_in_planter(box, Vector2i(11, 59)), "a full section refuses a fourth seed")
-	check(World.water_plant_above(Vector2i(10, 59)) == 1 and World.object_record_at(Vector2i(10, 57)).get("id", "") == "tree_young",
-			"a bucket waters the first section's sapling up a stage")
+	check(World.water_plant_above(Vector2i(10, 59)) == 0, "a seedling hemmed in by its box neighbours cannot be watered up (wide midlings need room)")
+	World.remove_object(World.object_at(Vector2i(12, 57))) if World.object_at(Vector2i(12, 57)) != null else World._remove_record(World.object_record_at(Vector2i(12, 57)))
+	check(World.water_plant_above(Vector2i(10, 59)) == 1 and World.object_record_at(Vector2i(10, 57)).get("id", "") == "res_plane_midling",
+			"with the neighbour gone a bucket waters the first section's seedling up a stage")
 	# Room draw planes (user request 2026-09-01): decals under wall pieces
 	# under furniture (the player wins by tree order).
 	for y2 in range(48, 60):
@@ -292,7 +337,7 @@ func _ready() -> void:
 	# A streamed-in tree swaps its node on growth.
 	World.refresh_objects_around(Vector2(60 * B, 58 * B))
 	var mature_node := World.object_at(Vector2i(40, 59))
-	check(mature_node != null and mature_node.id == "tree_mature", "the grown tree streams in as its new stage")
+	check(mature_node != null and mature_node.id == "res_plane", "the grown tree streams in as its new stage")
 
 	print("\nRoof smoke: %d checks, %d failures" % [checks, failures.size()])
 	for f in failures:

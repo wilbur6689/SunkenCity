@@ -207,25 +207,41 @@ func _ready_for_world() -> void:
 	_water_resync_t[id] = 1 # first full window as soon as its player exists
 	print("[net] peer %d ready (%d queued deltas replayed)" % [id, queued.size()])
 	net.peer_ready.emit(id)
+	net.notice_all("%s joined the world" % String(net.peers.get(id, {}).get("name", "someone")))
 
 # --- Host hooks (World -> Net -> here) ---
 
+## Someone to tell: a READY peer, or a LOADING one whose queue replays on
+## READY. With neither, a delta has no audience - a later joiner's snapshot
+## is built from the live state at accept - so the hooks skip the packing
+## and the dirty sets stay empty. Without this the city boot marked every
+## door/record dirty (2026-09-06: ~107k `_compact`s at gen and a 15 s
+## `_flush_records` on the host's first tick, which stalled the process
+## while the first client was trying to connect).
+func _anyone() -> bool:
+	return not _queues.is_empty() or not _net().ready_peers().is_empty()
+
 func on_cell_changed(cell: Vector2i) -> void:
-	_dirty_cells[cell] = true
+	if _anyone():
+		_dirty_cells[cell] = true
 
 func on_record_added(rec: Dictionary) -> void:
-	_send("_rec_add", [_compact(rec)])
+	if _anyone():
+		_send("_rec_add", [_compact(rec)])
 
 func on_record_removed(rec: Dictionary) -> void:
 	_dirty_recs.erase(rec.cell)
-	_send("_rec_remove", [rec.cell, String(rec.id)])
+	if _anyone():
+		_send("_rec_remove", [rec.cell, String(rec.id)])
 
 func on_record_changed(rec: Dictionary) -> void:
-	_dirty_recs[rec.cell] = rec
+	if _anyone():
+		_dirty_recs[rec.cell] = rec
 
 func on_record_replaced(old_rec: Dictionary, new_rec: Dictionary) -> void:
 	_dirty_recs.erase(old_rec.cell)
-	_send("_rec_replace", [old_rec.cell, String(old_rec.id), _compact(new_rec)])
+	if _anyone():
+		_send("_rec_replace", [old_rec.cell, String(old_rec.id), _compact(new_rec)])
 
 func on_item_spawned(item: Node) -> void:
 	_send("_item_spawn", [item.net_id, item.id, item.count, item.global_position, item.velocity])
@@ -305,7 +321,11 @@ func _flush_records() -> void:
 		return
 	for cell in _dirty_recs:
 		var rec: Dictionary = _dirty_recs[cell]
-		if World.object_records.has(rec): # removed later in the tick: the remove already went out
+		# Still the live record at its cell? (removed later in the tick: the
+		# remove already went out). Identity, not `object_records.has(rec)` -
+		# that compares dictionary CONTENTS against every record (O(n) each).
+		var cur = World.object_cells.get(cell)
+		if cur is Dictionary and is_same(cur, rec):
 			_send("_rec_change", [cell, _compact(rec)])
 	_dirty_recs.clear()
 
@@ -533,6 +553,14 @@ func _power(lights: Array, breakers: Array) -> void:
 	if _is_client() and World.is_ready():
 		World.apply_power_replica(lights, breakers)
 
+func send_notice(text: String) -> void:
+	_send_ready("_notice", [text])
+
+@rpc("authority", "call_remote", "reliable")
+func _notice(text: String) -> void:
+	if _is_client():
+		_net().notice.emit(text)
+
 @rpc("authority", "call_remote", "unreliable")
 func _effect(kind: String, pos: Vector2, arg: String) -> void:
 	if not _is_client() or not World.is_ready():
@@ -540,8 +568,12 @@ func _effect(kind: String, pos: Vector2, arg: String) -> void:
 	match kind:
 		"puff":
 			World.spawn_break_puff(pos, arg, true)
-		"sfx":
-			Audio.play_sfx(arg, pos)
+		"sfx": # "<name>" or "<name>@<volume_db>" (Audio.play_world_sfx)
+			var at := arg.rfind("@")
+			if at > 0:
+				Audio.play_sfx(arg.substr(0, at), pos, 1, float(arg.substr(at + 1)))
+			else:
+				Audio.play_sfx(arg, pos)
 		"tracer":
 			var parts := arg.split(",")
 			if parts.size() == 2:

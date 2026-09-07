@@ -549,11 +549,19 @@ func is_ladder_cell(cell: Vector2i) -> bool:
 	return grid != null and grid.climb_at(cell) == WorldGrid.C.LADDER
 
 ## The topmost cell of a ladder acts as a stand-on surface (one-way platform).
+## The top cell of a ladder OR rope run: a one-way platform the player lands
+## on and stands on (WS-16; ropes too since 2026-09-06, user request) - press
+## down to climb through it.
 func is_ladder_top_cell(cell: Vector2i) -> bool:
-	return is_ladder_cell(cell) and not is_ladder_cell(cell + Vector2i.UP)
+	return is_climbable_cell(cell) and not is_climbable_cell(cell + Vector2i.UP)
 
 func is_player_block(cell: Vector2i) -> bool:
 	return placed_blocks.has(cell)
+
+## Item id of the player-placed block on a layer at a cell, "" if none/structure.
+func placed_block_id(cell: Vector2i, layer_name: String = "blocks") -> String:
+	var key = _key(cell, layer_name)
+	return String(placed_blocks[key].id) if placed_blocks.has(key) else ""
 
 ## Global x of the center of the climbable RUN containing global_pos: since
 ## the 8 px cell (2026-09-04) generated ladders are two cells wide, so the
@@ -913,11 +921,15 @@ func place_rope(cell: Vector2i, max_cells: int) -> int:
 ## `at_cell` picks the SECTION of a wide planter (a planter box holds three
 ## trees, one per sapling-width section - user request 2026-09-04); the pot
 ## has a single section.
-func plant_in_planter(planter, at_cell: Vector2i = Vector2i(-1, -1)) -> bool:
-	var sd: Dictionary = Data.objects.get("tree_sapling", {})
+## `seedling_id` is the seed item's `plants` species stage (flora rebuild
+## 2026-09-06: every district tree has its own seed).
+func plant_in_planter(planter, at_cell: Vector2i = Vector2i(-1, -1), seedling_id: String = "") -> bool:
+	if seedling_id == "":
+		seedling_id = Constants.DEFAULT_SEEDLING
+	var sd: Dictionary = Data.objects.get(seedling_id, {})
 	if sd.is_empty() or Net.is_client():
 		return false
-	var sw := maxi(int(sd.get("size", [2, 4])[0]), 1)
+	var sw := Constants.PLANTER_SLOT_CELLS
 	var slots := maxi(int(planter.size.x) / sw, 1)
 	var slot := 0
 	if at_cell.x >= 0:
@@ -928,7 +940,7 @@ func plant_in_planter(planter, at_cell: Vector2i = Vector2i(-1, -1)) -> bool:
 			var c := base + Vector2i(dx, -dy)
 			if not grid.in_bounds(c) or has_block_cell(c) or object_cells.has(c) or is_solid_cell(c):
 				return false
-	place_object("tree_sapling", base, true)
+	place_object(seedling_id, base, true)
 	return true
 
 ## Water the plant growing on a planter (user request 2026-09-02): a bucket of
@@ -940,7 +952,7 @@ func water_plant_above(planter_cell: Vector2i) -> int:
 		return 0
 	var prec: Dictionary = object_cells.get(planter_cell, {})
 	var psize: Array = prec.def.size if not prec.is_empty() else Data.objects.get("planter", {}).get("size", [2, 2])
-	var sw := maxi(int(Data.objects.get("tree_sapling", {}).get("size", [2, 4])[0]), 1)
+	var sw := Constants.PLANTER_SLOT_CELLS
 	var rec: Dictionary = {}
 	var best := -1 # -1 no plant, 0 nothing can grow, 1 grew
 	for slot in maxi(int(psize[0]) / sw, 1):
@@ -1595,7 +1607,7 @@ func pound(cell: Vector2i, damage: float) -> void:
 		return
 	rec["pound_hp"] = float(rec.get("pound_hp", 60.0)) - damage
 	if float(rec.pound_hp) <= 0.0:
-		Audio.play_sfx("wood_break", cell_center(cell), 4)
+		Audio.play_world_sfx("wood_break", cell_center(cell), 4)
 		if rec.node != null and is_instance_valid(rec.node):
 			remove_object(rec.node)
 		else:
@@ -1732,7 +1744,7 @@ func _tick_red_moon(delta: float) -> void:
 		if is_night() and day_count >= next_red_moon_day:
 			red_moon_active = true
 			_wave_timer = 0.0 # first wave lands immediately
-			Audio.play_sfx("red_moon_stinger", spawn_position, 1, 2.0)
+			Audio.play_world_sfx("red_moon_stinger", spawn_position, 1, 2.0)
 		return
 	if not is_night():
 		# Dawn: the moon sets, spawning stops, stragglers stay (GD-02) and
@@ -1816,7 +1828,8 @@ const HARVEST_TINT := {
 	"wood": Color(0.60, 0.42, 0.24), "scrap_metal": Color(0.56, 0.61, 0.67),
 	"plastic": Color(0.42, 0.72, 0.52), "stone": Color(0.55, 0.55, 0.56),
 	"cloth": Color(0.78, 0.72, 0.58), "iron": Color(0.62, 0.64, 0.68),
-	"steel": Color(0.70, 0.72, 0.78), "tree_seed": Color(0.50, 0.36, 0.22),
+	"steel": Color(0.70, 0.72, 0.78), "seed": Color(0.50, 0.36, 0.22),
+	"blood": Color(0.78, 0.10, 0.10), "ichor": Color(0.30, 0.78, 0.28), # hit bursts (2026-09-06)
 }
 const TRACER_SCRIPT := preload("res://scripts/items/tracer.gd")
 

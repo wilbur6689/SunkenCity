@@ -99,6 +99,13 @@ Prompts only — the names go in the grid, the numbers in §4.
 | Civil | defense + light + cold | armoured (riot gear, firefighter turnout), resists bleeding, flinches from light | cold-immune, slow, tanky |
 | Open water | — | surface: floaters; column: sharks/fish; per stage one apex or one nuisance | T5: something bigger than a shark |
 
+### 3b. Pocket guardians (built 2026-09-06)
+
+The rooms behind the apartment doors are the one place that breaks the "shared density" rule on
+purpose: **75 % of pockets hold a single elite** at **2x hp and damage** — one of the tower
+district's own creatures for the pocket's state (dry → the T1 uniques, flooded → the T2 ones; a walker
+or a barracuda where a district has none yet). Knobs: `seeding.pocket_monster_chance` / `_mult`.
+
 ## 4. Likelihood scheme for unique monsters (proposal)
 
 Keep the existing rolls; a unique monster **replaces a share** of the cell's rolls rather than adding

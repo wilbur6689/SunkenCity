@@ -123,8 +123,10 @@ func _ready() -> void:
 	_weight_icon.visible = false
 	get_node("Root").add_child(_weight_icon)
 	_build_minimap()
+	Net.notice.connect(show_message) # joined / left / died (user request 2026-09-06)
 	_build_debug()
 	_build_admin()
+	_build_hurt_flash()
 	_build_hover_panel()
 	_build_gain_feed()
 	_build_hotbar_tip()
@@ -191,7 +193,7 @@ func _update_hotbar_tip() -> void:
 			var tier := int(tool.get("tier", 0))
 			_tip_badge.set_tier(tier)
 			_tip_badge.visible = true
-			_tip_tier.text = "Fells trees (tier %d)" % tier if String(tool.get("type", "")) == "axe" else "Dismantles tier %d and below" % tier
+			_tip_tier.text = "Fells trees, cuts placed wood (tier %d)" % tier if String(tool.get("type", "")) == "axe" else "Dismantles tier %d and below" % tier
 			_tip_tier_row.visible = true
 		elif it.has("weapon"):
 			_tip_badge.visible = false
@@ -267,6 +269,11 @@ func _hover_lines(obj: WorldObject) -> Array:
 		"door":
 			what = "Door — blocks water while closed"
 			how = "LMB: " + ("close" if obj.open else "open")
+			if obj.id == "roof_hatch" or obj.id == "side_vent": # the tower's district (user request 2026-09-06)
+				var d: String = World.district_at_x(obj.cell.x)
+				if d != "":
+					title += " — %s district" % d.capitalize()
+					what = "Vent into a %s tower — blocks water while closed" % d
 		"breaker":
 			what = "Circuit breaker — powers nearby wired lights"
 			how = "LMB: switch " + ("off" if obj.powered_on else "on")
@@ -285,7 +292,7 @@ func _hover_lines(obj: WorldObject) -> Array:
 			what = "Scrap bench (%s) — melts collected furniture to materials" % tier
 			how = "LMB: grind all %s furniture in your bag" % ("scrappable" if st == 5 else tier)
 		"planter":
-			what = "Planter box — three trees, one per section" if obj.id == "planter_box" else "Planter — grows a tree for wood under open sky"
+			what = "Planter box — a seedling per section; wide trees need the neighbouring sections clear to grow" if obj.id == "planter_box" else "Planter — grows a tree for wood under open sky"
 			how = "LMB: plant a held seed · pour a full bucket to water it up a stage"
 		"chest":
 			what = "Container — %d slots" % obj.storage.slots.size()
@@ -606,19 +613,53 @@ func _redraw_minimap() -> void:
 			var cell := org + Vector2i(px, py)
 			var col := MapColors.cell_color(cell) if World.map_reveal.is_revealed(cell) else MapColors.UNREVEALED
 			_minimap_img.set_pixel(px, py, col)
-	# The player: a bright 2x2 dot dead centre.
+	# Other players (cyan) and death backpacks (red) inside the window
+	# (user request 2026-09-06), then the player: a bright 2x2 dot dead centre.
+	for other in Net.players():
+		if other != player and other is Node2D:
+			_minimap_dot(World.map_macro_for(other.global_position) - org, w, Color(0.35, 0.9, 1.0))
+	for pack in get_tree().get_nodes_in_group("backpacks"):
+		if pack is Node2D:
+			_minimap_dot(World.map_macro_for(pack.global_position) - org, w, Color(1.0, 0.3, 0.3))
 	for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
 		var p := w / 2 + d
 		_minimap_img.set_pixel(p.x, p.y, Color.WHITE)
 	_minimap_tex.update(_minimap_img)
 
+func _minimap_dot(at: Vector2i, w: Vector2i, col: Color) -> void:
+	for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
+		var p := at + d
+		if p.x >= 0 and p.y >= 0 and p.x < w.x and p.y < w.y:
+			_minimap_img.set_pixel(p.x, p.y, col)
+
 func show_message(text: String) -> void:
 	_message = text
 	_message_timer = 2.5
 
+## Red screen flash on a hit (user request 2026-09-06): a full-screen tint
+## that jumps to HURT_FLASH_ALPHA and fades out over HURT_FLASH_SECONDS.
+var _hurt_flash_rect: ColorRect
+
+func _build_hurt_flash() -> void:
+	_hurt_flash_rect = ColorRect.new()
+	_hurt_flash_rect.color = Color(0.85, 0.05, 0.05, 0.0)
+	_hurt_flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hurt_flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hurt_flash_rect.z_index = 50
+	get_node("Root").add_child(_hurt_flash_rect)
+
+func _tick_hurt_flash(delta: float) -> void:
+	if _hurt_flash_rect == null or player == null:
+		return
+	if player.hurt_flash > 0.0:
+		player.hurt_flash = maxf(player.hurt_flash - delta, 0.0)
+	var t := player.hurt_flash / Constants.HURT_FLASH_SECONDS
+	_hurt_flash_rect.color.a = Constants.HURT_FLASH_ALPHA * t * t # fast in, easing out
+
 func _process(delta: float) -> void:
 	if player != null:
 		visible = not player.dying # the death scene clears the UI (2026-09-01)
+		_tick_hurt_flash(delta)
 	if player == null:
 		player = Net.local_player()
 		if player == null:
@@ -669,8 +710,12 @@ func _process(delta: float) -> void:
 	_tick_gain_feed(delta)
 
 	var inter := player.interaction
-	scrap_bar.visible = inter.scrapping != null
-	scrap_bar.value = inter.scrap_progress * 100.0
+	if player.is_puppet(): # LAN client: the host scraps for us and streams the progress
+		scrap_bar.visible = player.puppet_scrapping
+		scrap_bar.value = player.puppet_scrap_progress * 100.0
+	else:
+		scrap_bar.visible = inter.scrapping != null
+		scrap_bar.value = inter.scrap_progress * 100.0
 	if inter.message != "" and inter.message != _message:
 		show_message(inter.message)
 	_message_timer = maxf(_message_timer - delta, 0.0)

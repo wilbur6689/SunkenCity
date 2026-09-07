@@ -266,7 +266,9 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
   `scripts/world/backdrop.gd` (Parallax2D) hanging from the waterline.
 - Interaction model (`scripts/player/interaction.gd`): LMB on a highlighted interactable —
   short click interacts (open storage/doors, flip breakers, bed spawn, station crafting, pump
-  targeting), holding ~0.5s picks the object up (storage must be empty); otherwise LMB uses the
+  targeting), holding ~0.5s picks the object up (storage must be empty) — **hammer in hand only** since 2026-09-06
+  (a bare/knife/weapon hold never lifts anything; with a weapon out and a monster in swing range LMB
+  skips the object press and attacks — `Interaction._object_press`); otherwise LMB uses the
   held item — place block/object, hammer hits, consumables, pump-outlet click. RMB =
   hold-to-scrap furniture, place back walls, hammer wall removal. E remains a legacy interact. **Q** toggles bare hands (clears the held item until pressed again
 or a hotbar slot is reselected; it no longer drops). Hold-RMB on a bag slot scraps that item
@@ -576,6 +578,125 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   them from each gap's first row (the Dry/Shallows plates are unchanged). `SaveGame.WORLD_VERSION` 4
   (the grid is taller). Gate: `district_smoke` (splice geometry, plugs, no crossers, orphan pockets,
   relays on plugs, band of the gap, exterior visibility, hammer digs garbage); `m3/pocket` converted.
+- **Pocket guardians** (2026-09-06, user request): every interior pocket rolls `seeding.pocket_monster_chance`
+  (0.75) for ONE elite at `pocket_monster_mult` (x2 hp/damage): the tower district's dry uniques in a dry
+  pocket (else a walker), its flooded (T2) uniques in a drowned one (else a barracuda) — `EnemyGen`
+  after the tower loop, records carry `mult`/`pocket`, `city.gd` passes the mult to `add_enemy_record`.
+  Covered in `district_smoke`.
+- **Hit feedback** (2026-09-06, user request): every discrete hit on the player (`Player.apply_damage`
+  → `_hurt_fx`, ≥ `HURT_FX_MIN_DAMAGE` 1.0, one per `HURT_FX_COOLDOWN` — cold/crush/bleed/drown drains
+  tick below it and never strobe) bursts red debris (`World.spawn_break_puff(.., "blood")`,
+  `HARVEST_TINT.blood`, replicated as a puff effect), plays `player_hurt_1..3.wav` (synthesised by
+  `tools/gen_hit_sfx.py`, relayed via `Net.on_effect("sfx")`) and flashes the screen: `Player.hurt_flash`
+  (seconds) is drained by `hud.gd _tick_hurt_flash` into a full-rect red `ColorRect`
+  (`HURT_FLASH_ALPHA`, `HURT_FLASH_SECONDS`); a LAN owner gets `PlayerSync.ev_hurt` → `flash_hurt()`.
+  Every hit on a monster (`Enemy.hurt`) bursts green ichor (`HARVEST_TINT.ichor`) and plays
+  `enemy_hit_1..3.wav`. Covered in `m4_smoke` C.
+- **Client-side feedback for host-run actions** (2026-09-06, user report "as a client I hear
+  nothing but the host's footsteps; harvesting shows no progress"): the host runs a client's
+  actions, and `Interaction._sfx` used to play only for a LOCAL body. Now
+  **`Audio.play_world_sfx(base, pos, variants, volume_db)`** plays a simulation sound where it
+  happens AND (while hosting) relays the resolved take + volume to every client as effect
+  `sfx` (`"name@vol"`, `WorldSync._effect`); `Interaction._sfx`, door/planter/safe sounds in
+  `WorldObject.interact`, enemy pounds/shots/fish grabs/hurt, the player hurt take, bag
+  scrapping, the pound-break and the red-moon stinger all go through it (the old explicit
+  gunshot/hurt/enemy-hit relays are folded in). Sounds every machine derives from replicated
+  state (footsteps, splashes, the enemy "died" event) stay on `Audio.play_sfx`. The state
+  packet (`ST_BYTES` 31) carries `scrap_progress` as a byte (`Player.puppet_scrap_progress`)
+  so the client's HUD scrap bar fills. **Exported builds have no loose PNGs**: `Data.icon`,
+  `object_texture` and `Enemy._load_strip` go through `Data.load_texture_fresh(path,
+  prefer_raw)` — raw disk read only under the editor binary (`OS.has_feature("editor")`),
+  `load()` otherwise — the exported client showed placeholder blobs for every material icon.
+  `Audio.sfx_requests` counts requests (headless too); `--net-harvest` (`net_probe.gd`, a
+  client or offline) walks to the nearest hand-harvestable object, aims via
+  `Player.aim_override` and holds RMB, printing `NETPROBE harvest:` lines (record gone,
+  streamed progress, sfx count) — the `harvest` scenario in `tools/lan_smoke.py` asserts it
+  (`--only-harvest` runs just that one; passing 2026-09-06: 1.5 s roof bush, 4 relayed sounds).
+- **Host boot/join stall** (2026-09-06, found while LAN-testing the above): `WorldSync`'s
+  `on_record_*`/`on_cell_changed` hooks now do nothing when nobody can receive (`_anyone()`: no
+  READY peer and no LOADING queue) — city generation was `_compact`ing all ~107k records into the
+  void (host boot 28 s -> 9 s) and the found-open doors left ~thousands of records dirty, so the
+  host's first tick spent 15 s in `_flush_records` (`object_records.has(rec)` compares dictionary
+  CONTENTS: O(n) per record — now an `is_same` identity check against `object_cells[cell]`),
+  which froze ENet while the first client tried to connect (19 s connect, then dropped).
+  `net_probe.gd` prints `NETPROBE stall:` on any wall-clock frame gap > 400 ms (Godot caps the
+  process delta, so `delta` never shows it) and `ms=` on every line; `Net._status` prints
+  `t=` in the log only. Still there: the water sim's first settle after boot (~3.7 s over the
+  first two ticks, `perf.water_ms`) blocks the host briefly.
+- **Monsters stood in the floor** (2026-09-06, user report): square-cell strips are taller than
+  the type's `size`, and `enemy.tscn` centres the sprite on the body, so the drawn feet (art
+  contract: feet near the cell bottom) sat 4–9 px inside the slab. `Enemy._load_strip` now
+  records a per-texture foot offset (`Image.get_used_rect()` lowest opaque row vs `half.y`,
+  cached by path) for ground/surface modes and `_set_strip` applies it as `sprite.offset.y`
+  (corpse too); swim/fly stay centred. The Monster Editor's hitbox overlay mirrors the rule and
+  gained the missing `fly` mode (index 3, after swim).
+- **Axe chops placed wood** (2026-09-06, user request): `Interaction._axe` — LMB with an axe
+  (`wood_axe`; the fire axe when no enemy is in swing range) damages a PLAYER-PLACED block whose
+  id is in `Constants.AXE_BLOCKS` (`wood_block`, `wood_wall`) at the axe's tier with the hammer's
+  cadence/swing/SFX; structure or non-wood placed blocks get a swing + "An axe only cuts wood you
+  placed"; ladders (climb layer) are untouched. RMB with an axe removes a player-placed wood back
+  wall. `World.placed_block_id(cell, layer)`. Tooltips/badges: "Fells trees, cuts placed wood
+  (tier N)". Covered in `m1_smoke` J3 (not yet run).
+- **Named worlds** (2026-09-06, user request): the title's world column has a name field for
+  "+ New world" — display name (`SaveGame.clean_world_name`, ≤32 chars, no `|`) lives in the world
+  payload as `"name"` (+ `"key"`); the file key is `SaveGame.world_slug` (`[a-z0-9_]`, `_2`/`(2)`
+  on collision, `SaveGame.new_world_key`), `world_<seed>` for both when blank (dev args and
+  `tools/lan_smoke.py` cleanup unchanged). `City.world_title` feeds `Net._current_world_name`
+  (beacon, `_accepted`, the pause roster header, the F5 toast); `Net.start_hosting(...,
+  display_name)` / `--host --name=`. No rename yet. `title_smoke` E (not yet run). The JOIN
+  screen's `LanBrowser` retries `bind(47121)` every 2 s when the port is busy (another instance on
+  the PC, e.g. a headless test client still closing) — "port busy, retrying…"; Godot 4.8 exposes
+  no SO_REUSEADDR, so two listeners on one PC still can't coexist.
+- **Physics under every simulated body** (2026-09-06, user report: a LAN client "falls through
+  floors and stone walls until it hits water"): `StructureRenderer` paints tiles — and with them
+  the ONLY collision there is — around the camera, so on the host a remote player away from the
+  host's screen stood on nothing (`World.is_water` still caught it in the flooded gaps). The
+  renderer now keeps one painted rect per **anchor** (`painted: {key: Rect2i}`): the camera view
+  (+`MARGIN`) and, while `Net.is_server()`, an `ENEMY_WINDOW`-sized rect around every body in the
+  `player` group (keyed by `peer_id`, the local one too — enemies streamed in beyond the camera's
+  window had no floor either); rects grow by delta strips, drop when an anchor leaves, and a cell
+  is erased only when no other anchor covers it. `perf.struct_cells` is the sum. A client paints
+  only its camera.
+- **Wooden Club** (2026-09-06, user request): `wood_club` — a hand-crafted Stage 1 melee weapon
+  (6 wood, `station: hand`, known; weapon block damage 3.5 / speed 1.1 / knockback 12 /
+  `water_factor` 0.4; scraps to 2 wood; NOT a `district_weapon`, so `gen_weapons.py` leaves it
+  alone). Icon drawer `club` in `tools/gen_weapon_icons.py` (`NO_METAL`). `docs/Crafting.md`
+  regenerated (113 recipes).
+- **Ingredient source popups** (2026-09-06, user request): hovering an ingredient row in the
+  Crafting tab's detail panel raises the hover plate with `Data.source_lines(item)` — "Craft:
+  <station> (tier n)", a found part's "Found: <district> district towers / Floors: <band> / builds
+  the <bench>", "Dig: garbage heaps", "Harvest: rooftop trees (axe)", "Scrap (<zone>): a, b, c
+  +N more" per zone from objects.json yields, "Drops: <enemies> in <bands>" (`enemy_bands`), and
+  "Loot: containers in <districts> on <bands> floors" from loot.json; wrapped at 46 chars,
+  cached. `Data.BAND_LABEL` / `SOURCE_BANDS` (= `BAND_ORDER` + roof). Hover kind `source:<item>`
+  in `inventory_ui._update_hover_plate`.
+- **District-coloured vents** (2026-09-06, user request): `roof_hatch` and `side_vent` sprites are
+  tinted by their tower's district (`Constants.DISTRICT_TINT`: residential amber, business steel
+  blue, commercial pink, civil green, industrial rust, construction hi-vis yellow) in
+  `WorldObject._ready` via `World.district_at_x` (rgb only; door alpha untouched).
+- **Shaft-mouth ladders** (2026-09-06, user request): `CityGen` lays a 2-wide ladder on BOTH
+  shaft walls from just under the roof hatch (`top + SLAB_T`) to the top floor's standing row, so
+  the drop through a pried vent lands on rungs beside floor 0's shaft doorway (every tower, every
+  shaft; the stairwell-decay pass never touches them).
+- **Map: players + deaths** (2026-09-06, user request): the full map (`map_view._update_overlays`)
+  draws other players as cyan dots with their names, death backpacks (`backpacks` group, incl.
+  client replicas) as red dots and this session's own death spots (`Player.death_marks`, filled
+  in `_die` on the host and `_ev_died` on a client; not saved) as dim red dots; the minimap draws
+  the cyan/red 2x2 dots (`hud._minimap_dot`).
+- **Session notices** (2026-09-06, user request): `Net.notice_all(text)` emits `Net.notice` locally
+  and, while hosting, `WorldSync.send_notice` relays it reliably to READY clients (`_notice`); the
+  HUD shows it on the message line. Fired for "<name> joined the world" (after `peer_ready`),
+  "<name> left the world" (before `peer_left`) and "<name> died" (`Player._die`, online only).
+- **Puddle evaporation** (2026-09-06, user request "thin water should slowly disappear"): a cell
+  that settles at <= `WATER_EVAP_MAX_LEVEL` (2 of 8) joins `WaterSim._thin`; after
+  `WATER_EVAP_SECONDS` (30) it loses one level, again per period, while it RESTS ON A FLOOR (solid
+  or dry cell below, nothing above) — a body's surface film sits on water and is skipped, so lakes
+  and flooded rooms keep their volume (m2 conservation holds). `WATER_EVAP_PER_TICK` (256) entries
+  are examined per tick; drying goes through `_touch` so clients get the delta.
+- **Corpse no longer recovers its own pack** (2026-09-06, user report "the host kept all their
+  stuff"): `Backpack._try_recover` skips bodies with `dying` set — the death scene holds the body
+  where it fell for `DEATH_SCENE_SECONDS` (3) while the pack unlocks after `BACKPACK_PICKUP_DELAY`
+  (1.5), so the corpse took everything back before the respawn. Any body, host or client.
 - **F4 admin panel** (2026-09-06, user request): `scripts/dev/admin.gd` (`class_name Admin`, static
   session flags, host/offline only — a LAN client's body is simulated by the host) behind **F4** in
   `hud.gd` (`_build_admin`; `--f4` opens it at boot for shots): checkboxes **no-clip fly**
@@ -726,7 +847,9 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   falls); climbing holds at the very top (grab-and-hang from a ledge) and tops out only on up.
   Placing a **rope** drops a run of up to `Constants.ROPE_DROP` (4) cells; clicking anywhere on an
   existing rope extends it from the **bottom** (`World.place_rope`/`can_place_rope`), so you lengthen
-  a line from a ledge.
+  a line from a ledge. **Rope tops are landing platforms like ladder tops** (2026-09-06, user request:
+  `World.is_ladder_top_cell` covers any climbable run's top cell; a fall lands on it, down climbs through;
+  covered in `m0_smoke` F).
 - Main scene is currently `scenes/test/test_tower.tscn` — a 15-floor test tower (3 dry, 12
   flooded; themed deep floors, stairwell, sealed door-floods). Rows 0-30 are load-bearing for
   the smoke tests — extend downward, do not reshape them. Gate tests: `m0/m1/m2/tower_smoke.tscn`.
@@ -756,11 +879,57 @@ These are settled and should be treated as canon in all docs and future code:
   snapshots, clients own only input + lighting/map/UI, join = the world-save payload as a snapshot,
   then cell/water/object/enemy/item/clock deltas; §4 lists the seams to refactor first, §11 the plan.
 
+- **Flora rebuild, residential set** (2026-09-06, user request): ALL legacy plants are gone
+  (`tree_sapling/young/mature`, `roof_bush`, `roof_grass*`, editor experiments + their PNGs and the
+  `roof_gear.py` entries; `roof_garden_a/b` templates retargeted). Plants are GENERATED:
+  `tools/flora_art/common.py` (ramps, cluster brushes, layered `canopy`, `trunk`/`branch`, `tuft`,
+  sel-out `outline_pass`, `sway_frames`) + one module per district (`res.py`: plane / apple / maple /
+  hedge / rose / lawn / clover, each `<id>_seedling` → `<id>_midling` → `<id>`), built by
+  `python tools/build_flora.py [res]` into `assets/sprites/objects/<id>.png` sway STRIPS + objects.json
+  entries tagged `generated_flora` (+ `district`, `frames`; re-runs replace only tagged entries, never
+  `authored` ones) and per-species seed items (`res_plane_seed` … `plants` = the seedling id, 16 px icons
+  kept unless `ICONS_FORCE=1`). Preview: `python tools/flora_art/preview.py res out.png`. Engine:
+  `Data.strip_frames(id)` (PNG width ÷ size px) / `object_strip_texture` — `object_texture` now returns
+  the REST frame (icons, editors, cards); `WorldObject` sets `hframes` and ping-pongs at
+  `FLORA_SWAY_FPS` (phase per cell, x2 on a red moon, still under water); `CityGen._district_flora`
+  picks the tower district's set;
+  `World.plant_in_planter(planter, cell, seedling_id)` plants the held seed's `plants` species
+  (`Constants.DEFAULT_SEEDLING` for the legacy `tree_seed`, `PLANTER_SLOT_CELLS` 2); the Flora Editor
+  loads a strip's rest frame and a save drops `frames`/`generated_flora`. NB adjacent planter-box
+  sections block a wide midling (only outer sections grow at once). Gates updated + passing: `roof`
+  (lineage/seed checks), `flora_editor`, `district`, `save`. Tracker: `docs/Flora/FloraChecklist.md`
+  (status table per district — tick it when a district's module lands). **Business set built the same
+  day** (`tools/flora_art/bus.py`: cypress / locust / tub ficus / boxwood sphere / boxwood trough / turf /
+  fountain grass; steel `tub()` containers drawn after the outline pass; `_block_canopy` for clipped
+  rectangles). Roof-template plants (`roof_garden_a/b`) now resolve to a weighted pick from the tower
+  district's pool in `_stamp_roofs`; `roof_smoke` checks district-only placement on the full city.
+  **Commercial set** (`com.py`, same day): fan palm (`frond`/`palm_trunk` helpers), magnolia, bougainvillea
+  on a trellis (`magenta_tips`), hibiscus, concrete planter bed, monstera, fern. `common.seedling` is the
+  shared sprout drawer. **Civil set** (`civ.py`): park oak, linden, weeping birch (`strands` drawn after the
+  outline pass so they stay 2 px), rhododendron, memorial yew, meadow tuft, ivy; the 14×30 great-oak landmark
+  is deferred until seeding has a rarity roll. **Industrial** (`ind.py`: tree of heaven, pioneer birch, sumac,
+  bramble, buddleia, thistle, concrete weeds) and **Construction** (`con.py`: willow, poplar, elder, ragwort,
+  rebar ivy, horsetail, moss on rubble; module `WEIGHTS` favour seedlings 5:2:1) complete the six districts;
+  `_district_flora` keeps the residential fallback only for a district id with no set, the test tower (no
+  district) gets the union. 126 flora objects, 18 seeds. Still open: wild + submerged sets, `flora_smoke` gate,
+  the great-oak landmark, the planter-box decision (see the checklist).
+- `docs/Flora/flora.md` (2026-09-06) — the flora art bible: lessons from the user's reference sheets,
+  universal rules (top-left light, layered cluster canopies, 6-step hue-shifted leaf ramp, tinted
+  sel-out outline, ground tuft), the three-stage seedling/midling/full lineage contract, the sway
+  strip animation contract (4/2/1 frames, base pinned), and the per-district species roster
+  (7 species × 3 stages per district + wild + submerged sets). Nothing from it is built yet.
+
 When answering design questions, questions cross-reference each other by ID (e.g. GD-19 defers to
 GL-12) — check whether a referenced question was already decided before asking again.
 
 ## Project Skills (`.claude/skills/`)
 
+- **pixel-game-art** — how to draw, generate (PIL drawers), review and fix pixel art for the game:
+  scale audit, big-shapes-first workflow, hue-shifted ramps, top-left light, tinted sel-out
+  outlines, cluster texture, asymmetry/negative space, ground anchoring, growth lineages, sway
+  strips, controlled variation, pipeline rules and a review checklist. Distilled from
+  `docs/technical/TileArt.md`, `docs/Flora/flora.md` and `docs/Flora/pixelTips.md`. Use it for any
+  sprite, tile, icon or art tool work.
 - **guided-review** — collaborative one-question-at-a-time design review with countdown numbering
   (`Q{N}` down to `Q1`), 2–4 numbered options per question, recommendation first and set apart by
   a rule, document updated only at section end after a confirmed summary. The user may not have

@@ -19,6 +19,7 @@ var world_list: ItemList
 var char_list: ItemList
 var seed_spin: SpinBox
 var name_edit: LineEdit
+var world_name_edit: LineEdit # optional display name for a new world (2026-09-06); editable only on "+ New world"
 var world_del: Button
 var char_del: Button
 var clear_old: Button # deletes every old-format world + character (shown only when some exist)
@@ -27,9 +28,24 @@ var _confirm_gen := 0 # invalidates pending delete confirms
 ## The WORLD column: picker, Delete, and the seed row for a new world.
 func build_world(p_frame: Control, x: float) -> void:
 	frame = p_frame
-	world_list = picker_panel(frame, x, "WORLD")
+	# The world list is a row shorter than the character list: the name field
+	# for a new world sits under it (user request 2026-09-06).
+	world_list = picker_panel(frame, x, "WORLD", 70.0, 106.0)
 	world_del = _delete_button(x + 170 - 52, "world")
-	world_list.item_selected.connect(func(i): world_del.disabled = i == 0; reset_confirms(); selection_changed.emit())
+	world_list.item_selected.connect(func(i):
+		world_del.disabled = i == 0
+		world_name_edit.editable = i == 0
+		reset_confirms()
+		selection_changed.emit())
+	world_name_edit = LineEdit.new()
+	world_name_edit.placeholder_text = "new world name (optional)"
+	world_name_edit.max_length = SaveGame.WORLD_NAME_MAX
+	world_name_edit.add_theme_font_size_override("font_size", FONT)
+	UITheme.style_input(world_name_edit)
+	world_name_edit.position = Vector2(x, 202)
+	world_name_edit.custom_minimum_size = Vector2(170, 0)
+	world_name_edit.tooltip_text = "Shown in the list and on the LAN. Blank = world_<seed>."
+	frame.add_child(world_name_edit)
 	var seed_label := Label.new()
 	seed_label.text = "Seed"
 	seed_label.add_theme_font_size_override("font_size", FONT)
@@ -81,7 +97,7 @@ func build_clear_old(p_frame: Control, pos: Vector2) -> void:
 	frame.add_child(clear_old)
 
 ## A bordered column panel: header, list. Also used bare (the JOIN page's host list).
-static func picker_panel(p_frame: Control, x: float, label_text: String, y: float = 70.0) -> ItemList:
+static func picker_panel(p_frame: Control, x: float, label_text: String, y: float = 70.0, list_h: float = 124.0) -> ItemList:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UITheme.flat_panel())
 	panel.position = Vector2(x - 8, y)
@@ -96,8 +112,8 @@ static func picker_panel(p_frame: Control, x: float, label_text: String, y: floa
 	p_frame.add_child(label)
 	var list := ItemList.new()
 	list.position = Vector2(x, y + 22)
-	list.custom_minimum_size = Vector2(170, 124)
-	list.size = Vector2(170, 124)
+	list.custom_minimum_size = Vector2(170, list_h)
+	list.size = Vector2(170, list_h)
 	list.add_theme_font_size_override("font_size", FONT)
 	UITheme.style_list(list)
 	p_frame.add_child(list)
@@ -166,10 +182,15 @@ func reset_confirms() -> void:
 
 ## A saved row: greyed "(old format)" when this build refuses the file. Such
 ## rows stay selectable so Delete can reach them; DIVE / HOST refuse them.
-static func add_save_row(list: ItemList, save_name: String, stale: bool) -> void:
-	list.add_item(save_name + "  (old format)" if stale else save_name)
+## `save_name` is the file key (the metadata `name`); `display` is the row
+## text (a world's stored display name; defaults to the key).
+static func add_save_row(list: ItemList, save_name: String, stale: bool, display: String = "") -> void:
+	var shown := display if display != "" else save_name
+	list.add_item(shown + "  (old format)" if stale else shown)
 	var idx := list.item_count - 1
-	list.set_item_metadata(idx, {"name": save_name, "stale": stale})
+	list.set_item_metadata(idx, {"name": save_name, "stale": stale, "display": shown})
+	if shown != save_name:
+		list.set_item_tooltip(idx, "file: " + save_name)
 	if stale:
 		list.set_item_custom_fg_color(idx, STALE_COLOR)
 
@@ -192,7 +213,8 @@ func refresh() -> void:
 		world_list.clear()
 		world_list.add_item("+ New world")
 		for w in SaveGame.world_names():
-			add_save_row(world_list, w, SaveGame.world_is_stale(w)) # older save format (e.g. pre-8 px cells): listed, not loadable
+			var data := SaveGame.read_world(w) # {} = older save format (e.g. pre-8 px cells): listed, not loadable
+			add_save_row(world_list, w, data.is_empty(), SaveGame.display_name_of(data, w))
 		var first_world := 0 # newest loadable world, else "+ New world" (old-format rows are never preselected)
 		for i in range(1, world_list.item_count):
 			if not row_stale(world_list, i):
@@ -200,6 +222,8 @@ func refresh() -> void:
 				break
 		world_list.select(first_world)
 		world_del.disabled = first_world == 0
+		if world_name_edit != null:
+			world_name_edit.editable = first_world == 0
 	if char_list != null:
 		char_list.clear()
 		char_list.add_item("+ New character")
@@ -232,6 +256,10 @@ func selected_world() -> String:
 func seed_value() -> int:
 	return int(seed_spin.value) if seed_spin != null else 1
 
+## The display name typed for a new world ("" = default `world_<seed>`).
+func new_world_name() -> String:
+	return SaveGame.clean_world_name(world_name_edit.text) if world_name_edit != null else ""
+
 ## The picked saved character, else the typed name (trimmed), else "".
 func selected_character() -> String:
 	if char_list == null:
@@ -244,10 +272,12 @@ func selected_character() -> String:
 ## Turn the pickers' selection into SaveGame's pending handoff.
 func apply_selection() -> void:
 	var w := selected_world()
+	SaveGame.pending_world_name = ""
 	if w != "":
 		SaveGame.pending_world = w
 	elif world_list != null:
 		SaveGame.pending_seed = seed_value()
+		SaveGame.pending_world_name = new_world_name()
 	var c := selected_character()
 	if c != "":
 		SaveGame.pending_character = c

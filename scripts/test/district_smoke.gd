@@ -304,6 +304,8 @@ func _ready() -> void:
 		var e: Dictionary = Data.enemies.get(rec.type, {})
 		if not e.get("grid_fauna", false) or String(e.get("stage", "")) != "t1" or String(e.district) == "open_water":
 			continue
+		if World.in_annex(World.cell_at(rec.pos)):
+			continue # a pocket guardian (checked in its own section)
 		uniques += 1
 		var tw := CityGen.tower_at(World.towers, World.cell_at(rec.pos))
 		if tw.is_empty() or not (dry_fauna.get(String(tw.district), []) as Array).has(rec.type) or String(rec.band) != "dry":
@@ -329,6 +331,8 @@ func _ready() -> void:
 		var e: Dictionary = Data.enemies.get(rec.type, {})
 		if not e.get("grid_fauna", false) or String(e.get("stage", "")) != "t2":
 			continue
+		if World.in_annex(World.cell_at(rec.pos)):
+			continue # a pocket guardian (checked in its own section)
 		if String(e.district) == "open_water":
 			ow[rec.type] = int(ow.get(rec.type, 0)) + 1
 			if String(rec.band) != "shallows" or World.has_back_wall_cell(World.cell_at(rec.pos)):
@@ -342,6 +346,23 @@ func _ready() -> void:
 			sh_districts[String(tw.district)] = true
 	check(sh_uniques > 60 and sh_districts.size() == 6, "flooded Shallows floors carry their district's own T2 creatures: %d seeded, %d districts" % [sh_uniques, sh_districts.size()])
 	check(ow.size() == 4 and sh_bad == 0, "the four T2 open-water hunters swim the Shallows between towers %s (%d misplaced)" % [str(ow), sh_bad])
+	print("== pocket guardians (2026-09-06)")
+	var guardians := 0
+	var weak := 0
+	var in_pocket := 0
+	for rec in World.enemy_records:
+		if not World.in_annex(World.cell_at(rec.pos)):
+			continue
+		guardians += 1
+		if float(rec.get("mult", 1.0)) < 1.5:
+			weak += 1
+		var c := World.cell_at(rec.pos)
+		for pk in World.pockets:
+			if (pk.rect as Rect2i).grow(1).has_point(c):
+				in_pocket += 1
+				break
+	check(guardians > int(World.pockets.size() * 0.5) and weak == 0 and in_pocket == guardians,
+			"%d of %d pockets hold an elite guardian, all at x%.0f stats, all inside their room" % [guardians, World.pockets.size(), float(Data.enemy_seeding.pocket_monster_mult)])
 	print("== T0 rooftops: night spawns (2026-09-06)")
 	var roof_cell := World.cell_at(player.global_position)
 	var spawn_t: Dictionary = World.towers[0]

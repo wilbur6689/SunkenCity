@@ -35,6 +35,8 @@ var room_cells: Array = []        # heater: the sealed room it is drying (cached
 var seal_tick: int = 0            # heater: ticks until the seal is re-verified
 var scrap_progress: float = 0.0   # 0..1 while being scrapped in place
 var placed_by_player: bool = false
+var _sway_t: float = 0.0            # flora sway strip clock (frames, ping-pong)
+var _sway_frames: int = 1
 
 var _body: StaticBody2D
 var _shape: CollisionShape2D
@@ -67,9 +69,26 @@ func _ready() -> void:
 		z_index = -1
 	sprite.texture = Data.object_texture(id)
 	sprite.centered = false
+	if id == "roof_hatch" or id == "side_vent": # district colour (user request 2026-09-06)
+		var d: String = World.district_at_x(cell.x) if World.has_method("district_at_x") else ""
+		if Constants.DISTRICT_TINT.has(d):
+			var t: Color = Constants.DISTRICT_TINT[d]
+			sprite.modulate = Color(t.r, t.g, t.b, sprite.modulate.a)
 	# Node origin = bottom-left cell's top-left corner; sprite is size*16 px.
 	var px := Vector2(size) * Constants.BLOCK_SIZE
 	sprite.position = Vector2(0, -px.y + Constants.BLOCK_SIZE)
+	# Flora sway strips (docs/Flora/flora.md 5): a texture N frames wide plays
+	# frame 0 -> N-1 -> 0 at FLORA_SWAY_FPS, phase-offset per cell so a roof
+	# never sways in lock-step. Frame count comes from the texture width.
+	_sway_frames = Data.strip_frames(id)
+	if _sway_frames > 1:
+		sprite.texture = Data.object_strip_texture(id)
+		sprite.hframes = _sway_frames
+		sprite.frame = 0
+		_sway_t = float((cell.x * 7 + cell.y * 13) % (2 * _sway_frames - 2))
+		set_process(true)
+	else:
+		set_process(false)
 	match def.kind:
 		"door":
 			_body = StaticBody2D.new()
@@ -93,6 +112,16 @@ func _ready() -> void:
 			_light.position = sprite.position + Vector2(px.x * 0.5, 4)
 			add_child(_light)
 			set_powered(false) # wired lights start dark until a breaker feeds them
+
+func _process(delta: float) -> void:
+	if _sway_frames <= 1:
+		return
+	if World.is_water_cell(cell):
+		return # drowned plants hang still
+	_sway_t += delta * Constants.FLORA_SWAY_FPS * (2.0 if World.red_moon_active else 1.0)
+	var cycle := 2 * _sway_frames - 2
+	var i := int(_sway_t) % cycle
+	sprite.frame = i if i < _sway_frames else cycle - i
 
 ## Re-apply saved state after place_object (must run once _ready has built
 ## the door body / storage). Power re-resolves via World.update_power later.
@@ -195,7 +224,7 @@ func _try_unlock(player) -> String:
 		return "Locked — needs " + need
 	unlocked = true
 	World.notify_record_state(self)
-	Audio.play_sfx("door_latch", center())
+	Audio.play_world_sfx("door_latch", center())
 	return ""
 
 ## E-key interaction. Returns a short HUD message ("" for none).
@@ -212,12 +241,12 @@ func interact(player) -> String:
 					return why
 				set_open_look(true)
 				World.notify_object_changed(self)
-				Audio.play_sfx("door_open", center())
+				Audio.play_world_sfx("door_open", center())
 				return "The door swings open"
 			var feet := World.portal_target(cell)
 			if feet == Vector2.INF:
 				return "The doorway is bricked up"
-			Audio.play_sfx("door_creak_1", center())
+			Audio.play_world_sfx("door_creak_1", center())
 			player.travel_to(feet)
 			return "You step through the doorway"
 		"door":
@@ -229,7 +258,7 @@ func interact(player) -> String:
 			_shape.disabled = open
 			sprite.modulate.a = 0.45 if open else 1.0
 			World.notify_object_changed(self) # doors seal water; toggling wakes it (+ replicates)
-			Audio.play_sfx("door_open" if open else "door_creak_1", center())
+			Audio.play_world_sfx("door_open" if open else "door_creak_1", center())
 			return "Door " + ("opened" if open else "closed")
 		"pump":
 			player.interaction.begin_pump_targeting(self)
@@ -242,7 +271,7 @@ func interact(player) -> String:
 				var w := World.water_plant_above(cell)
 				if w == 1:
 					player.interaction._swap_held("wood_bucket")
-					Audio.play_sfx("splash", center(), 3, -10.0)
+					Audio.play_world_sfx("splash", center(), 3, -10.0)
 					return "Watered - it surges to the next stage"
 				elif w == 0:
 					return "Nothing more to water here"
@@ -251,13 +280,13 @@ func interact(player) -> String:
 				if World.plant_in_planter(self, player.interaction.target_cell):
 					player.inventory.remove_from_slot(player.selected_slot, 1)
 					player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
-					Audio.play_sfx("creak_plastic", center(), 3, -8.0)
+					Audio.play_world_sfx("creak_plastic", center(), 3, -8.0)
 					return "Planted a seed - give it open sky to grow"
 				return "This planter already has something growing"
 			return "A planter box - a tree seed over each section" if id == "planter_box" else "A planter pot - plant a tree seed here"
 		"button":
 			if World.release_barred_door(cell):
-				Audio.play_sfx("door_latch", center())
+				Audio.play_world_sfx("door_latch", center())
 				return "A latch releases - the barred door swings open"
 			return "It clicks, but nothing happens"
 		"breaker":
@@ -282,10 +311,10 @@ func interact(player) -> String:
 				if skid != "" and player.inventory.has(skid):
 					player.inventory.remove(skid, 1)
 					unlocked = true
-					Audio.play_sfx("door_latch", center())
+					Audio.play_world_sfx("door_latch", center())
 				elif stool.get("type", "") == "pry" and int(stool.get("tier", 0)) >= int(def.get("lock_tier", 3)):
 					unlocked = true
-					Audio.play_sfx("door_latch", center())
+					Audio.play_world_sfx("door_latch", center())
 				else:
 					return "Locked safe — a vault key or a cutting torch"
 			player.open_container(self)

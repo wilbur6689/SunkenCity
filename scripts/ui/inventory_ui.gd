@@ -202,6 +202,11 @@ func _ready() -> void:
 	# Cursor stack
 	cursor_icon = TextureRect.new()
 	cursor_icon.size = Vector2(ICON, ICON)
+	# Tall object sprites (tripod, ladder) must not grow the cursor to the
+	# texture's size (user report 2026-09-06: "stretches out"): fit them
+	# into the slot-sized square like the bag icons.
+	cursor_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	cursor_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	cursor_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cursor_icon.z_index = 10
 	root.add_child(cursor_icon)
@@ -748,7 +753,7 @@ func _refresh_modify() -> void:
 		bench_info.add_child(UITheme.label("This cannot take modifiers.", 8, Color(0.7, 0.78, 0.85)))
 
 ## The tier row under a tooltip title: a tool's dismantle tier (axes fell
-## trees only), or a plain weapon's "no dismantling" note.
+## trees and chop placed wood only), or a plain weapon's "no dismantling" note.
 func _set_hover_tier(st) -> void:
 	hover_tier_row.visible = false
 	if st == null:
@@ -760,7 +765,7 @@ func _set_hover_tier(st) -> void:
 		hover_tier_badge.set_tier(tier)
 		hover_tier_badge.visible = true
 		if String(tool.get("type", "")) == "axe":
-			hover_tier_text.text = "Fells trees (tier %d)" % tier
+			hover_tier_text.text = "Fells trees, cuts placed wood (tier %d)" % tier
 		else:
 			hover_tier_text.text = "Dismantles tier %d and below" % tier
 		hover_tier_row.visible = true
@@ -1250,9 +1255,18 @@ func _refresh_detail() -> void:
 		ii.texture = Data.icon(inp.item)
 		ii.custom_minimum_size = Vector2(ICON, ICON)
 		ii.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ii.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(ii)
-		row.add_child(UITheme.label("%s  %d/%d" % [Data.item_name(inp.item), have, int(inp.count)], 8,
-			Color(0.75, 0.95, 0.75) if ok else Color(0.95, 0.6, 0.55)))
+		var il := UITheme.label("%s  %d/%d" % [Data.item_name(inp.item), have, int(inp.count)], 8,
+			Color(0.75, 0.95, 0.75) if ok else Color(0.95, 0.6, 0.55))
+		il.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(il)
+		# Hovering an ingredient explains where it comes from (user request
+		# 2026-09-06): the plate lists crafting station, part location,
+		# scrap sources, drops and loot tables (Data.source_lines).
+		row.mouse_filter = Control.MOUSE_FILTER_STOP
+		row.mouse_entered.connect(_set_hover.bind("source:" + String(inp.item), 0))
+		row.mouse_exited.connect(_set_hover.bind("", -1))
 		detail_box.add_child(row)
 	# Description last (user request): the requirements are what matters.
 	var desc := Data.item_desc(r.output.item)
