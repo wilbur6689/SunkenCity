@@ -224,6 +224,13 @@ const MUSIC_PLAY_MIN: float = 180.0
 const MUSIC_PLAY_MAX: float = 300.0
 const MUSIC_SILENCE_MIN: float = 110.0  # quiet stretch between tracks (s)
 const MUSIC_SILENCE_MAX: float = 130.0
+# Home-base music (user request 2026-09-07): the "home" pool plays while the
+# player's spawn point (bed, else the world spawn) is within sight - inside
+# HOME_MUSIC_BLOCKS of the body (~the default zoom's half screen width). The
+# pool lets go only past HOME_MUSIC_LEAVE_BLOCKS so a step over the line
+# doesn't churn the playlist.
+const HOME_MUSIC_BLOCKS: float = 40.0
+const HOME_MUSIC_LEAVE_BLOCKS: float = 50.0
 const AMBIENT_ON_MIN: float = 60.0      # ambient beds breathe: on a while,
 const AMBIENT_ON_MAX: float = 150.0     # then a long quiet stretch
 const AMBIENT_OFF_MIN: float = 45.0

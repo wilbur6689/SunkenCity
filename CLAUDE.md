@@ -637,6 +637,14 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   placed"; ladders (climb layer) are untouched. RMB with an axe removes a player-placed wood back
   wall. `World.placed_block_id(cell, layer)`. Tooltips/badges: "Fells trees, cuts placed wood
   (tier N)". Covered in `m1_smoke` J3 (not yet run).
+- **Home-base music** (2026-09-07, user request): `MUSIC_POOLS.home` (`homebase01..05.ogg`, sources in
+  `docs/Examples/Audio/music/HomeBase/`, converted by `tools/convert_music.py` which now scans that
+  subfolder too) plays while the player's spawn point — their bed (`Player.spawn_feet`), else
+  `World.spawn_position`; `Audio.home_point(p)` — is within `Constants.HOME_MUSIC_BLOCKS` (40, about
+  the default zoom's half screen) of the body, letting go past `HOME_MUSIC_LEAVE_BLOCKS` (50) so a
+  step over the line doesn't churn the playlist; the Dark/Crush threat pool still wins, adventure
+  plays everywhere else. `adventure05..09.ogg` joined the adventure pool the same day (9 tracks).
+  Covered in `m3_smoke` J.
 - **Named worlds** (2026-09-06, user request): the title's world column has a name field for
   "+ New world" — display name (`SaveGame.clean_world_name`, ≤32 chars, no `|`) lives in the world
   payload as `"name"` (+ `"key"`); the file key is `SaveGame.world_slug` (`[a-z0-9_]`, `_2`/`(2)`

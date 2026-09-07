@@ -4,7 +4,8 @@ extends Node
 ## Ambient: two looping underwater beds crossfaded by context — inside a
 ## building (back-wall cells) vs open water — audible only while submerged.
 ## Music: adventure tracks rotate in safe bands; threat tracks take over in
-## The Dark and The Crush. Tracks never repeat back-to-back and every track
+## The Dark and The Crush; home tracks play while the player's spawn point is
+## within sight (Constants.HOME_MUSIC_BLOCKS). Tracks never repeat back-to-back and every track
 ## is followed by a stretch of silence (user request: looping playlist with
 ## quiet periods), so the city breathes instead of wall-to-wall music.
 
@@ -17,11 +18,25 @@ const MUSIC_POOLS := {
 		"res://assets/audio/music/adventure02.ogg",
 		"res://assets/audio/music/adventure03.ogg",
 		"res://assets/audio/music/adventure04.ogg",
+		"res://assets/audio/music/adventure05.ogg", # 05-09 added 2026-09-07
+		"res://assets/audio/music/adventure06.ogg",
+		"res://assets/audio/music/adventure07.ogg",
+		"res://assets/audio/music/adventure08.ogg",
+		"res://assets/audio/music/adventure09.ogg",
 	],
 	"threat": [
 		"res://assets/audio/music/threat01.ogg",
 		"res://assets/audio/music/threat02.ogg",
 		"res://assets/audio/music/threat03.ogg",
+	],
+	# Sources in docs/Examples/Audio/music/HomeBase (2026-09-07): heard while
+	# the spawn point (base) is in sight; adventure resumes the moment it isn't.
+	"home": [
+		"res://assets/audio/music/homebase01.ogg",
+		"res://assets/audio/music/homebase02.ogg",
+		"res://assets/audio/music/homebase03.ogg",
+		"res://assets/audio/music/homebase04.ogg",
+		"res://assets/audio/music/homebase05.ogg",
 	],
 }
 const AMB_INSIDE := "res://assets/audio/ambient/underwater_inside.ogg"
@@ -43,6 +58,7 @@ var _amb_cycle := 0.0
 var _current_pool := ""
 var _last_track := ""
 var _fading_out := false
+var _at_home := false        # hysteresis for the home pool (enter/leave radii differ)
 
 func _ready() -> void:
 	for bus_name: String in ["Music", "Ambient", "SFX"]:
@@ -170,14 +186,37 @@ func play_world_sfx(base: String, pos: Vector2, variants: int = 1, volume_db: fl
 	Net.on_effect("sfx", pos, "%s@%.1f" % [sfx_name, volume_db])
 
 ## The pool the current situation calls for: threat music in the deep
-## danger bands, adventure everywhere else (title screen included).
+## danger bands, home music while the spawn point is in sight, adventure
+## everywhere else (title screen included).
 func desired_pool() -> String:
 	var p := Net.local_player() as Node2D
 	if p != null and World.is_ready():
 		var band: String = World.band_at(World.cell_at(p.global_position))
 		if band == "dark" or band == "crush":
+			_at_home = false
 			return "threat"
+		if _near_home(p):
+			return "home"
+	else:
+		_at_home = false
 	return "adventure"
+
+## The player's spawn point (their bed, else the world spawn); INF when none.
+func home_point(p: Node2D) -> Vector2:
+	var feet: Variant = p.get("spawn_feet")
+	if feet is Vector2 and feet != Vector2.INF:
+		return feet
+	return World.spawn_position
+
+func _near_home(p: Node2D) -> bool:
+	var home := home_point(p)
+	if home == Vector2.INF:
+		_at_home = false
+		return false
+	var dist_blocks := p.global_position.distance_to(home) / Constants.BLOCK_SIZE
+	var limit := Constants.HOME_MUSIC_LEAVE_BLOCKS if _at_home else Constants.HOME_MUSIC_BLOCKS
+	_at_home = dist_blocks <= limit
+	return _at_home
 
 func _process(delta: float) -> void:
 	_update_ambient(delta)

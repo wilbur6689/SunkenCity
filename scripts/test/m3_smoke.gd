@@ -178,7 +178,26 @@ func _ready() -> void:
 	print("== J. audio director")
 	check(AudioServer.get_bus_index("Music") >= 0 and AudioServer.get_bus_index("Ambient") >= 0 \
 			and AudioServer.get_bus_index("SFX") >= 0, "Music/Ambient/SFX buses exist")
-	check(Audio.desired_pool() == "adventure", "safe band scores adventure music")
+	# Home pool (2026-09-07): the spawn point in sight scores base music;
+	# leaving its radius hands back to adventure (hysteresis: enter 40, leave 50).
+	var home: Vector2 = Audio.home_point(player)
+	check(home != Vector2.INF, "the player has a home point (spawn)")
+	player.global_position = home - Vector2(0, player.FEET_Y)
+	player.velocity = Vector2.ZERO
+	check(Audio.desired_pool() == "home", "standing on the spawn scores home-base music")
+	player.global_position = home - Vector2(0, player.FEET_Y) + Vector2(45 * B, 0)
+	check(Audio.desired_pool() == "home", "45 blocks out still counts as home (leave radius 50)")
+	player.global_position = home - Vector2(0, player.FEET_Y) + Vector2(60 * B, 0)
+	check(Audio.desired_pool() == "adventure", "60 blocks from the spawn scores adventure music")
+	player.global_position = home - Vector2(0, player.FEET_Y) + Vector2(45 * B, 0)
+	check(Audio.desired_pool() == "adventure", "45 blocks back in is NOT home yet (enter radius 40)")
+	player.global_position = home - Vector2(0, player.FEET_Y) + Vector2(30 * B, 0)
+	check(Audio.desired_pool() == "home", "30 blocks in: home music again")
+	check(Audio.MUSIC_POOLS.home.size() == 5 and Audio.MUSIC_POOLS.adventure.size() == 9,
+			"5 home-base tracks, 9 adventure tracks in the pools")
+	for pool_name: String in Audio.MUSIC_POOLS:
+		for track: String in Audio.MUSIC_POOLS[pool_name]:
+			check(ResourceLoader.exists(track), "music asset exists: %s" % track.get_file())
 	player.global_position = Vector2(16 * B, (CityGen.WATERLINE + 300) * B)
 	player.velocity = Vector2.ZERO
 	await ticks(3)

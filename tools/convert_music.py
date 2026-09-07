@@ -2,11 +2,13 @@
 game's OGG assets (docs/Examples/Audio/README.md workflow).
 
 Music: docs/Examples/Audio/music/*.wav -> assets/audio/music/<lowercase>.ogg
+       docs/Examples/Audio/music/HomeBase/*.wav -> the same folder (base music)
 Only converts when the source is newer than the target (or the target is
 missing), so re-runs are cheap. Requires ffmpeg on PATH.
 
 After adding a NEW track, also add its path to MUSIC_POOLS in
-scripts/audio/audio_manager.gd (adventure* -> adventure pool, threat* -> threat).
+scripts/audio/audio_manager.gd (adventure* -> adventure pool, threat* -> threat,
+homebase* -> home: plays within sight of the player's spawn point).
 """
 from pathlib import Path
 import subprocess
@@ -15,6 +17,7 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 JOBS = [
     (ROOT / "docs" / "Examples" / "Audio" / "music", ROOT / "assets" / "audio" / "music"),
+    (ROOT / "docs" / "Examples" / "Audio" / "music" / "HomeBase", ROOT / "assets" / "audio" / "music"),
 ]
 
 
