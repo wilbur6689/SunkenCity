@@ -908,7 +908,7 @@ These are settled and should be treated as canon in all docs and future code:
   shared sprout drawer. **Civil set** (`civ.py`): park oak, linden, weeping birch (`strands` drawn after the
   outline pass so they stay 2 px), rhododendron, memorial yew, meadow tuft, ivy; the 14×30 great-oak landmark
   is deferred until seeding has a rarity roll. **Industrial** (`ind.py`: tree of heaven, pioneer birch, sumac,
-  bramble, buddleia, thistle, concrete weeds) and **Construction** (`con.py`: willow, poplar, elder, ragwort,
+  bramble, buddleia, thistle, concrete weeds) and **Construction** (`constr.py`: willow, poplar, elder, ragwort,
   rebar ivy, horsetail, moss on rubble; module `WEIGHTS` favour seedlings 5:2:1) complete the six districts;
   `_district_flora` keeps the residential fallback only for a district id with no set, the test tower (no
   district) gets the union. 126 flora objects, 18 seeds. Still open: wild + submerged sets, `flora_smoke` gate,

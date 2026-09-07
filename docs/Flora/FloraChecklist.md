@@ -15,7 +15,7 @@ land and keep the status table current.
 | Commercial | `tools/flora_art/com.py` | 7 | 21 / 21 | yes | palm, magnolia, bougainvillea | 2026-09-06 | roof / flora_editor / district / save | **[x] 2026-09-06** |
 | Civil | `tools/flora_art/civ.py` | 7 | 21 / 21 | yes | acorn, linden, birch | 2026-09-06 | roof / flora_editor / district / save | **[x] 2026-09-06** (great oak landmark deferred) |
 | Industrial | `tools/flora_art/ind.py` | 7 | 21 / 21 | yes | ailanthus, birch, sumac | 2026-09-06 | roof / flora_editor / district / save | **[x] 2026-09-06** |
-| Construction | `tools/flora_art/con.py` | 7 | 21 / 21 | yes (moss static) | willow, poplar, elder | 2026-09-06 | roof / flora_editor / district / save | **[x] 2026-09-06** |
+| Construction | `tools/flora_art/constr.py` | 7 | 21 / 21 | yes (moss static) | willow, poplar, elder | 2026-09-06 | roof / flora_editor / district / save | **[x] 2026-09-06** |
 | Wild (shared roof set) | `tools/flora_art/wild.py` | 0 of 5 | 0 / 15 | — | — | — | — | [ ] |
 | Submerged | `tools/flora_art/sub.py` | 0 of 3 | 0 / 3 | — | — | — | — | [ ] |
 
@@ -100,7 +100,7 @@ Copy this block when starting a district; the species rosters are in flora.md §
 - [ ] Feel check in play: an industrial roof — does the olive set read as neglected next to the rust vents
 
 ### Construction — done 2026-09-06
-- [x] Module `con.py` (yellow-green: hue −20°; module `WEIGHTS` 5:2:1 trees / 4:2:1 shrubs / 3:2:2 grass — seedlings dominate)
+- [x] Module `constr.py` (yellow-green: hue −20°; module `WEIGHTS` 5:2:1 trees / 4:2:1 shrubs / 3:2:2 grass — seedlings dominate)
 - [x] Large: willow (`con_willow`) — leaning trunk, rounded crown, curtains of civ `strands` all round, 10×22
 - [x] Medium: poplar (`con_poplar`) — narrow broadleaf column; the sway glint flicker is its accent
 - [x] Small: elder (`con_elder`) — multi-stem shrubby tree, cream 3×1 flower plates, black berry clusters
