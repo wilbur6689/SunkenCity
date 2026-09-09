@@ -29,6 +29,7 @@ const JUMP_HEIGHT_BLOCKS: float = 6.0
 const JUMP_APEX_TIME: float = 0.34 # seconds to reach apex; tune for feel
 const WATER_EXIT_JUMP_BLOCKS: float = 4.0 # water-jump onto ledges (WS-07)
 const COYOTE_TIME: float = 0.10
+const STEP_UP_CELLS: int = 2 # a ledge this tall (one old block) is walked up/down, not jumped (user request 2026-09-07)
 const JUMP_BUFFER_TIME: float = 0.12
 
 # --- Falling (WS-15) ---
@@ -176,6 +177,7 @@ const ITEM_BUOYANCY_RISE: float = 6.0 * BLOCK_SIZE # floating items rise at this
 const LAMP_LIGHT: int = 26            # placed lights (tile-light seed)
 const GLOWSTICK_LIGHT: int = 22       # dropped or held glowsticks
 const PLAYER_SIGHT_LIGHT: int = 18    # the player's inherent glow (baseline sight)
+const TORCH_LIGHT: int = 24           # a held burning torch (items.json held_light; out under water) - user request 2026-09-07
 const SIGHT_FULL_BLOCKS: float = 14.0 # full visibility inside this radius
 const SIGHT_FADE_PER_BLOCK: float = 1.5 # visibility (of 30) lost per block beyond it (0 ≈ 34 blocks)
 # Player-placed lights are fog BEACONS (user request): the area around a
@@ -194,6 +196,7 @@ const OBSTACLE_SIGHT_TRANSMISSION: float = 0.67 # sight through a shelf/crate ce
 
 # --- Object interaction (LMB; hold to pick up) ---
 const OBJECT_LONG_PRESS: float = 0.5 # seconds of held LMB that picks an object up
+const HAND_PICKUP_BLOCKS: Array = ["wood_block"] # placed block ids a BARE-HAND long press lifts back into the bag (user request 2026-09-07)
 const LIGHT_RECOMPUTE_TICKS: int = 3
 const BREAKER_CHECK_TICKS: int = 20   # flood-trip poll (WS-17)
 
@@ -307,8 +310,15 @@ const FISH_STOCK_MAX: int = 6
 const FISH_GRAB_BLOCKS: float = 5.0      # swim this close to grab
 
 # --- Combat (M4, GD-07/08, LT-01/16) ---
-const MELEE_RANGE_BLOCKS: float = 5.0    # melee connects within this range of the player
+const MELEE_RANGE_BLOCKS: float = 5.0    # a monster this close (and near the aim) makes LMB a fight, not an object press
 const MELEE_AIM_SLOP_BLOCKS: float = 3.6 # and this close to the aim point
+# Weapon swing (user request 2026-09-07): the sweep phase of the attack
+# animation is the hit window - every monster the blade passes takes the
+# swing, out to this far beyond the blade's tip and this far past the arc's end.
+const MELEE_ARC_SLOP_BLOCKS: float = 2.0
+const MELEE_ARC_ANGLE_SLOP: float = 0.45 # radians (~26 deg) past the sweep's end angle
+const MELEE_ARC_TOUCH_PX: float = 6.0    # a body this close to the hand is hit whatever the angle
+const WEAPON_REST_LIFT_PX: float = 5.0   # a resting WEAPON (not a tool) sits this much higher in the hand (user request 2026-09-07)
 const MELEE_WATER_FACTOR: float = 0.5    # default melee speed factor while in water (GD-08)
 const KNIFE_WATER_FACTOR: float = 0.85   # knives are the least penalized
 const GUN_RANGE_BLOCKS: float = 52.0     # hitscan range; bullets stop at water (LT-01)

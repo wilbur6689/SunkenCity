@@ -437,24 +437,43 @@ static func place_parts(world, gen: Dictionary, seed_value: int) -> int:
 		if towers.is_empty():
 			continue
 		var copies := 0
-		var attempts := 0
 		var w := int(def.size[0])
-		while copies < Constants.PART_COPIES and attempts < towers.size() * 8:
-			attempts += 1
-			var t: Dictionary = towers[rng.randi_range(0, towers.size() - 1)]
-			var f := rng.randi_range(0, int(t.floors) - 1)
-			var sr := floor_standing_row(t, f) # world row
-			if world.floor_band_at(Vector2i(int(t.x0) + 8, sr)) != band:
-				continue
-			var zone = t.zones[rng.randi_range(0, t.zones.size() - 1)]
-			if int(zone[1]) - int(zone[0]) <= w + 2:
-				continue
-			for k in 12:
-				var cell := Vector2i(rng.randi_range(int(zone[0]) + 1, int(zone[1]) - w - 1), sr)
-				if world.can_place_object(id, cell):
-					world.add_object_record(id, cell, false)
-					copies += 1
-					placed += 1
+		# Every floor of the district's towers that sits in the part's band is a
+		# candidate (2026-09-07: random floor picks left the dry-band parts - a
+		# handful of floors out of ~50 per tower - unplaced more often than not;
+		# user report: no drafting table in the business district). Shuffle the
+		# candidates, then walk each one's wings for the first clear span.
+		var floors: Array = []
+		for t in towers:
+			for f in int(t.floors):
+				var sr := floor_standing_row(t, f) # world row
+				if world.floor_band_at(Vector2i(int(t.x0) + 8, sr)) == band:
+					floors.append({"t": t, "sr": sr})
+		# Deterministic order (never Array.shuffle - that is the global RNG): sort by a seeded hash.
+		floors.sort_custom(func(a, b): return hash([seed_value, "part", id, a.sr, int(a.t.x0)]) < hash([seed_value, "part", id, b.sr, int(b.t.x0)]))
+		for fl in floors:
+			if copies >= Constants.PART_COPIES:
+				break
+			var t: Dictionary = fl.t
+			var sr: int = fl.sr
+			var zones: Array = t.zones.duplicate()
+			var zstart := rng.randi_range(0, maxi(zones.size() - 1, 0))
+			var done := false
+			for zi in zones.size():
+				var zone = zones[(zstart + zi) % zones.size()]
+				if int(zone[1]) - int(zone[0]) <= w + 2:
+					continue
+				var xs: Array = range(int(zone[0]) + 1, int(zone[1]) - w)
+				var start := rng.randi_range(0, maxi(xs.size() - 1, 0))
+				for k in xs.size():
+					var cell := Vector2i(int(xs[(start + k) % xs.size()]), sr)
+					if world.can_place_object(id, cell):
+						world.add_object_record(id, cell, false)
+						copies += 1
+						placed += 1
+						done = true
+						break
+				if done:
 					break
 	return placed
 

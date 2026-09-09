@@ -1,0 +1,14 @@
+{
+  "rest": "rest.png",
+  "mask": "mask.png",
+  "rig": "rig.json",
+  "clips": "clips.json",
+  "out_sheet": "../../assets/sprites/player_clips.png",
+  "out_data": "../../data/player_anim.json",
+  "out_preview": "preview.png",
+  "out_gif_dir": "gifs",
+  "cell": [
+    48,
+    32
+  ]
+}

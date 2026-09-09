@@ -235,6 +235,30 @@
       "weight": 0.1
     },
     {
+      "category": "tool",
+      "desc": "A rag-wrapped stick, lit. Lights the way while held; plant it on a floor or wall (LMB). It goes out under water.",
+      "held_light": {
+        "level": 24
+      },
+      "id": "torch",
+      "name": "Torch",
+      "scrap": [
+        {
+          "count": 1.0,
+          "item": "wood"
+        }
+      ],
+      "stack": 20.0,
+      "tool": {
+        "damage": 1.0,
+        "speed": 1.0,
+        "tier": 0,
+        "type": "torch"
+      },
+      "weight": 0.5,
+      "places_object": "torch_placed"
+    },
+    {
       "category": "gear",
       "icon": [
         4.0,

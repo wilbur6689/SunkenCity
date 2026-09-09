@@ -84,6 +84,7 @@ func tick(delta: float) -> void:
 
 	if player.wants_interact:
 		_interact()
+	_tick_arc() # the swing in flight lands before a new click is read
 	_object_press(delta)
 	if player.wants_use and not press_lock:
 		_primary()
@@ -97,6 +98,7 @@ func tick(delta: float) -> void:
 ## LMB on an interactable: interact on a short click's release; picking it
 ## up on a long hold. Dragging off the object cancels the press.
 var press_climb := Vector2i(-1, -1) # ladder/rope cell under a held LMB (picked up on a long hold)
+var press_block := Vector2i(-1, -1) # a placed wood block under a held BARE-HAND LMB (lifts on a long hold, user request 2026-09-07)
 
 func _object_press(delta: float) -> void:
 	var hammer := Data.is_tool(player.held_item(), "hammer")
@@ -113,9 +115,17 @@ func _object_press(delta: float) -> void:
 			# and never while a rope is held (that extends the line instead).
 			if press_obj == null and hammer and target_in_reach and World.is_climbable_cell(target_cell) and player.held_item() != "rope":
 				press_climb = target_cell
+			# Bare hands lift a placed wood block back into the bag on a long hold.
+			press_block = Vector2i(-1, -1)
+			if press_obj == null and press_climb.x < 0 and player.held_item() == "" and target_in_reach \
+					and World.placed_block_id(target_cell) in Constants.HAND_PICKUP_BLOCKS:
+				press_block = target_cell
 			press_time = 0.0
 			press_consumed = false
-			press_lock = press_obj != null or press_climb.x >= 0
+			press_lock = press_obj != null or press_climb.x >= 0 or press_block.x >= 0
+			# The lift's animation starts with the press so the grab lands as the item transfers.
+			if press_climb.x >= 0 or press_block.x >= 0 or (press_obj != null and hammer):
+				player.play_action("pick_up")
 		if press_climb.x >= 0:
 			if target_cell != press_climb:
 				press_climb = Vector2i(-1, -1) # dragged off: cancel
@@ -124,6 +134,14 @@ func _object_press(delta: float) -> void:
 				if press_time >= Constants.OBJECT_LONG_PRESS and not press_consumed:
 					press_consumed = true
 					_pickup_climbable(press_climb)
+		if press_block.x >= 0:
+			if target_cell != press_block:
+				press_block = Vector2i(-1, -1) # dragged off: cancel
+			else:
+				press_time += delta
+				if press_time >= Constants.OBJECT_LONG_PRESS and not press_consumed:
+					press_consumed = true
+					_pickup_block(press_block)
 		if press_obj != null:
 			if not is_instance_valid(press_obj) or World.object_at(target_cell) != press_obj:
 				press_obj = null # dragged off: cancel (press_lock stays until release)
@@ -134,11 +152,13 @@ func _object_press(delta: float) -> void:
 					_pickup_object(press_obj)
 	else:
 		if press_obj != null and is_instance_valid(press_obj) and not press_consumed:
+			player.play_action("interact")
 			var msg := press_obj.interact(player)
 			if msg != "":
 				say(msg)
 		press_obj = null
 		press_climb = Vector2i(-1, -1)
+		press_block = Vector2i(-1, -1)
 		press_lock = false
 
 ## A melee or ranged weapon is in hand (hotbar or the worn weapon standing in for an empty hand).
@@ -154,17 +174,29 @@ func _pickup_climbable(cell: Vector2i) -> void:
 		player.inventory.add(id, 1)
 		say("Picked up " + Data.item(id).get("name", id))
 
+## A placed wood block lifts out whole under bare hands (user request 2026-09-07).
+func _pickup_block(cell: Vector2i) -> void:
+	var id := World.placed_block_id(cell)
+	if id == "" or not player.inventory.can_add(id, 1):
+		say("Inventory full" if id != "" else "Nothing to pick up")
+		return
+	if World.remove_block(cell) != "":
+		player.inventory.add(id, 1)
+		_sfx("wood_hit", World.cell_center(cell), 2, -6.0)
+		say("Picked up " + Data.item_name(id))
+
 func _pickup_object(obj: WorldObject) -> void:
-	if obj.def.get("fixed", false) or Data.item(obj.id).is_empty():
+	var give := String(obj.def.get("item_form", obj.id)) # a planted torch lifts out as a torch
+	if obj.def.get("fixed", false) or Data.item(give).is_empty():
 		say("It is wired into the building")
 		return
 	if obj.storage != null and not obj.storage.is_empty():
 		say("Empty the chest first")
 		return
-	if player.inventory.can_add(obj.id, 1):
+	if player.inventory.can_add(give, 1):
 		var obj_name: String = obj.def.name
 		World.remove_object(obj)
-		player.inventory.add(obj.id, 1)
+		player.inventory.add(give, 1)
 		say("Picked up " + obj_name)
 	else:
 		say("Inventory full")
@@ -194,6 +226,7 @@ func _interact() -> void:
 		return
 	var obj := World.object_at(target_cell)
 	if obj != null:
+		player.play_action("interact")
 		var msg := obj.interact(player)
 		if msg != "":
 			say(msg)
@@ -246,11 +279,13 @@ func _primary() -> void:
 						player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK * n)
 			elif target_in_reach and World.can_place_block(it.places_block, target_cell, player):
 				if World.place_block(it.places_block, target_cell):
+					player.play_action("place")
 					player.inventory.remove_from_slot(player.selected_slot, 1)
 					player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK)
 		"placeable_object":
 			if target_in_reach and World.can_place_object(it.places_object, target_cell, player) and not _used_last_tick:
 				World.place_object(it.places_object, target_cell, true)
+				player.play_action("place")
 				player.inventory.remove_from_slot(player.selected_slot, 1)
 				player.skills.add_xp("building", Constants.XP_BUILD_PER_BLOCK * 2.0)
 			elif target_in_reach and not _used_last_tick and World.last_place_error != "":
@@ -290,6 +325,24 @@ func _primary() -> void:
 					Constants.KNIFE_WATER_FACTOR)
 			elif tool.get("type", "") == "axe":
 				_axe(tool)
+			elif tool.get("type", "") == "torch":
+				_place_torch(held)
+
+## Plant the held torch on a floor, a back wall or the side of a block (user
+## request 2026-09-07): it becomes the `torch_placed` light; the hammer lifts
+## it back out as a torch item.
+func _place_torch(held: String) -> void:
+	if _used_last_tick or not target_in_reach:
+		return
+	var obj_id := String(Data.item(held).get("places_object", "torch_placed"))
+	if not World.can_place_object(obj_id, target_cell, player):
+		if World.last_place_error != "":
+			say(World.last_place_error)
+		return
+	World.place_object(obj_id, target_cell, true)
+	player.inventory.remove_from_slot(player.selected_slot, 1)
+	player.play_action("place")
+	_sfx("wood_hit", World.cell_center(target_cell), 2, -8.0)
 
 ## Plant a tree seed in a planter (user request 2026-09-02): a sapling sprouts
 ## on the pot and grows nightly - full-size only under open sky (a roof).
@@ -394,12 +447,13 @@ func _hammer(tool: Dictionary) -> void:
 		if obj.storage != null and not obj.storage.is_empty():
 			say("Empty the chest first")
 			return
-		if obj.def.get("fixed", false) or Data.item(obj.id).is_empty():
+		var give := String(obj.def.get("item_form", obj.id)) # a planted torch lifts out as a torch
+		if obj.def.get("fixed", false) or Data.item(give).is_empty():
 			say("It is wired into the building") # breakers, interior doorways
 			return
-		if player.inventory.can_add(obj.id, 1):
+		if player.inventory.can_add(give, 1):
 			World.remove_object(obj)
-			player.inventory.add(obj.id, 1)
+			player.inventory.add(give, 1)
 			say("Picked up " + obj.def.name)
 		return
 	# Demolitionist (tech tree) lands hammer blows harder.
@@ -464,17 +518,79 @@ func _enemy_near_aim() -> Enemy:
 	return best
 
 ## One melee swing: `aps` attacks/sec, slowed by `water_factor` in water
-## (knives least, GD-08). Swings land whether or not something is there.
+## (knives least, GD-08). The swing is the three-phase weapon animation
+## (Player.play_attack) and lasts exactly one attack interval - the next
+## swing may start the instant it ends (user request 2026-09-07). Damage
+## lands during its sweep phase on everything the blade passes (_tick_arc).
+var _arc_damage: float = 0.0
+var _arc_knockback: float = 0.0
+var _arc_prev: float = NAN      # the sweep angle already covered (NAN = not sweeping)
+var _arc_done: bool = false     # the end-of-arc slop has been swept
+var _arc_hit: Dictionary = {}   # enemy instance id -> true, once per swing
+
 func _melee(damage: float, aps: float, knockback: float, water_factor: float) -> void:
 	if attack_cooldown > 0.0:
 		return
 	var rate := aps * (water_factor if player.in_water else 1.0)
 	attack_cooldown = 1.0 / maxf(rate, 0.1)
-	player.play_swing()
-	var enemy := _enemy_near_aim()
-	if enemy != null:
-		enemy.hurt(damage, player.global_position, knockback)
-		_sfx("wood_hit", enemy.global_position, 2, -6.0)
+	_arc_damage = damage
+	_arc_knockback = knockback
+	_arc_prev = NAN
+	_arc_done = false
+	_arc_hit.clear()
+	player.play_attack(attack_cooldown)
+
+## The hit window of a swing: each tick the blade advances from the angle it
+## covered last tick to this tick's; every monster with a hitbox point inside
+## that slice of the arc - out to MELEE_ARC_SLOP_BLOCKS beyond the tip, and
+## MELEE_ARC_ANGLE_SLOP past the sweep's end - takes the swing once.
+func _tick_arc() -> void:
+	var phi := player.attack_sweep_angle()
+	if is_nan(phi):
+		_arc_prev = NAN
+		_arc_done = false
+		return
+	if is_nan(_arc_prev): # the sweep begins: the swoosh (user drop 2026-09-07, tools/convert_sfx.py)
+		_sfx("sword_swoosh", player.global_position, 1, -4.0)
+	var from := _arc_prev if not is_nan(_arc_prev) else Player.ATTACK_SWEEP_START
+	var to := phi
+	if phi >= Player.ATTACK_SWEEP_END - 0.0001 and not _arc_done:
+		_arc_done = true
+		to += Constants.MELEE_ARC_ANGLE_SLOP
+	_arc_prev = phi
+	if to <= from:
+		return
+	var pivot := player.attack_hand_global()
+	var reach := player.attack_blade_px() + Constants.MELEE_ARC_SLOP_BLOCKS * Constants.BLOCK_SIZE
+	var dir := float(player.attack_dir)
+	for e: Enemy in get_tree().get_nodes_in_group("enemies"):
+		var id := e.get_instance_id()
+		if _arc_hit.has(id) or e.puppet:
+			continue
+		if e.global_position.distance_to(pivot) > reach + e.half.length():
+			continue
+		var hit := false
+		for oy in [-1.0, 0.0, 1.0]:
+			for ox in [-1.0, 0.0, 1.0]:
+				var v := e.global_position + Vector2(e.half.x * ox, e.half.y * oy) - pivot
+				v.x *= dir # facing-right space
+				var d := v.length()
+				if d > reach:
+					continue
+				if d <= Constants.MELEE_ARC_TOUCH_PX:
+					hit = true
+					break
+				var a := v.angle()
+				if (a >= from and a <= to) or (a + TAU >= from and a + TAU <= to) \
+						or (a - TAU >= from and a - TAU <= to):
+					hit = true
+					break
+			if hit:
+				break
+		if hit:
+			_arc_hit[id] = true
+			e.hurt(_arc_damage, player.global_position, _arc_knockback)
+			_sfx("wood_hit", e.global_position, 2, -6.0)
 
 ## Firearms (LT-01): hitscan, loud, and dead weight submerged. Bullets stop
 ## at solids and at the water surface — lead above, spears below.

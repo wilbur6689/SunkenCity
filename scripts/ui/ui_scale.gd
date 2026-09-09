@@ -16,13 +16,14 @@ const SETTINGS_PATH := "user://settings.cfg"
 const BASE_SCALE := 1.5 # 1920 / 1280: the design canvas -> logical canvas ratio
 const MIN_SCALE := 1.0
 const MAX_SCALE := 2.0
+const DEFAULT_SCALE := 1.5 # the slider's default (user request 2026-09-07: 150 %)
 
-var scale: float = 1.0
+var scale: float = DEFAULT_SCALE
 
 func _ready() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS_PATH) == OK:
-		scale = clampf(float(cfg.get_value("ui", "scale", 1.0)), MIN_SCALE, MAX_SCALE)
+		scale = clampf(float(cfg.get_value("ui", "scale", DEFAULT_SCALE)), MIN_SCALE, MAX_SCALE)
 	_apply()
 
 ## Kept for the UI scenes that call it; content_scale_factor needs no per-root

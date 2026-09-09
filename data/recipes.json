@@ -143,6 +143,26 @@
       ]
     },
     {
+      "id": "torch",
+      "station": "hand",
+      "tier": 1,
+      "known": true,
+      "output": {
+        "item": "torch",
+        "count": 2
+      },
+      "inputs": [
+        {
+          "item": "wood",
+          "count": 2
+        },
+        {
+          "item": "cloth",
+          "count": 1
+        }
+      ]
+    },
+    {
       "id": "bandage",
       "station": "workbench",
       "tier": 1,

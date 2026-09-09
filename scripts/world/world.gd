@@ -751,9 +751,18 @@ func light_beacons() -> Array:
 	for p in get_tree().get_nodes_in_group("player"):
 		if p is Node2D and ((p.has_method("equipped") \
 				and float(Data.item(p.equipped("head")).get("stats", {}).get("light", 0.0)) > 0.0) \
-				or p.get("puppet_lamp") == true): # LAN: remote bodies carry a lamp bit, not gear
+				or p.get("puppet_lamp") == true \
+				or held_light_level(p) > 0): # LAN: remote bodies carry a lamp bit, not gear; a held torch too
 			_beacon_cache.append((p as Node2D).global_position)
 	return _beacon_cache
+
+## A held burning torch (items.json `held_light`, user request 2026-09-07):
+## its light level while the body holds it above water, else 0. Remote
+## bodies replicate the held item id, so a client sees the host's torch.
+func held_light_level(p: Node) -> int:
+	if not p.has_method("held_item") or p.get("submerged") == true:
+		return 0
+	return int(Data.item(p.held_item()).get("held_light", {}).get("level", 0))
 
 ## dynamic = players (re-applied per move); static = lamps and dropped lights.
 func _gather_light_sources(dynamic: bool = false) -> Array:
@@ -764,6 +773,7 @@ func _gather_light_sources(dynamic: bool = false) -> Array:
 			var held: Dictionary = Data.item(p.held_item())
 			if held.get("use", {}).has("drop_light"):
 				level = Constants.GLOWSTICK_LIGHT
+			level = maxi(level, held_light_level(p))
 			if p.has_method("equip_stat"): # helmet lamp / glow band (M5 gear)
 				level = maxi(level, int(p.equip_stat("light")))
 			if p.get("puppet_lamp") == true: # LAN: a remote body's lamp (no gear replica)
@@ -1137,6 +1147,26 @@ func can_place_object(id: String, cell: Vector2i, by: CharacterBody2D = null) ->
 				if not has_back_wall_cell(Vector2i(cell.x + dx, cell.y - dy)):
 					return false
 		return true
+	if def.get("mount_any", false):
+		# A torch (user request 2026-09-07) mounts on a floor, a back wall, or the
+		# side of a solid block beside it.
+		var floor_ok := true
+		for dx in w:
+			if not has_block_cell(Vector2i(cell.x + dx, cell.y + 1)):
+				floor_ok = false
+		if floor_ok:
+			return true
+		var wall_ok := true
+		for dy in h:
+			for dx in w:
+				if not has_back_wall_cell(Vector2i(cell.x + dx, cell.y - dy)):
+					wall_ok = false
+		if wall_ok:
+			return true
+		if has_block_cell(Vector2i(cell.x - 1, cell.y)) or has_block_cell(Vector2i(cell.x + w, cell.y)):
+			return true
+		last_place_error = "Needs a floor, a wall or a block to mount on"
+		return false
 	for dx in w:
 		if not has_block_cell(Vector2i(cell.x + dx, cell.y + 1)):
 			return false

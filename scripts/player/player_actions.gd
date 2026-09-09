@@ -21,7 +21,7 @@ extends Node
 ## slot-to-slot moves travel - there is no host-side cursor to keep in step.
 
 ## Actions that run locally on a client as optimistic feedback (no world side effects).
-const OPTIMISTIC := {"move_slot": true, "split_slot": true, "container_move": true, "storage_move": true, "quick_stack": true,
+const OPTIMISTIC := {"move_slot": true, "split_slot": true, "container_move": true, "storage_move": true, "quick_stack": true, "take_all": true,
 	"equip": true, "unequip": true, "craft": true, "learn_mods": true, "apply_mods": true, "combine_mods": true,
 	"unlock_ability": true, "select_slot": true}
 ## Actions the client never applies locally (they spawn items / play world effects).
@@ -79,6 +79,8 @@ func _apply(action: String, args: Array) -> bool:
 			ok = storage_move(args[0], int(args[1]), int(args[2]), int(args[3]) if args.size() > 3 else 0)
 		"quick_stack":
 			ok = quick_stack(args[0])
+		"take_all":
+			ok = take_all(args[0])
 		"drop_slot":
 			ok = drop_slot(int(args[0]), int(args[1]))
 		"scrap_slot":
@@ -250,6 +252,16 @@ func quick_stack(cell: Vector2i) -> bool:
 	var moved: int = player.inventory.quick_stack_into(storage)
 	_notify_storage(cell)
 	_say("Quick-stacked %d items" % moved)
+	return true
+
+## The storage "Take" button (user request 2026-09-07): empty the unit into the bag.
+func take_all(cell: Vector2i) -> bool:
+	var storage := _storage_at(cell)
+	if storage == null:
+		return false
+	var moved: int = player.inventory.take_all_from(storage)
+	_notify_storage(cell)
+	_say("Took %d items" % moved if storage.is_empty() else "Took %d items - bag full" % moved)
 	return true
 
 func drop_slot(i: int, n: int) -> bool:

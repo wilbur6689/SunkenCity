@@ -130,6 +130,10 @@ func _run() -> void:
 	await goto(28)
 	var chair := obj_at(Vector2i(24, row))
 	check(await hold_scrap(Vector2i(24, row), func(): return player.interaction.scrap_progress > 0.2, 60), "progress builds while holding scrap (RMB)")
+	player.wants_use_secondary = true
+	await ticks(2)
+	check(player.clip == "harvest_chop", "scrapping plays the harvest chop body clip (%s)" % player.clip)
+	player.wants_use_secondary = false
 	var t0 := Time.get_ticks_msec()
 	check(await hold_scrap(Vector2i(24, row), func(): return obj_at(Vector2i(24, row)) == null, 300), "chair scrapped and removed")
 	# Resources pop OUT as bobbing world items now (2026-09-02), not straight
@@ -318,8 +322,70 @@ func _run() -> void:
 	check(not World.has_back_wall_cell(wc) and inv_count("wood_wall") == 1, "the axe takes a placed wood wall back down")
 	inv.remove("wood_wall", 1)
 
+	print("== J4. bare hands lift a placed wood block (user request 2026-09-07)")
+	check(hold_item("wood_block"), "wood block in hand")
+	await press_use(Vector2i(40, row))
+	check(World.placed_block_id(Vector2i(40, row)) == "wood_block", "a wood block placed")
+	check(player._action_clip == "place", "placing plays the place clip (%s)" % player._action_clip)
+	player.bare_hands = true
+	aim(Vector2i(40, row))
+	player.wants_use = true
+	await ticks(2)
+	check(player._action_clip == "pick_up" and player.clip == "pick_up", "the long press starts the pick-up clip (%s)" % player.clip)
+	player.wants_use = false
+	await ticks(2)
+	var wb_hand := inv_count("wood_block")
+	check(await hold_use(Vector2i(40, row), func(): return not World.has_block_cell(Vector2i(40, row)), 60), "a long bare-hand press lifts it out")
+	check(inv_count("wood_block") == wb_hand + 1, "...straight into the bag")
+	player.bare_hands = false
+
+	print("== J5. a hand-made torch lights the way (user request 2026-09-07)")
+	inv.add("wood", 2)
+	inv.add("cloth", 1)
+	check(craft("torch") and inv_count("torch") == 2, "two torches from 2 wood + 1 cloth by hand")
+	check(hold_item("torch"), "torch in hand")
+	var torch_lvl := 0
+	for src in World._gather_light_sources(true):
+		torch_lvl = maxi(torch_lvl, int(src.level))
+	check(torch_lvl == Constants.TORCH_LIGHT, "the held torch seeds TORCH_LIGHT (%d)" % torch_lvl)
+	await ticks(1)
+	check(World.light_beacons().has(player.global_position), "...and the body is a fog beacon")
+	player.submerged = true
+	check(World.held_light_level(player) == 0, "a submerged torch is out")
+	player.submerged = false
+	# Planting (user request 2026-09-07): on a floor, then on a back wall with no floor, then back.
+	var floor_cell := Vector2i(41, row)
+	await press_use(floor_cell)
+	var planted := obj_at(floor_cell)
+	check(planted != null and planted.id == "torch_placed" and inv_count("torch") == 1, "LMB plants the torch on the floor (%s)" % (planted.id if planted else "nothing"))
+	check(World.light_beacons().has(World.cell_center(floor_cell)) or World.placed_light_records.size() > 0, "the planted torch is a light source")
+	var wall_cell := Vector2i(41, row - 4) # mid-air on the room's back wall
+	check(World.has_back_wall_cell(wall_cell) and not World.has_block_cell(wall_cell + Vector2i(0, 1)), "the wall cell has a back wall and no floor")
+	await press_use(wall_cell)
+	check(obj_at(wall_cell) != null and inv_count("torch") == 0, "...and on a wall with nothing under it")
+	check(hold_item("hammer"), "hammer in hand")
+	check(await hold_use(floor_cell, func(): return obj_at(floor_cell) == null, 60), "the hammer lifts the floor torch")
+	check(inv_count("torch") == 1, "...back into the bag as a torch")
+	await hold_use(wall_cell, func(): return obj_at(wall_cell) == null, 60)
+	inv.remove("torch", inv_count("torch"))
+
+	print("== J6. Shift-click CRAFT makes five batches (user request 2026-09-07)")
+	inv.remove("cloth", inv_count("cloth")) # exactly three batches' worth of cloth
+	inv.add("wood", 6)
+	inv.add("cloth", 3)
+	var torches0 := inv_count("torch")
+	var cui = tower.get_node("InventoryUI")
+	cui.open_panel()
+	cui.show_screen("crafting")
+	cui.selected_recipe = Data.recipes["torch"]
+	var made: int = cui._craft_n(5)
+	check(made == 3 and inv_count("torch") == torches0 + 6, "five presses stop when the cloth runs out: 3 batches, 6 torches (made %d, torches %d -> %d)" % [made, torches0, inv_count("torch")])
+	cui.close()
+	inv.remove("torch", inv_count("torch"))
+
 	print("== K. background walls (WS-21)")
 	await goto(38)
+	check(hold_item("hammer"), "hammer back in hand (J3 left the axe there)")
 	await ticks(20) # let the hammer's hit cooldown from the slab test expire
 	await press_secondary(Vector2i(42, row - 2))
 	check(not World.has_back_wall_cell(Vector2i(42, row - 2)), "hammer knocks out a back wall")
@@ -462,6 +528,16 @@ func _run() -> void:
 	chest.storage.add("scrap_metal", 1)
 	ui._quick_stack()
 	check(chest.storage.count("scrap_metal") == 4 and inv_count("scrap_metal") == 0, "Stack button = quick_stack action")
+	chest.storage.add("wood", 3)
+	chest.storage.add_stack({"id": "scrap_knife", "count": 1, "mods": {"prefix": {"id": "rusty"}}})
+	var take_wood := inv_count("wood")
+	ui._take_all()
+	var knife_moved := false
+	for st in inv.slots:
+		if st != null and st.id == "scrap_knife" and st.has("mods"):
+			knife_moved = true
+	check(chest.storage.is_empty() and inv_count("scrap_metal") == 4 and inv_count("wood") == take_wood + 3 and knife_moved,
+		"Take button empties the unit into the bag (take_all action; modded gear keeps its mods)")
 	var r_id := ""
 	for r in Data.recipe_list:
 		if r.station == "hand" and r.inputs.size() == 1 and r.inputs[0].item == "wood" and (r.get("known", false) or player.knows_recipe(r.id)):

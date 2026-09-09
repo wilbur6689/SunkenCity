@@ -140,6 +140,8 @@ func _clamp_to_world_bounds() -> void:
 func _physics_process(delta: float) -> void:
 	if dying: # death scene (user request 2026-09-01): 3 s of stillness -
 		_tick_death(delta) # camera closing in, screen fading - then respawn
+		if dying: # the body plays its death clip while the scene runs
+			_update_sprite(delta)
 		return
 	if is_puppet(): # client: every body follows host state (LAN Step 4)
 		_puppet_tick(delta)
@@ -168,6 +170,8 @@ func _physics_process(delta: float) -> void:
 		State.UNDERWATER:
 			_state_underwater(delta)
 	move_and_slide()
+	if state == State.GROUNDED:
+		_step_up()
 	_clamp_to_world_bounds()
 	_update_sprite(delta)
 	_update_swing(delta)
@@ -448,6 +452,7 @@ func use_item(slot: int) -> void:
 	if use.has("drop_light"):
 		World.spawn_item(s.id, 1, global_position, Vector2(facing * 6.0 * Constants.BLOCK_SIZE, -4.0 * Constants.BLOCK_SIZE))
 	inventory.remove_from_slot(slot, 1)
+	play_action("use_item")
 
 func drop_held(n: int) -> void:
 	var id := held_item()
@@ -789,7 +794,10 @@ func _enter_airborne() -> void:
 	state = State.AIRBORNE
 	fall_start_y = global_position.y
 
+var _launch_pending: bool = false # a real jump: the launch one-shot (knockback also sends the body up)
+
 func _jump() -> void:
+	_launch_pending = true
 	velocity.y = Constants.jump_velocity
 	coyote_timer = 0.0
 	_enter_airborne()
@@ -841,8 +849,48 @@ func _state_grounded(delta: float) -> void:
 			global_position.y = ladder_top - FEET_Y
 			velocity.y = 0.0
 			return
+		if _step_down():
+			return
 		coyote_timer = Constants.COYOTE_TIME
 		_enter_airborne()
+
+# --- Steps (user request 2026-09-07): stairs of blocks are walked, not jumped ---
+
+## After the move: walking into a ledge no taller than STEP_UP_CELLS lifts the
+## body onto it. The probe is the standing hitbox raised by h and nudged one
+## step forward - it must be clear, with solid ground under its front foot
+## (a wall of any height fails the ground test and stays a wall).
+func _step_up() -> void:
+	if input_dir.x == 0.0 or not is_on_wall():
+		return
+	var size := Constants.COMPACT_HITBOX if compact else Constants.STAND_HITBOX
+	var dir := 1.0 if input_dir.x > 0.0 else -1.0
+	for h in range(1, Constants.STEP_UP_CELLS * Constants.BLOCK_SIZE + 1):
+		var pos := global_position + Vector2(dir * 2.0, -h)
+		if not World.rect_is_clear(Rect2(pos + Vector2(-size.x * 0.5, FEET_Y - size.y), size)):
+			continue
+		if not World.is_solid(pos + Vector2(dir * (size.x * 0.5 + 1.0), FEET_Y + 0.5)):
+			continue
+		global_position.y -= h
+		velocity.y = 0.0
+		return
+
+## Before leaving the floor: a drop no deeper than STEP_UP_CELLS under a
+## walking body is stepped down onto, so a staircase reads as ground both ways.
+func _step_down() -> bool:
+	if input_dir.x == 0.0 or velocity.y < 0.0:
+		return false
+	var size := Constants.COMPACT_HITBOX if compact else Constants.STAND_HITBOX
+	for h in range(1, Constants.STEP_UP_CELLS * Constants.BLOCK_SIZE + 1):
+		var pos := global_position + Vector2(0, h)
+		if not World.rect_is_clear(Rect2(pos + Vector2(-size.x * 0.5, FEET_Y - size.y), size)):
+			return false # something in the way below: not a step
+		if World.is_solid(pos + Vector2(0, FEET_Y + 0.5)) or World.is_solid(pos + Vector2(size.x * 0.5 - 1.0, FEET_Y + 0.5)) \
+				or World.is_solid(pos + Vector2(-size.x * 0.5 + 1.0, FEET_Y + 0.5)):
+			global_position.y += h
+			velocity.y = 0.0
+			return true
+	return false
 
 func _state_airborne(delta: float) -> void:
 	if _try_enter_water() or _try_enter_climb():
@@ -1020,6 +1068,7 @@ func _hurt_fx(amount: float) -> void:
 	if now - _hurt_fx_at_ms < int(Constants.HURT_FX_COOLDOWN * 1000.0):
 		return
 	_hurt_fx_at_ms = now
+	play_action("hurt") # the flinch (the action byte relays it to puppets)
 	World.spawn_break_puff(_center_point(), "blood") # replicated to clients as a puff effect
 	Audio.play_world_sfx("player_hurt", global_position, 3, -2.0) # relayed to clients
 	flash_hurt()
@@ -1118,6 +1167,7 @@ func _tick_death(delta: float) -> void:
 			tw.tween_property(_death_fade, "color:a", 0.0, 0.5)
 
 func respawn() -> void:
+	play_action("wake_bed") # sit up and stand (the world start too)
 	health = Constants.MAX_HEALTH
 	oxygen = max_oxygen()
 	drowning = false
@@ -1162,7 +1212,6 @@ const WALK_FRAMES: int = 6
 const WALK_FRAME_TIME: float = 0.1 # seconds per frame at walk speed; scales with actual speed
 
 var facing: int = 1 # +1 east, -1 west
-var _anim_time: float = 0.0
 
 # Movement sounds: footsteps paced by ground distance, a splash on hitting
 # water (volume scales with entry speed).
@@ -1216,6 +1265,7 @@ func play_swing() -> void:
 	_swing_time = Constants.TOOL_SWING_TIME
 
 func _update_swing(delta: float) -> void:
+	_attack_time = maxf(_attack_time - delta, 0.0)
 	# Paper-doll held tool (WS-26): the tool rides in the hand whenever one
 	# is held, not only during the swing arc.
 	if _tool_sprite == null:
@@ -1230,7 +1280,12 @@ func _update_swing(delta: float) -> void:
 			_tool_sprite.texture = Data.icon(held_item())
 			_fit_tool_sprite()
 			_tool_sprite.visible = true
-			if puppet_scrapping or (interaction != null and interaction.scrapping != null):
+			if _attack_time > 0.0:
+				# Weapon swing (user request 2026-09-07): wind back, sweep
+				# around the head, ease home - see _attack_pose.
+				_scrap_anim = 0.0
+				_attack_pose(1.0 - _attack_time / _attack_total, float(attack_dir))
+			elif puppet_scrapping or (interaction != null and interaction.scrapping != null):
 				# Harvest chop (user request 2026-09-01): wind back, arc over
 				# the head, pull down onto the resource, repeat.
 				_scrap_anim += delta / CHOP_CYCLE_TIME
@@ -1247,56 +1302,218 @@ func _update_swing(delta: float) -> void:
 	_swing_time = maxf(_swing_time - delta, 0.0)
 	var t := 1.0 - _swing_time / Constants.TOOL_SWING_TIME
 	_tool_sprite.visible = true
-	_chop_pose(t, 1.0 if aim_position.x >= global_position.x else -1.0)
+	_chop_pose(0.45 + 0.55 * t, 1.0 if aim_position.x >= global_position.x else -1.0) # from mid-lift: chop + hold
 
-## The chop curve (user request 2026-09-01): a slow wind-up back and over the
-## head (phase 0-0.3), a fast strike down onto the target (0.3-0.5), then an
-## ease back to the ready stance (0.5-1.0). `dir` = +1 facing right.
-const _CHOP_REST := -0.35   # ready: head up, leaning back
-const _CHOP_WIND := -1.05   # wound up behind the head
-const _CHOP_STRIKE := 2.35  # blade driven down and forward onto the target
+## The harvest chop (user request 2026-09-01; rebuilt on the grip-held blade
+## 2026-09-07, user request "up, swing, chop, repeat" with less backward
+## travel): the tool RISES in front of the body to straight over the head
+## (phase 0-0.6, ease in-out), CHOPS down fast onto the resource out front
+## (0.6-0.85, ease-in), and holds the impact (0.85-1.0) before the next lift.
+## Angles are blade angles in facing-right space (see _place_blade); grips are
+## local px from the body origin. `dir` = +1 facing right.
 const CHOP_CYCLE_TIME := 0.55 # seconds per harvest chop
+const CHOP_RAISE := 0.6       # phase fraction spent lifting
+const CHOP_STRIKE := 0.85     # .. by here the blade is down; the rest is the impact hold
+const CHOP_TOP_ANGLE := -1.75 # ~100 deg: straight up, a hair back
+const CHOP_END_ANGLE := 1.05  # ~60 deg below level: driven into the resource out front
+const CHOP_TOP_HAND := Vector2(4.0, -9.0)  # grip at the shoulder: the tip peaks about head height (user request 2026-09-07)
+const CHOP_END_HAND := Vector2(10.0, -2.0) # grip out front at the hip, arm extended
 
 func _chop_pose(ph: float, dir: float) -> void:
-	var a: float
-	if ph < 0.30:
-		var w := ph / 0.30
-		a = lerpf(_CHOP_REST, _CHOP_WIND, 1.0 - (1.0 - w) * (1.0 - w)) # ease-out
-	elif ph < 0.50:
-		var w := (ph - 0.30) / 0.20
-		a = lerpf(_CHOP_WIND, _CHOP_STRIKE, w * w) # ease-in strike
+	var geo := _tool_geometry(dir)
+	var phi: float
+	var hand: Vector2
+	if ph < CHOP_RAISE:
+		var w := ph / CHOP_RAISE
+		w = w * w * (3.0 - 2.0 * w)
+		phi = lerpf(CHOP_END_ANGLE, CHOP_TOP_ANGLE, w) # up through the front, never behind
+		hand = CHOP_END_HAND.lerp(CHOP_TOP_HAND, w)
+	elif ph < CHOP_STRIKE:
+		var w := (ph - CHOP_RAISE) / (CHOP_STRIKE - CHOP_RAISE)
+		w = w * w
+		phi = lerpf(CHOP_TOP_ANGLE, CHOP_END_ANGLE, w)
+		hand = CHOP_TOP_HAND.lerp(CHOP_END_HAND, w)
 	else:
-		a = lerpf(_CHOP_STRIKE, _CHOP_REST, (ph - 0.50) / 0.50)
-	_apply_tool_pose(a, dir)
+		phi = CHOP_END_ANGLE
+		hand = CHOP_END_HAND
+	_place_blade(phi, hand, dir, geo)
 
-## Place the held tool at chop angle `a` (facing `dir`): the icon points up,
-## so the head direction is (sin, -cos); the sprite orbits the hand pivot so
-## the head traces the arc, and flips to face the swing.
 ## Resting held pose (user request 2026-09-02): the tool icon flipped
 ## horizontally and rotated 90 deg down toward the mid-section, so it hangs
 ## in the hand instead of resting on the head.
+const TOOL_REST_ROT := PI * 0.5 - 0.14 # ~82 deg: the icon flipped and rotated down toward the mid-section
+const TOOL_REST_SHRINK := 0.85
+
 func _apply_rest_pose(dir: float) -> void:
 	# ~82 deg, not a flat 90: tilted back counter-clockwise so the handle
 	# reads level in the hand (user request 2026-09-02); slightly scaled down.
-	var ang := (PI * 0.5 - 0.14) * dir
+	var ang := TOOL_REST_ROT * dir
 	_tool_sprite.rotation = ang
 	_tool_sprite.flip_h = dir > 0
-	_tool_sprite.scale *= 0.85
+	_tool_sprite.scale *= TOOL_REST_SHRINK
+	_tool_sprite.z_index = 1
+	_tool_sprite.position = _rest_centre(dir)
+
+## Where the rest pose puts the sprite's centre (local px, facing `dir`).
+func _rest_centre(dir: float) -> Vector2:
+	var ang := TOOL_REST_ROT * dir
 	var head := Vector2(sin(ang), -cos(ang))
-	var pos := Vector2(dir * 3.0, 0.0) + head * 3.0
+	var pos := Vector2(dir * 3.0, 0.0) + head * 3.0 + _hand_delta()
+	if Data.item(held_item()).has("weapon"):
+		pos.y -= Constants.WEAPON_REST_LIFT_PX # weapons ride higher in the hand (user request 2026-09-07)
 	if state == State.SURFACE_SWIM:
 		pos.y += Constants.SURFACE_SPRITE_SINK_PX
-	_tool_sprite.position = pos
+	return pos
 
-func _apply_tool_pose(a: float, dir: float) -> void:
-	var ang := a * dir
-	_tool_sprite.rotation = ang
-	_tool_sprite.flip_h = dir > 0 # matches the rest pose's flip so the blade leads the swing (user request 2026-09-02)
-	var head := Vector2(sin(ang), -cos(ang))
-	var pos := Vector2(dir * 4.0, -6.0) + head * 4.0
-	if state == State.SURFACE_SWIM: # ride the chest-deep body
+## Hand tracker (user request 2026-09-07): how far the current sheet frame's
+## hand sits from the idle frame's (local px, already in the facing row), from
+## data/hand_anchors.json (tools/gen_hand_anchors.py scans the sheet for the
+## forearm). The resting tool rides it, so the weapon swings with the arm.
+func _hand_delta() -> Vector2:
+	if sprite == null or sprite.rotation != 0.0:
+		return Vector2.ZERO
+	if clip != "idle" and clip != "walk": # a composed clip: its per-frame anchor from player_anim.json
+		var anchors: Array = _clip_def(clip).get("anchors", [])
+		var fi: int = sprite.frame_coords.x
+		if fi < 0 or fi >= anchors.size() or anchors[fi] == null:
+			return Vector2.ZERO
+		var d := Vector2(float(anchors[fi][0]), float(anchors[fi][1])) - CLIP_REST_HAND
+		if facing < 0:
+			d.x = -d.x
+		return d
+	var row: Array = Data.hand_anchors.get("east" if sprite.frame_coords.y == 0 else "west", [])
+	var f: int = sprite.frame_coords.x
+	if f < 0 or f >= row.size() or row.is_empty():
+		return Vector2.ZERO
+	return Vector2(float(row[f][0]) - float(row[0][0]), float(row[f][1]) - float(row[0][1]))
+
+# --- Weapon swing (user request 2026-09-07) ---
+# Three phases traced from the user's mark-up of the resting sword: (1) the
+# blade rotates counter-clockwise up over the head to lie flat behind the
+# player at the hip (medium-fast), (2) it sweeps clockwise all the way around
+# the head and down to the ground in front as one quick chop (fast), (3) it
+# eases home to the ready stance (slow-medium). The whole thing lasts one
+# attack interval, so the next swing can start the instant it ends; the sweep
+# is the hit window (Interaction._tick_arc). Angles are screen radians in
+# facing-right space (0 = forward, -PI/2 = up), mirrored for `attack_dir` -1;
+# the weapon is held by the icon's grip (Data.icon_axis) so every blade,
+# whatever the artist drew, traces the same arc.
+var _attack_time: float = 0.0   # seconds left in the swing (synced to puppets)
+var _attack_total: float = 0.0  # its full length = the attack interval
+var attack_dir: int = 1         # the side swung at, locked at the start
+var _attack_phi: float = 0.0    # current blade angle (facing-right space)
+var _attack_hand: Vector2 = Vector2.ZERO # current grip position, local px (mirrored)
+
+const ATTACK_WIND := 0.28           # phase fractions: wind-back ..
+const ATTACK_SWEEP := 0.24          # .. the sweep (the rest is the return)
+const ATTACK_SWEEP_START := -PI     # flat behind the player
+const ATTACK_SWEEP_END := 0.95      # down to the ground in front (~55 deg below level; user request 2026-09-07 - ground monsters were out of the arc)
+# Grip points are local px from the body origin, which sits ~6 px BELOW the
+# sprite's middle (the hip is about y=0, the shoulder about y=-10).
+# The sweep's grip path runs ~1.5x farther out than the arm's rest reach (user
+# request 2026-09-07: extend the reach) - the arm at full stretch.
+const ATTACK_WIND_HAND := Vector2(-6.0, 1.0)   # grip back at the hip, arm extended behind
+const ATTACK_RAISE_HAND := Vector2(1.0, -44.0) # bezier control: the grip passes just over the head
+const ATTACK_FRONT_HAND := Vector2(12.0, 0.0)  # grip out front at hip height, the blade driven at the floor
+
+func play_attack(total: float) -> void:
+	if _tool_sprite == null:
+		_tool_sprite = Sprite2D.new()
+		_tool_sprite.z_index = 1
+		add_child(_tool_sprite)
+	_tool_sprite.texture = Data.icon(held_item())
+	_fit_tool_sprite()
+	_attack_total = maxf(total, 0.05)
+	_attack_time = _attack_total
+	_swing_time = 0.0
+	if is_puppet() and not is_local():
+		attack_dir = facing
+	else:
+		attack_dir = 1 if aim_position.x >= global_position.x else -1
+	_attack_pose(0.0, float(attack_dir))
+
+## Blade geometry for the held icon: the flipped texture axis (the paper doll
+## draws facing-right tools flipped), the draw scale, the grip offset and the
+## rest pose expressed as a blade angle + grip position.
+func _tool_geometry(dir: float) -> Dictionary:
+	var ax := Data.icon_axis(held_item())
+	var base := 1.0
+	if _tool_sprite.texture != null and _tool_sprite.texture.get_width() > Data.ICON_PX:
+		base = float(Data.ICON_PX) / _tool_sprite.texture.get_width()
+	var s := base * TOOL_REST_SHRINK
+	var alpha_f := -PI - float(ax.angle) # flip_h mirrors the drawn axis about the vertical
+	var hilt: Vector2 = ax.hilt
+	if dir > 0:
+		hilt.x = -hilt.x # flip_h mirrors the texture in place
+	# The rest pose's grip: its centre plus the rotated grip offset, un-mirrored.
+	var rest_ang := TOOL_REST_ROT * dir
+	var rest_centre := _rest_centre(dir)
+	var rest_hand := rest_centre + hilt.rotated(rest_ang) * s
+	rest_hand.x *= dir
+	if state == State.SURFACE_SWIM:
+		rest_hand.y -= Constants.SURFACE_SPRITE_SINK_PX
+	return {"alpha_f": alpha_f, "s": s, "hilt": hilt, "length": float(ax.length) * s,
+		"phi_rest": alpha_f + TOOL_REST_ROT, "rest_hand": rest_hand}
+
+## Put the grip on `hand` (local px, facing-right space) with the blade along `phi`.
+func _place_blade(phi: float, hand: Vector2, dir: float, geo: Dictionary) -> void:
+	var rot := (phi - float(geo.alpha_f)) * dir
+	_tool_sprite.rotation = rot
+	_tool_sprite.flip_h = dir > 0
+	_tool_sprite.scale = Vector2.ONE * float(geo.s)
+	var pos := Vector2(hand.x * dir, hand.y)
+	if state == State.SURFACE_SWIM:
 		pos.y += Constants.SURFACE_SPRITE_SINK_PX
-	_tool_sprite.position = pos
+	_attack_hand = pos
+	_attack_phi = phi
+	_tool_sprite.position = pos - (geo.hilt as Vector2).rotated(rot) * float(geo.s)
+	# Pointing back = behind the body (the user's "rotate behind the player").
+	_tool_sprite.z_index = -1 if cos(phi) < -0.5 else 1
+
+func _attack_pose(t: float, dir: float) -> void:
+	var geo := _tool_geometry(dir)
+	var phi_rest: float = geo.phi_rest
+	var rest_hand: Vector2 = geo.rest_hand
+	var phi: float
+	var hand: Vector2
+	if t < ATTACK_WIND:
+		var w := t / ATTACK_WIND
+		w = w * w * (3.0 - 2.0 * w)
+		phi = lerpf(phi_rest, ATTACK_SWEEP_START, w) # counter-clockwise: up over the head, down behind
+		hand = rest_hand.lerp(ATTACK_WIND_HAND, w)
+	elif t < ATTACK_WIND + ATTACK_SWEEP:
+		var w := (t - ATTACK_WIND) / ATTACK_SWEEP
+		phi = lerpf(ATTACK_SWEEP_START, ATTACK_SWEEP_END, w) # clockwise, constant speed: the chop
+		var a := ATTACK_WIND_HAND.lerp(ATTACK_RAISE_HAND, w)
+		var b := ATTACK_RAISE_HAND.lerp(ATTACK_FRONT_HAND, w)
+		hand = a.lerp(b, w)
+	else:
+		var w := (t - ATTACK_WIND - ATTACK_SWEEP) / (1.0 - ATTACK_WIND - ATTACK_SWEEP)
+		w = w * w * (3.0 - 2.0 * w)
+		phi = lerpf(ATTACK_SWEEP_END, phi_rest, w)
+		hand = ATTACK_FRONT_HAND.lerp(rest_hand, w)
+	_place_blade(phi, hand, dir, geo)
+
+## The sweep's blade angle this tick (facing-right space), NAN outside the
+## sweep phase; ATTACK_SWEEP_END through the return so the last slice lands.
+func attack_sweep_angle() -> float:
+	if _attack_time <= 0.0 or _attack_total <= 0.0:
+		return NAN
+	var t := 1.0 - _attack_time / _attack_total
+	if t < ATTACK_WIND:
+		return NAN
+	if t < ATTACK_WIND + ATTACK_SWEEP:
+		return lerpf(ATTACK_SWEEP_START, ATTACK_SWEEP_END, (t - ATTACK_WIND) / ATTACK_SWEEP)
+	return ATTACK_SWEEP_END
+
+func attack_hand_global() -> Vector2:
+	return global_position + _attack_hand
+
+## Grip-to-tip length of the drawn blade in world px.
+func attack_blade_px() -> float:
+	if _tool_sprite == null:
+		return float(Data.ICON_PX) * TOOL_REST_SHRINK
+	return float(_tool_geometry(float(attack_dir)).length)
 
 var _lamp_dot: Sprite2D = null
 
@@ -1321,31 +1538,249 @@ func _update_gear_visuals() -> void:
 		if state == State.SURFACE_SWIM:
 			_lamp_dot.position.y += Constants.SURFACE_SPRITE_SINK_PX
 
+# --- Clips (2026-09-07, character-animation skill) ---
+# The composed locomotion sheet assets/sprites/player_clips.png (48x32 cells,
+# one row per clip, drawn facing RIGHT; data/player_anim.json describes rows,
+# frame counts, fps, holds and the per-frame hand anchor) plays for every
+# state the hand-drawn sheet has no frames for. `idle` (the rest frame) and
+# `walk` stay on player.png with its hand-drawn west row; every other clip
+# mirrors with flip_h. Picked by name from state + velocity + flags, so LAN
+# puppets (state and velocity are replicated) derive the same clip.
+const CLIP_SHEET: Texture2D = preload("res://assets/sprites/player_clips.png")
+const LEGACY_SHEET: Texture2D = preload("res://assets/sprites/player.png")
+const CLIP_REST_HAND := Vector2(23.0, 22.0) # the rest frame's hand inside the 48x32 cell (rest frame centred)
+var clip: String = "idle"
+var _clip_time: float = 0.0
+var _oneshot: String = ""        # jump_launch / land in flight
+# Action clips (2026-09-07): use_item / place / interact / pick_up are one-shots
+# started by the action itself (play_action; the host relays the id to puppets);
+# harvest_chop / weapon_swing are PHASE-DRIVEN from the tool's own animation, so
+# body and tool never drift apart; aim_shoot holds its aim frame while a ranged
+# weapon is held and plays its recoil frames on a shot.
+const ACTION_CLIPS := ["", "use_item", "place", "interact", "pick_up", "hurt", "wake_bed"] # index = the sync byte
+var _action_clip: String = ""
+var _action_left: float = 0.0
+var _oneshot_left: float = 0.0
+var _prev_state: State = State.AIRBORNE
+
+func _clip_def(clip_name: String) -> Dictionary:
+	return Data.player_anim.get("clips", {}).get(clip_name, {})
+
+## Seconds a clip runs once (holds included).
+func _clip_length(def: Dictionary) -> float:
+	var fps := maxf(float(def.get("fps", 8)), 0.1)
+	var hold: Dictionary = def.get("hold", {})
+	var total := 0.0
+	for i in int(def.get("frames", 1)):
+		total += float(hold.get(str(i), 1.0)) / fps
+	return total
+
+## Frame index `t` seconds into a clip (holds stretch frames; loops wrap).
+func _clip_frame(def: Dictionary, t: float) -> int:
+	var fps := maxf(float(def.get("fps", 8)), 0.1)
+	var n := int(def.get("frames", 1))
+	var hold: Dictionary = def.get("hold", {})
+	var total := _clip_length(def)
+	if def.get("loop", false) and total > 0.0:
+		t = fmod(t, total)
+	var acc := 0.0
+	for i in n:
+		acc += float(hold.get(str(i), 1.0)) / fps
+		if t < acc:
+			return i
+	return n - 1
+
+## Which clip the body shows now, from state + velocity (priority: the
+## one-shot in flight, then movement, then idle - death/hurt clips come later).
+func _pick_clip(moving: bool, speed: float) -> String:
+	# Reactions (2026-09-07): the death scene and drowning outrank every state.
+	if dying or puppet_dying:
+		return "death_water" if in_water else "death_land"
+	if state == State.UNDERWATER and drowning:
+		return "drowning"
+	match state:
+		State.GROUNDED:
+			if not moving:
+				return "idle"
+			return "sprint" if speed > Constants.WALK_SPEED * 1.15 else "walk"
+		State.AIRBORNE:
+			return "rise" if velocity.y < 0.0 else "fall"
+		State.CRAWLING:
+			return "crawl" if moving else "prone_idle"
+		State.CLIMBING:
+			if moving:
+				return "climb"
+			# Stopped with nothing to grab above the head: hanging from the top of the run.
+			return "climb_idle" if World.is_climbable(_center_point() + Vector2(0, -8.0)) else "climb_hang"
+		State.SURFACE_SWIM:
+			return "prone_swim" if moving else "tread_water"
+		State.UNDERWATER:
+			return "prone_swim" if moving else "underwater_float"
+	return "idle"
+
+## Start an action one-shot (upper-body actions; the body plays it over the
+## grounded stance). No-op when the clip is missing from the sheet.
+func play_action(clip_name: String) -> void:
+	var def := _clip_def(clip_name)
+	if def.is_empty():
+		return
+	_action_clip = clip_name
+	_action_left = _clip_length(def)
+	if clip != clip_name:
+		clip = clip_name
+		_clip_time = 0.0
+
+func action_index() -> int:
+	return ACTION_CLIPS.find(_action_clip) if _action_left > 0.0 else 0
+
+func _ranged_in_hand() -> bool:
+	var w: Dictionary = Data.item(held_item()).get("weapon", {})
+	return not w.is_empty() and not w.get("melee", false)
+
+func _tool_in_hand() -> bool:
+	var it := Data.item(held_item())
+	return it.has("tool") or it.has("weapon")
+
+func _chopping() -> bool:
+	return puppet_scrapping or (interaction != null and interaction.scrapping != null) \
+			or (_swing_time > 0.0 and not _ranged_in_hand())
+
+## The harvest chop's phase (0-1), shared with _chop_pose's cycle so the body
+## frame matches the tool: the scrap loop, or the one-shot hammer hit's tail.
+func _chop_phase() -> float:
+	if puppet_scrapping or (interaction != null and interaction.scrapping != null):
+		return fposmod(_scrap_anim, 1.0)
+	return 0.45 + 0.55 * (1.0 - _swing_time / Constants.TOOL_SWING_TIME)
+
+## "cold" / "crush" while standing in that band without the suit for it
+## (the status loops; a remote puppet has no suit replica: its suit id decides).
+func _exposed_band() -> String:
+	var band: String = World.band_at(World.cell_at(_center_point()))
+	if band != "cold" and band != "crush":
+		return ""
+	var protection := suit_stat(band)
+	if is_puppet() and not is_local():
+		protection = float(Data.item(puppet_suit).get("stats", {}).get(band, 0.0))
+	if protection >= 1.0 or _clip_def(band + ("_shiver" if band == "cold" else "_strain")).is_empty():
+		return ""
+	return band
+
+func _start_oneshot(clip_name: String) -> void:
+	var def := _clip_def(clip_name)
+	if def.is_empty():
+		return
+	_oneshot = clip_name
+	_oneshot_left = _clip_length(def)
+	clip = clip_name
+	_clip_time = 0.0
+
+func _set_sheet(tex: Texture2D, hframes: int, vframes: int) -> void:
+	if sprite.texture != tex:
+		sprite.texture = tex
+		sprite.hframes = hframes
+		sprite.vframes = vframes
+
+func _show_clip_frame() -> void:
+	var def := _clip_def(clip)
+	if clip == "idle" or clip == "walk" or def.is_empty():
+		_set_sheet(LEGACY_SHEET, 7, 2)
+		var col := 0
+		if clip == "walk":
+			col = 1 + int(_clip_time / WALK_FRAME_TIME) % WALK_FRAMES
+		sprite.frame_coords = Vector2i(col, 0 if facing > 0 else 1)
+		sprite.flip_h = false
+		return
+	var cell: Array = Data.player_anim.get("cell", [48, 32])
+	_set_sheet(CLIP_SHEET, int(CLIP_SHEET.get_width() / int(cell[0])), int(CLIP_SHEET.get_height() / int(cell[1])))
+	sprite.frame_coords = Vector2i(_clip_frame(def, _clip_time), int(def.get("row", 0)))
+	sprite.flip_h = facing < 0
+
 func _update_sprite(delta: float) -> void:
 	if input_dir.x != 0.0:
 		facing = 1 if input_dir.x > 0.0 else -1
 	_update_gear_visuals()
-	var speed := absf(velocity.x) if not compact else velocity.length()
+	var speed := absf(velocity.x) if (state == State.GROUNDED or state == State.SURFACE_SWIM) else velocity.length()
 	var moving := speed > 1.0 * Constants.BLOCK_SIZE
-	var frame_col := 0
-	if moving:
-		_anim_time += delta * clampf(speed / Constants.WALK_SPEED, 0.5, 2.0)
-		frame_col = 1 + int(_anim_time / WALK_FRAME_TIME) % WALK_FRAMES
-	else:
-		_anim_time = 0.0
-	sprite.frame_coords = Vector2i(frame_col, 0 if facing > 0 else 1)
-	if compact and state != State.SURFACE_SWIM:
-		# Crawling / diving: lay the body along the compact hitbox, head
-		# toward facing. Treading at the surface stays upright (user request).
-		sprite.rotation = facing * PI * 0.5
-		sprite.position = Vector2(0, 5)
-	else:
-		sprite.rotation = 0.0
-		# Feet on the scaled frame's bottom row at local y = FEET_Y.
-		sprite.position = Vector2(0, FEET_Y - 16.0 * Constants.PLAYER_SPRITE_SCALE)
-		if state == State.SURFACE_SWIM:
-			# Chest-high waterline while treading (user request).
-			sprite.position.y += Constants.SURFACE_SPRITE_SINK_PX
+	# One-shots ride the transitions: a jump's launch (anticipation is instant
+	# in the sim, so the crouch+push plays over the first airborne frames) and
+	# the landing squash after a fall of more than two blocks.
+	if state != _prev_state:
+		if state == State.AIRBORNE and _launch_pending:
+			_start_oneshot("jump_launch")
+		elif state == State.GROUNDED and _prev_state == State.AIRBORNE \
+				and global_position.y - fall_start_y > 2.0 * Constants.BLOCK_SIZE:
+			_start_oneshot("land")
+		_prev_state = state
+	if state != State.AIRBORNE:
+		_launch_pending = false
+	var want := _pick_clip(moving, speed)
+	if _oneshot != "":
+		_oneshot_left -= delta
+		var fits := (_oneshot == "land" and state == State.GROUNDED) \
+				or (_oneshot == "jump_launch" and state == State.AIRBORNE)
+		if _oneshot_left <= 0.0 or not fits:
+			_oneshot = ""
+		else:
+			want = _oneshot
+	if _action_left > 0.0:
+		_action_left -= delta
+		if _action_left <= 0.0 or (_action_clip == "wake_bed" and moving):
+			_action_clip = "" # moving off the bed ends the wake-up early
+	if _action_clip == "hurt" and not dying and not puppet_dying:
+		want = "hurt" # a hit interrupts everything but death, on the ground or knocked into the air
+	# Actions ride the grounded stance (priority: attack > chop > action > aim > carry).
+	if state == State.GROUNDED and _oneshot == "" and not dying and not puppet_dying:
+		if _action_clip == "hurt":
+			pass # already chosen above
+		elif _attack_time > 0.0 and not _clip_def("weapon_swing").is_empty():
+			want = "weapon_swing"
+		elif _chopping() and not _clip_def("harvest_chop").is_empty():
+			want = "harvest_chop"
+		elif _action_clip != "":
+			want = _action_clip
+		elif not moving and _ranged_in_hand() and not _clip_def("aim_shoot").is_empty():
+			want = "aim_shoot"
+		elif not moving and _exposed_band() != "":
+			want = "cold_shiver" if _exposed_band() == "cold" else "crush_strain"
+		elif not moving and _tool_in_hand() and not _clip_def("tool_carry").is_empty():
+			want = "tool_carry"
+	if want != clip:
+		var same_stride := (want == "walk" and clip == "sprint") or (want == "sprint" and clip == "walk")
+		if not same_stride: # walk <-> sprint keep their phase; anything else restarts
+			_clip_time = 0.0
+		clip = want
+	var rate := 1.0
+	match clip:
+		"walk":
+			rate = clampf(speed / Constants.WALK_SPEED, 0.5, 2.0)
+		"sprint":
+			rate = clampf(speed / Constants.SPRINT_SPEED, 0.5, 1.5)
+		"climb":
+			rate = clampf(speed / Constants.CLIMB_SPEED, 0.5, 1.5)
+		"crawl":
+			rate = clampf(speed / Constants.CRAWL_SPEED, 0.5, 1.5)
+	match clip: # phase-driven clips take their time from the tool animation
+		"weapon_swing":
+			_clip_time = (1.0 - _attack_time / maxf(_attack_total, 0.05)) * _clip_length(_clip_def(clip))
+		"harvest_chop":
+			_clip_time = clampf(_chop_phase(), 0.0, 0.999) * _clip_length(_clip_def(clip))
+		"aim_shoot":
+			var def := _clip_def(clip)
+			var f0 := float(def.get("hold", {}).get("0", 1.0)) / maxf(float(def.get("fps", 8)), 0.1)
+			if _swing_time > 0.0: # a shot: the recoil frames after the held aim frame
+				_clip_time = f0 + (1.0 - _swing_time / Constants.TOOL_SWING_TIME) * (_clip_length(def) - f0) * 0.999
+			else:
+				_clip_time = 0.0
+		_:
+			_clip_time += delta * rate
+	_show_clip_frame()
+	sprite.rotation = 0.0
+	# Feet on the cell's bottom row at local y = FEET_Y (prone clips are drawn
+	# lying on that row, so the old 90-degree body rotation is gone).
+	sprite.position = Vector2(0, FEET_Y - 16.0 * Constants.PLAYER_SPRITE_SCALE)
+	if state == State.SURFACE_SWIM:
+		# Chest-high waterline while treading (user request).
+		sprite.position.y += Constants.SURFACE_SPRITE_SINK_PX
 
 var zoom_index: int = Constants.CAMERA_ZOOM_DEFAULT_INDEX
 

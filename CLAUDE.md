@@ -35,7 +35,7 @@ pressure (surface iron can't cover the gear chain). The main scene is now
 saves under `user://saves/`, written by `scripts/data/save_game.gd`; **F5** saves, **F9**
 reloads in-game; **Esc** opens the pause menu (`scripts/ui/pause_menu.gd`: Resume,
 Music/SFX/Ambient sliders persisted to `user://settings.cfg` via the `Audio` autoload, a
-**UI Size** slider (2026-09-02) under DISPLAY, Save &
+**UI Size** slider (2026-09-02; default 150 % since 2026-09-07, `UIScale.DEFAULT_SCALE`) under DISPLAY, Save &
 Quit to the title — quit from there); dev runs passing
 `--seed`/`--shot` skip the title; gate: `title_smoke.tscn`). The game scene is
 `scenes/city/city.tscn` — a seeded 4800×800-cell drowned city (8 px cells; `CityGen`, ~2.5 s, deterministic;
@@ -238,6 +238,9 @@ pumps, and power. The task tracker is `docs/MVP-checklist.md` — check items of
 - Convert music drops: `python tools/convert_music.py` (WAVs from `docs/Examples/Audio/music`
   → `assets/audio/music/*.ogg`, needs ffmpeg; new tracks also go into `MUSIC_POOLS` in
   `scripts/audio/audio_manager.gd`).
+- Convert SFX drops: `python tools/convert_sfx.py [name]` (`SOURCES` maps a game sfx name to a
+  recording under `docs/Examples/Audio`; mono 44.1 kHz 16-bit, trimmed + normalised into
+  `assets/audio/sfx/<name>.wav`; re-runs overwrite; needs ffmpeg).
 
 ## Code Conventions
 
@@ -401,7 +404,7 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   enemies), `Snapshot` (`SaveGame.world_payload` in `NET_CHUNK_BYTES` chunks), `CharSync`
   (host → owner character state, final-state push, `resume_states`), `PlayerSpawn`
   (`City/Players/<peer_id>` bodies via `scripts/city/players.gd`). Per player: child `Sync`
-  (`PlayerSync`: 12 B input in, 30 B state out incl. held item/lamp/suit, owner events
+  (`PlayerSync`: 12 B input in, 36 B state out incl. held item/lamp/suit/weapon swing/action clip, owner events
   `_ev_*`) and `Actions` (`PlayerActions`: every inventory-UI mutation as a named slot action,
   optimistic on the client, validated on the host). World mutations call `Net.on_*` hooks
   (no-ops offline); `World._physics_process` ticks clock/water/enemies only when
@@ -539,7 +542,11 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   lamps → pump works; iron knife/bolt cutters/iron scrap bench → machine shop; steel/torch/steel
   scrap bench → steel works; master scrap bench → pressure works). `CityGen.place_parts(World, gen,
   seed)` (after the door records, before loot) drops `PART_COPIES` (3) of each part into its
-  district's towers on a floor of its band via `can_place_object`. **Floor doors:** non-sealed wings
+  district's towers on a floor of its band via `can_place_object`. **2026-09-07 (user report: no
+  drafting table in the business district):** `place_parts` now enumerates EVERY floor of the
+  district's towers in the part's band (seeded-hash order, seeded zone/x rotation) instead of 48
+  random floor picks — a dry-band part had a handful of candidate floors in ~50 and often landed 0-1
+  copies; `m5` K3 asserts all `PART_COPIES` per part. **Floor doors:** non-sealed wings
   get wood doors on BOTH doorways at `FLOOR_DOOR_CHANCE` (dry .9 / shallows .8 / cold .7), found
   open below the waterline (`doors[].open` → record), half closed in The Dry. **Wet scrapping:**
   `UNDERWATER_SCRAP_SLOW` (25 %) on the progress rate and `UNDERWATER_SCRAP_YIELD_LOSS` (10 %,
@@ -602,7 +609,7 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   scrapping, the pound-break and the red-moon stinger all go through it (the old explicit
   gunshot/hurt/enemy-hit relays are folded in). Sounds every machine derives from replicated
   state (footsteps, splashes, the enemy "died" event) stay on `Audio.play_sfx`. The state
-  packet (`ST_BYTES` 31) carries `scrap_progress` as a byte (`Player.puppet_scrap_progress`)
+  packet (`ST_BYTES` 36 since 2026-09-07) carries `scrap_progress` as a byte (`Player.puppet_scrap_progress`)
   so the client's HUD scrap bar fills. **Exported builds have no loose PNGs**: `Data.icon`,
   `object_texture` and `Enemy._load_strip` go through `Data.load_texture_fresh(path,
   prefer_raw)` — raw disk read only under the editor binary (`OS.has_feature("editor")`),
@@ -637,6 +644,105 @@ lines from the data files); only CRAFT is gated. `World.placed_blocks` tracks pl
   placed"; ladders (climb layer) are untouched. RMB with an axe removes a player-placed wood back
   wall. `World.placed_block_id(cell, layer)`. Tooltips/badges: "Fells trees, cuts placed wood
   (tier N)". Covered in `m1_smoke` J3 (not yet run).
+- **Weapon swing** (2026-09-07, user request, traced from the user's mark-up of the resting sword):
+  a melee attack (`Interaction._melee` — swords, clubs, knives, the hammer as a club) plays a
+  three-phase animation (`Player.play_attack` / `_attack_pose`): (1) the blade rotates
+  counter-clockwise up over the head to lie flat behind the player at the hip (medium-fast,
+  `ATTACK_WIND` 0.28 of the swing; drawn BEHIND the body while it points back), (2) sweeps
+  clockwise all the way around the head and down to the ground in front (`ATTACK_SWEEP_END`
+  ~55° below level, grip at the front hip — extended 2026-09-07 after ground monsters sat under
+  the arc) as one quick chop (`ATTACK_SWEEP` 0.24, constant angular speed, the grip rides a
+  bezier up over the head at full arm stretch — the grip path was pushed ~50 % farther out
+  the same day to extend the reach: front grip 12 px, control 44 px above), (3)
+  eases home to the ready stance (the rest of it). The whole swing lasts exactly one attack
+  interval (1/aps × water factor), so the **next swing may start the instant it ends** —
+  `attack_cooldown` = the animation length. The weapon is held by its GRIP: `Data.icon_axis(id)`
+  computes each icon's long axis (principal axis of the alpha mask, grip = the bottom end, cached),
+  so a vertical 32 px sword and a diagonal 16 px machete trace the same arc; the rest and harvest-chop
+  poses are unchanged (the return blends into the rest pose exactly). **Hits land during the
+  sweep** (`Interaction._tick_arc`, before the click is read): each tick the blade advances a slice
+  of the arc, and every enemy with a hitbox sample point (corners/edges/centre) inside that slice —
+  out to `MELEE_ARC_SLOP_BLOCKS` (2) beyond the drawn tip, `MELEE_ARC_ANGLE_SLOP` (~26°) past the
+  arc's end, or within `MELEE_ARC_TOUCH_PX` of the hand — takes the swing once (`_arc_hit`); an
+  enemy behind the player is hit early, one in front late. `_enemy_near_aim` (5 blocks + aim slop)
+  now only decides whether LMB is a fight (object-press skip, fire-axe/hammer branching). LAN: the
+  state packet carries `_attack_time`/`_attack_total` (halves, `ST_BYTES` 35); puppets swing toward
+  `facing`. Dev aid: `--shot=path --swing=item[:t[:frame]]` freezes the body with `item` at fraction `t` of
+  the swing (or its rest pose on walk frame `frame`). Covered in `m4_smoke` E (interval, rest-pose start, no damage on the click, front AND
+  behind walkers hit once each). The sweep's first slice plays **`sword_swoosh.wav`** (the user's
+  `docs/Examples/Audio/sfx/character/SwordSwoosh.wav` via `tools/convert_sfx.py`, relayed to clients
+  through `_sfx`).
+- **Storage "Take" button** (2026-09-07, user request): the storage side panel's header has
+  **Take** beside **Stack** — `Inventory.take_all_from(source)` moves every stack of the open unit
+  into the bag (plain stacks merge, modded gear needs a free slot, what doesn't fit stays), through
+  the `take_all` slot action (`PlayerActions.take_all`, optimistic on a client, host-validated).
+  Covered in `m1_smoke` M. **Weapon rest pose** raised `WEAPON_REST_LIFT_PX` (5) the same day —
+  weapons only, tools unchanged; the swing's return blends into the lifted pose.
+  **Hand tracker** (same day, user request "tie the weapon to the hand"): `tools/gen_hand_anchors.py`
+  scans `assets/sprites/player.png` for the skin-coloured forearm below the face in every frame of
+  both rows (the west row is hand-drawn, not a mirror) and writes `data/hand_anchors.json` (hand
+  pixel per frame); `Data.hand_anchors` loads it and `Player._hand_delta()` shifts the REST pose
+  (tools and weapons) by the current frame's hand offset from the idle frame's, so the held item
+  swings with the arm while walking (attack/chop poses are authored to the body and ignore it).
+  Re-run the tool after redrawing the sheet. Dev aid: `--swing=item:0:N` shows the rest pose on
+  walk frame N.
+  **Harvest chop rebuilt** (same day, user request "up, swing, chop, repeat" with less backward
+  travel): `Player._chop_pose` now uses the grip-held blade — the tool rises IN FRONT to straight
+  from the shoulder, the tip peaking about head height (`CHOP_TOP_ANGLE`/`CHOP_TOP_HAND`; 60 % of the 0.55 s cycle, ease in-out), chops
+  down fast onto the resource out front (`CHOP_END_ANGLE` ~60° below level, grip extended at the hip,
+  to 85 %), holds the impact, and repeats while scrapping; the one-shot hammer hit plays the last
+  55 % (mid-lift → chop → hold). Every icon shape chops the same way (the old flip-based curve sent
+  diagonal icons behind the back). Dev aid: `--shot=path --chop=item[:ph]`.
+- **Locomotion clips** (2026-09-07, user request, via the `character-animation` skill): the
+  player now plays a clip per state. `assets/sprites/player.png` keeps the hand-drawn idle + walk
+  (east/west rows); every other locomotion clip is COMPOSED from the rest frame by
+  `tools/player_anim/` (`make_rig.py` masks the parts, `make_clips.py` authors key poses,
+  `python .claude/skills/character-animation/charanim.py build tools/player_anim/project.json`
+  renders `assets/sprites/player_clips.png` (48×32 cells, one row per clip, facing right) and
+  `data/player_anim.json` with rows/frames/fps/holds + per-frame hand anchors; `Data.player_anim`).
+  `Player._update_sprite` picks by name from state + velocity (`_pick_clip`: idle / walk / sprint
+  (> 1.15× walk speed, phase shared with walk) / rise / fall / crawl / prone_idle / climb /
+  climb_idle / climb_hang (nothing climbable above the head) / tread_water / prone_swim /
+  underwater_float), plays `jump_launch` and `land` (fall > 2 blocks) as one-shots on the state
+  transitions, swaps the sprite's sheet/hframes (`_set_sheet`), mirrors composed clips with
+  `flip_h`, and no longer rotates the body 90° for crawl/dive (prone clips lie on the cell's
+  ground row). `_hand_delta` reads a composed clip's anchor (`CLIP_REST_HAND` 23,22 in the cell)
+  so held tools ride the animated hand. Dev aid: `--shot=path --clip=name[:frame][:facing]`.
+  `docs/PlayerAnimations.md` tracks the set (22/28 wired; hand-fix pass pending on all composed
+  frames). Covered in `m0_smoke` B/C/E/H (clip names per state). **Action clips** (same night):
+  `tool_carry` (standing with a tool/weapon), `harvest_chop` and `weapon_swing` PHASE-LOCKED to the
+  tool poses (`_chop_phase` = the scrap cycle / the hammer hit's tail; the swing's `_attack_time`),
+  `aim_shoot` (aim frame held with a ranged weapon, recoil off `_swing_time`), and the one-shots
+  `use_item` / `place` / `interact` / `pick_up` started by `Player.play_action` from the action
+  itself (`use_item`, block/object placement, E / short-press interact, the long-press lift at press
+  start; `pick_up` is 0.5 s so the grab lands as the item transfers); actions ride the GROUNDED
+  stance only (priority attack > chop > action > aim > carry > movement). The state packet carries
+  the action id (`ST_BYTES` 36, `ACTION_CLIPS`) so puppets play them. Composer fixes: a part may be
+  `"over"` another (the torso is filled in under the arm, so a raised arm never hollows the body —
+  user report) and 1-px rotation holes are closed (`fill_holes`). Gates: `m1` B/J4 (chop, place,
+  pick_up), `m4` E (weapon_swing). **Reaction clips** (same night, all 28 wired): `hurt` from
+  `_hurt_fx` (outranks everything but death), `drowning` (UNDERWATER + `drowning`), `death_land` /
+  `death_water` while `dying` (the death scene now keeps `_update_sprite` running), `wake_bed` on
+  `respawn` (world start too), `cold_shiver` / `crush_strain` while standing still in that band
+  without the suit for it (`_exposed_band`). Gates: `m0` M (drowning, death_water, wake_bed), `m4` C
+  (hurt).
+- **Torch + bare-hand wood pickup** (2026-09-07, user request): `torch` (items.json, category
+  tool, `held_light: {level}`; hand recipe 2 wood + 1 cloth → 2; icon `tools/gen_torch_icon.py`)
+  lights the area while HELD — `World.held_light_level(p)` feeds the player's dynamic light
+  (`TORCH_LIGHT` 24, between glowstick and lamp) and `light_beacons()` (fog), 0 while `submerged`;
+  remote bodies replicate the held id so clients see it. LMB with the torch PLANTS it: object
+  `torch_placed` (kind light, 1×2, `mount_any` — a floor, a back wall, or a solid block beside it;
+  `no_item` + `item_form: torch` so the hammer lifts it back out as a torch; `Interaction._place_torch`;
+  2-frame flicker strip from `gen_torch_icon.py`). A placed block in
+  `Constants.HAND_PICKUP_BLOCKS` (wood_block) lifts back into the bag on a BARE-HAND long press
+  (`Interaction.press_block` → `_pickup_block`, `World.remove_block`). `m1_smoke` J4/J5.
+- **Block stairs** (2026-09-07, user request): a walking body steps UP a ledge no taller than
+  `Constants.STEP_UP_CELLS` (2 = one old block) instead of stopping at it (`Player._step_up`
+  after `move_and_slide`: the standing hitbox raised by h and nudged forward must be clear with
+  solid ground under its front foot), and steps DOWN a drop of the same size instead of falling
+  (`_step_down` before `_enter_airborne`), so staircases of placed blocks read as ground both
+  ways; jumps and ladder rules run first. `m0_smoke` P. **Shift-click CRAFT** makes five batches
+  (`inventory_ui._craft_n`, stops when ingredients run out; tooltip on the button). `m1_smoke` J6.
 - **Home-base music** (2026-09-07, user request): `MUSIC_POOLS.home` (`homebase01..05.ogg`, sources in
   `docs/Examples/Audio/music/HomeBase/`, converted by `tools/convert_music.py` which now scans that
   subfolder too) plays while the player's spawn point — their bed (`Player.spawn_feet`), else
@@ -938,6 +1044,14 @@ GL-12) — check whether a referenced question was already decided before asking
   strips, controlled variation, pipeline rules and a review checklist. Distilled from
   `docs/technical/TileArt.md`, `docs/Flora/flora.md` and `docs/Flora/pixelTips.md`. Use it for any
   sprite, tile, icon or art tool work.
+- **character-animation** (2026-09-07) — animate a character from ONE resting image: the
+  pose-driven method of `docs/SunkenCity_Character_Animation_Craft.md` (key poses, breakdowns,
+  centre of gravity, anticipation/follow-through, timing holds, layers vs baked, anchors,
+  mirroring, transitions) as a procedure, with `charanim.py` (rest frame + part mask + key poses →
+  frames, sheet, `anim.json` per-frame hand anchors, 1×/3× preview, GIFs), `clips.md` (pose
+  recipes for all ~28 clips of `docs/PlayerAnimations.md`) and `example/` (the diver rigged:
+  idle/walk/sprint/jump/land/hurt). Load `pixel-game-art` alongside it for the per-frame pixel
+  rules and the hand-fix pass.
 - **guided-review** — collaborative one-question-at-a-time design review with countdown numbering
   (`Q{N}` down to `Q1`), 2–4 numbered options per question, recommendation first and set apart by
   a rule, document updated only at section end after a confirmed summary. The user may not have

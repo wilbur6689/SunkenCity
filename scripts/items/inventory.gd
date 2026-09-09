@@ -139,5 +139,25 @@ func quick_stack_into(target: Inventory) -> int:
 	changed.emit()
 	return moved
 
+## Moves EVERY stack of `source` into this inventory (the storage "Take" button,
+## user request 2026-09-07): plain stacks merge into existing ones, modded gear
+## needs a free slot; whatever does not fit stays put. Returns the count moved.
+func take_all_from(source: Inventory) -> int:
+	var moved := 0
+	for i in source.slots.size():
+		var s = source.slots[i]
+		if s == null:
+			continue
+		if s.has("mods"):
+			if add_stack(s):
+				source.slots[i] = null
+				moved += int(s.count)
+			continue
+		var leftover := add(s.id, int(s.count))
+		moved += int(s.count) - leftover
+		source.slots[i] = {"id": s.id, "count": leftover} if leftover > 0 else null
+	source.changed.emit()
+	return moved
+
 func to_dict() -> Array:
 	return slots.duplicate(true)

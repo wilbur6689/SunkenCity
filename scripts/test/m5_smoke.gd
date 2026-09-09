@@ -374,6 +374,11 @@ func _ready() -> void:
 		if Data.objects[oid].get("part", false) and int(part_counts.get(oid, 0)) == 0:
 			missing.append(oid)
 	check(missing.is_empty(), "every found part spawns somewhere in the city (missing: %s) - %s" % [str(missing), str(part_counts)])
+	var short := []
+	for oid in Data.objects:
+		if Data.objects[oid].get("part", false) and int(part_counts.get(oid, 0)) < Constants.PART_COPIES:
+			short.append(oid)
+	check(short.is_empty(), "every part reaches PART_COPIES (%d) copies - exhaustive band-floor search (short: %s)" % [Constants.PART_COPIES, str(short)])
 	check(wing_doors >= 200, "wing doorways carry doors by band (%d wood doors)" % wing_doors)
 	for bench in ["workbench", "forge", "machine_shop", "steel_works", "pressure_works", "weapon_bench", "pump_works", "dive_station", "med_station", "mod_bench"]:
 		var needs_part := false

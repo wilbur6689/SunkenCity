@@ -97,6 +97,7 @@ func _run() -> void:
 	check(absf(player.velocity.x - Constants.WALK_SPEED) < 1.0, "walk speed 5 bl/s (%.2f)" % (player.velocity.x / B))
 	press(["sprint"]); await ticks(20)
 	check(absf(player.velocity.x - Constants.SPRINT_SPEED) < 1.0, "sprint speed 7 bl/s (%.2f)" % (player.velocity.x / B))
+	check(player.clip == "sprint" and player.sprite.texture == Player.CLIP_SHEET, "sprint plays the composed sprint clip (%s)" % player.clip)
 	release_all(); await ticks(15)
 	check(absf(player.velocity.x) < 0.01, "friction stops the player")
 	check(grounded(), "still GROUNDED after run (%s)" % st())
@@ -109,13 +110,23 @@ func _run() -> void:
 	var start_y := player.global_position.y
 	var min_y := start_y
 	press(["jump"])
+	await ticks(2)
+	check(player.clip == "jump_launch", "a jump starts with the launch one-shot (%s)" % player.clip)
+	var saw_rise := false
+	var saw_fall := false
 	for i in 50:
 		await get_tree().physics_frame
 		min_y = minf(min_y, player.global_position.y)
+		saw_rise = saw_rise or player.clip == "rise"
+		saw_fall = saw_fall or player.clip == "fall"
 	release_all()
+	check(saw_rise and saw_fall, "rise then fall clips in the air")
 	var rise := (start_y - min_y) / B
 	check(absf(rise - Constants.JUMP_HEIGHT_BLOCKS) < 0.5, "jump apex ~6 blocks (%.2f)" % rise)
 	check(await until(grounded, 60), "lands after jump")
+	check(player.clip == "land", "landing plays the land one-shot (%s)" % player.clip)
+	await ticks(30)
+	check(player.clip == "idle", "then settles to idle (%s)" % player.clip)
 
 	print("== D. crawl vent (floor 3, 2-cell / 16 px gap)")
 	await place(28, 35)
@@ -140,8 +151,10 @@ func _run() -> void:
 	check(y0 - player.global_position.y > 3.0 * B, "climbs upward (%.2f blocks)" % ((y0 - player.global_position.y) / B))
 	check(absf(player.global_position.x - 69 * B) < 0.5, "centered on the 2-wide ladder (x=%.1f)" % player.global_position.x)
 	check(absf(player.velocity.y + Constants.CLIMB_SPEED) < 1.0, "climb speed 4 bl/s")
+	check(player.clip == "climb", "climbing plays the climb clip (%s)" % player.clip)
 	release_all(); await ticks(5)
 	check(st() == "CLIMBING" and absf(player.velocity.y) < 0.01, "holds position on ladder with no input")
+	check(player.clip == "climb_idle" or player.clip == "climb_hang", "stopped on the rungs: climb idle/hang (%s)" % player.clip)
 	press(["jump"]); await ticks(3)
 	check(st() == "AIRBORNE", "jump leaves the ladder (%s)" % st())
 	release_all()
@@ -202,8 +215,10 @@ func _run() -> void:
 	var y_rest := player.global_position.y
 	await ticks(30)
 	check(absf(player.global_position.y - y_rest) < 0.5 and st() == "UNDERWATER", "neutral buoyancy: holds depth")
+	check(player.clip == "underwater_float" and player.sprite.rotation == 0.0, "still underwater: the float clip, body not rotated (%s)" % player.clip)
 	press(["move_right"]); await ticks(25)
 	check(absf(player.velocity.x - Constants.UNDERWATER_SWIM_SPEED) < 1.0, "underwater swim %.0f bl/s (%.2f)" % [Constants.UNDERWATER_SWIM_SPEED / B, player.velocity.x / B])
+	check(player.clip == "prone_swim", "swimming plays the prone swim (%s)" % player.clip)
 	release_all()
 	await hold(["move_left"], 25)
 
@@ -253,7 +268,12 @@ func _run() -> void:
 	press(["move_down"]); await ticks(60)
 	check(player.drowning, "drowning after oxygen hits zero")
 	check(player.health < Constants.MAX_HEALTH, "drowning drains health (hp %.0f)" % player.health)
+	check(player.clip == "drowning", "the drowning struggle clip plays (%s)" % player.clip)
+	check(await until(func(): return player.dying, 900), "dies")
+	await ticks(3)
+	check(player.clip == "death_water", "the water death clip plays through the scene (%s)" % player.clip)
 	check(await until(func(): return player.health == Constants.MAX_HEALTH and not player.drowning and not player.dying, 1100), "dies (3 s scene) and respawns with full health")
+	check(player._action_clip == "wake_bed", "waking at the spawn plays wake_bed (%s)" % player._action_clip)
 	release_all()
 	check(absf(player.global_position.x - World.spawn_position.x) < 0.5, "respawned at world spawn")
 	check(await until(grounded, 60), "lands after respawn (%s)" % st())
@@ -268,6 +288,39 @@ func _run() -> void:
 	await place(34, 7)
 	await until(grounded, 60)
 	check(player.health == Constants.MAX_HEALTH, "≤16 block fall is free")
+
+	print("== P. block stairs are walked, not jumped (user request 2026-09-07)")
+	await place(40, 11) # floor 0, standing row 11 (the slab is rows 12-13)
+	await until(grounded, 30)
+	# Two 2-cell-wide steps, 2 and 4 cells tall, in the open floor ahead.
+	check(World.rect_is_clear(Rect2(44 * B, 5 * B, 4 * B, 7 * B)), "floor 0 is clear where the stairs go")
+	var placed := 0
+	for x in [44, 45]:
+		for y in [10, 11]:
+			placed += int(World.place_block("wood_block", Vector2i(x, y)))
+	for x in [46, 47]:
+		for y in [8, 9, 10, 11]:
+			placed += int(World.place_block("wood_block", Vector2i(x, y)))
+	check(placed == 12, "12 stair blocks placed (%d)" % placed)
+	var left_floor := false
+	press(["move_right"])
+	for i in 40: # ~53 px: onto the top step, short of its far edge
+		await get_tree().physics_frame
+		left_floor = left_floor or st() != "GROUNDED"
+	release_all()
+	check(absf(feet_y() - 8 * B) < 1.0 and grounded(), "walked up two 2-cell steps onto the top (feet row %.1f, %s)" % [feet_y() / B, st()])
+	check(not left_floor, "never left GROUNDED on the way up")
+	left_floor = false
+	press(["move_left"])
+	for i in 60:
+		await get_tree().physics_frame
+		left_floor = left_floor or st() != "GROUNDED"
+	release_all()
+	check(absf(feet_y() - 12 * B) < 1.0 and grounded(), "walked back down to the floor (feet row %.1f)" % (feet_y() / B))
+	check(not left_floor, "stepped down without a fall")
+	for x in [44, 45, 46, 47]:
+		for y in [8, 9, 10, 11]:
+			World.remove_block(Vector2i(x, y))
 
 	print("== O. camera: centred on the player, wheel zoom")
 	await place(10, 11)

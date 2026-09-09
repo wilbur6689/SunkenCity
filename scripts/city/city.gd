@@ -351,6 +351,57 @@ func _take_shot(spec: String) -> void:
 			player.zoom_step(-1 if int(parts[1]) < 0 else 1)
 		player.camera.reset_smoothing()
 	await get_tree().create_timer(2.5).timeout # past the generation hitch
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--swing="): # dev aid (2026-09-07): --swing=item[:t] holds the item frozen at fraction t of its attack swing
+			var sp := a.substr(8).split(":")
+			player.inventory.add(sp[0], 1)
+			for i in player.inventory.size():
+				if player.inventory.slots[i] != null and player.inventory.slots[i].id == sp[0]:
+					var tmp = player.inventory.slots[0]
+					player.inventory.set_slot(0, player.inventory.slots[i])
+					player.inventory.set_slot(i, tmp)
+					break
+			player.selected_slot = 0
+			player.bare_hands = false
+			player.aim_position = player.global_position + Vector2(40.0, 0.0)
+			player.set_physics_process(false) # freeze the body; pose the blade by hand
+			if sp.size() > 2: # --swing=item:t:frame - the rest pose on walk frame N (hand tracker check)
+				player.sprite.frame_coords = Vector2i(int(sp[2]), 0)
+				player._update_swing(0.0)
+			else:
+				player.play_attack(1.0)
+				player._attack_pose(sp[1].to_float() if sp.size() > 1 else 0.0, 1.0)
+			await get_tree().process_frame
+			await get_tree().process_frame
+		elif a.begins_with("--clip="): # dev aid (2026-09-07): --clip=name[:frame][:facing] freezes a composed body clip frame
+			var sp := a.substr(7).split(":")
+			player.set_physics_process(false)
+			if sp.size() > 2:
+				player.facing = int(sp[2])
+			player.clip = sp[0]
+			var def: Dictionary = player._clip_def(sp[0])
+			var fi := int(sp[1]) if sp.size() > 1 else 0
+			player._clip_time = (fi + 0.5) / maxf(float(def.get("fps", 8)), 0.1)
+			player._show_clip_frame()
+			player._update_swing(0.0)
+			await get_tree().process_frame
+			await get_tree().process_frame
+		elif a.begins_with("--chop="): # dev aid (2026-09-07): --chop=item:ph freezes the harvest chop at phase ph
+			var sp := a.substr(7).split(":")
+			player.inventory.add(sp[0], 1)
+			for i in player.inventory.size():
+				if player.inventory.slots[i] != null and player.inventory.slots[i].id == sp[0]:
+					var tmp = player.inventory.slots[0]
+					player.inventory.set_slot(0, player.inventory.slots[i])
+					player.inventory.set_slot(i, tmp)
+					break
+			player.selected_slot = 0
+			player.bare_hands = false
+			player.set_physics_process(false)
+			player._update_swing(0.0) # builds the tool sprite
+			player._chop_pose(sp[1].to_float() if sp.size() > 1 else 0.0, 1.0)
+			await get_tree().process_frame
+			await get_tree().process_frame
 	if OS.get_cmdline_user_args().has("--hover"): # park the mouse on furniture
 		var nearest: WorldObject = null
 		var best := 1e9

@@ -13913,6 +13913,28 @@
       "xp": 1,
       "grows_into": "res_rose_midling",
       "desc": "A rose sprig. Thorny stems and pink blossoms once it fills out - hand-harvest wood."
+    },
+    {
+      "id": "torch_placed",
+      "name": "Torch",
+      "kind": "light",
+      "size": [
+        1.0,
+        2.0
+      ],
+      "light": {
+        "color": [
+          1.0,
+          0.72,
+          0.4
+        ],
+        "radius_blocks": 6.0
+      },
+      "no_item": true,
+      "item_form": "torch",
+      "mount_any": true,
+      "weight": 0.5,
+      "desc": "A planted torch. Lights the room; lift it back with the hammer."
     }
   ]
 }

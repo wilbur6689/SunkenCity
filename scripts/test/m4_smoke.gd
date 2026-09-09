@@ -163,6 +163,8 @@ func _run() -> void:
 	player._hurt_fx_at_ms = -100000 # headless frames run faster than the burst cooldown
 	wfn._try_touch()
 	check(player.health < hpf, "a bite lands one block in front (reach, not same-square)")
+	await ticks(1)
+	check(player._action_clip == "hurt" and player.clip == "hurt", "the hit plays the hurt flinch (%s)" % player.clip)
 	check(player.hurt_flash > 0.0, "the hit flashes the screen (hurt_flash armed for the HUD)")
 	var puffs := 0
 	for n in World.items_root.get_children():
@@ -236,6 +238,39 @@ func _run() -> void:
 	player.wants_use = false
 	check(killed, "sword swings kill the walker")
 	check(not World.enemy_records.has(w3), "killed record is gone — cleared stays cleared (GD-02/03)")
+	# Arc swing (user request 2026-09-07): the sweep runs from flat behind,
+	# over the head, to out front - one swing hurts a walker on EITHER side,
+	# lands during the sweep (not on the click) and the pose starts at rest.
+	await clear_enemies()
+	await place(24, row)
+	check(await until(func(): return player._attack_time <= 0.0, 120), "the last swing finished")
+	player.interaction.attack_cooldown = 0.0
+	var wfront := spawn("walker", 27, row)
+	var wback := spawn("walker", 21, row)
+	(wfront.node as Enemy).set_physics_process(false) # frozen where placed: the arc must reach them
+	(wback.node as Enemy).set_physics_process(false)
+	await ticks(1)
+	var arc_hp: float = wfront.hp
+	aim(Vector2((27 + 0.5) * B, player.global_position.y))
+	player.wants_use = true
+	await ticks(1)
+	player.wants_use = false
+	check(player._attack_time > 0.0 and is_equal_approx(player.interaction.attack_cooldown, player._attack_total),
+		"a swing runs for exactly one attack interval")
+	check(player.attack_dir == 1, "swing faces the aim")
+	check(player._tool_sprite.position.is_equal_approx(player._rest_centre(1.0)) \
+		and is_equal_approx(player._tool_sprite.rotation, Player.TOOL_REST_ROT),
+		"the swing starts from the rest pose")
+	await ticks(1) # the sprite updates before the interaction layer, so the body clip follows a tick later
+	check(player.clip == "weapon_swing", "the body plays the weapon swing clip (%s)" % player.clip)
+	check(wfront.hp == arc_hp and wback.hp == arc_hp, "no damage on the click - the blade is still winding back")
+	for i in 40:
+		player.health = Constants.MAX_HEALTH
+		await get_tree().physics_frame
+	check(wfront.hp < arc_hp, "the sweep hits the walker in front")
+	check(wback.hp < arc_hp, "the sweep hits the walker behind")
+	check(player.interaction._arc_hit.size() == 2, "each walker takes the swing once")
+	await clear_enemies()
 	# Underwater melee is slowed (knives least): compare swing cooldowns.
 	player.interaction.attack_cooldown = 0.0
 	player.wants_use = true

@@ -1,0 +1,2375 @@
+{
+ "idle": {
+  "fps": 4,
+  "loop": true,
+  "frames": 4,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "head": {
+      "dy": 0
+     },
+     "torso": {
+      "dy": 0
+     },
+     "arm_near": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "head": {
+      "dy": -1
+     },
+     "torso": {
+      "dy": -1
+     },
+     "arm_near": {
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "head": {
+      "dy": 0
+     },
+     "torso": {
+      "dy": 0
+     },
+     "arm_near": {
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "sprint": {
+  "fps": 12,
+  "loop": true,
+  "frames": 6,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "leg_near": {
+      "rot": 45
+     },
+     "leg_far": {
+      "rot": -40
+     },
+     "arm_near": {
+      "rot": -45
+     },
+     "body": {
+      "lean": 4,
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "leg_near": {
+      "rot": 13.5
+     },
+     "leg_far": {
+      "rot": -8.0
+     },
+     "arm_near": {
+      "rot": -13.5
+     },
+     "body": {
+      "dy": 2
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "leg_near": {
+      "rot": -8
+     },
+     "leg_far": {
+      "rot": 8
+     },
+     "arm_near": {
+      "rot": 8
+     },
+     "body": {
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "leg_near": {
+      "rot": -40
+     },
+     "leg_far": {
+      "rot": 45
+     },
+     "arm_near": {
+      "rot": 40
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "leg_near": {
+      "rot": -8.0
+     },
+     "leg_far": {
+      "rot": 13.5
+     },
+     "arm_near": {
+      "rot": 12.0
+     },
+     "body": {
+      "dy": 2
+     }
+    }
+   },
+   {
+    "t": 5,
+    "pose": {
+     "leg_near": {
+      "rot": 8
+     },
+     "leg_far": {
+      "rot": -8
+     },
+     "arm_near": {
+      "rot": -8
+     },
+     "body": {
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "leg_near": {
+      "rot": 45
+     },
+     "leg_far": {
+      "rot": -40
+     },
+     "arm_near": {
+      "rot": -45
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "jump_launch": {
+  "fps": 12,
+  "loop": false,
+  "frames": 2,
+  "hold": {
+   "0": 2
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "squash": 0.85
+     },
+     "arm_near": {
+      "rot": 30
+     },
+     "leg_near": {
+      "rot": -12
+     },
+     "leg_far": {
+      "rot": 12
+     },
+     "head": {
+      "dy": 1
+     }
+    },
+    "ease": "in"
+   },
+   {
+    "t": 1,
+    "pose": {
+     "body": {
+      "squash": 1.08
+     },
+     "arm_near": {
+      "rot": -60
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 0
+     },
+     "head": {
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "rise": {
+  "fps": 4,
+  "loop": true,
+  "frames": 2,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "leg_near": {
+      "rot": -25
+     },
+     "leg_far": {
+      "rot": 15
+     },
+     "arm_near": {
+      "rot": -120
+     },
+     "body": {
+      "squash": 1.0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "leg_near": {
+      "rot": -30
+     },
+     "leg_far": {
+      "rot": 18
+     },
+     "arm_near": {
+      "rot": -110
+     }
+    }
+   }
+  ]
+ },
+ "fall": {
+  "fps": 4,
+  "loop": true,
+  "frames": 2,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "leg_near": {
+      "rot": -12
+     },
+     "leg_far": {
+      "rot": 10
+     },
+     "arm_near": {
+      "rot": -60
+     },
+     "body": {
+      "squash": 1.03
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "leg_near": {
+      "rot": -16
+     },
+     "leg_far": {
+      "rot": 6
+     },
+     "arm_near": {
+      "rot": -45
+     }
+    }
+   }
+  ]
+ },
+ "land": {
+  "fps": 10,
+  "loop": false,
+  "frames": 3,
+  "hold": {
+   "1": 2
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "squash": 1.0
+     },
+     "arm_near": {
+      "rot": -40
+     }
+    },
+    "ease": "in"
+   },
+   {
+    "t": 1,
+    "pose": {
+     "body": {
+      "squash": 0.8
+     },
+     "arm_near": {
+      "rot": 20
+     },
+     "head": {
+      "dy": 1
+     }
+    },
+    "ease": "out"
+   },
+   {
+    "t": 2,
+    "pose": {
+     "body": {
+      "squash": 1.0
+     },
+     "arm_near": {
+      "rot": 0
+     },
+     "head": {
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "crawl": {
+  "fps": 8,
+  "loop": true,
+  "frames": 6,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -7
+     },
+     "head": {
+      "rot": -70
+     },
+     "arm_near": {
+      "rot": -150
+     },
+     "leg_near": {
+      "rot": 30
+     },
+     "leg_far": {
+      "rot": 5
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -6
+     },
+     "arm_near": {
+      "rot": -90
+     },
+     "leg_near": {
+      "rot": 5
+     },
+     "leg_far": {
+      "rot": 30
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -7
+     },
+     "arm_near": {
+      "rot": -30
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 35
+     }
+    }
+   },
+   {
+    "t": 5,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -6
+     },
+     "arm_near": {
+      "rot": -110
+     },
+     "leg_near": {
+      "rot": 30
+     },
+     "leg_far": {
+      "rot": 5
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -7
+     },
+     "arm_near": {
+      "rot": -150
+     },
+     "leg_near": {
+      "rot": 30
+     },
+     "leg_far": {
+      "rot": 5
+     }
+    }
+   }
+  ]
+ },
+ "prone_idle": {
+  "fps": 4,
+  "loop": true,
+  "frames": 4,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -7
+     },
+     "head": {
+      "rot": -70
+     },
+     "arm_near": {
+      "rot": -110
+     },
+     "leg_near": {
+      "rot": 10
+     },
+     "leg_far": {
+      "rot": 5
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -8
+     },
+     "head": {
+      "rot": -75
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "body": {
+      "rot": 85,
+      "dx": -13,
+      "dy": -7
+     },
+     "head": {
+      "rot": -70
+     }
+    }
+   }
+  ]
+ },
+ "climb": {
+  "fps": 8,
+  "loop": true,
+  "frames": 4,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -150
+     },
+     "leg_near": {
+      "rot": -35
+     },
+     "leg_far": {
+      "rot": 5
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -140
+     },
+     "leg_near": {
+      "rot": -30
+     },
+     "leg_far": {
+      "rot": 0
+     },
+     "body": {
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -60
+     },
+     "leg_near": {
+      "rot": 5
+     },
+     "leg_far": {
+      "rot": -35
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": -70
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": -30
+     },
+     "body": {
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "arm_near": {
+      "rot": -150
+     },
+     "leg_near": {
+      "rot": -35
+     },
+     "leg_far": {
+      "rot": 5
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "climb_hang": {
+  "fps": 3,
+  "loop": true,
+  "frames": 2,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -165
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 6
+     },
+     "body": {
+      "lean": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -160
+     },
+     "leg_near": {
+      "rot": 4
+     },
+     "leg_far": {
+      "rot": 2
+     },
+     "body": {
+      "lean": 1
+     }
+    }
+   }
+  ]
+ },
+ "climb_idle": {
+  "fps": 3,
+  "loop": true,
+  "frames": 2,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -150
+     },
+     "leg_near": {
+      "rot": -25
+     },
+     "leg_far": {
+      "rot": 5
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -148
+     },
+     "leg_near": {
+      "rot": -25
+     },
+     "leg_far": {
+      "rot": 5
+     },
+     "body": {
+      "dy": -1
+     }
+    }
+   }
+  ]
+ },
+ "tread_water": {
+  "fps": 6,
+  "loop": true,
+  "frames": 6,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -25
+     },
+     "leg_near": {
+      "rot": -15
+     },
+     "leg_far": {
+      "rot": 15
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 1.5,
+    "pose": {
+     "arm_near": {
+      "rot": 0
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 0
+     },
+     "body": {
+      "dy": 1
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": 25
+     },
+     "leg_near": {
+      "rot": 15
+     },
+     "leg_far": {
+      "rot": -15
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 4.5,
+    "pose": {
+     "arm_near": {
+      "rot": 0
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 0
+     },
+     "body": {
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "arm_near": {
+      "rot": -25
+     },
+     "leg_near": {
+      "rot": -15
+     },
+     "leg_far": {
+      "rot": 15
+     },
+     "body": {
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "prone_swim": {
+  "fps": 8,
+  "loop": true,
+  "frames": 6,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "rot": 80,
+      "dx": -13,
+      "dy": -7
+     },
+     "head": {
+      "rot": -60
+     },
+     "arm_near": {
+      "rot": -160
+     },
+     "leg_near": {
+      "rot": 12
+     },
+     "leg_far": {
+      "rot": -8
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -60
+     },
+     "leg_near": {
+      "rot": -8
+     },
+     "leg_far": {
+      "rot": 12
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": 20
+     },
+     "leg_near": {
+      "rot": 12
+     },
+     "leg_far": {
+      "rot": -8
+     }
+    }
+   },
+   {
+    "t": 4.5,
+    "pose": {
+     "arm_near": {
+      "rot": 110
+     },
+     "leg_near": {
+      "rot": -8
+     },
+     "leg_far": {
+      "rot": 12
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "arm_near": {
+      "rot": 200
+     },
+     "leg_near": {
+      "rot": 12
+     },
+     "leg_far": {
+      "rot": -8
+     }
+    }
+   }
+  ]
+ },
+ "underwater_float": {
+  "fps": 4,
+  "loop": true,
+  "frames": 6,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "rot": 65,
+      "dx": -10,
+      "dy": -6
+     },
+     "head": {
+      "rot": -40
+     },
+     "arm_near": {
+      "rot": -30
+     },
+     "leg_near": {
+      "rot": 10
+     },
+     "leg_far": {
+      "rot": -5
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "body": {
+      "rot": 75,
+      "dx": -12,
+      "dy": -7
+     },
+     "head": {
+      "rot": -50
+     },
+     "arm_near": {
+      "rot": -60
+     },
+     "leg_near": {
+      "rot": -5
+     },
+     "leg_far": {
+      "rot": 10
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "body": {
+      "rot": 65,
+      "dx": -10,
+      "dy": -6
+     },
+     "head": {
+      "rot": -40
+     },
+     "arm_near": {
+      "rot": -30
+     },
+     "leg_near": {
+      "rot": 10
+     },
+     "leg_far": {
+      "rot": -5
+     }
+    }
+   }
+  ]
+ },
+ "tool_carry": {
+  "fps": 2,
+  "loop": true,
+  "frames": 2,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": 12,
+      "dx": 1
+     },
+     "torso": {
+      "dy": 0
+     },
+     "head": {
+      "dy": 0
+     },
+     "body": {
+      "lean": 1
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "torso": {
+      "dy": -1
+     },
+     "head": {
+      "dy": -1
+     },
+     "arm_near": {
+      "rot": 12,
+      "dx": 1,
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "torso": {
+      "dy": 0
+     },
+     "head": {
+      "dy": 0
+     },
+     "arm_near": {
+      "rot": 12,
+      "dx": 1,
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "harvest_chop": {
+  "fps": 6,
+  "loop": false,
+  "frames": 6,
+  "hold": {
+   "0": 1.2,
+   "1": 1.2,
+   "2": 1.2,
+   "3": 0.9,
+   "4": 0.6,
+   "5": 0.9
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -20
+     },
+     "body": {
+      "lean": 0,
+      "squash": 1.0
+     },
+     "head": {
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -70
+     },
+     "body": {
+      "lean": -2
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -150
+     },
+     "body": {
+      "lean": -1
+     },
+     "head": {
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": -40
+     },
+     "body": {
+      "lean": 1
+     },
+     "head": {
+      "dy": 0
+     }
+    },
+    "ease": "in"
+   },
+   {
+    "t": 4,
+    "pose": {
+     "arm_near": {
+      "rot": 50
+     },
+     "body": {
+      "lean": 3,
+      "squash": 0.96
+     },
+     "head": {
+      "dy": 1
+     },
+     "leg_near": {
+      "rot": -6
+     }
+    }
+   },
+   {
+    "t": 5,
+    "pose": {
+     "arm_near": {
+      "rot": 40
+     },
+     "body": {
+      "lean": 2,
+      "squash": 1.0
+     },
+     "head": {
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": -4
+     }
+    }
+   }
+  ]
+ },
+ "weapon_swing": {
+  "fps": 6,
+  "loop": false,
+  "frames": 6,
+  "hold": {
+   "0": 0.6,
+   "1": 1.08,
+   "2": 0.72,
+   "3": 0.72,
+   "4": 1.38,
+   "5": 1.5
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -10
+     },
+     "body": {
+      "lean": 0
+     },
+     "head": {
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": 45
+     },
+     "body": {
+      "lean": -2
+     },
+     "head": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -120
+     },
+     "body": {
+      "lean": 0
+     },
+     "head": {
+      "dy": -1
+     }
+    },
+    "ease": "in"
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": 30
+     },
+     "body": {
+      "lean": 4
+     },
+     "head": {
+      "dy": 1
+     },
+     "leg_near": {
+      "rot": -10
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "arm_near": {
+      "rot": 50
+     },
+     "body": {
+      "lean": 2
+     },
+     "head": {
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": -6
+     }
+    },
+    "ease": "out"
+   },
+   {
+    "t": 5,
+    "pose": {
+     "arm_near": {
+      "rot": 0
+     },
+     "body": {
+      "lean": 0
+     },
+     "leg_near": {
+      "rot": 0
+     }
+    }
+   }
+  ]
+ },
+ "aim_shoot": {
+  "fps": 12,
+  "loop": false,
+  "frames": 3,
+  "hold": {
+   "0": 1.0,
+   "1": 1.0,
+   "2": 1.5
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -90
+     },
+     "body": {
+      "lean": 1
+     },
+     "head": {
+      "dx": 0,
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -82
+     },
+     "body": {
+      "lean": -1
+     },
+     "head": {
+      "dx": -1,
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -90
+     },
+     "body": {
+      "lean": 1
+     },
+     "head": {
+      "dx": 0,
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "use_item": {
+  "fps": 8,
+  "loop": false,
+  "frames": 5,
+  "hold": {
+   "2": 2
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": 0
+     },
+     "head": {
+      "rot": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -110
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -125
+     },
+     "head": {
+      "rot": -5
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": -110
+     },
+     "head": {
+      "rot": 0
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "arm_near": {
+      "rot": 0
+     }
+    }
+   }
+  ]
+ },
+ "place": {
+  "fps": 10,
+  "loop": false,
+  "frames": 4,
+  "hold": {
+   "2": 1.5
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -30
+     },
+     "body": {
+      "lean": 0,
+      "squash": 1.0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": 30
+     },
+     "body": {
+      "lean": 2,
+      "squash": 0.96
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": 35
+     },
+     "body": {
+      "lean": 2,
+      "squash": 0.96
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": 10
+     },
+     "body": {
+      "lean": 0,
+      "squash": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "interact": {
+  "fps": 10,
+  "loop": false,
+  "frames": 3,
+  "hold": {
+   "1": 2
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -30
+     },
+     "body": {
+      "lean": 1
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -38
+     },
+     "body": {
+      "lean": 2
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": 0
+     },
+     "body": {
+      "lean": 0
+     }
+    }
+   }
+  ]
+ },
+ "pick_up": {
+  "fps": 10,
+  "loop": false,
+  "frames": 5,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -20
+     },
+     "body": {
+      "lean": 0,
+      "squash": 1.0
+     },
+     "head": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": 10
+     },
+     "body": {
+      "lean": 4,
+      "squash": 0.85
+     },
+     "head": {
+      "dy": 2
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": 20
+     },
+     "body": {
+      "lean": 4,
+      "squash": 0.85
+     },
+     "head": {
+      "dy": 2
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": 20
+     },
+     "body": {
+      "lean": 1,
+      "squash": 1.0
+     },
+     "head": {
+      "dy": 0
+     }
+    },
+    "ease": "out"
+   },
+   {
+    "t": 4,
+    "pose": {
+     "arm_near": {
+      "rot": 0
+     },
+     "body": {
+      "lean": 0
+     }
+    }
+   }
+  ]
+ },
+ "hurt": {
+  "fps": 12,
+  "loop": false,
+  "frames": 3,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "head": {
+      "rot": -15,
+      "dx": -1
+     },
+     "body": {
+      "lean": -3
+     },
+     "arm_near": {
+      "rot": -30
+     }
+    },
+    "ease": "out"
+   },
+   {
+    "t": 1,
+    "pose": {
+     "head": {
+      "rot": -8,
+      "dx": 0
+     },
+     "body": {
+      "lean": -2
+     },
+     "arm_near": {
+      "rot": -15
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "head": {
+      "rot": 0
+     },
+     "body": {
+      "lean": 0
+     },
+     "arm_near": {
+      "rot": 0
+     }
+    }
+   }
+  ]
+ },
+ "drowning": {
+  "fps": 8,
+  "loop": true,
+  "frames": 6,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -160
+     },
+     "head": {
+      "dy": 0
+     },
+     "body": {
+      "rot": -6,
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": -25
+     },
+     "leg_far": {
+      "rot": 20
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -40
+     },
+     "head": {
+      "dy": 2
+     },
+     "body": {
+      "rot": 8,
+      "dy": 2
+     },
+     "leg_near": {
+      "rot": 20
+     },
+     "leg_far": {
+      "rot": -25
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -150
+     },
+     "head": {
+      "dy": -1
+     },
+     "body": {
+      "rot": -4,
+      "dy": -1
+     },
+     "leg_near": {
+      "rot": -30
+     },
+     "leg_far": {
+      "rot": 10
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": -70
+     },
+     "head": {
+      "dy": 2
+     },
+     "body": {
+      "rot": 6,
+      "dy": 2
+     },
+     "leg_near": {
+      "rot": 25
+     },
+     "leg_far": {
+      "rot": -15
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "arm_near": {
+      "rot": -165
+     },
+     "head": {
+      "dy": 0
+     },
+     "body": {
+      "rot": -8,
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": -20
+     },
+     "leg_far": {
+      "rot": 25
+     }
+    }
+   },
+   {
+    "t": 5,
+    "pose": {
+     "arm_near": {
+      "rot": -100
+     },
+     "head": {
+      "dy": 1
+     },
+     "body": {
+      "rot": 3,
+      "dy": 1
+     },
+     "leg_near": {
+      "rot": 10
+     },
+     "leg_far": {
+      "rot": -20
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "arm_near": {
+      "rot": -160
+     },
+     "head": {
+      "dy": 0
+     },
+     "body": {
+      "rot": -6,
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": -25
+     },
+     "leg_far": {
+      "rot": 20
+     }
+    }
+   }
+  ]
+ },
+ "death_land": {
+  "fps": 5,
+  "loop": false,
+  "frames": 8,
+  "hold": {
+   "6": 2,
+   "7": 4
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "head": {
+      "rot": -15
+     },
+     "body": {
+      "lean": -3,
+      "rot": 0,
+      "dx": 0,
+      "dy": 0
+     },
+     "arm_near": {
+      "rot": -30
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 0
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "head": {
+      "rot": -10
+     },
+     "body": {
+      "lean": -4,
+      "dx": -1
+     },
+     "arm_near": {
+      "rot": -50
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "head": {
+      "rot": 10
+     },
+     "body": {
+      "lean": 0,
+      "rot": 35,
+      "dx": -3,
+      "dy": -1
+     },
+     "arm_near": {
+      "rot": -80
+     },
+     "leg_near": {
+      "rot": -30
+     },
+     "leg_far": {
+      "rot": 15
+     }
+    },
+    "ease": "in"
+   },
+   {
+    "t": 3,
+    "pose": {
+     "head": {
+      "rot": 25
+     },
+     "body": {
+      "rot": 65,
+      "dx": -8,
+      "dy": -4
+     },
+     "arm_near": {
+      "rot": -110
+     },
+     "leg_near": {
+      "rot": -40
+     },
+     "leg_far": {
+      "rot": 20
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "head": {
+      "rot": 10
+     },
+     "body": {
+      "rot": 88,
+      "dx": -13,
+      "dy": -7
+     },
+     "arm_near": {
+      "rot": -120
+     },
+     "leg_near": {
+      "rot": -25
+     },
+     "leg_far": {
+      "rot": 10
+     }
+    },
+    "ease": "out"
+   },
+   {
+    "t": 5,
+    "pose": {
+     "head": {
+      "rot": 0
+     },
+     "body": {
+      "rot": 88,
+      "dx": -13,
+      "dy": -7
+     },
+     "arm_near": {
+      "rot": -110
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "body": {
+      "rot": 88,
+      "dx": -13,
+      "dy": -6
+     },
+     "arm_near": {
+      "rot": -90
+     },
+     "leg_near": {
+      "rot": -15
+     }
+    }
+   },
+   {
+    "t": 7,
+    "pose": {
+     "body": {
+      "rot": 88,
+      "dx": -13,
+      "dy": -6
+     },
+     "arm_near": {
+      "rot": -85
+     }
+    }
+   }
+  ]
+ },
+ "death_water": {
+  "fps": 4,
+  "loop": false,
+  "frames": 8,
+  "hold": {
+   "7": 4
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "arm_near": {
+      "rot": -150
+     },
+     "body": {
+      "rot": -5,
+      "dy": 0
+     },
+     "head": {
+      "dy": 0
+     },
+     "leg_near": {
+      "rot": -20
+     },
+     "leg_far": {
+      "rot": 15
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "arm_near": {
+      "rot": -60
+     },
+     "body": {
+      "rot": 5,
+      "dy": 1
+     },
+     "head": {
+      "dy": 1
+     },
+     "leg_near": {
+      "rot": 10
+     },
+     "leg_far": {
+      "rot": -10
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "arm_near": {
+      "rot": -100
+     },
+     "body": {
+      "rot": 0,
+      "dy": 2
+     },
+     "head": {
+      "dy": 2
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 0
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "arm_near": {
+      "rot": -40
+     },
+     "body": {
+      "rot": 15,
+      "dy": 3
+     },
+     "head": {
+      "rot": 10,
+      "dy": 2
+     },
+     "leg_near": {
+      "rot": 10
+     },
+     "leg_far": {
+      "rot": 5
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "arm_near": {
+      "rot": -20
+     },
+     "body": {
+      "rot": 30,
+      "dy": 3
+     },
+     "head": {
+      "rot": 15
+     },
+     "leg_near": {
+      "rot": 15
+     },
+     "leg_far": {
+      "rot": 8
+     }
+    }
+   },
+   {
+    "t": 5,
+    "pose": {
+     "arm_near": {
+      "rot": -30
+     },
+     "body": {
+      "rot": 42,
+      "dy": 2,
+      "dx": -3
+     },
+     "head": {
+      "rot": 12
+     },
+     "leg_near": {
+      "rot": 20
+     },
+     "leg_far": {
+      "rot": 12
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "arm_near": {
+      "rot": -25
+     },
+     "body": {
+      "rot": 46,
+      "dy": 2,
+      "dx": -4
+     },
+     "head": {
+      "rot": 14
+     }
+    }
+   },
+   {
+    "t": 7,
+    "pose": {
+     "arm_near": {
+      "rot": -30
+     },
+     "body": {
+      "rot": 44,
+      "dy": 3,
+      "dx": -4
+     },
+     "head": {
+      "rot": 12
+     }
+    }
+   }
+  ]
+ },
+ "wake_bed": {
+  "fps": 6,
+  "loop": false,
+  "frames": 6,
+  "hold": {
+   "0": 2,
+   "3": 1.5
+  },
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "rot": 88,
+      "dx": -13,
+      "dy": -7
+     },
+     "head": {
+      "rot": 0
+     },
+     "arm_near": {
+      "rot": -110
+     },
+     "leg_near": {
+      "rot": -10
+     },
+     "leg_far": {
+      "rot": 5
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "body": {
+      "rot": 88,
+      "dx": -13,
+      "dy": -8
+     },
+     "head": {
+      "rot": -10
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "body": {
+      "rot": 60,
+      "dx": -8,
+      "dy": -4
+     },
+     "head": {
+      "rot": -30
+     },
+     "arm_near": {
+      "rot": -60
+     },
+     "leg_near": {
+      "rot": -20
+     }
+    },
+    "ease": "in"
+   },
+   {
+    "t": 3,
+    "pose": {
+     "body": {
+      "rot": 25,
+      "dx": -3,
+      "dy": -1
+     },
+     "head": {
+      "rot": -15
+     },
+     "arm_near": {
+      "rot": 20
+     },
+     "leg_near": {
+      "rot": -25
+     },
+     "leg_far": {
+      "rot": 5
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "body": {
+      "rot": 12,
+      "dx": -1,
+      "dy": 0
+     },
+     "head": {
+      "rot": -8
+     },
+     "arm_near": {
+      "rot": 10
+     },
+     "leg_near": {
+      "rot": -10
+     }
+    }
+   },
+   {
+    "t": 5,
+    "pose": {
+     "body": {
+      "rot": 0,
+      "dx": 0,
+      "dy": 0
+     },
+     "head": {
+      "rot": 0
+     },
+     "arm_near": {
+      "rot": 0
+     },
+     "leg_near": {
+      "rot": 0
+     },
+     "leg_far": {
+      "rot": 0
+     }
+    }
+   }
+  ]
+ },
+ "cold_shiver": {
+  "fps": 12,
+  "loop": true,
+  "frames": 4,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "torso": {
+      "dy": 0
+     },
+     "head": {
+      "dx": 0
+     },
+     "arm_near": {
+      "rot": 20,
+      "dx": 1
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "torso": {
+      "dy": -1
+     },
+     "head": {
+      "dx": 1
+     },
+     "arm_near": {
+      "rot": 22,
+      "dx": 1,
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "torso": {
+      "dy": 0
+     },
+     "head": {
+      "dx": 0
+     },
+     "arm_near": {
+      "rot": 20,
+      "dx": 1,
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "torso": {
+      "dy": -1
+     },
+     "head": {
+      "dx": -1
+     },
+     "arm_near": {
+      "rot": 18,
+      "dx": 1,
+      "dy": -1
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "torso": {
+      "dy": 0
+     },
+     "head": {
+      "dx": 0
+     },
+     "arm_near": {
+      "rot": 20,
+      "dx": 1,
+      "dy": 0
+     }
+    }
+   }
+  ]
+ },
+ "crush_strain": {
+  "fps": 6,
+  "loop": true,
+  "frames": 6,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "body": {
+      "squash": 0.92,
+      "lean": 0
+     },
+     "arm_near": {
+      "rot": -100
+     },
+     "leg_near": {
+      "rot": -8
+     },
+     "leg_far": {
+      "rot": 8
+     },
+     "head": {
+      "dy": 1
+     }
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "body": {
+      "squash": 0.92,
+      "lean": 1
+     },
+     "head": {
+      "dy": 2
+     }
+    }
+   },
+   {
+    "t": 2,
+    "pose": {
+     "body": {
+      "squash": 0.96,
+      "lean": 0
+     },
+     "arm_near": {
+      "rot": -110
+     },
+     "head": {
+      "dy": 0
+     }
+    }
+   },
+   {
+    "t": 3,
+    "pose": {
+     "body": {
+      "squash": 0.92,
+      "lean": -1
+     },
+     "head": {
+      "dy": 2
+     }
+    }
+   },
+   {
+    "t": 4,
+    "pose": {
+     "body": {
+      "squash": 0.95,
+      "lean": 0
+     },
+     "arm_near": {
+      "rot": -105
+     },
+     "head": {
+      "dy": 1
+     }
+    }
+   },
+   {
+    "t": 5,
+    "pose": {
+     "body": {
+      "squash": 0.92,
+      "lean": 1
+     },
+     "head": {
+      "dy": 2
+     }
+    }
+   },
+   {
+    "t": 6,
+    "pose": {
+     "body": {
+      "squash": 0.92,
+      "lean": 0
+     },
+     "arm_near": {
+      "rot": -100
+     },
+     "head": {
+      "dy": 1
+     }
+    }
+   }
+  ]
+ }
+}

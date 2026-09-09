@@ -29,15 +29,22 @@ const BAND_ORDER := ["dry", "shallows", "cold", "dark", "crush"]
 var abilities: Dictionary = {}      # ability id -> def (CC-18 tech tree)
 var ability_list: Array = []
 var enemies: Dictionary = {}        # enemy type id -> def (M4, GD-01)
+var player_anim: Dictionary = {}    # player_anim.json: {cell, clips: {name: {row, frames, fps, loop, hold, anchors}}} - the composed locomotion sheet (2026-09-07)
+var hand_anchors: Dictionary = {}   # hand_anchors.json: {east/west: [[x, y] per sheet frame]} - the held weapon's rest pose follows the walk cycle's hand (2026-09-07)
 var enemy_bands: Dictionary = {}    # band -> {type id -> {hp, damage, speed, aggro}} (GD-23)
 var enemy_seeding: Dictionary = {}  # density tuning (GD-27)
 
 var _icon_cache: Dictionary = {}
+var _icon_axis_cache: Dictionary = {} # item id -> icon_axis() result
 
 func _ready() -> void:
 	_load_all()
 
 func _load_all() -> void:
+	hand_anchors = _load_json("res://data/hand_anchors.json")
+	player_anim = _load_json("res://data/player_anim.json")
+	for row in ["east", "west"]:
+		assert(hand_anchors.get(row, []).size() == 7, "hand_anchors.json: %s needs 7 frames (run tools/gen_hand_anchors.py)" % row)
 	for it in _load_json("res://data/items.json").get("items", []):
 		it["stack"] = it.get("stack", Constants.MATERIAL_STACK if it.get("category") == "material" else 1)
 		items[it.id] = it
@@ -414,6 +421,66 @@ func icon(id: String) -> Texture2D:
 		tex = object_texture(id)
 	_icon_cache[id] = tex
 	return tex
+
+## Held-tool geometry (weapon swing, 2026-09-07): the icon's long axis from
+## its grip (the end nearest the icon's bottom - every tool and blade is
+## drawn hilt-down) to its tip, in texture px from the texture centre. The
+## paper-doll hand holds a weapon by this grip and points the blade along an
+## authored angle, so a vertical 32 px sword and a diagonal 16 px machete
+## swing the same way. `angle` is the unflipped texture axis (screen radians,
+## up = -PI/2), `length` the grip-to-tip distance in texture px.
+func icon_axis(id: String) -> Dictionary:
+	if _icon_axis_cache.has(id):
+		return _icon_axis_cache[id]
+	var res := {"angle": -PI * 0.5, "hilt": Vector2(0.0, 8.0), "tip": Vector2(0.0, -8.0), "length": 16.0}
+	var tex := icon(id)
+	var img: Image = null
+	if tex is AtlasTexture:
+		var full: Image = (tex as AtlasTexture).atlas.get_image()
+		if full != null:
+			img = full.get_region(Rect2i((tex as AtlasTexture).region))
+	elif tex != null:
+		img = tex.get_image()
+	if img != null and not img.is_empty():
+		if img.is_compressed():
+			img.decompress()
+		var w := img.get_width()
+		var h := img.get_height()
+		var pts: PackedVector2Array = []
+		for y in h:
+			for x in w:
+				if img.get_pixel(x, y).a > 0.5:
+					pts.append(Vector2(x + 0.5, y + 0.5))
+		if pts.size() >= 2:
+			var mean := Vector2.ZERO
+			for p in pts:
+				mean += p
+			mean /= pts.size()
+			var cxx := 0.0
+			var cyy := 0.0
+			var cxy := 0.0
+			for p in pts:
+				var d := p - mean
+				cxx += d.x * d.x
+				cyy += d.y * d.y
+				cxy += d.x * d.y
+			var theta := 0.5 * atan2(2.0 * cxy, cxx - cyy) # principal axis
+			var axis := Vector2(cos(theta), sin(theta))
+			if axis.y > 0.0 or (absf(axis.y) < 0.01 and axis.x < 0.0):
+				axis = -axis # point it up: the grip is the bottom end
+			var lo := INF
+			var hi := -INF
+			for p in pts:
+				var t := (p - mean).dot(axis)
+				lo = minf(lo, t)
+				hi = maxf(hi, t)
+			var centre := Vector2(w, h) * 0.5
+			res.angle = axis.angle()
+			res.hilt = mean - centre + axis * lo
+			res.tip = mean - centre + axis * hi
+			res.length = hi - lo
+	_icon_axis_cache[id] = res
+	return res
 
 ## An object's sprite: a region of its pack's sprite sheet when it has one,
 ## otherwise its standalone PNG.

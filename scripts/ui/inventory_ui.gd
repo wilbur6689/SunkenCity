@@ -319,6 +319,12 @@ func _build_inventory_screen() -> void:
 	UITheme.style_button(qs)
 	qs.pressed.connect(_quick_stack)
 	sh.add_child(qs)
+	var tk := Button.new() # Take (user request 2026-09-07): everything inside -> the bag
+	tk.text = "Take"
+	tk.custom_minimum_size = Vector2(30, 12)
+	UITheme.style_button(tk)
+	tk.pressed.connect(_take_all)
+	sh.add_child(tk)
 	sv.add_child(sh)
 	chest_grid = GridContainer.new()
 	chest_grid.columns = 4
@@ -392,6 +398,7 @@ func _build_crafting_screen() -> void:
 	craft_button = Button.new()
 	craft_button.text = "CRAFT"
 	craft_button.custom_minimum_size = Vector2(64, 18)
+	craft_button.tooltip_text = "Shift-click: craft x5"
 	craft_button.position = Vector2(327 + 128 - 64, 46 + 130 + 4)
 	UITheme.style_button(craft_button)
 	craft_button.pressed.connect(_craft_selected)
@@ -1279,10 +1286,27 @@ func _refresh_detail() -> void:
 
 # --- Actions ---
 
+## CRAFT: one batch, or five while Shift is held (user request 2026-09-07);
+## stops early when the ingredients run out.
 func _craft_selected() -> void:
-	if not selected_recipe.is_empty() and _row_craftable(selected_recipe) \
-			and _act("craft", [String(selected_recipe.id)]):
+	_craft_n(5 if Input.is_key_pressed(KEY_SHIFT) else 1)
+
+func _craft_n(times: int) -> int:
+	if selected_recipe.is_empty() or not _row_craftable(selected_recipe):
+		return 0
+	var r: Dictionary = selected_recipe # the refresh below re-picks the selection, so hold the recipe
+	var made := 0
+	for i in times:
+		if not player.can_craft(r) or not _act("craft", [String(r.id)]):
+			break
+		made += 1
+	if made > 0:
 		_refresh_crafting(true)
+	return made
+
+func _take_all() -> void:
+	if container != null and is_instance_valid(container):
+		_act("take_all", [container.cell])
 
 func _quick_stack() -> void:
 	if container != null and is_instance_valid(container):
